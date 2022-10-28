@@ -215,6 +215,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="2132302418721800944">Grabar pantalla completa</translation>
 <translation id="2135456203358955318">Lupa fijada</translation>
 <translation id="2148716181193084225">Hoy</translation>
+<translation id="2161132820593978283">Prueba el encuadre de cámara para aparecer en el centro de la pantalla durante las videollamadas. Actívalo en los ajustes rápidos.</translation>
 <translation id="2170530631236737939">Desliza tres dedos hacia abajo para salir de la vista general</translation>
 <translation id="219905428774326614">Menú de aplicaciones, todas las aplicaciones</translation>
 <translation id="2201071101391734388">Foto reciente <ph name="INDEX" /> de <ph name="TOTAL_COUNT" />.</translation>
@@ -253,8 +254,9 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="2405664212338326887">No conectado</translation>
 <translation id="2408955596600435184">Introduce tu PIN</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
+<translation id="2426051945783024481">Encuadre de cámara centrado automáticamente</translation>
 <translation id="2427507373259914951">Clic con el botón izquierdo</translation>
-<translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para emparejarse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
+<translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para emparejarse. Antes de aceptar, comprueba que la llave de acceso <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="243878895369688216">Abierto ayer</translation>
 <translation id="2441427462554639370">Se ha dejado de grabar porque queda muy poco espacio de almacenamiento</translation>
@@ -373,6 +375,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3151786313568798007">Orientación</translation>
 <translation id="3153444934357957346">Solo puedes tener un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas en el inicio de sesión múltiple.</translation>
 <translation id="3154351730702813399">Es posible que el administrador del dispositivo supervise tu actividad de navegación.</translation>
+<translation id="3157931365184549694">Restaurar</translation>
 <translation id="316086887565479535">Hay aplicaciones no admitidas en la plantilla</translation>
 <translation id="3161500364292033097">Cerrar escritorio y ventanas</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> va a restaurar tu <ph name="DEVICE_TYPE" />. Tu dispositivo se reiniciará y se eliminarán todos los datos.</translation>
@@ -476,7 +479,6 @@ Conecta tu dispositivo a la corriente.</translation>
 <translation id="3735740477244556633">Ordenar por</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
 <translation id="3765841986579723851">Editado hoy</translation>
-<translation id="3771549900096082774">Modo de contraste alto</translation>
 <translation id="3773700760453577392">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL" />.
 Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="3779139509281456663">Conectando <ph name="NAME" /></translation>
@@ -577,12 +579,10 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4312840429157639164">Cámara ajustada a la esquina superior derecha. Conflicto con la superficie del sistema.</translation>
 <translation id="4316910396681052118">TODAS LAS APLICACIONES</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Has pulsado la combinación de teclas que activa el contraste alto. ¿Quieres activarlo?</translation>
 <translation id="4322742403972824594">La combinación de teclas Ctrl + Alt + tecla de flecha hacia arriba ha cambiado. Para usar la tecla de inicio, pulsa la tecla <ph name="LAUNCHER_KEY_NAME" /> + tecla de flecha hacia la izquierda.</translation>
 <translation id="4333628967105022692">No es posible lanzar Lacros si varios usuarios han iniciado sesión.</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">El Asistente se está cargando...</translation>
-<translation id="4356930093361201197">modo de contraste alto</translation>
 <translation id="4371348193907997655">Configuración de envío</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />; intensidad de la señal: <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4378551569595875038">Conectando...</translation>
@@ -878,7 +878,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5980301590375426705">Cerrar como invitado</translation>
 <translation id="598407983968395253">Utilizar plantilla</translation>
 <translation id="598882571027504733">Para recibir la actualización, reinicia tu Chromebook con el teclado conectado.</translation>
-<translation id="5992218262414051481">Se ha habilitado el modo de contraste alto. Pulsa Ctrl + Tecla de búsqueda + H de nuevo para desactivarlo.</translation>
 <translation id="6012623610530968780">Página <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Saliendo del modo Espejo</translation>
 <translation id="602001110135236999">Desplazar a la izquierda</translation>
@@ -991,7 +990,7 @@ Nueva instalación</translation>
 <translation id="6643169293433369663">Deshacer order por nombre</translation>
 <translation id="6649641931981131786">Ajusta la cámara para ponerte en el centro de la pantalla.</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> quiere confirmar que eres tú</translation>
-<translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para emparejarse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
+<translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para emparejarse. Introduce la llave de acceso <ph name="PASSKEY" /> en el dispositivo</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6665545700722362599">Dar permiso a los sitios web, las aplicaciones y las extensiones para usar los servicios de ubicación, el micrófono del dispositivo, la cámara y otras funciones.</translation>
 <translation id="6667908387435388584">Conéctate al punto de acceso de tu teléfono, silencia y localiza tu dispositivo, y visualiza las pestañas de Chrome recientes abiertas en tu teléfono</translation>
@@ -1044,6 +1043,7 @@ Nueva instalación</translation>
 <translation id="6960565108681981554">No activada. Ponte en contacto con tu operador.</translation>
 <translation id="6961121602502368900">La función Silenciar teléfono no está disponible en el perfil de trabajo</translation>
 <translation id="6961840794482373852">La combinación de teclas Alt + tecla de flecha hacia arriba ha cambiado. Para usar la tecla Re Pág, pulsa la tecla <ph name="LAUNCHER_KEY_NAME" /> + tecla de flecha hacia arriba.</translation>
+<translation id="696267987219125751">El encuadre de cámara está desactivado.</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6972754398087986839">Empezar</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1134,6 +1134,7 @@ Nueva instalación</translation>
 <translation id="7513922695575567867">Calendario, semana del <ph name="DATE" />, actualmente está seleccionado el <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">El encuadre de cámara está activado.</translation>
 <translation id="7526573455193969409">Es posible que la red esté supervisada</translation>
 <translation id="7536035074519304529">Dirección IP: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Las aplicaciones Linux y las ventanas de Incógnito no se admiten actualmente. Se guardarán las demás aplicaciones.</translation>
@@ -1152,10 +1153,12 @@ Nueva instalación</translation>
 <translation id="7607002721634913082">En pausa</translation>
 <translation id="7609951632080598826">Vista de calendario, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">La cámara se ha vuelto a conectar.</translation>
+<translation id="761736749114493194">Activar/Desactivar encuadre de cámara. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7633755430369750696">Muestra los ajustes de Compartir con Nearby.</translation>
 <translation id="7634648064048557203">Cámara ajustada a la esquina inferior derecha</translation>
 <translation id="7641938616688887143">Grabar</translation>
+<translation id="7642106959537987271">modo Inversión de colores</translation>
 <translation id="7642647758716480637">Abrir la configuración de <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario)</translation>
 <translation id="7647488630410863958">Desbloquear el dispositivo para ver las notificaciones</translation>
@@ -1234,7 +1237,6 @@ Nueva instalación</translation>
 <translation id="8051716679295756675">Ya existe una plantilla llamada <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="8052898407431791827">Copiada en el portapapeles</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
-<translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8083540854303889870">Guardados para más tarde</translation>
 <translation id="8091387634532529612">Actualizaciones automáticas</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
@@ -1262,6 +1264,7 @@ Nueva instalación</translation>
 <translation id="8209010265547628927">Reiniciar</translation>
 <translation id="8214996719228530800">Canal Canary</translation>
 <translation id="8219451629189078428">Mientras tanto, tu Chromebook debe estar encendido y conectado a la corriente. Asegúrate de que los cables del cargador o del adaptador estén enchufados correctamente al Chromebook y a la toma de corriente. No apagues el Chromebook.</translation>
+<translation id="8230305195727960608">Modo Inversión de colores</translation>
 <translation id="8236042855478648955">Es hora de descansar</translation>
 <translation id="8246282815785366524">Te damos la bienvenida de nuevo, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, batería del teléfono: <ph name="BATTERY_STATUS" /></translation>
@@ -1313,6 +1316,7 @@ Nueva instalación</translation>
 <translation id="851458219935658693">Mostrar ventanas del escritorio actual, botón seleccionado</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8535393432370007982">Deshacer orden por color</translation>
+<translation id="8541078764854166027">Encuadre</translation>
 <translation id="8542053257095774575">No hay escritorios ni plantillas guardados</translation>
 <translation id="8546059259582788728">Orden deshecho correctamente</translation>
 <translation id="8551588720239073785">Configuración de fecha y hora</translation>
@@ -1387,6 +1391,7 @@ Nueva instalación</translation>
 <translation id="8982906748181120328">Visibilidad Nearby</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Estás usando <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Modo Inversión de colores habilitado. Pulsa Ctrl + tecla de búsqueda + H para desactivarla.</translation>
 <translation id="899350903320462459">Desbloquea el dispositivo como <ph name="LOGIN_ID" /> para hacer lo que indica la notificación</translation>
 <translation id="9000771174482730261">GESTIONAR ALMACENAMIENTO</translation>
 <translation id="9017320285115481645">Introduce el código de acceso parental de Family Link.</translation>
@@ -1435,6 +1440,7 @@ Nueva instalación</translation>
 <translation id="921989828232331238">Tu padre, madre o tutor/a han bloqueado tu dispositivo todo el día</translation>
 <translation id="9220525904950070496">Quitar cuenta</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
+<translation id="92580429198593979">Has pulsado la combinación de teclas para invertir los colores. ¿Quieres activar la función?</translation>
 <translation id="925832987464884575">Ocultar vistas previas</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> requiere que actualices tu <ph name="DEVICE_TYPE" /> inmediatamente</translation>
 <translation id="938963181863597773">¿Qué tengo en el calendario?</translation>

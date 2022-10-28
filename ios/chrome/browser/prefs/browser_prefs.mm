@@ -7,6 +7,7 @@
 #import "base/time/time.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/browsing_data/core/pref_names.h"
+#import "components/commerce/core/pref_names.h"
 #import "components/component_updater/component_updater_service.h"
 #import "components/component_updater/installer_policies/autofill_states_component_installer.h"
 #import "components/content_settings/core/browser/host_content_settings_map.h"
@@ -187,10 +188,17 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kTrialGroupV3PrefName, 0);
 
   registry->RegisterDictionaryPref(kPrefPromoObject);
+
+  // Registers prefs to count the remaining number of times autofill branding
+  // animation should perform. Defaults to 2, which is the maximum number of
+  // times a user should see autofill branding animation after installation.
+  registry->RegisterIntegerPref(
+      prefs::kAutofillBrandingIconAnimationRemainingCountPrefName, 2);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::prefs::RegisterProfilePrefs(registry);
+  commerce::RegisterPrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   ios_feed::RegisterProfilePrefs(registry);
   FirstRun::RegisterProfilePrefs(registry);

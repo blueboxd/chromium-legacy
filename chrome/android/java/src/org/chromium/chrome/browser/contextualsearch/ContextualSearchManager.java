@@ -918,10 +918,6 @@ public class ContextualSearchManager
         mLoadedSearchUrlTimeMs = System.currentTimeMillis();
         mLastSearchRequestLoaded = mSearchRequest;
         mSearchPanel.loadUrlInPanel(mSearchRequest.getSearchUrl());
-        // Prevent losing focus when clicking a suggestion. See https://crbug.com/1250825.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES)) {
-            mSearchPanel.getContainerView().setFocusableInTouchMode(false);
-        }
         mDidStartLoadingResolvedSearchRequest = true;
 
         // TODO(donnd): If the user taps on a word and quickly after that taps on the
@@ -975,6 +971,20 @@ public class ContextualSearchManager
         if (getSearchPanelWebContents() == null) return;
 
         getSearchPanelWebContents().stop();
+    }
+
+    /**
+     * Tells the Panel whether it can ever hide the Browser Controls (Toolbar).
+     * This is set to false by a Partial-height Chrome Custom Tab, and defaults to true.
+     * @param canHideAndroidBrowserControls whether hiding is ever allowed.
+     */
+    public void setCanHideAndroidBrowserControls(boolean canHideAndroidBrowserControls) {
+        mSearchPanel.setCanHideAndroidBrowserControls(canHideAndroidBrowserControls);
+    }
+
+    @VisibleForTesting
+    public boolean getCanHideAndroidBrowserControls() {
+        return mSearchPanel.getCanHideAndroidBrowserControls();
     }
 
     // ============================================================================================

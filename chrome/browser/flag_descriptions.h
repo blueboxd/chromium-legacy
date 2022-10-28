@@ -116,9 +116,6 @@ extern const char kTangibleSyncDescription[];
 extern const char kLauncherAppSortName[];
 extern const char kLauncherAppSortDescription[];
 
-extern const char kLeakDetectionUnauthenticated[];
-extern const char kLeakDetectionUnauthenticatedDescription[];
-
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
 
@@ -405,9 +402,6 @@ extern const char kChromeWhatsNewInMainMenuNewBadgeName[];
 extern const char kChromeWhatsNewInMainMenuNewBadgeDescription[];
 #endif
 
-extern const char kDarkLightTestName[];
-extern const char kDarkLightTestDescription[];
-
 extern const char kDisableProcessReuse[];
 extern const char kDisableProcessReuseDescription[];
 
@@ -540,9 +534,6 @@ extern const char kDesktopPWAsElidedExtensionsMenuDescription[];
 
 extern const char kDesktopPWAsLaunchHandlerName[];
 extern const char kDesktopPWAsLaunchHandlerDescription[];
-
-extern const char kDesktopPWAsManifestIdName[];
-extern const char kDesktopPWAsManifestIdDescription[];
 
 extern const char kDesktopPWAsTabStripName[];
 extern const char kDesktopPWAsTabStripDescription[];
@@ -1366,6 +1357,9 @@ extern const char kQuickDimDescription[];
 extern const char kQuickIntensiveWakeUpThrottlingAfterLoadingName[];
 extern const char kQuickIntensiveWakeUpThrottlingAfterLoadingDescription[];
 
+extern const char kQuickActionShowBubbleLauncherName[];
+extern const char kQuickActionShowBubbleLauncherDescription[];
+
 extern const char kSettingsAppNotificationSettingsName[];
 extern const char kSettingsAppNotificationSettingsDescription[];
 
@@ -1599,6 +1593,9 @@ extern const char kDiscoverFeedMultiColumnAndroidDescription[];
 extern const char kTailoredSecurityDesktopNoticeName[];
 extern const char kTailoredSecurityDesktopNoticeDescription[];
 
+extern const char kTextBasedAudioDescriptionName[];
+extern const char kTextBasedAudioDescriptionDescription[];
+
 extern const char kTFLiteLanguageDetectionName[];
 extern const char kTFLiteLanguageDetectionDescription[];
 
@@ -1652,6 +1649,12 @@ extern const char kUnifiedSidePanelDescription[];
 extern const char kUnifiedPasswordManagerAndroidName[];
 extern const char kUnifiedPasswordManagerAndroidDescription[];
 
+extern const char kUnifiedPasswordManagerErrorMessagesName[];
+extern const char kUnifiedPasswordManagerErrorMessagesDescription[];
+
+extern const char kUnifiedPasswordManagerAndroidReenrollmentName[];
+extern const char kUnifiedPasswordManagerAndroidReenrollmentDescription[];
+
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
 
@@ -1663,6 +1666,9 @@ extern const char kUiPartialSwapDescription[];
 
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
+
+extern const char kVCBackgroundBlurName[];
+extern const char kVCBackgroundBlurDescription[];
 
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
@@ -1868,6 +1874,9 @@ extern const char kAndroidForceAppLanguagePromptDescription[];
 
 extern const char kAndroidMediaPickerSupportName[];
 extern const char kAndroidMediaPickerSupportDescription[];
+
+extern const char kAndroidPermissionsCacheName[];
+extern const char kAndroidPermissionsCacheDescription[];
 
 extern const char kAndroidSurfaceControlName[];
 extern const char kAndroidSurfaceControlDescription[];

@@ -26,9 +26,9 @@
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_handle.h"
-#include "net/base/network_isolation_key.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
@@ -148,7 +148,7 @@ class NET_EXPORT HostResolverManager
   // instead of passing it separately.
   std::unique_ptr<HostResolver::ResolveHostRequest> CreateRequest(
       HostResolver::Host host,
-      NetworkIsolationKey network_isolation_key,
+      NetworkAnonymizationKey network_anonymization_key,
       NetLogWithSource net_log,
       absl::optional<ResolveHostParameters> optional_parameters,
       ResolveContext* resolve_context,

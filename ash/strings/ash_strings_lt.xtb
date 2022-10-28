@@ -215,6 +215,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="2132302418721800944">Įrašyti viso ekrano režimu</translation>
 <translation id="2135456203358955318">Prie doko prijungtas didintuvas</translation>
 <translation id="2148716181193084225">Šiandien</translation>
+<translation id="2161132820593978283">Pabandykite naudoti fotoaparato kadravimo funkciją, kad būtumėte vaizdo skambučių ekrano centre. Įjunkite šią funkciją sparčiuosiuose nustatymuose.</translation>
 <translation id="2170530631236737939">Perbraukite žemyn trimis pirštais, kad išeitumėte iš „Apžvalgos“ skilties</translation>
 <translation id="219905428774326614">Paleidimo priemonė, visos programos</translation>
 <translation id="2201071101391734388">Naujausia <ph name="INDEX" /> nuotrauka iš <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="2405664212338326887">Neprijungta</translation>
 <translation id="2408955596600435184">Įveskite PIN kodą</translation>
 <translation id="2412593942846481727">Pasiekiamas naujinys</translation>
+<translation id="2426051945783024481">Fotoaparato kadras automatiškai centruojamas</translation>
 <translation id="2427507373259914951">Spustelėti kairiuoju klavišu</translation>
 <translation id="2429753432712299108">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Prieš sutikdami, patvirtinkite, kad šiame įrenginyje rodomas šis slaptasis raktas: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
@@ -373,6 +375,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="3151786313568798007">Orientacija</translation>
 <translation id="3153444934357957346">Naudodami kelių paskyrų funkciją, galite turėti iki <ph name="MULTI_PROFILE_USER_LIMIT" /> paskyr.</translation>
 <translation id="3154351730702813399">Įrenginio administratorius gali stebėti jūsų naršymo veiklą.</translation>
+<translation id="3157931365184549694">Atkurti</translation>
 <translation id="316086887565479535">Nepalaikomos programos šablone</translation>
 <translation id="3161500364292033097">Uždaryti darbalaukį ir langus</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> grąžina ankstesnę „<ph name="DEVICE_TYPE" />“ versiją. Jūsų įrenginys bus nustatytas iš naujo ir visi duomenys bus ištrinti.</translation>
@@ -476,7 +479,6 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="3735740477244556633">Rūšiuoti pagal</translation>
 <translation id="3742055079367172538">Ekrano kopija padaryta</translation>
 <translation id="3765841986579723851">Redaguota šiandien</translation>
-<translation id="3771549900096082774">Didelio kontrasto režimas</translation>
 <translation id="3773700760453577392">Administratorius neleido <ph name="USER_EMAIL" /> prisijungti prie kelių paskyrų. Norėdami tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="3779139509281456663">Susiejamas įrenginys „<ph name="NAME" />“</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="4312840429157639164">Fotoaparato peržiūra pridėta viršutiniame dešiniajame kampe. Nesuderinama su sistemos platforma.</translation>
 <translation id="4316910396681052118">VISOS PROGRAMOS</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Paspaudėte didelio kontrasto spartųjį klavišą. Ar norite jį įjungti?</translation>
 <translation id="4322742403972824594">Pakeistas spartusis klavišas „Ctrl“ + „Alt“ + rodyklė aukštyn. Jei norite naudoti klavišą „Home“, paspauskite <ph name="LAUNCHER_KEY_NAME" /> klavišą + rodyklę kairėn.</translation>
 <translation id="4333628967105022692">„Lacros“ nepalaikoma, kai prisijungę keli naudotojai.</translation>
 <translation id="4338109981321384717">Didinamasis stiklas</translation>
 <translation id="4351433414020964307">Padėjėjas įkeliamas...</translation>
-<translation id="4356930093361201197">didelio kontrasto režimas</translation>
 <translation id="4371348193907997655">„Cast“ nustatymai</translation>
 <translation id="4378479437904450384">„<ph name="WIRELESS_PROVIDER" />“, signalo stiprumas <ph name="SIGNAL_STRENGTH" /> proc.</translation>
 <translation id="4378551569595875038">Jungiamasi...</translation>
@@ -877,7 +877,6 @@ Prijunkite įrenginį prie maitinimo šaltinio.</translation>
 <translation id="5980301590375426705">Išeiti iš sveč. rež.</translation>
 <translation id="598407983968395253">Naudoti šabloną</translation>
 <translation id="598882571027504733">Kad gautumėte naujinį, iš naujo paleiskite „Chromebook“ su prijungta klaviatūra.</translation>
-<translation id="5992218262414051481">Didelio kontrasto režimas įgalintas. Dar kartą paspauskite „Ctrl“ + paieškos klavišą + H, kad išjungtumėte režimą.</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> psl. iš <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Išjungiamas atvaizdavimo režimas</translation>
 <translation id="602001110135236999">Slinkti kairėn</translation>
@@ -1043,6 +1042,7 @@ Naujas įdiegimas</translation>
 <translation id="6960565108681981554">Nesuaktyvinta. Susisiekite su operatoriumi.</translation>
 <translation id="6961121602502368900">Telefono nutildymo funkcija nepasiekiama darbo profilyje</translation>
 <translation id="6961840794482373852">Pakeistas spartusis klavišas „Alt“ + rodyklė aukštyn. Jei norite naudoti klavišą „Page Up“, paspauskite <ph name="LAUNCHER_KEY_NAME" /> klavišą + rodyklę aukštyn.</translation>
+<translation id="696267987219125751">Fotoaparato kadravimo funkcija išjungta.</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="6972754398087986839">Darbo pradžia</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
@@ -1133,6 +1133,7 @@ Naujas įdiegimas</translation>
 <translation id="7513922695575567867">Kalendorius, <ph name="DATE" /> savaitė, šiuo metu pasirinkta <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Fotoaparato kadravimo funkcija įjungta.</translation>
 <translation id="7526573455193969409">Tinklas gali būti stebimas</translation>
 <translation id="7536035074519304529">IP adresas: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">„Linux“ programos ir inkognito langai šiuo metu nepalaikomi. Kitos programos bus išsaugotos.</translation>
@@ -1151,10 +1152,12 @@ Naujas įdiegimas</translation>
 <translation id="7607002721634913082">Pristabdyta</translation>
 <translation id="7609951632080598826">Kalendoriaus rodinys, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Fotoaparatas prijungtas iš naujo.</translation>
+<translation id="761736749114493194">Perjungti fotoaparato kadravimo funkciją. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7633755430369750696">Rodyti bendrinimo netoliese nustatymus.</translation>
 <translation id="7634648064048557203">Fotoaparato peržiūra pridėta apatiniame dešiniajame kampe</translation>
 <translation id="7641938616688887143">Įrašyti</translation>
+<translation id="7642106959537987271">spalvų inversijos režimas</translation>
 <translation id="7642647758716480637">Atidaryti „<ph name="NETWORK_NAME" />“ nustatymus (<ph name="CONNECTION_STATUS" />)</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (savininkas)</translation>
 <translation id="7647488630410863958">Atrakinkite įrenginį, kad galėtumėte peržiūrėti pranešimus</translation>
@@ -1233,7 +1236,6 @@ Naujas įdiegimas</translation>
 <translation id="8051716679295756675">Šablonas pavadinimu „<ph name="DESK_TEMPLATE_NAME" />“ jau yra</translation>
 <translation id="8052898407431791827">Nukopijuota į iškarpinę</translation>
 <translation id="8054466585765276473">Apskaičiuojamas laikas, likęs iki akumuliatoriaus išsikrovimo.</translation>
-<translation id="8061464966246066292">Didelis kontrastas</translation>
 <translation id="8083540854303889870">Išsaugota vėlesniam laikui</translation>
 <translation id="8091387634532529612">Automatiniai naujiniai</translation>
 <translation id="8098591350844501178">Sustabdyti ekrano perdavimą į: <ph name="RECEIVER_NAME" /></translation>
@@ -1261,6 +1263,7 @@ Naujas įdiegimas</translation>
 <translation id="8209010265547628927">Nustatyti iš naujo</translation>
 <translation id="8214996719228530800">„Canary“ kanalas</translation>
 <translation id="8219451629189078428">Tuo metu „Chromebook“ įrenginys turi būti įjungtas ir prijungtas prie maitinimo šaltinio. Įsitikinkite, kad kroviklio ar adapterio laidai tinkamai prijungti prie „Chromebook“ ir elektros lizdo. Neišjunkite „Chromebook“ įrenginio.</translation>
+<translation id="8230305195727960608">Spalvų inversijos režimas</translation>
 <translation id="8236042855478648955">Laikas padaryti pertrauką</translation>
 <translation id="8246282815785366524">Sveiki sugrįžę, <ph name="GIVEN_NAME" />!</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signalo stiprumas <ph name="SIGNAL_STRENGTH" />, telefono akumuliatorius <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@ Naujas įdiegimas</translation>
 <translation id="851458219935658693">Rodyti dabartinio darbalaukio langus, pasirinkta akutė</translation>
 <translation id="8517041960877371778">„<ph name="DEVICE_TYPE" />“ gali nebūti kraunamas, kai yra įjungtas.</translation>
 <translation id="8535393432370007982">Anuliuoti rūšiavimo tvarką pagal spalvą</translation>
+<translation id="8541078764854166027">Fotoaparato kadravimas</translation>
 <translation id="8542053257095774575">Nėra jokių išsaugotų darbalaukių ar šablonų</translation>
 <translation id="8546059259582788728">Rūšiavimas sėkmingai anuliuotas</translation>
 <translation id="8551588720239073785">Datos ir laiko nustatymai</translation>
@@ -1386,6 +1390,7 @@ Naujas įdiegimas</translation>
 <translation id="8982906748181120328">Matomumas netoliese</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Naudojama <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Spalvų inversijos režimas įgalintas. Jei norite jį išjungti, dar kartą paspauskite „Ctrl“ + paieškos klavišą + H.</translation>
 <translation id="899350903320462459">Atrakinkite įrenginį su <ph name="LOGIN_ID" />, kad galėtumėte įvykdyti pranešimo veiksmą</translation>
 <translation id="9000771174482730261">TVARKYKITE SAUGYKLĄ</translation>
 <translation id="9017320285115481645">Įveskite „Family Link“ tėvų prieigos kodą.</translation>
@@ -1434,6 +1439,7 @@ Naujas įdiegimas</translation>
 <translation id="921989828232331238">Vienas iš tėvų užrakino įrenginį dienai</translation>
 <translation id="9220525904950070496">Pašalinti paskyrą</translation>
 <translation id="923686485342484400">Jei norite atsijungti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
+<translation id="92580429198593979">Paspaudėte spalvų inversijos spartųjį klavišą. Ar norite įjungti?</translation>
 <translation id="925832987464884575">Peržiūrų slėpimas</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> reikalauja nedelsiant atnaujinti „<ph name="DEVICE_TYPE" />“</translation>
 <translation id="938963181863597773">„What's on my calendar?“ (Kas mano kalendoriuje?)</translation>

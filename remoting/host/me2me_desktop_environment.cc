@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/single_thread_task_runner.h"
@@ -37,6 +38,16 @@
 #endif  // BUILDFLAG(IS_WIN)
 
 namespace remoting {
+
+namespace {
+
+#if BUILDFLAG(IS_LINUX)
+
+constexpr char kUseXvfbEnvVar[] = "CHROME_REMOTE_DESKTOP_USE_XVFB";
+
+#endif  // BUILDFLAG(IS_LINUX)
+
+}  // namespace
 
 Me2MeDesktopEnvironment::~Me2MeDesktopEnvironment() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
@@ -102,6 +113,22 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
     capabilities += " ";
     capabilities += protocol::kRemoteWebAuthnCapability;
   }
+
+#if BUILDFLAG(IS_LINUX)
+  // Multi-stream and client-controlled layout are only supported with
+  // Xorg+Dummy.
+  // TODO(crbug.com/1366595): Either just remove this check if the dependency
+  // issue is resolved in Debian stable, or make it smarter, such as checking if
+  // the randr output has DUMMY*.
+  if (!base::Environment::Create()->HasVar(kUseXvfbEnvVar)) {
+    capabilities += " ";
+    capabilities += protocol::kMultiStreamCapability;
+#if defined(REMOTING_USE_X11)
+    capabilities += " ";
+    capabilities += protocol::kClientControlledLayoutCapability;
+#endif  // defined(REMOTING_USE_X11)
+  }
+#endif  // BUILDFLAG(IS_LINUX)
 
   return capabilities;
 }

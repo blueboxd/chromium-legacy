@@ -61,6 +61,7 @@
 <translation id="2583187216237139145">このプロファイルの使用中に生成された Chromium データ（ブックマーク、履歴、パスワード、他の設定など）は、仕事用プロファイルの管理者によって削除される場合があります。<ph name="LEARN_MORE" /></translation>
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
 <translation id="2661879430930417727">デバイスを共有している場合でも、友だちや家族はそれぞれ Chromium を自分専用のブラウザとして自分用の設定をして使うことができます</translation>
+<translation id="2669853942967761236">このアーカイブ ファイルはマルウェアが潜んでいる可能性があるため、Chromium でブロックされました</translation>
 <translation id="268602741124540128"><ph name="ACCOUNT_FIRST_NAME" /> さん、Chromium へようこそ</translation>
 <translation id="2711502716910134313">Chromium タブ</translation>
 <translation id="2718390899429598676">セキュリティ強化のため、Chromium ではデータが暗号化されます。</translation>
@@ -113,7 +114,7 @@
 <translation id="364817392622123556">{COUNT,plural, =0{Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。}=1{Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。シークレット ウィンドウは、再起動後は自動的には開きません。}other{Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
 <translation id="3651803019964686660"><ph name="ORIGIN" /> から Android スマートフォンに番号を送信するには、両方のデバイスで Chromium にログインしてください。</translation>
 <translation id="3685209450716071127">Chromium がパスワードを確認できません。インターネット接続を確認してみてください。</translation>
-<translation id="3702352323269013324">Chromium での広告のカスタマイズの詳細</translation>
+<translation id="3702352323269013324">Chromium での広告のパーソナライズの詳細</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{管理者が、このアップデートを適用するために Chromium を再起動するよう求めています}=1{管理者が、このアップデートを適用するために Chromium を再起動するよう求めています。シークレット ウィンドウは、再起動後は自動的には開きません。}other{管理者が、このアップデートを適用するために Chromium を再起動するよう求めています。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
 <translation id="3713809861844741608">新しい Chromium タブでリンクを開く(&amp;T)</translation>
 <translation id="3728336900324680424">Chromium からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
@@ -301,6 +302,7 @@
 <translation id="7682601070171973634">Chromium では、使用されるユーザーデータの量を抑えつつ、同じようにサイトをブラウジングできる新機能をテストしています</translation>
 <translation id="7686590090926151193">Chromium はデフォルトのブラウザとして設定されていません</translation>
 <translation id="7689606757190482937">同期してカスタマイズした Chromium をどのデバイスでも使用できます</translation>
+<translation id="7714577916146996629">オンにすると、使用していないタブのメモリが再利用されます。これにより、パソコンのリソースを他のタスクに解放して、Chromium を高速な状態に維持できます。使用していないタブは空白になり、クリックすると自動的に再読み込みされます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" />または<ph name="BEGIN_LINK_2" />フィードバックを送信<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">このデバイスから閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
@@ -330,6 +332,7 @@
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="8463672209299734063">任意: 診断と使用状況のデータを Google に自動送信して、Chromium OS の機能とパフォーマンスの改善に協力する。</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
+<translation id="8522220489792889625">Chromium では必要に応じて、使用していないタブのメモリが再利用されます。これは [設定] でいつでも変更できます。</translation>
 <translation id="8550334526674375523">この仕事用プロファイルは個人用プロファイルとは別に管理されます。</translation>
 <translation id="8558383651099478961">保護者が Chromium の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を追加することはできません。</translation>
 <translation id="8561285221328166383">今後、Chromium のアップデートを受信するには、macOS 10.13 以降が必要となります。このコンピュータでは macOS 10.12 が実行されています。</translation>

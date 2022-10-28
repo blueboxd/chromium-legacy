@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,6 +89,11 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
   static const gfx::ColorSpace& color_space(
       const viz::TransferableResource& resource) {
     return resource.color_space;
+  }
+
+  static const absl::optional<gfx::ColorSpace>& color_space_when_sampled(
+      const viz::TransferableResource& resource) {
+    return resource.color_space_when_sampled;
   }
 
   static const absl::optional<gfx::HDRMetadata>& hdr_metadata(

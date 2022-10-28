@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/commerce/shopping_list_context_menu_controller.h"
 
+#include "base/metrics/user_metrics.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -27,7 +28,6 @@ ShoppingListContextMenuController::ShoppingListContextMenuController(
       menu_model_(menu_model) {}
 
 void ShoppingListContextMenuController::AddPriceTrackingItemForBookmark() {
-  DCHECK_EQ(menu_model_->GetItemCount(), 0UL);
   if (commerce::IsBookmarkPriceTracked(bookmark_model_, bookmark_node_)) {
     menu_model_->AddItem(
         IDC_BOOKMARK_BAR_UNTRACK_PRICE_FOR_SHOPPING_BOOKMARK,
@@ -45,11 +45,15 @@ bool ShoppingListContextMenuController::ExecuteCommand(int command_id) {
       commerce::SetPriceTrackingStateForBookmark(
           shopping_service_, bookmark_model_, bookmark_node_, true,
           base::DoNothing());
+      base::RecordAction(base::UserMetricsAction(
+          "Commerce.PriceTracking.SidePanel.Track.ContextMenu"));
       return true;
     case IDC_BOOKMARK_BAR_UNTRACK_PRICE_FOR_SHOPPING_BOOKMARK:
       commerce::SetPriceTrackingStateForBookmark(
           shopping_service_, bookmark_model_, bookmark_node_, false,
           base::DoNothing());
+      base::RecordAction(base::UserMetricsAction(
+          "Commerce.PriceTracking.SidePanel.Untrack.ContextMenu"));
       return true;
     default:
       return false;

@@ -38,33 +38,13 @@ const SchemefulSite kService(GURL("https://service.test"));
 class PublicSetsTest : public ::testing::Test {
  public:
   PublicSetsTest() = default;
-
-  FirstPartySetsContextConfig* config() { return &fps_context_config_; }
-
-  // A helper to repeatedly call `PublicSets::FindEntry` and accumulate the
-  // non-nullopt results.
-  base::flat_map<SchemefulSite, FirstPartySetEntry> FindEntries(
-      const PublicSets& public_sets,
-      const base::flat_set<SchemefulSite>& sites) {
-    std::vector<std::pair<SchemefulSite, FirstPartySetEntry>> results;
-    for (const SchemefulSite& site : sites) {
-      if (absl::optional<FirstPartySetEntry> entry =
-              public_sets.FindEntry(site, config());
-          entry.has_value()) {
-        results.emplace_back(site, *entry);
-      }
-    }
-    return results;
-  }
-
- private:
-  FirstPartySetsContextConfig fps_context_config_;
 };
 
 TEST_F(PublicSetsTest, FindEntry_Nonexistent) {
   SchemefulSite example(GURL("https://example.test"));
 
-  EXPECT_THAT(PublicSets().FindEntry(example, config()), absl::nullopt);
+  EXPECT_THAT(PublicSets().FindEntry(example, /*config=*/nullptr),
+              absl::nullopt);
 }
 
 TEST_F(PublicSetsTest, FindEntry_Exists) {
@@ -79,7 +59,7 @@ TEST_F(PublicSetsTest, FindEntry_Exists) {
                       {decoy_site, decoy_entry},
                   },
                   {})
-                  .FindEntry(example, config()),
+                  .FindEntry(example, /*config=*/nullptr),
               Optional(entry));
 }
 
@@ -93,7 +73,7 @@ TEST_F(PublicSetsTest, FindEntry_ExistsWhenNormalized) {
                       {https_example, entry},
                   },
                   {})
-                  .FindEntry(wss_example, config()),
+                  .FindEntry(wss_example, /*config=*/nullptr),
               Optional(entry));
 }
 
@@ -102,14 +82,14 @@ TEST_F(PublicSetsTest, FindEntry_ExistsViaOverride) {
   FirstPartySetEntry public_entry(example, SiteType::kPrimary, absl::nullopt);
   FirstPartySetEntry override_entry(example, SiteType::kAssociated, 1);
 
-  config()->SetCustomizations({{example, override_entry}});
+  FirstPartySetsContextConfig config({{example, override_entry}});
 
   EXPECT_THAT(PublicSets(
                   {
                       {example, public_entry},
                   },
                   {})
-                  .FindEntry(example, config()),
+                  .FindEntry(example, &config),
               Optional(override_entry));
 }
 
@@ -117,14 +97,14 @@ TEST_F(PublicSetsTest, FindEntry_RemovedViaOverride) {
   SchemefulSite example(GURL("https://example.test"));
   FirstPartySetEntry public_entry(example, SiteType::kPrimary, absl::nullopt);
 
-  config()->SetCustomizations({{example, absl::nullopt}});
+  FirstPartySetsContextConfig config({{example, absl::nullopt}});
 
   EXPECT_THAT(PublicSets(
                   {
                       {example, public_entry},
                   },
                   {})
-                  .FindEntry(example, config()),
+                  .FindEntry(example, &config),
               absl::nullopt);
 }
 
@@ -138,7 +118,7 @@ TEST_F(PublicSetsTest, FindEntry_ExistsViaAlias) {
                       {example, entry},
                   },
                   {{example_cctld, example}})
-                  .FindEntry(example_cctld, config()),
+                  .FindEntry(example_cctld, /*config=*/nullptr),
               Optional(entry));
 }
 
@@ -148,14 +128,14 @@ TEST_F(PublicSetsTest, FindEntry_ExistsViaOverrideWithDecoyAlias) {
   FirstPartySetEntry public_entry(example, SiteType::kPrimary, absl::nullopt);
   FirstPartySetEntry override_entry(example, SiteType::kAssociated, 1);
 
-  config()->SetCustomizations({{example_cctld, override_entry}});
+  FirstPartySetsContextConfig config({{example_cctld, override_entry}});
 
   EXPECT_THAT(PublicSets(
                   {
                       {example, public_entry},
                   },
                   {{example_cctld, example}})
-                  .FindEntry(example_cctld, config()),
+                  .FindEntry(example_cctld, &config),
               Optional(override_entry));
 }
 
@@ -164,14 +144,14 @@ TEST_F(PublicSetsTest, FindEntry_RemovedViaOverrideWithDecoyAlias) {
   SchemefulSite example_cctld(GURL("https://example.cctld"));
   FirstPartySetEntry public_entry(example, SiteType::kPrimary, absl::nullopt);
 
-  config()->SetCustomizations({{example_cctld, absl::nullopt}});
+  FirstPartySetsContextConfig config({{example_cctld, absl::nullopt}});
 
   EXPECT_THAT(PublicSets(
                   {
                       {example, public_entry},
                   },
                   {{example_cctld, example}})
-                  .FindEntry(example_cctld, config()),
+                  .FindEntry(example_cctld, &config),
               absl::nullopt);
 }
 
@@ -181,7 +161,7 @@ TEST_F(PublicSetsTest, FindEntry_AliasesIgnoredForConfig) {
   FirstPartySetEntry public_entry(example, SiteType::kPrimary, absl::nullopt);
   FirstPartySetEntry override_entry(example, SiteType::kAssociated, 1);
 
-  config()->SetCustomizations({{example, override_entry}});
+  FirstPartySetsContextConfig config({{example, override_entry}});
 
   // FindEntry should ignore aliases when using the customizations. Public
   // aliases only apply to sites in the public sets.
@@ -190,7 +170,7 @@ TEST_F(PublicSetsTest, FindEntry_AliasesIgnoredForConfig) {
                       {example, public_entry},
                   },
                   {{example_cctld, example}})
-                  .FindEntry(example_cctld, config()),
+                  .FindEntry(example_cctld, &config),
               public_entry);
 }
 
@@ -219,11 +199,6 @@ class PopulatedPublicSetsTest : public PublicSetsTest {
                 {kAssociated1Cctld, kAssociated1},
             }) {}
 
-  base::flat_map<SchemefulSite, FirstPartySetEntry> FindEntries(
-      const base::flat_set<SchemefulSite>& sites) {
-    return PublicSetsTest::FindEntries(public_sets(), sites);
-  }
-
   PublicSets& public_sets() { return public_sets_; }
 
  private:
@@ -245,14 +220,16 @@ TEST_F(PopulatedPublicSetsTest,
       {});
 
   EXPECT_THAT(
-      FindEntries({
-          kPrimary,
-          kAssociated1,
-          kAssociated2,
-          kAssociated4,
-          kService,
-          kAssociated1Cctld,
-      }),
+      public_sets().FindEntries(
+          {
+              kPrimary,
+              kAssociated1,
+              kAssociated2,
+              kAssociated4,
+              kService,
+              kAssociated1Cctld,
+          },
+          /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(kPrimary,
                FirstPartySetEntry(kPrimary, SiteType::kPrimary, absl::nullopt)),
@@ -274,15 +251,17 @@ TEST_F(PopulatedPublicSetsTest,
       {});
 
   EXPECT_THAT(
-      FindEntries({
-          kPrimary,
-          kAssociated1,
-          kAssociated2,
-          kAssociated4,
-          kService,
-          kPrimary3,
-          kAssociated1Cctld,
-      }),
+      public_sets().FindEntries(
+          {
+              kPrimary,
+              kAssociated1,
+              kAssociated2,
+              kAssociated4,
+              kService,
+              kPrimary3,
+              kAssociated1Cctld,
+          },
+          /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(kPrimary3, FirstPartySetEntry(kPrimary3, SiteType::kPrimary,
                                              absl::nullopt)),
@@ -306,15 +285,17 @@ TEST_F(PopulatedPublicSetsTest,
       {});
 
   EXPECT_THAT(
-      FindEntries({
-          kPrimary,
-          kAssociated1,
-          kAssociated2,
-          kAssociated4,
-          kService,
-          kPrimary3,
-          kAssociated1Cctld,
-      }),
+      public_sets().FindEntries(
+          {
+              kPrimary,
+              kAssociated1,
+              kAssociated2,
+              kAssociated4,
+              kService,
+              kPrimary3,
+              kAssociated1Cctld,
+          },
+          /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(kPrimary,
                FirstPartySetEntry(kPrimary, SiteType::kPrimary, absl::nullopt)),
@@ -344,15 +325,17 @@ TEST_F(PopulatedPublicSetsTest,
       {});
 
   EXPECT_THAT(
-      FindEntries({
-          kPrimary,
-          kAssociated1,
-          kAssociated2,
-          kAssociated4,
-          kService,
-          kPrimary3,
-          kAssociated1Cctld,
-      }),
+      public_sets().FindEntries(
+          {
+              kPrimary,
+              kAssociated1,
+              kAssociated2,
+              kAssociated4,
+              kService,
+              kPrimary3,
+              kAssociated1Cctld,
+          },
+          /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(kPrimary,
                FirstPartySetEntry(kPrimary, SiteType::kPrimary, absl::nullopt)),
@@ -380,7 +363,8 @@ TEST_F(PopulatedPublicSetsTest,
       },
       {});
 
-  EXPECT_THAT(FindEntries({kPrimary2}), IsEmpty());
+  EXPECT_THAT(public_sets().FindEntries({kPrimary2}, /*config=*/nullptr),
+              IsEmpty());
 }
 
 TEST_F(PopulatedPublicSetsTest, ApplyManuallySpecifiedSet_RespectsManualAlias) {
@@ -398,11 +382,13 @@ TEST_F(PopulatedPublicSetsTest, ApplyManuallySpecifiedSet_RespectsManualAlias) {
       {{kAssociated1Cctld2, kAssociated1}});
 
   EXPECT_THAT(
-      FindEntries({
-          kAssociated1,
-          kAssociated1Cctld,
-          kAssociated1Cctld2,
-      }),
+      public_sets().FindEntries(
+          {
+              kAssociated1,
+              kAssociated1Cctld,
+              kAssociated1Cctld2,
+          },
+          /*config=*/nullptr),
       UnorderedElementsAre(
           Pair(kAssociated1,
                FirstPartySetEntry(kPrimary3, SiteType::kAssociated, 0)),

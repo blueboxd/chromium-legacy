@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -386,7 +386,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas,
                            canvas->getBaseLayerSize().height());
   SkIRect canvas_clip = canvas->getDeviceClipBounds();
   params->clip = gfx::SkIRectToRect(canvas_clip);
-  params->transform = gfx::Transform(canvas->getTotalMatrix());
+  params->transform = gfx::SkMatrixToTransform(canvas->getTotalMatrix());
   if (params->size.IsEmpty())
     return true;
 

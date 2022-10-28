@@ -276,6 +276,7 @@ void PasswordManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kOfferToSavePasswordsEnabledGMS, true);
+  registry->RegisterBooleanPref(prefs::kSavePasswordsSuspendedByError, false);
   registry->RegisterBooleanPref(prefs::kAutoSignInEnabledGMS, true);
   registry->RegisterBooleanPref(prefs::kSettingsMigratedToUPM, false);
   registry->RegisterIntegerPref(
@@ -288,6 +289,13 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kUnenrolledFromGoogleMobileServicesDueToErrors, false);
   registry->RegisterIntegerPref(
       prefs::kUnenrolledFromGoogleMobileServicesAfterApiErrorCode, 0);
+  registry->RegisterIntegerPref(
+      prefs::kUnenrolledFromGoogleMobileServicesWithErrorListVersion, 0);
+  registry->RegisterStringPref(prefs::kUPMErrorUIShownTimestamp, "0");
+  registry->RegisterIntegerPref(prefs::kTimesReenrolledToGoogleMobileServices,
+                                0);
+  registry->RegisterIntegerPref(
+      prefs::kTimesAttemptedToReenrollToGoogleMobileServices, 0);
 #endif
   // Preferences for |PasswordChangeSuccessTracker|.
   registry->RegisterIntegerPref(prefs::kPasswordChangeSuccessTrackerVersion, 0);
@@ -600,6 +608,22 @@ void PasswordManager::OnInformAboutUserInput(PasswordManagerDriver* driver,
 
 void PasswordManager::HideManualFallbackForSaving() {
   client_->HideManualFallbackForSaving();
+}
+
+bool PasswordManager::HaveFormManagersReceivedData(
+    const PasswordManagerDriver* driver) {
+  // If no form managers exist to have requested logins, no data was received
+  // either.
+  if (form_managers_.empty())
+    return false;
+  for (const auto& form_manager : form_managers_) {
+    if (form_manager->GetDriver().get() == driver &&
+        form_manager->GetFormFetcher()->GetState() ==
+            FormFetcher::State::WAITING) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void PasswordManager::OnPasswordFormsParsed(
@@ -961,7 +985,15 @@ void PasswordManager::OnPasswordFormsRendered(
   visible_forms_data_.insert(visible_forms_data_.end(),
                              visible_forms_data.begin(),
                              visible_forms_data.end());
-  if (!driver->IsInPrimaryMainFrame() &&
+  if (
+#if BUILDFLAG(IS_IOS)
+      // On iOS, drivers are bound to WebFrames, but some pages (e.g. files)
+      // do not lead to creating WebFrame objects, therefore. If the driver is
+      // missing, the current page has no password forms, but we still are
+      // interested in detecting a submisison.
+      driver &&
+#endif
+      !driver->IsInPrimaryMainFrame() &&
       submitted_manager->driver_id() != driver->GetId()) {
     // Frames different from the main frame and the frame of the submitted form
     // are unlikely relevant to success of submission.

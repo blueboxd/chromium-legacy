@@ -78,6 +78,7 @@
 <translation id="1722487484194605434">Архівування елементів (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="1722687688096767818">Додається профіль…</translation>
 <translation id="1726100011689679555">Сервери імен</translation>
+<translation id="1726600877401297672">Файли (<ph name="NUMBER_OF_ITEMS" />) переміщено в кошик</translation>
 <translation id="1729953886957086472">Німецька (Німеччина)</translation>
 <translation id="1730235522912993863">Китайська, цанцзе</translation>
 <translation id="1731889557567069540">Скопійовано елементів: <ph name="NUMBER_OF_ITEMS" />.</translation>
@@ -206,6 +207,7 @@
 <translation id="2888807692577297075">Немає елементів, які відповідають запиту &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2894654529758326923">Інформація</translation>
 <translation id="2902734494705624966">Американська розширена</translation>
+<translation id="2906052776158021882">Переміщення файлів (<ph name="NUMBER_OF_ITEMS" />) у кошик</translation>
 <translation id="290843123675549676">Маратхі</translation>
 <translation id="2923240520113693977">Естонська</translation>
 <translation id="2938685643439809023">Монгольська</translation>
@@ -422,6 +424,7 @@
 <translation id="4784330909746505604">Презентація PowerPoint</translation>
 <translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> КБ</translation>
 <translation id="4789067489790477934">Надати додатку Parallels Desktop доступ до файлів на Google Диску. Зміни буде синхронізовано на інших ваших пристроях.</translation>
+<translation id="4790766916287588578">Гінді, розкладка InScript</translation>
 <translation id="4801956050125744859">Залишити обидві версії</translation>
 <translation id="4804827417948292437">Авокадо</translation>
 <translation id="4823651846660089135">Пристрій лише для перегляду</translation>
@@ -458,6 +461,7 @@
 <translation id="5068919226082848014">Піца</translation>
 <translation id="5081517858322016911">Буде видалено файли загальним обсягом <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="508423945471810158">Переміщення елементів (<ph name="NUMBER_OF_ITEMS" />) у папку "<ph name="FOLDER_NAME" />"</translation>
+<translation id="5092200349368278146">Файл "<ph name="FILE_NAME" />" переміщено в кошик</translation>
 <translation id="509429900233858213">Сталася помилка.</translation>
 <translation id="5098629044894065541">Іврит</translation>
 <translation id="5102922915594634436">Керувати синхронізованими папками</translation>
@@ -561,6 +565,7 @@
 <translation id="5845721951356578987">Медпрацівник</translation>
 <translation id="5861477046012235702">Геймер</translation>
 <translation id="5864471791310927901">Помилка пошуку DHCP</translation>
+<translation id="5887342613489958822">Переміщення файлу "<ph name="FILE_NAME" />" у кошик</translation>
 <translation id="5896749729057314184">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, не активовано, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%, відомості</translation>
 <translation id="5911887972742538906">Сталася помилка під час встановлення додатка Linux.</translation>
 <translation id="5912396950572065471">Формат</translation>
@@ -663,6 +668,7 @@
 <translation id="6874758081814639712">Людина, яка займається тайцзицюань</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6878261347041253038">Клавіатура деванагарі (фонетична)</translation>
+<translation id="6881853403185175088">Office</translation>
 <translation id="6885780034956018177">Равлик</translation>
 <translation id="6896758677409633944">Копіювати</translation>
 <translation id="6898028766943174120">Інші підпапки…</translation>

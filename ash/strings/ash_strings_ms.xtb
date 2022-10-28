@@ -215,6 +215,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="2132302418721800944">Rakam skrin penuh</translation>
 <translation id="2135456203358955318">Penggadang didok</translation>
 <translation id="2148716181193084225">Hari ini</translation>
+<translation id="2161132820593978283">Cuba pembingkaian kamera supaya anda berada di tengah-tengah skrin semasa membuat panggilan video. Hidupkan autozum dalam Tetapan Pantas.</translation>
 <translation id="2170530631236737939">Leret ke bawah dengan tiga jari untuk keluar daripada Ikhtisar</translation>
 <translation id="219905428774326614">Pelancar, semua apl</translation>
 <translation id="2201071101391734388">Foto baru-baru ini <ph name="INDEX" /> daripada <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="2405664212338326887">Tidak disambungkan</translation>
 <translation id="2408955596600435184">Masukkan PIN anda</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
+<translation id="2426051945783024481">Bingkai kamera dipusatkan secara automatik</translation>
 <translation id="2427507373259914951">Klik kiri</translation>
 <translation id="2429753432712299108">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sebelum menerimanya, sila sahkan bahawa kekunci laluan ini dipaparkan pada peranti tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Paparkan kata laluan</translation>
@@ -373,6 +375,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="3151786313568798007">Orientasi</translation>
 <translation id="3153444934357957346">Anda hanya boleh memiliki sehingga <ph name="MULTI_PROFILE_USER_LIMIT" /> akaun dalam log masuk berbilang.</translation>
 <translation id="3154351730702813399">Pentadbir peranti boleh memantau aktiviti penyemakan imbas anda.</translation>
+<translation id="3157931365184549694">Pulihkan</translation>
 <translation id="316086887565479535">Apl tidak disokong dalam templat</translation>
 <translation id="3161500364292033097">Tutup meja dan tetingkap</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> sedang mengundurkan <ph name="DEVICE_TYPE" /> anda. Peranti anda akan ditetapkan semula dan semua data akan dipadamkan.</translation>
@@ -476,7 +479,6 @@ Sambungkan peranti anda kepada sumber kuasa.</translation>
 <translation id="3735740477244556633">Isih mengikut</translation>
 <translation id="3742055079367172538">Tangkapan skrin diambil</translation>
 <translation id="3765841986579723851">Diedit hari ini</translation>
-<translation id="3771549900096082774">Mod Kontras Tinggi</translation>
 <translation id="3773700760453577392">Pentadbir tidak membenarkan log masuk berbilang untuk <ph name="USER_EMAIL" />.
 Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="3779139509281456663">Menyambungkan <ph name="NAME" /></translation>
@@ -561,7 +563,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
 <translation id="4247123849143712100">Kemas kini dan matikan</translation>
 <translation id="4250229828105606438">Tangkapan skrin</translation>
-<translation id="4250899820387052060">Fail Pantas</translation>
+<translation id="4250899820387052060">Quick Files</translation>
 <translation id="425364040945105958">Tiada SIM</translation>
 <translation id="4261870227682513959">Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan</translation>
 <translation id="4269883910223712419">Pentadbir peranti ini berkeupayaan untuk:</translation>
@@ -577,12 +579,10 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4312840429157639164">Kamera diautojajar ke penjuru kanan sebelah atas. Bercanggah dengan permukaan sistem.</translation>
 <translation id="4316910396681052118">SEMUA APL</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Anda menekan pintasan papan kekunci untuk kontras tinggi. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4322742403972824594">Pintasan papan kekunci Ctrl + Alt + Anak Panah ke Atas telah berubah. Untuk menggunakan kekunci Home, tekan kekunci <ph name="LAUNCHER_KEY_NAME" /> + Anak Panah ke Kiri.</translation>
 <translation id="4333628967105022692">Lacros tidak disokong semasa berbilang pengguna dilog masuk.</translation>
 <translation id="4338109981321384717">Kanta pembesar</translation>
 <translation id="4351433414020964307">Pembantu sedang dimuatkan...</translation>
-<translation id="4356930093361201197">mod kontras tinggi</translation>
 <translation id="4371348193907997655">Tetapan Cast</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, kekuatan isyarat <ph name="SIGNAL_STRENGTH" /> peratus</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
@@ -878,7 +878,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5980301590375426705">Keluar dari tetamu</translation>
 <translation id="598407983968395253">Gunakan templat</translation>
 <translation id="598882571027504733">Untuk mendapatkan kemas kini, mulakan semula Chromebook dengan papan kekunci yang dipasang.</translation>
-<translation id="5992218262414051481">Mod Kontras Tinggi didayakan. Tekan Ctrl+Cari+H semula untuk mematikannya.</translation>
 <translation id="6012623610530968780">Halaman <ph name="SELECTED_PAGE" /> daripada <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Keluar daripada mod cermin</translation>
 <translation id="602001110135236999">Tatal ke kiri</translation>
@@ -1044,6 +1043,7 @@ Pemasangan baharu</translation>
 <translation id="6960565108681981554">Tidak diaktifkan. Hubungi pembawa anda.</translation>
 <translation id="6961121602502368900">Ciri Senyapkan telefon tidak tersedia pada profil kerja</translation>
 <translation id="6961840794482373852">Pintasan papan kekunci Alt + Anak Panah ke Atas telah berubah. Untuk menggunakan kekunci Page Up, tekan kekunci <ph name="LAUNCHER_KEY_NAME" /> + Anak Panah ke Atas.</translation>
+<translation id="696267987219125751">Pembingkaian kamera dimatikan.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Bermula</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1134,6 +1134,7 @@ Pemasangan baharu</translation>
 <translation id="7513922695575567867">Kalendar, minggu <ph name="DATE" />, <ph name="SELECTED_DATE" /> dipilih pada masa ini.</translation>
 <translation id="7514365320538308">Muat Turun</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Pembingkaian kamera dihidupkan.</translation>
 <translation id="7526573455193969409">Rangkaian mungkin dipantau</translation>
 <translation id="7536035074519304529">Alamat IP: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Apl Linux dan tetingkap inkognito tidak disokong pada masa ini. Apl lain akan disimpan.</translation>
@@ -1152,10 +1153,12 @@ Pemasangan baharu</translation>
 <translation id="7607002721634913082">Dijeda</translation>
 <translation id="7609951632080598826">Paparan kalendar, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Kamera disambung semula.</translation>
+<translation id="761736749114493194">Togol pembingkaian kamera. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Paparkan tetapan Kongsi Berdekatan.</translation>
 <translation id="7634648064048557203">Kamera diautojajar ke penjuru kanan sebelah bawah</translation>
 <translation id="7641938616688887143">Rakam</translation>
+<translation id="7642106959537987271">mod penyongsangan warna</translation>
 <translation id="7642647758716480637">Buka tetapan untuk <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (pemilik)</translation>
 <translation id="7647488630410863958">Buka kunci peranti untuk melihat pemberitahuan anda</translation>
@@ -1234,7 +1237,6 @@ Pemasangan baharu</translation>
 <translation id="8051716679295756675">Templat yang bernama <ph name="DESK_TEMPLATE_NAME" /> sudah wujud</translation>
 <translation id="8052898407431791827">Disalin ke papan keratan</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
-<translation id="8061464966246066292">Kontras tinggi</translation>
 <translation id="8083540854303889870">Disimpan untuk kemudian</translation>
 <translation id="8091387634532529612">Kemaskinian automatik</translation>
 <translation id="8098591350844501178">Berhenti menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
@@ -1262,6 +1264,7 @@ Pemasangan baharu</translation>
 <translation id="8209010265547628927">Tetapkan semula</translation>
 <translation id="8214996719228530800">Saluran Canary</translation>
 <translation id="8219451629189078428">Chromebook anda perlu kekal hidup dan disambungkan kepada kuasa sepanjang tempoh ini. Pastikan kabel pengecas atau penyesuai telah dipalamkan sepenuhnya pada Chromebook dan soket kuasa anda. Jangan matikan Chromebook anda.</translation>
+<translation id="8230305195727960608">Mod Penyongsangan Warna</translation>
 <translation id="8236042855478648955">Masa rehat</translation>
 <translation id="8246282815785366524">Selamat kembali, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Bateri Telefon <ph name="BATTERY_STATUS" /></translation>
@@ -1313,6 +1316,7 @@ Pemasangan baharu</translation>
 <translation id="851458219935658693">Tunjukkan tetingkap daripada meja semasa, butang radio dipilih</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
 <translation id="8535393432370007982">Buat asal tertib isihan mengikut warna</translation>
+<translation id="8541078764854166027">Bingkai kamera</translation>
 <translation id="8542053257095774575">Tiada meja atau templat yang disimpan</translation>
 <translation id="8546059259582788728">Isih buat asal berjaya</translation>
 <translation id="8551588720239073785">Tetapan tarikh dan masa</translation>
@@ -1387,6 +1391,7 @@ Pemasangan baharu</translation>
 <translation id="8982906748181120328">Keterlihatan berdekatan</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Menggunakan <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Mod Penyongsangan Warna didayakan. Tekan Ctrl+Search+H sekali lagi untuk mematikan mod itu.</translation>
 <translation id="899350903320462459">Buka kunci peranti sebagai <ph name="LOGIN_ID" /> untuk melaksanakan tindakan pemberitahuan</translation>
 <translation id="9000771174482730261">URUS STORAN</translation>
 <translation id="9017320285115481645">Masukkan kod akses ibu bapa Family Link.</translation>
@@ -1435,6 +1440,7 @@ Pemasangan baharu</translation>
 <translation id="921989828232331238">Ibu/bapa anda mengunci peranti untuk hari ini</translation>
 <translation id="9220525904950070496">Alih keluar akaun</translation>
 <translation id="923686485342484400">Tekan Tekan Shift Q dua kali untuk keluar.</translation>
+<translation id="92580429198593979">Anda menekan pintasan papan kekunci untuk penyongsangan warna. Adakah anda ingin menghidupkan mod itu?</translation>
 <translation id="925832987464884575">Sembunyikan pratonton</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> menghendaki anda mengemas kini <ph name="DEVICE_TYPE" /> anda dengan segera</translation>
 <translation id="938963181863597773">Apakah acara dalam kalendar saya?</translation>

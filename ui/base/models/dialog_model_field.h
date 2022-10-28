@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -382,15 +382,14 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelMenuItem : public DialogModelField {
     Params& operator=(const Params&) = delete;
     ~Params();
 
-    Params& set_is_enabled(bool is_enabled) {
-      is_enabled_ = is_enabled;
-      return *this;
-    }
+    Params& SetIsEnabled(bool is_enabled);
+    Params& SetId(ElementIdentifier id);
 
    private:
     friend class DialogModelMenuItem;
 
     bool is_enabled_ = true;
+    ElementIdentifier id_;
   };
 
   // Note that this is constructed through a DialogModel which adds it to model

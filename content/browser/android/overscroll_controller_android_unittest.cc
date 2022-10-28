@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,8 @@ class MockCompositor : public WindowAndroidCompositor {
     return nullptr;
   }
   void OnUpdateOverlayTransform() override {}
+  void PostRequestPresentationTimeForNextFrame(
+      PresentationTimeCallback callback) override {}
 };
 
 class MockGlowClient : public OverscrollGlowClient {

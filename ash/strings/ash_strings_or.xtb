@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍ ରେକର୍ଡ କରନ୍ତୁ</translation>
 <translation id="2135456203358955318">ଡକ୍‌ଡ ମ୍ୟାଗ୍ନିଫାୟର୍</translation>
 <translation id="2148716181193084225">ଆଜି</translation>
+<translation id="2161132820593978283">କେମେରା ଫ୍ରେମିଂ ବ୍ୟବହାର କରି ଦେଖନ୍ତୁ ଯାହା ଫଳରେ ଆପଣ ଭିଡିଓ କଲରେ ସ୍କ୍ରିନର ମଝିରେ ରହିବେ। କ୍ୱିକ ସେଟିଂସରେ ଏହାକୁ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="2170530631236737939">ଓଭରଭିଉରୁ ବାହାରିଯିବା ପାଇଁ ତିନୋଟି ଆଙ୍ଗୁଠିରେ ତଳକୁ ସ୍ୱାଇପ୍ କରନ୍ତୁ</translation>
 <translation id="219905428774326614">ଲଞ୍ଚର୍, ସମସ୍ତ ଆପ୍</translation>
 <translation id="2201071101391734388">ବର୍ତ୍ତମାନର ଫଟୋ <ph name="TOTAL_COUNT" />ଟିରୁ <ph name="INDEX" />।</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">ସଂଯୁକ୍ତ ହୋଇନାହିଁ</translation>
 <translation id="2408955596600435184">ଆପଣଙ୍କର PIN ଲେଖନ୍ତୁ</translation>
 <translation id="2412593942846481727">ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି</translation>
+<translation id="2426051945783024481">କେମେରା ଫ୍ରେମ ସ୍ୱଚାଳିତ ଭାବେ ମଝିରେ ଅଛି</translation>
 <translation id="2427507373259914951">ବାମ କ୍ଲିକ୍</translation>
 <translation id="2429753432712299108">ବ୍ଲୁଥୁଥ୍ ଡିଭାଇସ୍ "<ph name="DEVICE_NAME" />" ପେୟାର୍ କରିବା ପାଇଁ ଅନୁମତି ଚାହିଁବ। ସ୍ୱୀକାର କରିବା ପୂର୍ବରୁ, ଦୟାକରି ସୁନିଶ୍ଚିତ କରନ୍ତୁ ଯେ ଏହି ପାସ୍‍କୀ ସେହି ଡିଭାଇସ୍‍‍ରେ ପ୍ରଦର୍ଶିତ ହୋଇଛି: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">ପାସୱାର୍ଡ ଦେଖାନ୍ତୁ</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">ଓରିଏଣ୍ଟେସନ୍‍</translation>
 <translation id="3153444934357957346">ଏକାଧିକ ସାଇନ୍‌-ଇନ୍‌ରେ ଆପଣଙ୍କ ପାଖରେ ଅଧିକରୁ ଅଧିକତର <ph name="MULTI_PROFILE_USER_LIMIT" /> ପର୍ଯ୍ୟନ୍ତ ଆକାଉଣ୍ଟ ହୋ‍ଇପାରେ।</translation>
 <translation id="3154351730702813399">ଡିଭାଇସ୍ ବ୍ୟବସ୍ଥାପକ ଆପଣଙ୍କ ବ୍ରାଉଜିଂ କାର୍ଯ୍ୟକଳାପ ନିରୀକ୍ଷଣ କରିପାରନ୍ତି।</translation>
+<translation id="3157931365184549694">ପୁନଃସଂରକ୍ଷଣ କରନ୍ତୁ</translation>
 <translation id="316086887565479535">ଟେମ୍ପଲେଟରେ ଅସମର୍ଥିତ ଆପଗୁଡ଼ିକ ଅଛି</translation>
 <translation id="3161500364292033097">ଡେସ୍କ ଏବଂ ୱିଣ୍ଡୋଗୁଡ଼ିକୁ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> ଆପଣଙ୍କ <ph name="DEVICE_TYPE" />କୁ ପ୍ରତ୍ୟାହାର କରୁଛି। ଆପଣଙ୍କ ଡିଭାଇସ ରିସେଟ ହେବ ଏବଂ ସମସ୍ତ ଡାଟା ଡିଲିଟ ହୋଇଯିବ।</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">ଏହି କ୍ରମରେ ସଜାନ୍ତୁ</translation>
 <translation id="3742055079367172538">ସ୍କ୍ରି‍ନ୍‍ସଟ୍ ନିଆଯାଇଛି</translation>
 <translation id="3765841986579723851">ଆଜି ଏଡିଟ କରାଯାଇଛି</translation>
-<translation id="3771549900096082774">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ୍ ମୋଡ୍</translation>
 <translation id="3773700760453577392">ଜଣେ ବ୍ୟବସ୍ଥାପକ <ph name="USER_EMAIL" /> ପାଇଁ ଏକାଧିକ ସାଇନ୍-ଇନ୍‌କୁ ଅନୁମୋଦିତ କରିନାହାନ୍ତି। ଜାରି ରଖିବା ନିମନ୍ତେ ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ସାଇନ୍ ଆଉଟ୍ କରିବାକୁ ହେବ।</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> ସହ ସଂଯୋଗ କରାଯାଉଛି</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">କ୍ୟାମେରାକୁ ଉପର ଡାହାଣପାର୍ଶ୍ୱ କୋଣକୁ ସ୍ନାପ କରାଯାଇଛି। ସିଷ୍ଟମ ସର୍ଫେସ ସହ ବିବାଦ।</translation>
 <translation id="4316910396681052118">ସମସ୍ତ ଆପ୍‌</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ ପାଇଁ ଆପଣ କୀବୋର୍ଡ ସର୍ଟକଟ୍‍ ଦବାଇଛନ୍ତି। ଆପଣ ଏହାକୁ ଚାଲୁ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?</translation>
 <translation id="4322742403972824594">Ctrl + Alt + ଉପର ତୀର କୀବୋର୍ଡ ସର୍ଟକଟ୍ ବଦଳି ଯାଇଛି। Home କୀକୁ ବ୍ୟବହାର କରିବା ପାଇଁ, <ph name="LAUNCHER_KEY_NAME" /> କୀ + ବାମ ତୀର କୀ ଦବାନ୍ତୁ।</translation>
 <translation id="4333628967105022692">ଏକାଧିକ ଉପଯୋଗକର୍ତ୍ତା ସାଇନ୍ ଇନ୍ କରିଥିବା ସମୟରେ Lacros ବ୍ରାଉଜର୍ ସମର୍ଥିତ ନୁହେଁ।</translation>
 <translation id="4338109981321384717">ମାଗ୍ନିଫାଇଂ ଗ୍ଲାସ୍</translation>
 <translation id="4351433414020964307">Assistant ଲୋଡ୍‌ ହେଉଛି...</translation>
-<translation id="4356930093361201197">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ ମୋଡ୍</translation>
 <translation id="4371348193907997655">କାଷ୍ଟ ସେଟିଂସ୍</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, ସିଗନାଲ୍ କ୍ଷମତା <ph name="SIGNAL_STRENGTH" /> ଶତକଡ଼ା</translation>
 <translation id="4378551569595875038">ସଂଯୋଗ କରୁଛି...</translation>
@@ -877,7 +877,6 @@
 <translation id="5980301590375426705">ଅତିଥିରୁ ବାହାରି ଯାଅ</translation>
 <translation id="598407983968395253">ଟେମ୍ପଲେଟ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="598882571027504733">ଅପ୍‌ଡେଟ୍ ପ୍ରାପ୍ତ କରିବା ପାଇଁ, ଆପଣଙ୍କର Chromebookକୁ କୀବୋର୍ଡରେ ସଂଲଗ୍ନ କରି ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ।</translation>
-<translation id="5992218262414051481">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ ମୋଡ୍ ସକ୍ଷମ କରାଗଲା। ଏହାକୁ ବନ୍ଦରେ ଟୋଗଲ୍ କରିବା ପାଇଁ ପୁଣିଥରେ Ctrl+Search+D ଦବାନ୍ତୁ</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />ରୁ <ph name="SELECTED_PAGE" /> ପୃଷ୍ଠା</translation>
 <translation id="6018164090099858612">ମିରର୍‌ ମୋଡ୍‌ରୁ ପ୍ରସ୍ଥାନ କରୁଛି</translation>
 <translation id="602001110135236999">ବାମକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
@@ -1042,6 +1041,7 @@
 <translation id="6960565108681981554">ସକ୍ରିୟ କରାଯାଇନାହିଁ। ଆପଣଙ୍କ କ୍ୟାରିଅର୍ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।</translation>
 <translation id="6961121602502368900">ୱାର୍କ ପ୍ରୋଫାଇଲରେ ସାଇଲେନ୍ସ ଫୋନ୍ ଫିଚର୍ ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="6961840794482373852">Alt + ଉପର ତୀର କୀବୋର୍ଡ ସର୍ଟକଟ୍ ବଦଳି ଯାଇଛି। Page Up କୀକୁ ବ୍ୟବହାର କରିବା ପାଇଁ, <ph name="LAUNCHER_KEY_NAME" /> କୀ + ଉପର ତୀର କୀ ଦବାନ୍ତୁ।</translation>
+<translation id="696267987219125751">କେମେରା ଫ୍ରେମିଂ ବନ୍ଦ ଅଛି।</translation>
 <translation id="6965382102122355670">ଓକେ ବଟନ୍</translation>
 <translation id="6972754398087986839">ଆରମ୍ଭ କରନ୍ତୁ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1132,6 +1132,7 @@
 <translation id="7513922695575567867">କ୍ୟାଲେଣ୍ଡର, <ph name="DATE" />ର ସପ୍ତାହ, ବର୍ତ୍ତମାନ <ph name="SELECTED_DATE" />କୁ ଚୟନ କରାଯାଇଛି।</translation>
 <translation id="7514365320538308">ଡାଉନ୍‌‌ଲୋଡ୍‌ କରନ୍ତୁ</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">କେମେରା ଫ୍ରେମିଂ ଚାଲୁ ଅଛି।</translation>
 <translation id="7526573455193969409">ନେଟ୍‌ୱର୍କ ଉପରେ ହୁଏତ ନଜର ରଖାଯାଇପାରେ</translation>
 <translation id="7536035074519304529">IP ଠିକଣା: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">ବର୍ତ୍ତମାନ Linux ଆପ ଏବଂ ଇନକଗ୍ନିଟୋ ୱିଣ୍ଡୋଗୁଡ଼ିକ ସମର୍ଥିତ ନୁହେଁ। ଅନ୍ୟ ଆପଗୁଡ଼ିକ ସେଭ ହୋଇଯିବ।</translation>
@@ -1150,10 +1151,12 @@
 <translation id="7607002721634913082">ଅଚଳିତ</translation>
 <translation id="7609951632080598826">କ୍ୟାଲେଣ୍ଡର ଭ୍ୟୁ, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">କ୍ୟାମେରା ପୁଣି କନେକ୍ଟ ହୋଇଛି।</translation>
+<translation id="761736749114493194">କେମେରା ଫ୍ରେମିଂକୁ ଟୋଗଲ କରନ୍ତୁ। <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° ଫାରେନହାଇଟ୍</translation>
 <translation id="7633755430369750696">Nearby Share ସେଟିଂସ୍ ଦେଖାନ୍ତୁ।</translation>
 <translation id="7634648064048557203">କ୍ୟାମେରାକୁ ନିମ୍ନ ଡାହାଣପାର୍ଶ୍ୱ କୋଣକୁ ସ୍ନାପ କରାଯାଇଛି</translation>
 <translation id="7641938616688887143">ରେକର୍ଡ କରନ୍ତୁ</translation>
+<translation id="7642106959537987271">କଲର ଇନଭର୍ସନ ମୋଡ</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> ପାଇଁ ସେଟିଂସ୍ ଖୋଲନ୍ତୁ, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ମାଲିକ)</translation>
 <translation id="7647488630410863958">ଆପଣଙ୍କର ବିଜ୍ଞପ୍ତି ଦେଖିବାକୁ ଡିଭାଇସ୍‌ ଅନ୍‌ଲକ୍‌ କରନ୍ତୁ</translation>
@@ -1232,7 +1235,6 @@
 <translation id="8051716679295756675">ପୂର୍ବରୁ <ph name="DESK_TEMPLATE_NAME" /> ନାମକ ଟେମ୍ପଲେଟଟି ଅଛି</translation>
 <translation id="8052898407431791827">କ୍ଲିପବୋର୍ଡକୁ କପି କରାଯାଇଛି</translation>
 <translation id="8054466585765276473">ବ୍ୟାଟେରୀ ସମୟ ହିସାବ କରାଯାଉଛି।</translation>
-<translation id="8061464966246066292">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ</translation>
 <translation id="8083540854303889870">ପରବର୍ତ୍ତୀ ସମୟ ପାଇଁ ସେଭ କରାଯାଇଛି</translation>
 <translation id="8091387634532529612">ସ୍ୱଚାଳିତ ଅପଡେଟଗୁଡ଼ିକ</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />ରେ ସ୍କ୍ରିନ୍‍ କାଷ୍ଟ କରିବା ବନ୍ଦ କରନ୍ତୁ</translation>
@@ -1260,6 +1262,7 @@
 <translation id="8209010265547628927">ରିସେଟ କରନ୍ତୁ</translation>
 <translation id="8214996719228530800">କାନାରି ଚ୍ୟାନେଲ</translation>
 <translation id="8219451629189078428">ଏହି ସମୟରେ ଆପଣଙ୍କ Chromebook ଚାଲୁ ରହି ପାୱାର୍ ସହିତ ସଂଯୁକ୍ତ ରହିବା ଆବଶ୍ୟକ। ଆପଣଙ୍କର ଉଭୟ Chromebook ଓ ପାୱାର୍ ଆଉଟଲେଟ୍ ସହ ଚାର୍ଜର କିମ୍ବା ଆଡପ୍ଟର କେବୁଲଗୁଡ଼ିକ ସମ୍ପୂର୍ଣ୍ଣ ରୂପେ ପ୍ଲଗ୍ ଇନ୍ ହୋଇଥିବା ନିଶ୍ଚିତ କରନ୍ତୁ। ଆପଣଙ୍କ Chromebookକୁ ବନ୍ଦ କରନ୍ତୁ ନାହିଁ।</translation>
+<translation id="8230305195727960608">କଲର ଇନଭର୍ସନ ମୋଡ</translation>
 <translation id="8236042855478648955">ବିରତିର ସମୟ ହୋଇଛି</translation>
 <translation id="8246282815785366524">ଆପଣଙ୍କୁ ପୁଣି ସ୍ୱାଗତ, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />, ଫୋନ୍ ବ୍ୟାଟେରୀ <ph name="BATTERY_STATUS" /></translation>
@@ -1311,6 +1314,7 @@
 <translation id="851458219935658693">ବର୍ତ୍ତମାନର ଡେସ୍କରୁ ୱିଣ୍ଡୋଗୁଡ଼ିକୁ ଦେଖାନ୍ତୁ, ରେଡିଓ ବଟନକୁ ଚୟନ କରାଯାଇଛି</translation>
 <translation id="8517041960877371778">ଯେତେବେଳେ ଏହା ଚାଲୁ ଅଛି, ସେତେବେଳେ ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ଚାର୍ଜ ହୋ‍ଇନପାରେ।</translation>
 <translation id="8535393432370007982">ରଙ୍ଗ ଅନୁସାରେ ସର୍ଟ କରିବାକୁ ପୂର୍ବବତ୍ କରନ୍ତୁ</translation>
+<translation id="8541078764854166027">କେମେରା ଫ୍ରେମିଂ</translation>
 <translation id="8542053257095774575">କୌଣସି ସେଭ ହୋଇଥିବା ଡେସ୍କ କିମ୍ବା ଟେମ୍ପଲେଟ ନାହିଁ</translation>
 <translation id="8546059259582788728">ସର୍ଟ କରିବାକୁ ପୂର୍ବବତ୍ କରିବା ବିଫଳ ହୋଇଛି</translation>
 <translation id="8551588720239073785">ତାରିଖ ଏବଂ ସମୟ ସେଟିଂସ୍</translation>
@@ -1385,6 +1389,7 @@
 <translation id="8982906748181120328">Nearby ଭିଜିବିଲିଟୀ</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ବ୍ୟବହାର କରି</translation>
+<translation id="8991617137207906966">କଲର ଇନଭର୍ସନ ମୋଡକୁ ସକ୍ଷମ କରାଯାଇଛି। ଏହାକୁ ଟୋଗଲ କରି ବନ୍ଦ କରିବା ପାଇଁ ପୁଣି Ctrl+Search+H ଦବାନ୍ତୁ।</translation>
 <translation id="899350903320462459">ବିଜ୍ଞପ୍ତି କାର୍ଯ୍ୟ ସମ୍ପାଦନ କରିବାକୁ ଡିଭାଇସ୍‌କୁ <ph name="LOGIN_ID" /> ଭାବେ ଅନ୍‌ଲକ୍‌ କରନ୍ତୁ</translation>
 <translation id="9000771174482730261">ଷ୍ଟୋରେଜ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="9017320285115481645">Family Linkର ପ୍ୟାରେଣ୍ଟ ଆକ୍ସେସ୍ କୋଡ୍ ଲେଖନ୍ତୁ।</translation>
@@ -1433,6 +1438,7 @@
 <translation id="921989828232331238">ଆପଣଙ୍କ ମାତା-ପିତା ଆଜି ପାଇଁ ଆପଣଙ୍କର ଡିଭାଇସ୍‌କୁ ଲକ୍ କରିଦେଇଛନ୍ତି</translation>
 <translation id="9220525904950070496">ଆକାଉଣ୍ଟ କାଢ଼ିଦିଅନ୍ତୁ</translation>
 <translation id="923686485342484400">ସାଇନ୍‍ ଆଉଟ୍‍ ହେବାକୁ ଦୁଇଥର Control Shift Q ଦବାନ୍ତୁ।</translation>
+<translation id="92580429198593979">କଲର ଇନଭର୍ସନ ପାଇଁ ଆପଣ କୀବୋର୍ଡ ସର୍ଟକଟ ଦବାଇଛନ୍ତି। ଆପଣ ଏହାକୁ ଚାଲୁ କରିବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="925832987464884575">ପ୍ରିଭ୍ୟୁଗୁଡ଼ିକୁ ଲୁଚାନ୍ତୁ</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> ପାଇଁ ଆପଣ ତୁରନ୍ତ ଆପଣଙ୍କ <ph name="DEVICE_TYPE" />କୁ ଅପଡେଟ କରିବା ଆବଶ୍ୟକ</translation>
 <translation id="938963181863597773">ମୋ କ୍ୟାଲେଣ୍ଡରରେ କ’ଣ ଅଛି?</translation>

@@ -64,12 +64,13 @@ struct VIZ_COMMON_EXPORT TransferableResource {
     return r;
   }
 
-  static TransferableResource MakeGL(const gpu::Mailbox& mailbox,
-                                     uint32_t filter,
-                                     uint32_t texture_target,
-                                     const gpu::SyncToken& sync_token,
-                                     const gfx::Size& size,
-                                     bool is_overlay_candidate) {
+  static TransferableResource MakeGpu(const gpu::Mailbox& mailbox,
+                                      uint32_t filter,
+                                      uint32_t texture_target,
+                                      const gpu::SyncToken& sync_token,
+                                      const gfx::Size& size,
+                                      ResourceFormat format,
+                                      bool is_overlay_candidate) {
     TransferableResource r;
     r.is_software = false;
     r.filter = filter;
@@ -77,6 +78,7 @@ struct VIZ_COMMON_EXPORT TransferableResource {
     r.mailbox_holder.texture_target = texture_target;
     r.mailbox_holder.sync_token = sync_token;
     r.size = size;
+    r.format = format;
     r.is_overlay_candidate = is_overlay_candidate;
     return r;
   }
@@ -109,8 +111,30 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // resources.
   gpu::MailboxHolder mailbox_holder;
 
-  // The color space and associated mastering of the pixels in the resource.
+  // The color space that is used for pixel path operations (e.g, TexImage,
+  // CopyTexImage, DrawPixels) and when displaying as an overlay.
+  //
+  // TODO(b/220336463): On ChromeOS, the color space for hardware decoded video
+  // frames is currently specified at the time of creating the SharedImage.
+  // Therefore, for the purposes of that use case and compositing, the
+  // |color_space| field here is ignored. We should consider using it.
+  //
+  // TODO(b/233667677): For ChromeOS NV12 hardware overlays, |color_space| is
+  // only used for deciding if an NV12 resource should be promoted to a hardware
+  // overlay. Instead, we should plumb this information to DRM/KMS so that if
+  // the resource does get promoted to overlay, the display controller knows how
+  // to perform the YUV-to-RGB conversion.
+  //
+  // TODO(b/246974264): Consider using |color_space| to replace |ycbcr_info|
+  // since the former is more general and not specific to Vulkan.
   gfx::ColorSpace color_space;
+  // The color space in which the resource is sampled, if different from
+  // |color_space|. If absl::nullopt, then sampling will occur in the same color
+  // space as |color_space|.
+  //
+  // TODO(crbug.com/1230619): Use this to implement support for WebGL sRGB
+  // framebuffers.
+  absl::optional<gfx::ColorSpace> color_space_when_sampled;
   absl::optional<gfx::HDRMetadata> hdr_metadata;
 
   // A gpu resource may be possible to use directly in an overlay if this is

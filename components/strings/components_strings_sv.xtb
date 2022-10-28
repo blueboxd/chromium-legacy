@@ -174,6 +174,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1380591466760231819">Rullfalsning</translation>
 <translation id="138218114945450791">Ljusblå</translation>
 <translation id="1382194467192730611">USB-enhet som tillåtits av administratören</translation>
+<translation id="1382378825779654399">Du får aviseringar via e-post om priset sjunker på en webbplats. Den här sidan sparas i <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">Saknar du aktuella uppgifter? Kontakta banken för att uppdatera dem.</translation>
 <translation id="1384725838384960382">Arbetsblad för autentisering av användaruppgifter för säker betalning</translation>
 <translation id="1386623374109090026">Kommentarer</translation>
@@ -250,7 +251,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Freeware och shareware</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
-<translation id="1554003749331233619">Du bevakar nu den här produkten. Den här sidan har sparats i <ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1559447966090556585">Vill du få aviseringar?</translation>
 <translation id="1559528461873125649">Filen eller katalogen finns inte</translation>
@@ -298,7 +298,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1662550410081243962">Spara och fyll i betalningsmetoder</translation>
 <translation id="1663943134801823270">Kort och adresser har hämtats från Chrome. Du hanterar dessa under <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu.</translation>
-<translation id="1673886523110456987">Betala med <ph name="CARD_DETAIL" /> för att använda erbjudandet</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Kortsidan först</translation>
 <translation id="168693727862418163">Principen ignoreras eftersom den inte gick att validera mot schemat.</translation>
@@ -423,6 +422,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2034971124472263449">Spara ändå</translation>
 <translation id="2035400064145347639">Reseguider och reseberättelser</translation>
 <translation id="2036983605131262583">Alternativ rulle</translation>
+<translation id="2040463897538655645">Externa lagringsenheter</translation>
 <translation id="2040894699575719559">Platsen är blockerad</translation>
 <translation id="2042213636306070719">Fack 7</translation>
 <translation id="204357726431741734">Logga in om du vill använda lösenord som har sparats i Google-kontot</translation>
@@ -1005,7 +1005,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3633738897356909127">Knappen Uppdatera Chrome, tryck på retur om du vill uppdatera Chrome i inställningarna för Chrome</translation>
 <translation id="3634530185120165534">Fack 5</translation>
 <translation id="3634567936866541746">Du angav just ditt lösenord på en bedräglig webbplats. Du rekommenderas att kontrollera dina sparade lösenord i Chrome nu för att skydda dina konton.</translation>
-<translation id="3637033245385760976">Chrome-aviseringar måste vara aktiverade. Du kan aktivera dem i <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="3637662659967048211">Spara i Google-kontot</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Program:</translation>
@@ -1521,6 +1520,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5018422839182700155">Det går inte att öppna den här sidan</translation>
 <translation id="5019198164206649151">Säkerhetskopian har dålig status</translation>
 <translation id="5020776957610079374">Världsmusik</translation>
+<translation id="5021557570875267742">Bevaka priser med Chrome</translation>
 <translation id="5023310440958281426">Kontrollera administratörsprinciperna</translation>
 <translation id="5029568752722684782">Ta bort kopia</translation>
 <translation id="5030338702439866405">Utfärdat av</translation>
@@ -2242,6 +2242,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="6993898126790112050">6x9 (kuvert)</translation>
 <translation id="6996312675313362352">Översätt alltid <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Nöjesindustri</translation>
+<translation id="7003335073762455340">Du bevakar den här produkten. Den här sidan har sparats i <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Verifiera kreditkort snabbare med Windows Hello</translation>
 <translation id="7006930604109697472">Skicka ändå</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2324,6 +2325,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="7234638337680728591">Bensinpriser och fordonsbränsle</translation>
 <translation id="7237492777898608035">Visa inte det här meddelandet igen för den här webbplatsen</translation>
 <translation id="7238585580608191973">SHA-256-fingeravtryck</translation>
+<translation id="7239514174717251677">Aviseringar för sänkt pris är aktiverade. Du kan ändra det i <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">Certifikatämnets andra namn</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# träff}other{# träffar}}</translation>
@@ -2465,6 +2467,7 @@ Mer information.
 <translation id="7564049878696755256">Du kan förlora åtkomsten till kontot på <ph name="ORG_NAME" /> eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="7564680668369175887">Kombi</translation>
 <translation id="7567204685887185387">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kan ha utfärdats utan behörighet. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
+<translation id="7568616151991626879">Google Chrome försöker fylla i ditt lösenord i <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golf</translation>
 <translation id="7569761772822664555">Knappen Hantera sökmotor: tryck på Retur för att hantera standardsökmotor och webbplatssökning</translation>
 <translation id="7569952961197462199">Vill du ta bort kreditkortet från Chrome?</translation>
@@ -2822,7 +2825,6 @@ Mer information:
 <translation id="8559762987265718583">Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom enhetens datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.</translation>
 <translation id="8564182942834072828">Separata dokument/kopior grupperade per sida</translation>
 <translation id="8564985650692024650">Du rekommenderas att återställa lösenordet för <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> om du har återanvänt det på andra webbplatser.</translation>
-<translation id="8573969211731659953">Aviseringar för sänkt pris är aktiverade. Du kan ändra det i <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="8576310925653847813">Hemmabiosystem</translation>
 <translation id="8577348305244205642">Virtuella kort är inte tillgängliga</translation>
 <translation id="858637041960032120">Ange telefonnr
@@ -3037,11 +3039,13 @@ Mer information:
 <translation id="9174623988242579721">Specialutrustade bilar och sportbilar</translation>
 <translation id="9174917557437862841">Knapp som byter flik. Tryck på Retur om du vill byta till den här fliken</translation>
 <translation id="9179703756951298733">Hantera dina betalnings- och kreditkortsuppgifter i inställningarna för Chrome</translation>
+<translation id="9179907736442194268">Få aviseringar via e-post när priset sjunker på en webbplats</translation>
 <translation id="9183302530794969518">Google Dokument</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> använder ett protokoll som inte stöds.</translation>
 <translation id="9187461866967718678">Extremsporter</translation>
 <translation id="9191834167571392248">Hål nere till vänster</translation>
 <translation id="9199905725844810519">Utskrift har blockerats</translation>
+<translation id="9202180858541326427">Chrome-aviseringar måste vara aktiverade. Du kan aktivera dem i <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">Din data har krypterats med din lösenfras för synkronisering. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="920511547311754821">Kan du inte hitta koden? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Det gick inte att lägga till artikeln.</translation>

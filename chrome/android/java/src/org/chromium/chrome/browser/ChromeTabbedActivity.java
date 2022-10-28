@@ -1457,14 +1457,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             /**
              * If Start surface homepage is showing and launching NTP will show the Start surface
              * again, skips the calls of hideOverview() and launchNTP(). We need to check
-             * {@link ReturnToChromeUtil#shouldShowStartSurfaceHomeAsNTP(Context,
+             * {@link ReturnToChromeUtil#shouldShowStartSurfaceHomeAsNewTab(Context,
              * boolean, boolean)} to see whether Start surface can be shown when accessibility is
              * enabled.
              */
             if (mStartSurfaceSupplier.get() == null
                     || mStartSurfaceSupplier.get().getStartSurfaceState()
                             != StartSurfaceState.SHOWN_HOMEPAGE
-                    || !ReturnToChromeUtil.shouldShowStartSurfaceHomeAsNTP(
+                    || !ReturnToChromeUtil.shouldShowStartSurfaceHomeAsNewTab(
                             this, getCurrentTabModel().isIncognito(), isTablet())) {
                 mLayoutManager.showLayout(LayoutType.BROWSING, true);
                 if (getTabModelSelector().getCurrentModel().getCount() == 0) {
@@ -1936,10 +1936,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
-            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-                if (!navigation.hasCommitted() || !navigation.isInPrimaryMainFrame()) {
-                    return;
-                }
+            public void onDidFinishNavigationInPrimaryMainFrame(
+                    Tab tab, NavigationHandle navigation) {
+                if (!navigation.hasCommitted()) return;
+
                 try (TraceEvent e = TraceEvent.scoped("CheckSyncErrorOnDidFinishNavigation")) {
                     if (SyncErrorPromptUtils.isMessageUiEnabled()) {
                         SyncErrorMessage.maybeShowMessageUi(
@@ -1951,6 +1951,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 try (TraceEvent te = TraceEvent.scoped("updateActiveWebContents")) {
                     SendTabToSelfAndroidBridge.updateActiveWebContents(tab.getWebContents());
                 }
+            }
+
+            @Override
+            public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigation) {
+                if (!navigation.isInPrimaryMainFrame()) return;
             }
         };
         mAppIndexingUtil = new AppIndexingUtil(mTabModelSelector);
@@ -2267,6 +2272,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         final Tab currentTab = getActivityTab();
         if (currentTab == null) {
+            BackPressManager.record(BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB);
+            MinimizeAppAndCloseTabBackPressHandler.record(MinimizeAppAndCloseTabType.MINIMIZE_APP);
             moveTaskToBack(true);
             return true;
         }
@@ -2286,7 +2293,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         // If we aren't in the overview mode, we handle the Tab that is opened from Start Surface.
-        if (!isInOverviewMode() && ReturnToChromeUtil.isTabFromStartSurface(currentTab)) {
+        if (!isInOverviewMode() && !isTablet()
+                && ReturnToChromeUtil.isTabFromStartSurface(currentTab)) {
             returnToOverviewModeOnBackPressed();
             BackPressManager.record(BackPressHandler.Type.TAB_RETURN_TO_CHROME_START_SURFACE);
             return true;
@@ -2340,7 +2348,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     private void initializeBackPressHandlers() {
-        if (mReturnToChromeBackPressHandler == null) {
+        if (mReturnToChromeBackPressHandler == null && !isTablet()) {
             mReturnToChromeBackPressHandler = new ReturnToChromeBackPressHandler(
                     getActivityTabProvider(), this::returnToOverviewModeOnBackPressed);
             mBackPressManager.addHandler(mReturnToChromeBackPressHandler,
@@ -2572,7 +2580,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private boolean showStartSurfaceHomeForNTP(boolean isNTP, boolean incognito, Tab parentTab,
             @NewTabPageLaunchOrigin int launchOrigin) {
         if (!isNTP
-                || !ReturnToChromeUtil.shouldShowStartSurfaceHomeAsNTP(
+                || !ReturnToChromeUtil.shouldShowStartSurfaceHomeAsNewTab(
                         this, incognito, isTablet())) {
             return false;
         }
@@ -2613,6 +2621,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public void onDestroyInternal() {
+        if (mReturnToChromeBackPressHandler != null) {
+            mReturnToChromeBackPressHandler.destroy();
+            mReturnToChromeBackPressHandler = null;
+        }
+
         if (mReadingListBackPressHandler != null) {
             mReadingListBackPressHandler.destroy();
             mReadingListBackPressHandler = null;
@@ -2824,7 +2837,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         assert mInactivityTracker != null;
         assert getTabModelSelector() != null;
         return ReturnToChromeUtil.shouldShowOverviewPageOnStart(
-                this, getIntent(), getTabModelSelector(), mInactivityTracker);
+                this, getIntent(), getTabModelSelector(), mInactivityTracker, isTablet());
     }
 
     @Override

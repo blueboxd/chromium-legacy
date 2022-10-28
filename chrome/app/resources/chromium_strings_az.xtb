@@ -63,6 +63,7 @@ Hazırda veb saytlar və tətbiqlərə verdiyiniz icazələr bu hesaba tətbiq o
 <translation id="2583187216237139145">Bu profilin istifadəsi zamanı yaranan hər hansı bir Chromium datası (əlfəcinlər, tarixçələr, parolların yaradılması və digər ayarlar kimi) iş profili administratoru tərəfindən silinə bilər. <ph name="LEARN_MORE" /></translation>
 <translation id="2648074677641340862">Quraşdırma zamanı əməliyyat sistemi xətası baş verdi. Chromium'u yenidən endirin.</translation>
 <translation id="2661879430930417727">Cihaz paylaşsanız, dostlarınız və ailəniz ayrıca baxış keçirə bilər və Chromium'u istədikləri kimi ayarlaya bilər.</translation>
+<translation id="2669853942967761236">Chromium bu arxiv faylını bloklayıb, çünki faylda zərərli proqram ola bilər</translation>
 <translation id="268602741124540128"><ph name="ACCOUNT_FIRST_NAME" />, Chromium'a xoş gəlmisiniz</translation>
 <translation id="2711502716910134313">Chromium Paneli</translation>
 <translation id="2718390899429598676">Əlavə təhlükəsizlik üçün, Chromium datanızı şifrələyəcək.</translation>
@@ -208,6 +209,7 @@ Hazırda veb saytlar və tətbiqlərə verdiyiniz icazələr bu hesaba tətbiq o
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> Chromium'a əlavə edildi</translation>
 <translation id="608006075545470555">Bu brauzerə İş Profili əlavə edin</translation>
 <translation id="6096348254544841612">Chromium'u fərdiləşdirin və idarə edin. Güncəlləmə əlçatandır.</translation>
+<translation id="6119438414301547735">Chromium alətlər panelində artırmanın giriş sorğularını göstərməsinə icazə verin</translation>
 <translation id="6120345080069858279">Chromium bu parolu Google Hesabında yadda saxlayacaq. Onu yadda saxlamalı olmayacaqsınız.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> təklükəli olduğu üçün Chromium onu blok etdi.</translation>
 <translation id="6134968993075716475">Təhlükəsiz Baxış deaktivdir. Chromium onu aktiv etməyi tövsiyə edir.</translation>
@@ -298,6 +300,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="7682601070171973634">Chromium saytlara datanızdan daha az istifadə etməklə eyni baxış təcrübəsi təqdim etməyə imkan verən yeni funksiyaları araşdırır</translation>
 <translation id="7686590090926151193">Chromium defolt brauzeriniz deyil</translation>
 <translation id="7689606757190482937">Chromium'u cihazlarda sinxronizasiya edin və fərdiləşdirin</translation>
+<translation id="7714577916146996629">Aktiv olduqda, Chromium aktiv istifadə etmədiyiniz tablardan yaddaşı geri alır. Bu, kompüterinizin resurslarını digər tapşırıqlar üçün boşaldır və Chromium'u sürətləndirir. Qeyri-aktiv tablar boş görünür və kliklədiyiniz zaman avtomatik olaraq yenidən yüklənir. <ph name="BEGIN_LINK" />Ətraflı məlumat əldə edin<ph name="END_LINK" /> və ya <ph name="BEGIN_LINK_2" />rəy göndərin<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">Brauzinq datanız bu cihazdan silinəcək. Sonradan datanızı bərpa etmək üçün Chromiuma <ph name="USER_EMAIL" /> kimi daxil olun.</translation>
 <translation id="7747138024166251722">Quraşdırıcı müvəqqəti direktoriya yarada bilmədi. Proqramı quraşdırmaq üçün boş disk yeri və icazə tapın.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
@@ -327,6 +330,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="8453117565092476964">Quraşdırıcı arxivi zədələnib və ya yanlışdır. Lütfən, Chromium'u yenidən endirin.</translation>
 <translation id="8463672209299734063">İstəyə görə: Diaqnostika və istifadəçi datasını avtomatik Google'a göndərməklə ChromiumOS funksiyalarını təkmilləşdirməyə yardım edin.</translation>
 <translation id="8493179195440786826">Chromium'um vaxtı keçib</translation>
+<translation id="8522220489792889625">Lazım olduqda, Chromium aktiv istifadə etmədiyiniz tablardan yaddaşı geri alır. Bunu istənilən zaman ayarlarda dəyişə bilərsiniz.</translation>
 <translation id="8550334526674375523">Bu iş profili şəxsi profilinizdən tamamilə ayrıdır.</translation>
 <translation id="8558383651099478961">Valideyniniz Chromium üçün "Saytlar, tətbiqlər və artırmalar üçün icazələri" deaktiv edib. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> artırmasının əlavə edilməsinə icazə verilmir.</translation>
 <translation id="8561285221328166383">Chromium güncəlləmələrini əldə etmək üçün macOS 10.13 və ya daha yeni versiya tələb olunur. Bu kompüter macOS 10.12 istifadə edir.</translation>

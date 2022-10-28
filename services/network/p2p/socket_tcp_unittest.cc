@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
@@ -532,7 +532,7 @@ TEST(P2PSocketTcpWithPseudoTlsTest, Basic) {
   P2PHostAndIPEndPoint dest;
   dest.ip_address = server_addr;
   host.Init(net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0), 0, 0, dest,
-            net::NetworkIsolationKey());
+            net::NetworkAnonymizationKey());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_provider.AllReadDataConsumed());
@@ -540,7 +540,7 @@ TEST(P2PSocketTcpWithPseudoTlsTest, Basic) {
 }
 
 // Test the case where P2PHostAndIPEndPoint::hostname is populated. Make sure
-// there's a DNS lookup using the right hostname and NetworkIsolationKey.
+// there's a DNS lookup using the right hostname and NetworkAnonymizationKey.
 TEST(P2PSocketTcpWithPseudoTlsTest, Hostname) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -590,23 +590,23 @@ TEST(P2PSocketTcpWithPseudoTlsTest, Hostname) {
   P2PHostAndIPEndPoint dest;
   dest.ip_address = server_addr;
   dest.hostname = kHostname;
-  net::NetworkIsolationKey network_isolation_key =
-      net::NetworkIsolationKey::CreateTransient();
+  net::NetworkAnonymizationKey network_anonymization_key =
+      net::NetworkAnonymizationKey::CreateTransient();
   host.Init(net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0), 0, 0, dest,
-            network_isolation_key);
+            network_anonymization_key);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_provider.AllReadDataConsumed());
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
 
   // Check that the URL in kHostname is in the HostCache, with
-  // |network_isolation_key|.
+  // |network_anonymization_key|.
   const net::HostPortPair kHostPortPair = net::HostPortPair(kHostname, 0);
   net::HostResolver::ResolveHostParameters params;
   params.source = net::HostResolverSource::LOCAL_ONLY;
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request1 =
       context->host_resolver()->CreateRequest(kHostPortPair,
-                                              network_isolation_key,
+                                              network_anonymization_key,
                                               net::NetLogWithSource(), params);
   net::TestCompletionCallback callback1;
   int result = request1->Start(callback1.callback());
@@ -615,14 +615,15 @@ TEST(P2PSocketTcpWithPseudoTlsTest, Hostname) {
   // Check that the hostname is not in the DNS cache for other possible NIKs.
   const url::Origin kDestinationOrigin =
       url::Origin::Create(GURL(base::StringPrintf("https://%s", kHostname)));
-  const net::NetworkIsolationKey kOtherNiks[] = {
-      net::NetworkIsolationKey(),
-      net::NetworkIsolationKey(kDestinationOrigin /* top_frame_origin */,
-                               kDestinationOrigin /* frame_origin */)};
-  for (const auto& other_nik : kOtherNiks) {
+  const net::NetworkAnonymizationKey kOtherNaks[] = {
+      net::NetworkAnonymizationKey(),
+      net::NetworkAnonymizationKey(
+          net::SchemefulSite(kDestinationOrigin) /* top_frame_origin */,
+          net::SchemefulSite(kDestinationOrigin) /* frame_origin */)};
+  for (const auto& other_nak : kOtherNaks) {
     std::unique_ptr<net::HostResolver::ResolveHostRequest> request2 =
         context->host_resolver()->CreateRequest(
-            kHostPortPair, other_nik, net::NetLogWithSource(), params);
+            kHostPortPair, other_nak, net::NetLogWithSource(), params);
     net::TestCompletionCallback callback2;
     result = request2->Start(callback2.callback());
     EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback2.GetResult(result));
@@ -686,7 +687,7 @@ TEST_P(P2PSocketTcpWithTlsTest, Basic) {
   P2PHostAndIPEndPoint dest;
   dest.ip_address = server_addr;
   host->Init(net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0), 0, 0, dest,
-             net::NetworkIsolationKey());
+             net::NetworkAnonymizationKey());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_provider.AllReadDataConsumed());

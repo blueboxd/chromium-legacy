@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -104,6 +104,8 @@ source_set("common") {
     "cursors/webcursor_ozone.cc",
     "debug_utils.cc",
     "debug_utils.h",
+    "features.cc",
+    "features.h",
     "fetch/fetch_api_request_proto.cc",
     "fetch/fetch_api_request_proto.h",
     "fetch/fetch_request_type_converters.cc",

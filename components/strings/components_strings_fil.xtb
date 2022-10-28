@@ -174,6 +174,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="1380591466760231819">Letter fold</translation>
 <translation id="138218114945450791">Light Blue</translation>
 <translation id="1382194467192730611">USB device na pinapayagan ng iyong administrator</translation>
+<translation id="1382378825779654399">Makakatanggap ka ng mga alerto sa email kung bababa ang presyo sa anumang site. Mase-save ang page na ito sa <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">Hindi mo nakikita ang iyong kasalukuyan impormasyon? Makipag-ugnayan sa iyong bangko para ma-update ito.</translation>
 <translation id="1384725838384960382">Sheet para sa pag-authenticate ng kredensyal sa secure na pagbabayad</translation>
 <translation id="1386623374109090026">Mga Anotasyon</translation>
@@ -250,7 +251,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Freeware at shareware</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
-<translation id="1554003749331233619">Sinusubaybayan mo na ngayon ang produktong ito. Naka-save ang page na ito sa <ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="1555130319947370107">Asul</translation>
 <translation id="1559447966090556585">Tumanggap ng mga notification?</translation>
 <translation id="1559528461873125649">Walang naturang file o direktoryo</translation>
@@ -298,7 +298,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="1662550410081243962">I-save at punan ang mga paraan ng pagbabayad</translation>
 <translation id="1663943134801823270">Ang mga card at address ay mula sa Chrome. Maaari mong pamahalaan ang mga ito sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Simula ngayon ay ita-translate na sa <ph name="TARGET_LANGUAGE" /> ang mga page na nasa <ph name="SOURCE_LANGUAGE" />.</translation>
-<translation id="1673886523110456987">Mag-check out gamit ang <ph name="CARD_DETAIL" /> para gamitin ang alok</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> na isasalin sa <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Short edge muna</translation>
 <translation id="168693727862418163">Hindi na-validate ang value ng patakarang ito sa schema nito at babalewalain ito.</translation>
@@ -423,6 +422,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2034971124472263449">I-save pa rin</translation>
 <translation id="2035400064145347639">Mga gabay sa paglalakbay at travelogue</translation>
 <translation id="2036983605131262583">Alternatibong Rolyo</translation>
+<translation id="2040463897538655645">Naaalis na storage</translation>
 <translation id="2040894699575719559">Na-block ang lokasyon</translation>
 <translation id="2042213636306070719">Tray 7</translation>
 <translation id="204357726431741734">Mag-sign in para magamit ang mga naka-save na password sa iyong Google Account</translation>
@@ -1005,7 +1005,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3633738897356909127">Button na I-update ang Chrome, pindutin ang Enter para i-update ang Chrome mula sa iyong mga setting ng Chrome</translation>
 <translation id="3634530185120165534">Tray 5</translation>
 <translation id="3634567936866541746">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Para ma-secure ang iyong mga account, inirerekomenda ng Chrome na suriin mo ang yong mga na-save na password.</translation>
-<translation id="3637033245385760976">Dapat naka-on ang mga notification sa Chrome. Puwede mong i-on ang mga ito sa <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="3637662659967048211">I-save sa Google Account</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Application:</translation>
@@ -1521,6 +1520,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5018422839182700155">Hindi mabuksan ang page na ito</translation>
 <translation id="5019198164206649151">Hindi maganda ang katayuan ng backing store</translation>
 <translation id="5020776957610079374">Musika ng mundo</translation>
+<translation id="5021557570875267742">I-track ang mga presyo gamit ang Chrome</translation>
 <translation id="5023310440958281426">Suriin ang mga patakaran ng iyong administrator</translation>
 <translation id="5029568752722684782">I-clear ang kopya</translation>
 <translation id="5030338702439866405">Ibinigay Ni</translation>
@@ -2242,6 +2242,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Palaging i-translate ang <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Industriya ng entertainment</translation>
+<translation id="7003335073762455340">Tina-track mo ang produktong ito. Naka-save ang page na ito sa <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Gamitin ang Windows Hello para kumpirmahin nang mas mabilis ang mga card</translation>
 <translation id="7006930604109697472">Ipadala pa rin</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2324,6 +2325,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="7234638337680728591">Mga presyo ng gasolina at paggagasolina sa sasakyan</translation>
 <translation id="7237492777898608035">Huwag nang ipakita ulit ang mensaheng ito para sa site na ito</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
+<translation id="7239514174717251677">Naka-on ang mga alerto sa pagbaba ng presyo. Puwede mo itong baguhin sa <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">Kahaliling Pangalan ng Paksa ng Certificate</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# tugma}one{# tugma}other{# na tugma}}</translation>
@@ -2465,6 +2467,7 @@ Mga karagdagang detalye:
 <translation id="7564049878696755256">Maaari kang mawalan ng access sa iyong account sa <ph name="ORG_NAME" /> o manakawan ng pagkakakilanlan. Inirerekomenda ng Chrome na palitan ang iyong password ngayon.</translation>
 <translation id="7564680668369175887">Mga station wagon</translation>
 <translation id="7567204685887185387">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring mapanlokong ibinigay ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
+<translation id="7568616151991626879">Sinusubukan ng Google Chrome na ilagay ang iyong password sa <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golf</translation>
 <translation id="7569761772822664555">Button na pamahalaan ang mga search engine, pindutin ang Enter para pamahalaan ang iyong default na search engine at site search</translation>
 <translation id="7569952961197462199">Alisin ang credit card sa Chrome?</translation>
@@ -2822,7 +2825,6 @@ Mga karagdagang detalye:
 <translation id="8559762987265718583">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong device (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="8564182942834072828">Mga hiwalay na dokumento/Mga hindi naka-collate na kopya</translation>
 <translation id="8564985650692024650">Inirerekomenda ng Chromium na i-reset ang iyong password sa <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> kung ginamit mo ito sa iba pang site.</translation>
-<translation id="8573969211731659953">Naka-on ang mga alerto sa pagbaba ng presyo. Puwede mo itong baguhin sa <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="8576310925653847813">Mga home theater system</translation>
 <translation id="8577348305244205642">Hindi available ang virtual card</translation>
 <translation id="858637041960032120">Magdagdag ng numero ng telepono</translation>
@@ -3036,11 +3038,13 @@ Mga karagdagang detalye:
 <translation id="9174623988242579721">Mga custom at performance na sasakyan</translation>
 <translation id="9174917557437862841">Button na lumipat ng tab, pindutin ang Enter para lumipat sa tab na ito</translation>
 <translation id="9179703756951298733">Pamahalaan ang iyong mga pagbabayad at impormasyon ng credit card sa mga setting ng Chrome</translation>
+<translation id="9179907736442194268">Makatanggap ng mga alerto sa email kung bababa ang presyo sa anumang site</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419">Gumagamit ng hindi sinusuportahang protocol ang <ph name="HOST_NAME" />.</translation>
 <translation id="9187461866967718678">Mga extreme sport</translation>
 <translation id="9191834167571392248">Punch bottom left</translation>
 <translation id="9199905725844810519">Naka-block ang pag-print</translation>
+<translation id="9202180858541326427">Dapat naka-on ang mga notification sa Chrome. Puwede mong i-on ang mga ito sa <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upang simulan ang pag-sync.</translation>
 <translation id="920511547311754821">Hindi makita ang iyong code? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Hindi naidagdag ang artikulo.</translation>

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,7 +275,18 @@ void TestRenderWidgetHostView::NotifyHostAndDelegateOnWasShown(
 void TestRenderWidgetHostView::RequestPresentationTimeFromHostOrDelegate(
     blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request) {
   // Should only be called if the view was already shown.
+#if !BUILDFLAG(IS_ANDROID)
+  // TODO(jonross): Update the constructor to determine showing state
+  // `is_showing_ = !host()->is_hidden()` this will match production code. Also
+  // update various tests not prepared for this to also match production.
+  //
+  // In tests TestRenderViewHostFactory::CreateRenderViewHost creates all hosts
+  // as visible. Which leads to newly created views being attached to already
+  // visible hosts. On Android we begin tracking content-to-visible-time when
+  // recreating the main render frame. This leads to requests while already
+  // visible in tests.
   EXPECT_TRUE(is_showing_);
+#endif
   EXPECT_FALSE(is_occluded_);
   EXPECT_EQ(page_visibility_, PageVisibilityState::kVisible);
   EXPECT_TRUE(visible_time_request);

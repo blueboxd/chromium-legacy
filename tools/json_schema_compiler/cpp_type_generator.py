@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -123,7 +123,7 @@ class CppTypeGenerator(object):
     # TODO(kalman): change this - but it's an exceedingly far-reaching change.
     if not self.FollowRef(type_).property_type == PropertyType.ENUM:
       if is_optional:
-        if cpp_util.ShouldUseAbslOptional(type_):
+        if cpp_util.ShouldUseAbslOptional(self.FollowRef(type_)):
           cpp_type = 'absl::optional<%s>' % cpp_type
         else:
           cpp_type = 'std::unique_ptr<%s>' % cpp_type

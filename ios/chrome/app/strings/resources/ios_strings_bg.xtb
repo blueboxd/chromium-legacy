@@ -23,6 +23,7 @@
 <translation id="1104948393051856124">Приемам и напред</translation>
 <translation id="110724200315609752">Превключване към отворения прозорец</translation>
 <translation id="1112015203684611006">Неуспешно отпечатване.</translation>
+<translation id="1118569444314402022">Добре дошли отново, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Създаване на нов раздел.</translation>
 <translation id="1126809382673880764">Няма защита срещу опасни уебсайтове, изтеглени файлове и разширения. Пак ще получавате защита посредством Безопасно сърфиране в други услуги на Google, където функцията се поддържа – например Gmail и Търсене.</translation>
 <translation id="1135212215217513471">Изтегляне на Chrome за iOS</translation>
@@ -46,6 +47,7 @@
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1275718070701477396">Избрано</translation>
 <translation id="1281818060020671000">Управление на данните</translation>
+<translation id="1282311502488501110">Без влизане в профила</translation>
 <translation id="1283524564873030414">Последните 24 часа</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="1291506870746876680">Разрешенията за сайта <ph name="BEGIN_BOLD" /><ph name="SITE_NAME" /><ph name="END_BOLD" /> ще бъдат изключени, когато го напуснете.</translation>
@@ -54,6 +56,7 @@
 <translation id="1322735045095424339">Организацията ви изисква да сърфирате в режим „инкогнито“</translation>
 <translation id="1323735185997015385">Изтриване</translation>
 <translation id="132683371494960526">Докоснете двукратно, за да промените главната папка.</translation>
+<translation id="1335348992705722518">Управление на настройките…</translation>
 <translation id="1340643665687018190">Затваряне на менюто</translation>
 <translation id="1358214951266274152">Посещаване на копираната връзка</translation>
 <translation id="1360432990279830238">Изход и изключване на синхронизирането?</translation>
@@ -61,6 +64,7 @@
 <translation id="1377255359165588604">Синхронизирането спря да работи.</translation>
 <translation id="1377321085342047638">№ на картата</translation>
 <translation id="1383876407941801731">Търсене</translation>
+<translation id="138618066238211776">Продължаване като <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">Последните 4 седмици</translation>
 <translation id="1404330357948037222">Не сте в профила си</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
@@ -174,9 +178,11 @@
 <translation id="2421044535038393232">Продължаване на редактирането</translation>
 <translation id="2434405374328098816">Вече запазихте парола за <ph name="USERNAME" /> за <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
+<translation id="2461070143328828326">Настройки за паролите</translation>
 <translation id="2469960372084740698">Да се изключи ли „Безопасно сърфиране“?</translation>
 <translation id="2473876017985765807">Вече запазихте парола за <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Не е избрано</translation>
+<translation id="2482878487686419369">Известия</translation>
 <translation id="2500374554657206846">Опции за запазване на паролата</translation>
 <translation id="2523363575747517183">Този уебсайт многократно се опитва да отвори друго приложение.</translation>
 <translation id="2529021024822217800">Отваряне на всички</translation>
@@ -327,6 +333,7 @@
 <translation id="3709582977625132201">Означав. като непрочетено</translation>
 <translation id="371230970611282515">Предвижда и ви предупреждава за опасни събития, преди да се случат.</translation>
 <translation id="37207012422556617">Набиращи популярност търсения</translation>
+<translation id="3726360487031500941">Влезте отново в профила си <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">Въведените URL адреси се отварят в режим „инкогнито“ в Google Chrome.</translation>
 <translation id="3762232513783804601">Създаден за вашия iPad</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
@@ -381,6 +388,7 @@
 <translation id="4187450337729239226">Поставяне и търсене</translation>
 <translation id="4223967053752765281">Организацията ви изключи функцията за влизане в профил. Пак можете да преглеждате отметките, историята, паролите и другите си настройки на това устройство. В случай че направите промени, те няма да се синхронизират с профила ви.</translation>
 <translation id="4233831822770018312">Редактиране на разрешенията</translation>
+<translation id="4236584471598725073">Цената се проследява</translation>
 <translation id="4237377247299956313">Докоснете <ph name="BEGIN_BOLD" />Стандартно прилож. за браузър<ph name="END_BOLD" />.</translation>
 <translation id="424315890655130736">Въвеждане на пропуск</translation>
 <translation id="4249955472157341256">Сортиране по актуалност</translation>
@@ -740,6 +748,7 @@
 <translation id="6930799952781667037">Докоснете за използване на съответния език.</translation>
 <translation id="6944369514868857500">Избиране на друг профил</translation>
 <translation id="6945221475159498467">Избиране</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="6988572888918530647">Управление на профила ви в Google</translation>

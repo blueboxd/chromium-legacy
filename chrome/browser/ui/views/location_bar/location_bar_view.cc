@@ -98,6 +98,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
@@ -299,14 +300,14 @@ void LocationBarView::Init() {
     // first so that they appear on the left side of the icon container.
     // TODO(crbug.com/1318890): Improve the ordering heuristics for page action
     // icons and determine a way to handle simultaneous icon animations.
-    // TODO(crbug.com/1346612): Confirm the ordering for |kPriceTracking| and
-    // |kSideSearch| with UX.
-    if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
-      params.types_enabled.push_back(PageActionIconType::kPriceTracking);
-    }
     if (side_search::IsDSESupportEnabled(profile_) &&
         side_search::IsEnabledForBrowser(browser_)) {
       params.types_enabled.push_back(PageActionIconType::kSideSearch);
+    }
+    // TODO(crbug.com/1368796): We decided to show the icon only for now.
+    // Confirm the ordering for |kPriceTracking| and |kSideSearch| with UX.
+    if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
+      params.types_enabled.push_back(PageActionIconType::kPriceTracking);
     }
     params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
     params.types_enabled.push_back(PageActionIconType::kClickToCall);
@@ -785,6 +786,9 @@ void LocationBarView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void LocationBarView::Update(WebContents* contents) {
+  if (contents)
+    page_action_icon_controller_->UpdateWebContents(contents);
+
   RefreshContentSettingViews();
 
   RefreshPageActionIconViews();

@@ -32,6 +32,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="1587223624401073077">Google Chrome gebruik tans jou kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is gevaarlik en daarom het Chrome dit geblokkeer.</translation>
 <translation id="1597911401261118146"><ph name="BEGIN_LINK" />Meld by Chrome aan<ph name="END_LINK" /> om te kyk of jou wagwoorde teen dataskendings en ander sekuriteitkwessies beveilig word.</translation>
+<translation id="1599904803480101533">Chrome het hierdie argieflêer geblokkeer omdat dit dalk wanware versteek</translation>
 <translation id="1619887657840448962">Om Chrome veiliger te maak, het ons die volgende uitbreiding, wat nie in die <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> gelys word nie en wat dalk sonder jou medewete bygevoeg is, gedeaktiveer.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Hoe jy jou data kan bestuur:<ph name="END_BOLD" /> Ons vee outomaties jou belangstellings uit wat ouer as 4 weke is om jou privaatheid te beskerm. Terwyl jy aanhou blaai, kan ’n belangstelling weer op die lys verskyn. Of jy kan belangstellings verwyder wat jy wil hê Chrome moenie oorweeg nie.</translation>
 <translation id="1628000112320670027">Kry hulp met Chrome</translation>
@@ -61,6 +62,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="2094648590148273905">Chrome OS Flex-bepalings</translation>
 <translation id="2094919256425865063">Verlaat Chrome in elk geval?</translation>
 <translation id="2106831557840787829">Chrome OS Flex word moontlik gemaak deur bykomende <ph name="BEGIN_LINK_CROS_OSS" />oopbronsagteware<ph name="END_LINK_CROS_OSS" />, soos die geval ook is met die <ph name="BEGIN_LINK_LINUX_OSS" />Linux-ontwikkelingomgewing<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Indien dit aan is, herwin Chrome geheue vanaf oortjies wat jy nie aktief gebruik nie. Dit maak jou rekenaar se hulpbronne beskikbaar vir ander take en hou Chrome vinnig. Onaktiewe oortjies kom leeg voor en herlaai outomaties wanneer jy hulle klik. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /> of <ph name="BEGIN_LINK_2" />stuur terugvoer<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Dit sal <ph name="ITEMS_COUNT" /> items op hierdie toestel uitvee. Meld as <ph name="USER_EMAIL" /> by Chrome aan om jou data later op te haal.</translation>
 <translation id="2121284319307530122">Begin weer om &amp;Chrome op te dateer</translation>
 <translation id="2123055963409958220">Help om Chrome te verbeter deur die <ph name="BEGIN_LINK" />huidige instellings<ph name="END_LINK" /> aan te gee</translation>
@@ -279,6 +281,7 @@ Google Chrome kan nie jou instellings terugstel nie.</translation>
 <translation id="6735387454586646204">Chrome OS Flex-stelsel</translation>
 <translation id="6739177684496155661">Gaan voort in 'n nuwe Chrome-profiel?</translation>
 <translation id="6750954913813541382">Chrome stuur die teks wat jy in die blaaier tik na Google om spelfoute reg te maak.</translation>
+<translation id="6756581345161130259">Indien dit nodig is, herwin Chrome geheue vanaf oortjies wat jy nie aktief gebruik nie. Jy kan dit enige tyd in Instellings verander.</translation>
 <translation id="677276454032249905">Verlaat Chrome in elk geval?</translation>
 <translation id="6785872064505734160">Google Assistent in Chrome kan vir jou handelinge op webwerwe voltooi</translation>
 <translation id="683440813066116847">Inkomende reël vir Google Chrome Kanarie om mDNS-verkeer toe te laat.</translation>

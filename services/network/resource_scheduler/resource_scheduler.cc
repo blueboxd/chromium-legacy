@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -728,7 +728,7 @@ class ResourceScheduler::Client
         if (!http_server_properties.SupportsRequestPriority(
                 scheme_host_port, request->url_request()
                                       ->isolation_info()
-                                      .network_isolation_key())) {
+                                      .network_anonymization_key())) {
           attributes |= kAttributeDelayable;
         }
       }
@@ -1026,7 +1026,7 @@ class ResourceScheduler::Client
             ->http_server_properties()
             ->SupportsRequestPriority(
                 scheme_host_port,
-                url_request.isolation_info().network_isolation_key());
+                url_request.isolation_info().network_anonymization_key());
 
     // Requests on a connection that supports prioritization and multiplexing.
     if (!priority_delayable && supports_priority)

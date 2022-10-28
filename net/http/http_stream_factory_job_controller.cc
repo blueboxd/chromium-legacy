@@ -164,6 +164,11 @@ HttpStreamFactory::JobController::JobController(
                                           url::kWsScheme) ||
          base::EqualsCaseInsensitiveASCII(request_info_.url.scheme_piece(),
                                           url::kWssScheme));
+  // Preconnects do not require a NetworkIsolationKey so we don't require it to
+  // be set consistently with the NetworkAnonymizationKey here.
+  if (!is_preconnect) {
+    DCHECK(request_info.IsConsistent());
+  }
 
   net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER, [&] {
     return NetLogJobControllerParams(request_info, is_preconnect);
@@ -754,7 +759,7 @@ int HttpStreamFactory::JobController::DoResolveProxy() {
   CompletionOnceCallback io_callback =
       base::BindOnce(&JobController::OnIOComplete, base::Unretained(this));
   return session_->proxy_resolution_service()->ResolveProxy(
-      origin_url, request_info_.method, request_info_.network_isolation_key,
+      origin_url, request_info_.method, request_info_.network_anonymization_key,
       &proxy_info_, std::move(io_callback), &proxy_resolve_request_, net_log_);
 }
 
@@ -823,7 +828,7 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
       session_->IsQuicEnabled() && proxy_info_.is_direct() &&
       !session_->http_server_properties()->IsAlternativeServiceBroken(
           GetAlternativeServiceForDnsJob(origin_url),
-          request_info_.network_isolation_key);
+          request_info_.network_anonymization_key);
 
   if (is_preconnect_) {
     // Due to how the socket pools handle priorities and idle sockets, only IDLE
@@ -1076,7 +1081,7 @@ void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService(
     // network changes.
     session_->http_server_properties()
         ->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-            alt_service, request_info_.network_isolation_key);
+            alt_service, request_info_.network_anonymization_key);
     return;
   }
 
@@ -1094,7 +1099,7 @@ void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService(
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_JOB_ALT);
   session_->http_server_properties()->MarkAlternativeServiceBroken(
-      alt_service, request_info_.network_isolation_key);
+      alt_service, request_info_.network_anonymization_key);
 }
 
 void HttpStreamFactory::JobController::MaybeNotifyFactoryOfCompletion() {
@@ -1183,7 +1188,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
   const AlternativeServiceInfoVector alternative_service_info_vector =
       http_server_properties.GetAlternativeServiceInfos(
           url::SchemeHostPort(original_url),
-          request_info.network_isolation_key);
+          request_info.network_anonymization_key);
   if (alternative_service_info_vector.empty())
     return AlternativeServiceInfo();
 
@@ -1201,7 +1206,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
       quic_advertised = true;
     const bool is_broken = http_server_properties.IsAlternativeServiceBroken(
         alternative_service_info.alternative_service(),
-        request_info.network_isolation_key);
+        request_info.network_anonymization_key);
     net_log_.AddEvent(
         NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND, [&] {
           return NetLogAltSvcParams(&alternative_service_info, is_broken);
@@ -1265,7 +1270,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     RewriteUrlWithHostMappingRules(mapped_origin);
     QuicSessionKey session_key(
         HostPortPair::FromURL(mapped_origin), request_info.privacy_mode,
-        request_info.socket_tag, request_info.network_isolation_key,
+        request_info.socket_tag, request_info.network_anonymization_key,
         request_info.secure_dns_policy, /*require_dns_https_alpn=*/false);
 
     GURL destination = CreateAltSvcUrl(

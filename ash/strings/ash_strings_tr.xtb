@@ -215,6 +215,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2132302418721800944">Tam ekran kaydet</translation>
 <translation id="2135456203358955318">Yerleştirilmiş büyüteç</translation>
 <translation id="2148716181193084225">Bugün</translation>
+<translation id="2161132820593978283">Görüntülü görüşmelerde kendinizi ekranın ortasına yerleştirmek için kamera çerçevelemesini deneyin. Bu özelliği Hızlı Ayarlar'dan açın.</translation>
 <translation id="2170530631236737939">Genel Bakış'tan çıkmak için üç parmakla aşağı kaydırın</translation>
 <translation id="219905428774326614">Launcher, tüm uygulamalar</translation>
 <translation id="2201071101391734388">Son <ph name="TOTAL_COUNT" /> fotoğraftan <ph name="INDEX" />. fotoğraf.</translation>
@@ -253,6 +254,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2405664212338326887">Bağlı değil</translation>
 <translation id="2408955596600435184">PIN'inizi girin</translation>
 <translation id="2412593942846481727">Güncelleme var</translation>
+<translation id="2426051945783024481">Kamera çerçevesi otomatik olarak ortalandı</translation>
 <translation id="2427507373259914951">Sol tıklama</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
@@ -373,6 +375,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3151786313568798007">Yön</translation>
 <translation id="3153444934357957346">Çoklu oturum açmada en fazla <ph name="MULTI_PROFILE_USER_LIMIT" /> hesabınız olabilir.</translation>
 <translation id="3154351730702813399">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
+<translation id="3157931365184549694">Geri yükle</translation>
 <translation id="316086887565479535">Şablonda desteklenmeyen uygulamalar var</translation>
 <translation id="3161500364292033097">Masayı ve pencereleri kapatın</translation>
 <translation id="316356270129335934"><ph name="MANAGER" />, <ph name="DEVICE_TYPE" /> cihazınızı geri çekiyor. Cihazınız sıfırlanacak ve tüm veriler silinecek.</translation>
@@ -476,7 +479,6 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="3735740477244556633">Sıralama ölçütü</translation>
 <translation id="3742055079367172538">Ekran görüntüsü alındı</translation>
 <translation id="3765841986579723851">Bugün düzenlendi</translation>
-<translation id="3771549900096082774">Yüksek Kontrast Modu</translation>
 <translation id="3773700760453577392">Bir yönetici <ph name="USER_EMAIL" /> için çoklu oturum açmayı engellemiş. Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> bağlanıyor</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="4312840429157639164">Kamera sağ üst köşeye tutturuldu. Sistem yüzeyi ile çakışıyor.</translation>
 <translation id="4316910396681052118">TÜM UYGULAMALAR</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Yüksek kontrast kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="4322742403972824594">Ctrl + Alt + Yukarı Ok klavye kısayolu değişti. Home tuşunu kullanmak için <ph name="LAUNCHER_KEY_NAME" /> + Sol Ok tuşlarına basın.</translation>
 <translation id="4333628967105022692">Lacros, birden fazla kullanıcı oturum açmış durumdayken desteklenmiyor.</translation>
 <translation id="4338109981321384717">Büyüteç</translation>
 <translation id="4351433414020964307">Asistan yükleniyor...</translation>
-<translation id="4356930093361201197">yüksek kontrast modu</translation>
 <translation id="4371348193907997655">Yayınlama Ayarları</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, sinyal gücü yüzde <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="4378551569595875038">Bağlanıyor...</translation>
@@ -877,7 +877,6 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="5980301590375426705">Misafir oturumundan çık</translation>
 <translation id="598407983968395253">Şablonu kullan</translation>
 <translation id="598882571027504733">Güncellemeyi almak için Chromebook'unuzu klavye takılıyken yeniden başlatın.</translation>
-<translation id="5992218262414051481">Yüksek Kontrast Modu etkinleştirildi. Modu kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="6012623610530968780">Sayfa <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Ayna modundan çıkılıyor</translation>
 <translation id="602001110135236999">Sola kaydır</translation>
@@ -1043,6 +1042,7 @@ Yeni yüklenmiş</translation>
 <translation id="6960565108681981554">Etkin değil. Operatörünüzle iletişime geçin.</translation>
 <translation id="6961121602502368900">Telefonu sessize alma özelliği, iş profilinde kullanılamaz</translation>
 <translation id="6961840794482373852">Alt + Yukarı Ok klavye kısayolu değişti. Page Up tuşunu kullanmak için <ph name="LAUNCHER_KEY_NAME" /> + Yukarı Ok tuşlarına basın.</translation>
+<translation id="696267987219125751">Kamera çerçevelemesi kapalı.</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="6972754398087986839">Başlarken</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1133,6 +1133,7 @@ Yeni yüklenmiş</translation>
 <translation id="7513922695575567867">Takvim, <ph name="DATE" /> haftası, şu anda <ph name="SELECTED_DATE" /> seçili.</translation>
 <translation id="7514365320538308">İndir</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Kamera çerçevelemesi açık.</translation>
 <translation id="7526573455193969409">Ağ trafiği izleniyor olabilir</translation>
 <translation id="7536035074519304529">IP adresi: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux uygulamaları ve gizli pencereler şu anda desteklenmiyor. Diğer uygulamalar kaydedilecek.</translation>
@@ -1151,10 +1152,12 @@ Yeni yüklenmiş</translation>
 <translation id="7607002721634913082">Duraklatıldı</translation>
 <translation id="7609951632080598826">Takvim görünümü, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Kamera yeniden bağlandı.</translation>
+<translation id="761736749114493194">Kamera çerçevelemesini açın/kapatın. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Yakındakilerle Paylaşım ayarlarını gösterir.</translation>
 <translation id="7634648064048557203">Kamera sağ alt köşeye tutturuldu</translation>
 <translation id="7641938616688887143">Kaydet</translation>
+<translation id="7642106959537987271">rengi ters çevirme modu</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> için ayarları aç</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (cihaz sahibi)</translation>
 <translation id="7647488630410863958">Bildirimlerinizi görüntülemek için cihazınızın kilidini açın</translation>
@@ -1233,7 +1236,6 @@ Yeni yüklenmiş</translation>
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> adlı şablon zaten var</translation>
 <translation id="8052898407431791827">Panoya kopyalandı</translation>
 <translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
-<translation id="8061464966246066292">Yüksek kontrast</translation>
 <translation id="8083540854303889870">Daha sonra kullanmak için kaydedildi</translation>
 <translation id="8091387634532529612">Otomatik güncellemeler</translation>
 <translation id="8098591350844501178">Ekranın <ph name="RECEIVER_NAME" /> cihazına yayınını durdur</translation>
@@ -1261,6 +1263,7 @@ Yeni yüklenmiş</translation>
 <translation id="8209010265547628927">Sıfırla</translation>
 <translation id="8214996719228530800">Canary Kanalı</translation>
 <translation id="8219451629189078428">Bu süre zarfında Chromebook'unuzun açık ve güç kaynağına bağlı kalması gerekir. Şarj cihazının veya adaptör kablolarının hem Chromebook'unuza hem de prize tam olarak takılı olduğundan emin olun. Chromebook'unuzu kapatmayın.</translation>
+<translation id="8230305195727960608">Rengi Ters Çevirme Modu</translation>
 <translation id="8236042855478648955">Mola verme zamanı</translation>
 <translation id="8246282815785366524">Tekrar hoş geldiniz <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, <ph name="BATTERY_STATUS" /> Telefon Pili</translation>
@@ -1312,6 +1315,7 @@ Yeni yüklenmiş</translation>
 <translation id="851458219935658693">Geçerli masadaki pencereleri göster, radyo düğmesi seçildi</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8535393432370007982">Renge göre sıralama ölçütünü geri al</translation>
+<translation id="8541078764854166027">Kamera çerçevelemesi</translation>
 <translation id="8542053257095774575">Kayıtlı masa veya şablon yok</translation>
 <translation id="8546059259582788728">Sıralama işlemi başarıyla geri alındı</translation>
 <translation id="8551588720239073785">Tarih ve zaman ayarları</translation>
@@ -1386,6 +1390,7 @@ Yeni yüklenmiş</translation>
 <translation id="8982906748181120328">Yakındakiler görünürlüğü</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> kullanılıyor</translation>
+<translation id="8991617137207906966">Rengi ters çevirme modu etkinleştirildi. Modu kapatmak için tekrar Ctrl+Ara+H tuşlarına basın.</translation>
 <translation id="899350903320462459">Bildirim işlemi gerçekleştirmek için <ph name="LOGIN_ID" /> olarak cihazın kilidini açın</translation>
 <translation id="9000771174482730261">DEPOLAMA ALANINI YÖNET</translation>
 <translation id="9017320285115481645">Family Link ebeveyn erişim kodunu girin.</translation>
@@ -1434,6 +1439,7 @@ Yeni yüklenmiş</translation>
 <translation id="921989828232331238">Ebeveyniniz cihazınızı bugün için kilitledi</translation>
 <translation id="9220525904950070496">Hesabı kaldır</translation>
 <translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
+<translation id="92580429198593979">Rengi ters çevirmek için klavye kısayoluna bastınız. Bu modu etkinleştirmek istiyor musunuz?</translation>
 <translation id="925832987464884575">Önizlemeleri gizle</translation>
 <translation id="937214777182567951"><ph name="MANAGER" />, hemen <ph name="DEVICE_TYPE" /> cihazınızı güncellemenizi gerektiriyor</translation>
 <translation id="938963181863597773">Takvimimde ne var?</translation>

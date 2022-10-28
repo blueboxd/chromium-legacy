@@ -247,6 +247,12 @@ const base::Feature kUnifiedPasswordManagerErrorMessages{
 const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly{
     "UnifiedPasswordManagerSyncUsingAndroidBackendOnly",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables automatic reenrollment into the Unified Password Manager for clients
+// that were previously evicted after experiencing errors.
+const base::Feature kUnifiedPasswordManagerReenrollment{
+             "UnifiedPasswordManagerReenrollment",
+             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables support of sending additional votes on username first flow. The votes
@@ -263,6 +269,23 @@ const base::Feature kUsernameFirstFlowFallbackCrowdsourcing = {
 // is lower than 'kMigrationVersion' passwords will be re-uploaded.
 extern const base::FeatureParam<int> kMigrationVersion = {
     &kUnifiedPasswordManagerAndroid, "migration_version", 1};
+
+// The maximum possible number of reenrollments into the UPM. Needed to avoid a
+// patchy experience for users who experience errors in communication with
+// Google Mobile Services on a regular basis.
+extern const base::FeatureParam<int> kMaxUPMReenrollments = {
+    &kUnifiedPasswordManagerReenrollment, "max_reenrollments", 0};
+
+// The maximum possible number of reenrollment migration attempts. Needed to
+// avoid wasting resources of users who have persistent errors.
+extern const base::FeatureParam<int> kMaxUPMReenrollmentAttempts = {
+    &kUnifiedPasswordManagerReenrollment, "max_reenrollment_attempts", 0};
+
+// Whether to ignore the 24h timeout in between auth error messages as
+// well as the 30 mins distance to sync error messages.
+extern const base::FeatureParam<bool> kIgnoreAuthErrorMessageTimeouts = {
+    &kUnifiedPasswordManagerErrorMessages, "ignore_auth_error_message_timeouts",
+    false};
 #endif
 
 // Field trial identifier for password generation requirements.

@@ -82,7 +82,6 @@ class HistoryClustersViewBinder {
         } else if (key == HistoryClustersItemProperties.CLICK_HANDLER) {
             OnClickListener clickListener = model.get(HistoryClustersItemProperties.CLICK_HANDLER);
             clusterView.setOnClickListener(clickListener);
-            clusterView.setEndButtonClickListener(clickListener);
         } else if (key == HistoryClustersItemProperties.DIVIDER_IS_THICK) {
             clusterView.setHasThickDivider(
                     model.get(HistoryClustersItemProperties.DIVIDER_IS_THICK));
@@ -96,6 +95,9 @@ class HistoryClustersViewBinder {
             clusterView.setIconDrawable(model.get(HistoryClustersItemProperties.ICON_DRAWABLE));
         } else if (key == HistoryClustersItemProperties.LABEL) {
             clusterView.setLabel(model.get(HistoryClustersItemProperties.LABEL));
+        } else if (key == HistoryClustersItemProperties.START_ICON_BACKGROUND_RES) {
+            clusterView.setStartIconBackgroundRes(
+                    model.get(HistoryClustersItemProperties.START_ICON_BACKGROUND_RES));
         } else if (key == HistoryClustersItemProperties.START_ICON_VISIBILITY) {
             clusterView.setIconDrawableVisibility(
                     model.get(HistoryClustersItemProperties.START_ICON_VISIBILITY));

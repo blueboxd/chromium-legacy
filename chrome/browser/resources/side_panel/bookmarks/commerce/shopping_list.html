@@ -6,6 +6,7 @@
     --icon-color: var(--google-grey-700);
     --price-chip-background: var(--google-green-50);
     --price-chip-text-color: var(--google-green-700);
+    --product-image-background: none;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -15,6 +16,7 @@
           rgba(var(--google-green-300-rgb), 0.12),
           rgba(var(--google-green-300-rgb), 0.12)), var(--google-grey-900);
       --price-chip-text-color: var(--google-green-300);
+      --product-image-background: var(--google-grey-100);
     }
   }
 
@@ -119,7 +121,7 @@
   }
 
   .item-image {
-    background: var(--google-grey-100);
+    border-radius: 4px;
     display: flex;
     height: 100%;
     margin-inline-start: 16px;
@@ -128,12 +130,38 @@
   }
 
   .product-image {
+    background: var(--product-image-background);
+    border-radius: 4px;
+    height: 100%;
+    margin: auto;
     object-fit: contain;
+    width: 100%;
   }
 
   .favicon-image {
+    background: var(--google-grey-100);
     background-position: center center;
     background-repeat: no-repeat
+  }
+
+  .product-image-container {
+    position: relative;
+  }
+
+  /**
+   * Adds a color overlay over the product images in price tracking list,
+   * so that if the product image background color is white, users would
+   * still be able to find the border of the image.
+   */
+  .product-image-container::before {
+    background: rgba(0,0,0,0.03);
+    content: '';
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1;
   }
 
   .product-info {
@@ -218,12 +246,15 @@
   <template is="dom-if" if="[[open_]]" restamp>
     <template is="dom-repeat" items="[[productInfos]]">
       <button class="product-item" role="treeitem"
+          aria-labelledby$="productInfo-[[index]]"
           on-click="onProductClick_"
           on-auxclick="onProductAuxClick_"
           on-contextmenu="onProductContextMenu_">
         <template is="dom-if" if="[[item.info.imageUrl.url.length]]" restamp>
-          <img class="product-image item-image" is="cr-auto-img"
-              auto-src="[[item.info.imageUrl.url]]"></img>
+          <div class="product-image-container item-image">
+              <img class="product-image" is="cr-auto-img"
+                  auto-src="[[item.info.imageUrl.url]]"></img>
+          </div>
         </template>
         <template is="dom-if" if="[[!item.info.imageUrl.url.length]]" restamp>
           <div class="favicon-image item-image"
@@ -231,7 +262,7 @@
                   [[getFaviconUrl_(item.info.productUrl.url)]]">
           </div>
         </template>
-        <div class="product-info">
+        <div class="product-info" id="productInfo-[[index]]">
           <span class="product-title">[[item.info.title]]</span>
           <span class="product-domain">[[item.info.domain]]</span>
           <template is="dom-if" if="[[!item.info.previousPrice]]" restamp>

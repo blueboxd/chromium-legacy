@@ -4,6 +4,7 @@
 #include "chrome/browser/download/bubble/download_display_controller.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
@@ -85,6 +86,16 @@ int PausedDownloadCount(
   }
   return paused_count;
 }
+
+bool HasUnactionedDownload(
+    std::vector<std::unique_ptr<DownloadUIModel>>& all_models) {
+  for (const auto& model : all_models) {
+    if (!model->WasActionedOn()) {
+      return true;
+    }
+  }
+  return false;
+}
 }  // namespace
 
 DownloadDisplayController::DownloadDisplayController(
@@ -100,9 +111,12 @@ DownloadDisplayController::DownloadDisplayController(
       this,
       base::BindOnce(&DownloadDisplayController::MaybeShowButtonWhenCreated,
                      weak_factory_.GetWeakPtr()));
+  base::PowerMonitor::AddPowerSuspendObserver(this);
 }
 
-DownloadDisplayController::~DownloadDisplayController() = default;
+DownloadDisplayController::~DownloadDisplayController() {
+  base::PowerMonitor::RemovePowerSuspendObserver(this);
+}
 
 void DownloadDisplayController::OnNewItem(bool show_details) {
   if (!download::ShouldShowDownloadBubble(browser_->profile())) {
@@ -237,6 +251,12 @@ void DownloadDisplayController::OnFullscreenStateChanged() {
   }
 }
 
+void DownloadDisplayController::OnResume() {
+  std::vector<std::unique_ptr<DownloadUIModel>> all_models =
+      bubble_controller_->GetAllItemsToDisplay();
+  UpdateToolbarButtonState(all_models);
+}
+
 void DownloadDisplayController::UpdateToolbarButtonState(
     std::vector<std::unique_ptr<DownloadUIModel>>& all_models) {
   if (all_models.empty()) {
@@ -255,7 +275,8 @@ void DownloadDisplayController::UpdateToolbarButtonState(
   } else {
     icon_info_.icon_state = DownloadIconState::kComplete;
     if (HasRecentCompleteDownload(kToolbarIconActiveTimeInterval,
-                                  last_complete_time)) {
+                                  last_complete_time) &&
+        HasUnactionedDownload(all_models)) {
       icon_info_.is_active = true;
       ScheduleToolbarInactive(kToolbarIconActiveTimeInterval);
     } else if (!display_->IsFullscreenWithParentViewHidden() &&

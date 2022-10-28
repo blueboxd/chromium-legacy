@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,10 @@ const char kAllowLoopbackInPeerConnection[] =
 // include the configuration xml file with the name "fonts.xml".
 // This is used in blimp to emulate android fonts on linux.
 const char kAndroidFontsPath[]          = "android-fonts-path";
+
+// Indicates that the ash web browser is disabled (i.e. lacros the only
+// browser).
+const char kAshWebBrowserDisabled[] = "ash-web-browser-disabled";
 
 // Causes the Attribution Report API to run without delays or noise.
 const char kAttributionReportingDebugMode[] =

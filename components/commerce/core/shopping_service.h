@@ -27,8 +27,6 @@
 class GURL;
 class PrefService;
 
-class PrefRegistrySimple;
-
 template <typename T>
 class SessionProtoStorage;
 
@@ -89,6 +87,11 @@ enum class ProductInfoFallback {
   kMaxValue = kPrice,
 };
 
+namespace metrics {
+class ScheduledMetricsManager;
+}  // namespace metrics
+
+class BookmarkUpdateManager;
 class ShoppingPowerBookmarkDataProvider;
 class ShoppingBookmarkModelObserver;
 class SubscriptionsManager;
@@ -168,8 +171,6 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   ShoppingService(const ShoppingService&) = delete;
   ShoppingService& operator=(const ShoppingService&) = delete;
 
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // This API retrieves the product information for the provided |url| and
   // passes the payload back to the caller via |callback|. At minimum, this
   // API will wait for data from the backend but may provide a "partial" result
@@ -209,6 +210,13 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   virtual void Unsubscribe(
       std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
       base::OnceCallback<void(bool)> callback);
+
+  // Fetch users' pref from server on whether to receive price tracking emails.
+  void FetchPriceEmailPref();
+
+  // Schedule an update for saved product bookmarks using
+  // |bookmark_update_manager_|.
+  virtual void ScheduleSavedProductUpdate();
 
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();
@@ -335,6 +343,8 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
 
   std::unique_ptr<AccountChecker> account_checker_;
 
+  std::unique_ptr<SubscriptionsManager> subscriptions_manager_;
+
   raw_ptr<power_bookmarks::PowerBookmarkService> power_bookmark_service_;
 
   // The service's means of observing the bookmark model which is automatically
@@ -353,7 +363,11 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
                      std::tuple<uint32_t, bool, std::unique_ptr<ProductInfo>>>
       product_info_cache_;
 
-  std::unique_ptr<SubscriptionsManager> subscriptions_manager_;
+  std::unique_ptr<BookmarkUpdateManager> bookmark_update_manager_;
+
+  // The object tracking metrics that are recorded at specific intervals.
+  std::unique_ptr<commerce::metrics::ScheduledMetricsManager>
+      scheduled_metrics_manager_;
 
   // Ensure certain functions are being executed on the same thread.
   SEQUENCE_CHECKER(sequence_checker_);

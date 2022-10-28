@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2321,6 +2321,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Called when a `SharedStorageWorkletHost` is created for `rfh`.
   virtual void OnSharedStorageWorkletHostCreated(RenderFrameHost* rfh) {}
+
+  // Whether the outermost origin should be sent to the renderer. This is
+  // needed if the outermost origin is an extension, but for normal pages
+  // we do not want to expose this.
+  virtual bool ShouldSendOutermostOriginToRenderer(
+      const url::Origin& outermost_origin);
 };
 
 }  // namespace content

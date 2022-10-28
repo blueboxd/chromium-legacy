@@ -1,5 +1,5 @@
 <!--
-Copyright 2020 The Chromium Authors. All rights reserved.
+Copyright 2020 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -1718,6 +1718,18 @@ chromium-metrics-reviews@google.com.
     Logs whether the search resumption module is expanded or collapsed when the
     module is shown on the NTP. Recorded when the NewTabPage is created and the
     search resumption module is shown.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.SearchResumptionModule.Show.Cached"
+    enum="SearchResumptionModule.ModuleShowStatus" expires_after="2023-03-05">
+  <owner>hanxi@chromium.org</owner>
+  <owner>spdonghao@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Logs whether the search resumption module is expanded or collapsed when the
+    module is shown on the NTP using cached results. Recorded when the
+    NewTabPage is created and the search resumption module is shown.
   </summary>
 </histogram>
 

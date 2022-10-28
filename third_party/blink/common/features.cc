@@ -1273,8 +1273,18 @@ const base::FeatureParam<DelayAsyncScriptDelayType>
         DelayAsyncScriptDelayType::kFinishedParsing,
         &delay_async_script_execution_delay_types};
 
-const base::FeatureParam<bool> kDelayAsyncScriptExecutionCrossSiteOnlyParam{
-    &kDelayAsyncScriptExecution, "cross_site_only", false};
+const base::FeatureParam<DelayAsyncScriptTarget>::Option
+    delay_async_script_target_types[] = {
+        {DelayAsyncScriptTarget::kAll, "all"},
+        {DelayAsyncScriptTarget::kCrossSiteOnly, "cross_site_only"},
+        {DelayAsyncScriptTarget::kCrossSiteWithAllowList,
+         "cross_site_with_allow_list"},
+        {DelayAsyncScriptTarget::kCrossSiteWithAllowListReportOnly,
+         "cross_site_with_allow_list_report_only"},
+};
+const base::FeatureParam<DelayAsyncScriptTarget> kDelayAsyncScriptTargetParam{
+    &kDelayAsyncScriptExecution, "target", DelayAsyncScriptTarget::kAll,
+    &delay_async_script_target_types};
 
 // kDelayAsyncScriptExecution will delay executing async script at max
 // |delay_limit|.
@@ -1291,12 +1301,26 @@ const base::FeatureParam<base::TimeDelta>
     kDelayAsyncScriptExecutionFeatureLimitParam{
         &kDelayAsyncScriptExecution, "feature_limit", base::Seconds(0)};
 
+const base::FeatureParam<std::string> kDelayAsyncScriptAllowList{
+    &kDelayAsyncScriptExecution, "allow_list", ""};
+
 const base::Feature kLowPriorityAsyncScriptExecution{
     "LowPriorityAsyncScriptExecution", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<base::TimeDelta>
     kTimeoutForLowPriorityAsyncScriptExecution{
         &kLowPriorityAsyncScriptExecution, "timeout", base::Milliseconds(0)};
+
+// kLowPriorityAsyncScriptExecution will be disabled after document elapsed more
+// than |feature_limit|. Zero value means no limit.
+const base::FeatureParam<base::TimeDelta>
+    kLowPriorityAsyncScriptExecutionFeatureLimitParam{
+        &kLowPriorityAsyncScriptExecution, "feature_limit", base::Seconds(0)};
+
+// kLowPriorityAsyncScriptExecution will be applied only for cross site scripts.
+const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionCrossSiteOnlyParam{
+        &kLowPriorityAsyncScriptExecution, "cross_site_only", false};
 
 const base::Feature kDOMContentLoadedWaitForAsyncScript{
     "DOMContentLoadedWaitForAsyncScript", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1332,6 +1356,8 @@ const base::Feature kPendingBeaconAPI{"PendingBeaconAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<bool> kPendingBeaconAPIRequiresOriginTrial = {
     &kPendingBeaconAPI, "requires_origin_trial", false};
+const base::FeatureParam<bool> kPendingBeaconAPIForcesSendingOnNavigation = {
+    &blink::features::kPendingBeaconAPI, "send_on_navigation", true};
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 const base::Feature kPrefetchFontLookupTables{
@@ -1397,10 +1423,13 @@ const base::Feature kThrottleIntersectionObserverUMA{
     "ThrottleIntersectionObserverUMA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebRtcMetronome{"WebRtcMetronome",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSyncAccessHandleAllSyncSurface{
     "SyncAccessHandleAllSyncSurface", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kFastPathPaintPropertyUpdates{
+    "FastPathPaintPropertyUpdates", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

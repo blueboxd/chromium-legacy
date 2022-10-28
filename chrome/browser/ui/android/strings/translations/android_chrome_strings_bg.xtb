@@ -454,6 +454,7 @@
 <translation id="3435465986463792564">Отворили сте много прозорци? Можете да ги управлявате оттук</translation>
 <translation id="3443221991560634068">Презареждане на текущата страница</translation>
 <translation id="3444179773590444986">Искате ли да споделите отзиви за тъмната тема за сайтовете?</translation>
+<translation id="3452832259067974318">За да защити поверителността ви, Chrome няма да попълни автоматично паролата ви в това поле.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{Насрочено е 1 изтегляне}other{Насрочени са # изтегляния}}</translation>
 <translation id="3474624961160222204">Продължаване като <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Можете да изберете търсещата си машина</translation>
@@ -679,6 +680,7 @@
 <translation id="4763480195061959176">видео</translation>
 <translation id="4766313118839197559">Паролите се запазват в Мениджър на пароли на това устройство</translation>
 <translation id="4766678251456904326">Добавяне на профил към устройството</translation>
+<translation id="4787736314074622408">Искате ли да изтриете <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Помага ви да изпълнявате задачи в мрежата, като например плащане</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Шифроването с пропуск не включва начините на плащане и адресите от Google Pay.
@@ -948,6 +950,7 @@
 <translation id="6192907950379606605">Описания на изображенията</translation>
 <translation id="6196315980958524839">Паролите се запазват в Google Мениджър на пароли на това устройство</translation>
 <translation id="620197886010707372">Искате ли да отворите приложението за <ph name="APPNAME" /> чрез Google Play?</translation>
+<translation id="6202812185118613467">Влезте отново в профила си, за да стартирате синхронизирането</translation>
 <translation id="6203593061661911168">Изтеглянето ще стартира при връзка с Wi-Fi мрежа</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Страницата се визуализира</translation>

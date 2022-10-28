@@ -30,6 +30,7 @@
 <translation id="1587223624401073077">Google Chrome verwendet deine Kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="1597911401261118146">Wenn du prüfen möchtest, ob deine Passwörter von Datenpannen und anderen Sicherheitsproblemen betroffen sind, <ph name="BEGIN_LINK" />melde dich in Chrome an<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome hat diese Archivdatei blockiert, da sie möglicherweise Malware enthält</translation>
 <translation id="1619887657840448962">Um Chrome sicherer zu machen, haben wir die folgende Erweiterung deaktiviert. Sie ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne dein Wissen hinzugefügt.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />So kannst du deine Daten verwalten<ph name="END_BOLD" />: Zum Schutz deiner Daten löschen wir automatisch deine Interessen, die älter als vier Wochen sind. Je nach deinen Browsingaktivitäten können die Interessen wieder in der Liste erscheinen. Du kannst jedoch Interessen entfernen, die Chrome nicht berücksichtigen soll.</translation>
 <translation id="1628000112320670027">Hilfe für Chrome aufrufen</translation>
@@ -57,6 +58,7 @@
 <translation id="2094648590148273905">Nutzungsbedingungen für Chrome OS Flex</translation>
 <translation id="2094919256425865063">Chrome trotzdem beenden?</translation>
 <translation id="2106831557840787829">Chrome OS Flex und die <ph name="BEGIN_LINK_LINUX_OSS" />Linux-Entwicklungsumgebung<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
+<translation id="2112742052114331084">Wenn diese Option aktiviert ist, gibt Chrome den für Tabs genutzten Arbeitsspeicher wieder frei, wenn du sie gerade nicht aktiv verwendest. Dadurch werden die Ressourcen deines Computers für andere Aufgaben frei und Chrome wird schneller. Inaktive Tabs erscheinen leer und werden automatisch aktualisiert, wenn du sie anklickst. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> oder <ph name="BEGIN_LINK_2" />Feedback senden<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Dadurch werden <ph name="ITEMS_COUNT" /> Elemente von diesem Gerät gelöscht. Wenn du deine Daten später abrufen möchtest, melde dich als <ph name="USER_EMAIL" /> in Chrome an.</translation>
 <translation id="2121284319307530122">Neu starten, um &amp;Chrome zu aktualisieren</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />Aktuelle Einstellungen<ph name="END_LINK" /> übermitteln und so helfen, Chrome zu verbessern</translation>
@@ -271,6 +273,7 @@
 <translation id="6735387454586646204">Chrome OS Flex-System</translation>
 <translation id="6739177684496155661">Mit einem neuen Chrome-Profil fortfahren?</translation>
 <translation id="6750954913813541382">Zur Behebung von Tippfehlern sendet Chrome im Browser eingegebenen Text an Google</translation>
+<translation id="6756581345161130259">Bei Bedarf gibt Chrome den für Tabs genutzten Arbeitsspeicher wieder frei, wenn du sie gerade nicht aktiv verwendest. Du kannst dies jederzeit in den Einstellungen ändern.</translation>
 <translation id="677276454032249905">Chrome trotzdem beenden?</translation>
 <translation id="6785872064505734160">Google Assistant kann in Chrome Aktionen auf Websites für dich durchführen.</translation>
 <translation id="683440813066116847">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Canary</translation>

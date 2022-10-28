@@ -98,7 +98,7 @@ class MockClientSocketHandleFactory {
     socket_handle->Init(
         ClientSocketPool::GroupId(
             url::SchemeHostPort(url::kHttpScheme, "a", 80),
-            PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+            PrivacyMode::PRIVACY_MODE_DISABLED, NetworkAnonymizationKey(),
             SecureDnsPolicy::kAllow),
         scoped_refptr<ClientSocketPool::SocketParams>(),
         absl::nullopt /* proxy_annotation_tag */, MEDIUM, SocketTag(),
@@ -268,7 +268,7 @@ class WebSocketHandshakeStreamCreateHelperTest
         const SpdySessionKey key(
             HostPortPair::FromURL(url), ProxyServer::Direct(),
             PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
-            SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+            SocketTag(), NetworkAnonymizationKey(), SecureDnsPolicy::kAllow);
         base::WeakPtr<SpdySession> spdy_session =
             CreateSpdySession(http_network_session.get(), key, net_log);
         std::unique_ptr<WebSocketHandshakeStreamBase> handshake =

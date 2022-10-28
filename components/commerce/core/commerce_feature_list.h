@@ -9,8 +9,11 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "components/flags_ui/feature_entry.h"
+#include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
 #include "url/gurl.h"
+
+class PrefService;
 
 namespace commerce {
 
@@ -51,26 +54,16 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 
 // Price tracking variations for iOS.
 constexpr flags_ui::FeatureEntry::FeatureParam
-    kCommercePriceTrackingWithOptimizationGuide[] = {
-        {"price_tracking_with_optimization_guide", "true"},
-        {"price_tracking_opt_out", "false"}};
-
-constexpr flags_ui::FeatureEntry::FeatureParam
-    kCommercePriceTrackingWithOptimizationGuideAndOptOut[] = {
-        {"price_tracking_with_optimization_guide", "true"},
-        {"price_tracking_opt_out", "true"}};
+    kCommercePriceTrackingNotifications[] = {
+        {"enable_price_notification", "true"}};
 
 constexpr flags_ui::FeatureEntry::FeatureVariation
     kCommercePriceTrackingVariations[] = {
-        {"Price Tracking with Optimization Guide",
-         kCommercePriceTrackingWithOptimizationGuide,
-         std::size(kCommercePriceTrackingWithOptimizationGuide), nullptr},
-        {"Price Tracking with Optimization Guide and Opt Out",
-         kCommercePriceTrackingWithOptimizationGuideAndOptOut,
-         std::size(kCommercePriceTrackingWithOptimizationGuideAndOptOut),
-         nullptr}};
+        {"Price Tracking Notifications", kCommercePriceTrackingNotifications,
+         std::size(kCommercePriceTrackingNotifications), nullptr}};
 
 extern const base::Feature kCommerceAllowLocalImages;
+extern const base::Feature kCommerceAllowOnDemandBookmarkUpdates;
 extern const base::Feature kCommerceAllowServerImages;
 extern const base::Feature kCommerceCoupons;
 extern const base::Feature kCommerceMerchantViewer;
@@ -91,6 +84,13 @@ extern const base::Feature kCommerceHintAndroid;
 
 // Feature flag for Merchant Wide promotion.
 extern const base::Feature kMerchantWidePromotion;
+
+// Shopping list update interval.
+constexpr base::FeatureParam<base::TimeDelta>
+    kShoppingListBookmarkpdateIntervalParam(
+        &kShoppingList,
+        "shopping-list-bookmark-update-interval",
+        base::Hours(6));
 
 // Feature parameters for ChromeCart on Desktop.
 
@@ -304,6 +304,8 @@ bool IsCouponWithCodeEnabled();
 bool IsFakeDataEnabled();
 // Check if the contextual consent for discount is enabled.
 bool isContextualConsentEnabled();
+// Check if the shopping list feature is allowed for enterprise.
+bool IsShoppingListAllowedForEnterprise(PrefService* prefs);
 
 #if !BUILDFLAG(IS_ANDROID)
 // Get the time delay between discount fetches.

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-Copyright 2017 The Chromium Authors. All rights reserved.
+Copyright 2017 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 
@@ -233,7 +233,6 @@ Refer to README.md for content description and update process.
  <item id="services_http_server_error_response" added_in_milestone="68" content_hash_code="079dad59" os_list="linux,windows,chromeos,android" file_path="services/network/public/cpp/server/http_server.cc" />
  <item id="shared_storage_worklet_module_script_downloader" added_in_milestone="95" content_hash_code="0367afa1" os_list="linux,windows,chromeos,android" file_path="content/services/shared_storage_worklet/module_script_downloader.cc" />
  <item id="sigined_exchange_cert_fetcher" added_in_milestone="66" content_hash_code="007c2dac" os_list="linux,windows,chromeos,android" file_path="content/browser/web_package/signed_exchange_cert_fetcher.cc" />
- <item id="sigined_exchange_validity_pinger" added_in_milestone="75" content_hash_code="071f2878" os_list="linux,windows,chromeos,android" file_path="content/browser/web_package/signed_exchange_validity_pinger.cc" />
  <item id="signed_in_profile_avatar" added_in_milestone="62" content_hash_code="04579cbb" os_list="linux,windows,chromeos,android" file_path="chrome/browser/profiles/profile_downloader.cc" />
  <item id="socket_bio_adapter" added_in_milestone="66" content_hash_code="014a4058" os_list="linux,windows,chromeos,android" file_path="net/socket/socket_bio_adapter.cc" />
  <item id="spdy_push_stream" added_in_milestone="67" content_hash_code="042048b5" os_list="linux,windows,chromeos,android" file_path="net/spdy/spdy_session.cc" />
@@ -389,9 +388,7 @@ Refer to README.md for content description and update process.
  <item id="chrome_commerce_waa_fetcher" added_in_milestone="107" content_hash_code="016d45fc" os_list="linux,windows,android,chromeos" file_path="components/commerce/core/account_checker.cc" />
  <item id="favicon_fetcher_get_favicon" added_in_milestone="106" content_hash_code="0640ce11" os_list="android" file_path="chrome/browser/supervised_user/android/favicon_fetcher.cc" />
  <item id="k_anonymity_service_get_token" added_in_milestone="106" content_hash_code="07a5bb1e" os_list="linux,windows,android,chromeos" file_path="chrome/browser/k_anonymity_service/k_anonymity_trust_token_getter.cc" />
- <item id="simple_geolocation_request" added_in_milestone="106" type="completing" content_hash_code="01346f5c" os_list="chromeos" semantics_fields="1,5" file_path="chromeos/ash/components/geolocation/simple_geolocation_request.cc" />
- <item id="timezone_resolver" added_in_milestone="106" type="partial" second_id="simple_geolocation_request" content_hash_code="047c760d" os_list="chromeos" semantics_fields="1,2,3,4,5" policy_fields="-1,3,5" file_path="ash/components/timezone/timezone_resolver.cc" />
- <item id="geolocation_controller" added_in_milestone="106" type="partial" second_id="simple_geolocation_request" content_hash_code="06c11dea" os_list="chromeos" semantics_fields="1,2,3,4,5" policy_fields="-1,3,5" file_path="ash/system/geolocation/geolocation_controller.cc" />
- <item id="wizard_controller" added_in_milestone="106" type="partial" second_id="simple_geolocation_request" content_hash_code="04fc051b" os_list="chromeos" semantics_fields="1,2,3,4,5" policy_fields="-1,3,5" file_path="chrome/browser/ash/login/wizard_controller.cc" />
- <item id="night_light_client" added_in_milestone="106" type="partial" second_id="simple_geolocation_request" content_hash_code="079b746d" os_list="chromeos" semantics_fields="1,2,3,4,5" policy_fields="-1,3,5" file_path="chrome/browser/ash/night_light/night_light_client.cc" />
+ <item id="shopping_list_ui_image_fetcher" added_in_milestone="107" content_hash_code="07dca3ba" os_list="windows,chromeos,linux" file_path="chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.cc" />
+ <item id="chrome_commerce_price_email_pref_fetcher" added_in_milestone="107" content_hash_code="00b3dc73" os_list="linux,windows,android,chromeos" file_path="components/commerce/core/account_checker.cc" />
+ <item id="chrome_commerce_price_email_pref_sender" added_in_milestone="107" content_hash_code="03f51c85" os_list="linux,windows,android,chromeos" file_path="components/commerce/core/account_checker.cc" />
 </annotations>

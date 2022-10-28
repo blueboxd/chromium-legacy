@@ -12,6 +12,9 @@
 #include "base/scoped_observation.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
+
+class PrefService;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -20,12 +23,17 @@ class BookmarkNode;
 
 namespace commerce {
 
+struct ProductInfo;
 class ShoppingService;
 
 // Return whether a bookmark is price tracked. This does not check the
 // subscriptions backend, only the flag in the bookmark meta.
 bool IsBookmarkPriceTracked(bookmarks::BookmarkModel* model,
                             const bookmarks::BookmarkNode* node);
+
+// Return whether the |node| is a product bookmark.
+bool IsProductBookmark(bookmarks::BookmarkModel* model,
+                       const bookmarks::BookmarkNode* node);
 
 // Set the state of price tracking for all bookmarks with the cluster ID of the
 // provided bookmark. A subscription update will attempted on the backend and,
@@ -58,6 +66,17 @@ std::vector<const bookmarks::BookmarkNode*> GetAllPriceTrackedBookmarks(
 // current BrowserContext.
 std::vector<const bookmarks::BookmarkNode*> GetAllShoppingBookmarks(
     bookmarks::BookmarkModel* model);
+
+// Populate or update the provided |out_meta| with information from |info|. The
+// returned boolean indicated whether any information actually changed.
+bool PopulateOrUpdateBookmarkMetaIfNeeded(
+    power_bookmarks::PowerBookmarkMeta* out_meta,
+    const ProductInfo& info);
+
+// Attempts to enable price email notifications for users. This will only set
+// the setting to true if it is the first time being called, after that this is
+// a noop.
+void MaybeEnableEmailNotifications(PrefService* pref_service);
 
 }  // namespace commerce
 

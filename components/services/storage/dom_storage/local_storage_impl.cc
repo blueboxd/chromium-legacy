@@ -25,7 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
@@ -74,16 +73,6 @@ const int64_t kCurrentLocalStorageSchemaVersion = 1;
 // After this many consecutive commit errors we'll throw away the entire
 // database.
 const int kCommitErrorThreshold = 8;
-
-// Limits on the cache size and number of areas in memory, over which the areas
-// are purged.
-#if BUILDFLAG(IS_ANDROID)
-const unsigned kMaxLocalStorageAreaCount = 10;
-const size_t kMaxLocalStorageCacheSize = 2 * 1024 * 1024;
-#else
-const unsigned kMaxLocalStorageAreaCount = 50;
-const size_t kMaxLocalStorageCacheSize = 20 * 1024 * 1024;
-#endif
 
 DomStorageDatabase::Key CreateMetaDataKey(
     const blink::StorageKey& storage_key) {
@@ -429,12 +418,6 @@ void LocalStorageImpl::PurgeUnusedAreasIfNeeded() {
   // Nothing to purge.
   if (!unused_area_count)
     return;
-
-  // No purge is needed.
-  if (total_cache_size > kMaxLocalStorageCacheSize &&
-      areas_.size() > kMaxLocalStorageAreaCount && !is_low_end_device_) {
-    return;
-  }
 
   for (auto it = areas_.begin(); it != areas_.end();) {
     if (it->second->has_bindings())

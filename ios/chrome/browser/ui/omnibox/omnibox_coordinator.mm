@@ -95,7 +95,7 @@
       [[OmniboxViewController alloc] initWithIncognito:isIncognito];
 
   self.viewController.defaultLeadingImage =
-      GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
+      GetOmniboxSuggestionIcon(OmniboxSuggestionIconType::kDefaultFavicon);
   self.viewController.textInputDelegate = self;
   self.mediator = [[OmniboxMediator alloc] initWithIncognito:isIncognito];
   self.mediator.templateURLService =
@@ -158,6 +158,7 @@
   _editView.reset();
   self.editController = nil;
   self.viewController = nil;
+  self.mediator.templateURLService = nullptr;  // Unregister the observer.
   self.mediator = nil;
   self.returnDelegate = nil;
   self.zeroSuggestPrefetchHelper = nil;

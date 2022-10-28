@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,6 +99,14 @@ bool DialogModelMenuModelAdapter::IsEnabledAt(size_t index) const {
   const DialogModelField* const field = GetField(index);
   return field->type(GetPassKey()) != DialogModelField::kSeparator &&
          field->AsMenuItem(GetPassKey())->is_enabled(GetPassKey());
+}
+
+ui::ElementIdentifier DialogModelMenuModelAdapter::GetElementIdentifierAt(
+    size_t index) const {
+  DCHECK_LT(index, GetItemCount());
+
+  const DialogModelField* const field = GetField(index);
+  return field->AsMenuItem(GetPassKey())->id(GetPassKey());
 }
 
 MenuModel* DialogModelMenuModelAdapter::GetSubmenuModelAt(size_t index) const {

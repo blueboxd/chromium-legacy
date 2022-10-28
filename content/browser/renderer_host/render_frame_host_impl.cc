@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7467,7 +7467,7 @@ void RenderFrameHostImpl::CreateNewWindow(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
             params->referrer->url, new_main_rfh->cross_origin_opener_policy(),
-            GetReportingSource(), isolation_info_.network_isolation_key()));
+            GetReportingSource(), isolation_info_.network_anonymization_key()));
   }
 
   mojo::PendingAssociatedRemote<mojom::Frame> pending_frame_remote;
@@ -8735,6 +8735,17 @@ bool RenderFrameHostImpl::ShouldDispatchPagehideAndVisibilitychangeDuringCommit(
   DCHECK_NE(old_frame_host, this);
   DCHECK_NE(old_frame_host->GetSiteInstance(), GetSiteInstance());
   return true;
+}
+
+void RenderFrameHostImpl::SendAllPendingBeaconsOnNavigation() {
+  if (auto* pending_beacon_host =
+          PendingBeaconHost::GetForCurrentDocument(this)) {
+    pending_beacon_host->SendAllOnNavigation();
+  }
+  // TODO(crbug.com/1293679): Address FencedFrame.
+  for (auto& child : children_) {
+    child->current_frame_host()->SendAllPendingBeaconsOnNavigation();
+  }
 }
 
 void RenderFrameHostImpl::CommitNavigation(
@@ -10668,7 +10679,7 @@ void RenderFrameHostImpl::CreateWebTransportConnector(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebTransportConnectorImpl>(
           GetProcess()->GetID(), weak_ptr_factory_.GetWeakPtr(),
-          last_committed_origin_, isolation_info_.network_isolation_key()),
+          last_committed_origin_, isolation_info_.network_anonymization_key()),
       std::move(receiver));
 }
 
@@ -11055,7 +11066,7 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
         storage_partition->GetWeakPtr(), url,
         cross_origin_embedder_policy().reporting_endpoint,
         cross_origin_embedder_policy().report_only_reporting_endpoint,
-        GetReportingSource(), isolation_info.network_isolation_key());
+        GetReportingSource(), isolation_info.network_anonymization_key());
   }
   std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info;
   if (is_same_document && web_bundle_handle_ &&
@@ -12202,7 +12213,7 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
   // Send the crash report to the Reporting API.
   GetProcess()->GetStoragePartition()->GetNetworkContext()->QueueReport(
       /*type=*/"crash", /*group=*/"default", last_committed_url_,
-      GetReportingSource(), isolation_info_.network_isolation_key(),
+      GetReportingSource(), isolation_info_.network_anonymization_key(),
       absl::nullopt /* user_agent */, std::move(body));
 }
 

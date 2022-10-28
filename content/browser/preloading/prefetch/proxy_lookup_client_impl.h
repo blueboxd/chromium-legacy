@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 class GURL;
 
 namespace net {
-class NetworkIsolationKey;
+class NetworkAnonymizationKey;
 }  // namespace net
 
 namespace network::mojom {
@@ -33,10 +33,11 @@ class CONTENT_EXPORT ProxyLookupClientImpl
 
   // Starts the proxy lookup for |url| in |network_context|. Once the lookup is
   // completed, |callback| will be invoked.
-  ProxyLookupClientImpl(const GURL& url,
-                        const net::NetworkIsolationKey& network_isolation_key,
-                        ProxyLookupCallback callback,
-                        network::mojom::NetworkContext* network_context);
+  ProxyLookupClientImpl(
+      const GURL& url,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      ProxyLookupCallback callback,
+      network::mojom::NetworkContext* network_context);
   ~ProxyLookupClientImpl() override;
 
   ProxyLookupClientImpl(const ProxyLookupClientImpl&) = delete;

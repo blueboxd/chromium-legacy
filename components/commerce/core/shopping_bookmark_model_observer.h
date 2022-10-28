@@ -22,6 +22,7 @@ class BookmarkNode;
 namespace commerce {
 
 class ShoppingService;
+class SubscriptionsManager;
 
 // A utility class that watches for changes in bookmark URLs. In the case that
 // the bookmark was a shopping item, the meta should be removed since we can't
@@ -34,7 +35,8 @@ class ShoppingBookmarkModelObserver
     : public bookmarks::BaseBookmarkModelObserver {
  public:
   ShoppingBookmarkModelObserver(bookmarks::BookmarkModel* model,
-                                ShoppingService* shopping_service);
+                                ShoppingService* shopping_service,
+                                SubscriptionsManager* subscriptions_manager);
   ShoppingBookmarkModelObserver(const ShoppingBookmarkModelObserver&) = delete;
   ShoppingBookmarkModelObserver& operator=(
       const ShoppingBookmarkModelObserver&) = delete;
@@ -55,8 +57,13 @@ class ShoppingBookmarkModelObserver
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
 
+  void BookmarkMetaInfoChanged(bookmarks::BookmarkModel* model,
+                               const bookmarks::BookmarkNode* node) override;
+
  private:
   base::raw_ptr<ShoppingService> shopping_service_;
+
+  base::raw_ptr<SubscriptionsManager> subscriptions_manager_;
 
   // A map of bookmark ID to its current URL. This is used to detect incoming
   // changes to the URL since there isn't an explicit event for it.

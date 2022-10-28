@@ -1,5 +1,5 @@
 <!--
-Copyright 2020 The Chromium Authors. All rights reserved.
+Copyright 2020 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -1458,6 +1458,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether a client was selected for the Stage3D on XP field trial or
     not.
+  </summary>
+</histogram>
+
+<histogram name="GPU.SupportsDisableMsaa" enum="BooleanSupported"
+    expires_after="2023-03-19">
+  <owner>vasilyt@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    This metric records if we had support for non-aa draws with hardware MSAA
+    via GL_EXT_multisample_compatibility. Recorded once for each raster task
+    that had non-aa draw.
   </summary>
 </histogram>
 

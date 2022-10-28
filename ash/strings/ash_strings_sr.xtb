@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">Сними цео екран</translation>
 <translation id="2135456203358955318">Монтирана лупа екрана</translation>
 <translation id="2148716181193084225">Данас</translation>
+<translation id="2161132820593978283">Пробајте уоквиривање камере да бисте били у центру екрана током видео позива. Укључите га у Брзим подешавањима.</translation>
 <translation id="2170530631236737939">Превуците надоле помоћу три прста да бисте изашли из Прегледа</translation>
 <translation id="219905428774326614">Покретач, све апликације</translation>
 <translation id="2201071101391734388"><ph name="INDEX" />. недавна слика од <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">Није повезано</translation>
 <translation id="2408955596600435184">Унесите PIN</translation>
 <translation id="2412593942846481727">Доступно је ажурирање</translation>
+<translation id="2426051945783024481">Оквир камере је аутоматски центриран</translation>
 <translation id="2427507373259914951">Леви клик</translation>
 <translation id="2429753432712299108">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Пре него што му је дате, уверите се да је ова шифра приказана на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Прикажи лозинку</translation>
@@ -334,7 +336,7 @@
 <translation id="2942516765047364088">Положај полице</translation>
 <translation id="2946119680249604491">Додај везу</translation>
 <translation id="2960314608273155470">Режим снимања, подразумевана вредност је <ph name="SOURCE" /> <ph name="TYPE" />. Притисните Tab за кретање помоћу тастатуре.</translation>
-<translation id="2961963223658824723">Нешто није у реду. Пробајте поново за пар секунди.</translation>
+<translation id="2961963223658824723">Дошло је до грешке. Пробајте поново за пар секунди.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="296762781903199866">Преузимање фајлова са говором на језику <ph name="LANGUAGE" /> није успело</translation>
 <translation id="2970920913501714344">Инсталирајте апликације, додатке и теме</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">Положај</translation>
 <translation id="3153444934357957346">Можете да имате највише <ph name="MULTI_PROFILE_USER_LIMIT" /> налога за вишеструко пријављивање.</translation>
 <translation id="3154351730702813399">Администратор уређаја може да прати активности прегледања.</translation>
+<translation id="3157931365184549694">Поново отвори</translation>
 <translation id="316086887565479535">Неподржане апликације у шаблону</translation>
 <translation id="3161500364292033097">Затворите радну површину и прозоре</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> враћа <ph name="DEVICE_TYPE" /> на претходну верзију. Уређај ће се ресетовати и сви подаци ће бити избрисани.</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">Сортирај према</translation>
 <translation id="3742055079367172538">Снимак екрана је направљен</translation>
 <translation id="3765841986579723851">Измењено данас</translation>
-<translation id="3771549900096082774">Режим високог контраста</translation>
 <translation id="3773700760453577392">Администратор је забранио вишеструко пријављивање за <ph name="USER_EMAIL" />. Сви корисници морају да се одјаве да бисмо наставили са сесијом.</translation>
 <translation id="3779139509281456663">Повезује се <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
@@ -577,12 +579,10 @@
 <translation id="4312840429157639164">Камера је уклопљена у горњи десни угао. Неусаглашеност са површином система.</translation>
 <translation id="4316910396681052118">СВЕ АПЛИКАЦИЈЕ</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Притиснули сте тастерску пречицу за високи контраст. Желите ли да је укључите?</translation>
 <translation id="4322742403972824594">Тастерска пречица Ctrl + Alt + стрелица нагоре је промењена. Да бисте користили тастер Home, притисните тастер <ph name="LAUNCHER_KEY_NAME" /> + стрелица налево.</translation>
 <translation id="4333628967105022692">Lacros није подржан када је пријављено више корисника.</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Помоћник се учитава...</translation>
-<translation id="4356930093361201197">режим високог контраста</translation>
 <translation id="4371348193907997655">Подешавања пребацивања</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /> посто</translation>
 <translation id="4378551569595875038">Повезује се...</translation>
@@ -878,7 +878,6 @@
 <translation id="5980301590375426705">Затвори као гост</translation>
 <translation id="598407983968395253">Користи шаблон</translation>
 <translation id="598882571027504733">Да бисте преузели ажурирање, рестартујте Chromebook са прикљученом тастастуром.</translation>
-<translation id="5992218262414051481">Режим високог контраста је омогућен. Притисните Ctrl + тастер за претрагу + H поново да бисте га искључили.</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. страница од <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Излазак из режима са пресликавањем</translation>
 <translation id="602001110135236999">Помери налево</translation>
@@ -1044,6 +1043,7 @@
 <translation id="6960565108681981554">Није активирано. Обратите се мобилном оператеру.</translation>
 <translation id="6961121602502368900">Искључивање звука телефона није доступно на пословном профилу</translation>
 <translation id="6961840794482373852">Тастерска пречица Ctrl + стрелица нагоре је промењена. Да бисте користили тастер Page Up, притисните тастер <ph name="LAUNCHER_KEY_NAME" /> + стрелица нагоре.</translation>
+<translation id="696267987219125751">Уоквиривање камере је искључено.</translation>
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="6972754398087986839">Започнимо</translation>
 <translation id="6979158407327259162">Google диск</translation>
@@ -1134,6 +1134,7 @@
 <translation id="7513922695575567867">Календар, седмица када је <ph name="DATE" />, <ph name="SELECTED_DATE" /> је тренутно изабран.</translation>
 <translation id="7514365320538308">Преузми</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Уоквиривање камере је укључено.</translation>
 <translation id="7526573455193969409">Мрежа се можда надгледа</translation>
 <translation id="7536035074519304529">IP адреса: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux апликације и прозори без архивирања тренутно нису подржани. Друге апликације ће бити сачуване.</translation>
@@ -1152,10 +1153,12 @@
 <translation id="7607002721634913082">Паузирано</translation>
 <translation id="7609951632080598826">Приказ календара, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Камера је поново повезана.</translation>
+<translation id="761736749114493194">Укључите уоквиривање камере. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Прикажите подешавања Дељења у близини.</translation>
 <translation id="7634648064048557203">Камера је уклопљена у доњи леви угао</translation>
 <translation id="7641938616688887143">Снимај</translation>
+<translation id="7642106959537987271">режим инверзије боја</translation>
 <translation id="7642647758716480637">Отворите подешавања мреже <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
 <translation id="7647488630410863958">Откључајте уређај да бисте прегледали обавештења</translation>
@@ -1234,7 +1237,6 @@
 <translation id="8051716679295756675">Шаблон под насловом <ph name="DESK_TEMPLATE_NAME" /> већ постоји</translation>
 <translation id="8052898407431791827">Копирано је у привремену меморију</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
-<translation id="8061464966246066292">Високи контраст</translation>
 <translation id="8083540854303889870">Сачувано за касније</translation>
 <translation id="8091387634532529612">Аутоматска ажурирања</translation>
 <translation id="8098591350844501178">Заустави пребацивање екрана на <ph name="RECEIVER_NAME" /></translation>
@@ -1262,6 +1264,7 @@
 <translation id="8209010265547628927">Ресетуј</translation>
 <translation id="8214996719228530800">Canary канал</translation>
 <translation id="8219451629189078428">Chromebook треба да остане укључен и повезан на извор напајања током тог периода. Уверите се да су каблови пуњача или адаптера исправно прикључени, и у Chromebook и у утичницу Не искључујте Chromebook.</translation>
+<translation id="8230305195727960608">Режим инверзије боја</translation>
 <translation id="8236042855478648955">Време је за паузу</translation>
 <translation id="8246282815785366524">Добро дошли назад, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, батерија телефона <ph name="BATTERY_STATUS" /></translation>
@@ -1313,6 +1316,7 @@
 <translation id="851458219935658693">Приказујте прозоре са актуелне радне површине, дугме за избор је изабрано</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> се можда неће пунити док је укључен.</translation>
 <translation id="8535393432370007982">Опозовите редослед сортирања према боји</translation>
+<translation id="8541078764854166027">Уоквир. камере</translation>
 <translation id="8542053257095774575">Нема сачуваних радних површина нити шаблона</translation>
 <translation id="8546059259582788728">Опозвали сте сортирање</translation>
 <translation id="8551588720239073785">Подешавања датума и времена</translation>
@@ -1387,6 +1391,7 @@
 <translation id="8982906748181120328">Видљиво у близини</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Користи се <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Режим инверзије боја је омогућен. Поново притисните Ctrl + тастер за претрагу + H да бисте га искључили.</translation>
 <translation id="899350903320462459">Откључајте уређај помоћу ИД-а пријављивања <ph name="LOGIN_ID" /> да бисте добили обавештење</translation>
 <translation id="9000771174482730261">УПРАВЉАЈТЕ МЕМОРИЈСКИМ ПРОСТОРОМ</translation>
 <translation id="9017320285115481645">Унесите приступни кôд родитеља за Family Link.</translation>
@@ -1435,6 +1440,7 @@
 <translation id="921989828232331238">Родитељ је закључао овај уређај за данас</translation>
 <translation id="9220525904950070496">Уклањање налога</translation>
 <translation id="923686485342484400">Двапут притисните Control Shift Q да бисте се одјавили.</translation>
+<translation id="92580429198593979">Притиснули сте тастерску пречицу за инверзију боја. Желите да је искључите?</translation>
 <translation id="925832987464884575">Сакријте прегледе</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> захтева да одмах ажурирате <ph name="DEVICE_TYPE" /></translation>
 <translation id="938963181863597773">Шта је у календару?</translation>

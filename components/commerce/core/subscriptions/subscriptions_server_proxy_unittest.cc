@@ -17,6 +17,7 @@
 #include "components/commerce/core/subscriptions/subscriptions_storage.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -24,6 +25,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using testing::_;
 using testing::InSequence;
@@ -48,9 +50,12 @@ const char kServiceUrlForGet[] =
 
 const std::string kExpectedPostDataForCreate =
     "{\"createShoppingSubscriptionsParams\":{\"subscriptions\":[{"
-    "\"identifier\":\"111\",\"identifierType\":2,\"managementType\":2,\"type\":"
-    "1},{\"identifier\":\"222\",\"identifierType\":2,\"managementType\":2,"
-    "\"type\":1,\"userSeenOffer\":{\"countryCode\":\"us\",\"offerId\":\"333\","
+    "\"identifier\":\"111\",\"identifierType\":\"PRODUCT_CLUSTER_ID\","
+    "\"managementType\":\"USER_MANAGED\",\"type\":"
+    "\"PRICE_TRACK\"},{\"identifier\":\"222\",\"identifierType\":\"PRODUCT_"
+    "CLUSTER_ID\",\"managementType\":\"USER_MANAGED\","
+    "\"type\":\"PRICE_TRACK\",\"userSeenOffer\":{\"countryCode\":\"us\","
+    "\"offerId\":\"333\","
     "\"seenPriceMicros\":\"100\"}}]}}";
 const std::string kExpectedPostDataForDelete =
     "{\"removeShoppingSubscriptionsParams\":{\"eventTimestampMicros\":["
@@ -59,8 +64,9 @@ const std::string kResponseSucceeded = "{ \"status\": { \"code\": 0 } }";
 const std::string kResponseFailed = "{ \"status\": { \"code\": 1 } }";
 const std::string kValidGetResponse =
     "{\"subscriptions\":[{"
-    "\"identifier\":\"111\",\"identifierType\":2,\"managementType\":2,\"type\":"
-    "1,\"eventTimestampMicros\":\"123456\"}]}";
+    "\"identifier\":\"111\",\"identifierType\":\"PRODUCT_CLUSTER_ID\","
+    "\"managementType\":\"USER_MANAGED\",\"type\":"
+    "\"PRICE_TRACK\",\"eventTimestampMicros\":\"123456\"}]}";
 
 // Build a subscription list consisting of two subscriptions.
 std::unique_ptr<std::vector<commerce::CommerceSubscription>>
@@ -99,11 +105,18 @@ class MockEndpointFetcher : public EndpointFetcher {
 
   MOCK_METHOD(void, Fetch, (EndpointFetcherCallback callback), (override));
 
-  void MockFetchResponse(std::string response_string) {
+  void MockFetchResponse(
+      std::string response_string,
+      int http_status_code = net::HTTP_OK,
+      absl::optional<FetchErrorType> error_type = absl::nullopt) {
     ON_CALL(*this, Fetch)
-        .WillByDefault([response_string](EndpointFetcherCallback callback) {
+        .WillByDefault([response_string, http_status_code,
+                        error_type](EndpointFetcherCallback callback) {
           auto response = std::make_unique<EndpointResponse>();
           response->response = std::move(response_string);
+          response->http_status_code = http_status_code;
+          if (error_type)
+            response->error_type = error_type;
           std::move(callback).Run(std::move(response));
         });
   }
@@ -170,13 +183,14 @@ TEST_F(SubscriptionsServerProxyTest, TestCreate) {
       .Times(1);
 
   base::RunLoop run_loop;
-  server_proxy_->Create(BuildValidSubscriptions(),
-                        base::BindOnce(
-                            [](base::RunLoop* run_loop, bool succeeded) {
-                              ASSERT_EQ(true, succeeded);
-                              run_loop->Quit();
-                            },
-                            &run_loop));
+  server_proxy_->Create(
+      BuildValidSubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kSuccess, status);
+            run_loop->Quit();
+          },
+          &run_loop));
   run_loop.Run();
 }
 
@@ -185,13 +199,14 @@ TEST_F(SubscriptionsServerProxyTest, TestCreate_EmptyList) {
   EXPECT_CALL(*server_proxy_, CreateEndpointFetcher).Times(0);
 
   base::RunLoop run_loop;
-  server_proxy_->Create(BuildEmptySubscriptions(),
-                        base::BindOnce(
-                            [](base::RunLoop* run_loop, bool succeeded) {
-                              ASSERT_EQ(true, succeeded);
-                              run_loop->Quit();
-                            },
-                            &run_loop));
+  server_proxy_->Create(
+      BuildEmptySubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kSuccess, status);
+            run_loop->Quit();
+          },
+          &run_loop));
   run_loop.Run();
 }
 
@@ -203,13 +218,52 @@ TEST_F(SubscriptionsServerProxyTest, TestCreate_ServerFailed) {
       .Times(1);
 
   base::RunLoop run_loop;
-  server_proxy_->Create(BuildValidSubscriptions(),
-                        base::BindOnce(
-                            [](base::RunLoop* run_loop, bool succeeded) {
-                              ASSERT_EQ(false, succeeded);
-                              run_loop->Quit();
-                            },
-                            &run_loop));
+  server_proxy_->Create(
+      BuildValidSubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kServerInternalError, status);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(SubscriptionsServerProxyTest, TestCreate_WrongHttpCode) {
+  fetcher_->MockFetchResponse(kResponseSucceeded, net::HTTP_NOT_FOUND);
+  EXPECT_CALL(*server_proxy_,
+              CreateEndpointFetcher(GURL(kServiceUrl), kPostHttpMethod,
+                                    kExpectedPostDataForCreate, _))
+      .Times(1);
+
+  base::RunLoop run_loop;
+  server_proxy_->Create(
+      BuildValidSubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kServerParseError, status);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(SubscriptionsServerProxyTest, TestCreate_EmptyResponse) {
+  fetcher_->MockFetchResponse("");
+  EXPECT_CALL(*server_proxy_,
+              CreateEndpointFetcher(GURL(kServiceUrl), kPostHttpMethod,
+                                    kExpectedPostDataForCreate, _))
+      .Times(1);
+
+  base::RunLoop run_loop;
+  server_proxy_->Create(
+      BuildValidSubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kServerInternalError, status);
+            run_loop->Quit();
+          },
+          &run_loop));
   run_loop.Run();
 }
 
@@ -221,13 +275,14 @@ TEST_F(SubscriptionsServerProxyTest, TestDelete) {
       .Times(1);
 
   base::RunLoop run_loop;
-  server_proxy_->Delete(BuildValidSubscriptions(),
-                        base::BindOnce(
-                            [](base::RunLoop* run_loop, bool succeeded) {
-                              ASSERT_EQ(true, succeeded);
-                              run_loop->Quit();
-                            },
-                            &run_loop));
+  server_proxy_->Delete(
+      BuildValidSubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kSuccess, status);
+            run_loop->Quit();
+          },
+          &run_loop));
   run_loop.Run();
 }
 
@@ -236,13 +291,14 @@ TEST_F(SubscriptionsServerProxyTest, TestDelete_EmptyList) {
   EXPECT_CALL(*server_proxy_, CreateEndpointFetcher).Times(0);
 
   base::RunLoop run_loop;
-  server_proxy_->Delete(BuildEmptySubscriptions(),
-                        base::BindOnce(
-                            [](base::RunLoop* run_loop, bool succeeded) {
-                              ASSERT_EQ(true, succeeded);
-                              run_loop->Quit();
-                            },
-                            &run_loop));
+  server_proxy_->Delete(
+      BuildEmptySubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kSuccess, status);
+            run_loop->Quit();
+          },
+          &run_loop));
   run_loop.Run();
 }
 
@@ -254,13 +310,14 @@ TEST_F(SubscriptionsServerProxyTest, TestDelete_ServerFailed) {
       .Times(1);
 
   base::RunLoop run_loop;
-  server_proxy_->Delete(BuildValidSubscriptions(),
-                        base::BindOnce(
-                            [](base::RunLoop* run_loop, bool succeeded) {
-                              ASSERT_EQ(false, succeeded);
-                              run_loop->Quit();
-                            },
-                            &run_loop));
+  server_proxy_->Delete(
+      BuildValidSubscriptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kServerInternalError, status);
+            run_loop->Quit();
+          },
+          &run_loop));
   run_loop.Run();
 }
 
@@ -275,8 +332,9 @@ TEST_F(SubscriptionsServerProxyTest, TestGet) {
   server_proxy_->Get(
       SubscriptionType::kPriceTrack,
       base::BindOnce(
-          [](base::RunLoop* run_loop,
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status,
              std::unique_ptr<std::vector<CommerceSubscription>> subscriptions) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kSuccess, status);
             ASSERT_EQ(1, static_cast<int>(subscriptions->size()));
             auto subscription = (*subscriptions)[0];
             ASSERT_EQ(SubscriptionType::kPriceTrack, subscription.type);
@@ -300,8 +358,9 @@ TEST_F(SubscriptionsServerProxyTest, TestGet_WrongType) {
   server_proxy_->Get(
       SubscriptionType::kTypeUnspecified,
       base::BindOnce(
-          [](base::RunLoop* run_loop,
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status,
              std::unique_ptr<std::vector<CommerceSubscription>> subscriptions) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kInvalidArgument, status);
             ASSERT_EQ(0, static_cast<int>(subscriptions->size()));
             run_loop->Quit();
           },
@@ -309,8 +368,8 @@ TEST_F(SubscriptionsServerProxyTest, TestGet_WrongType) {
   run_loop.Run();
 }
 
-TEST_F(SubscriptionsServerProxyTest, TestGet_ServerFailed) {
-  fetcher_->MockFetchResponse(kResponseFailed);
+TEST_F(SubscriptionsServerProxyTest, TestGet_WrongHttpCode) {
+  fetcher_->MockFetchResponse(kValidGetResponse, net::HTTP_NOT_FOUND);
   EXPECT_CALL(*server_proxy_,
               CreateEndpointFetcher(GURL(kServiceUrlForGet), kGetHttpMethod,
                                     kEmptyPostData, _))
@@ -320,8 +379,53 @@ TEST_F(SubscriptionsServerProxyTest, TestGet_ServerFailed) {
   server_proxy_->Get(
       SubscriptionType::kPriceTrack,
       base::BindOnce(
-          [](base::RunLoop* run_loop,
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status,
              std::unique_ptr<std::vector<CommerceSubscription>> subscriptions) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kServerParseError, status);
+            ASSERT_EQ(0, static_cast<int>(subscriptions->size()));
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(SubscriptionsServerProxyTest, TestGet_FetchError) {
+  fetcher_->MockFetchResponse(
+      kValidGetResponse, net::HTTP_OK,
+      absl::make_optional<FetchErrorType>(FetchErrorType::kNetError));
+  EXPECT_CALL(*server_proxy_,
+              CreateEndpointFetcher(GURL(kServiceUrlForGet), kGetHttpMethod,
+                                    kEmptyPostData, _))
+      .Times(1);
+
+  base::RunLoop run_loop;
+  server_proxy_->Get(
+      SubscriptionType::kPriceTrack,
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status,
+             std::unique_ptr<std::vector<CommerceSubscription>> subscriptions) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kServerParseError, status);
+            ASSERT_EQ(0, static_cast<int>(subscriptions->size()));
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(SubscriptionsServerProxyTest, TestGet_NoSubscriptions) {
+  fetcher_->MockFetchResponse("");
+  EXPECT_CALL(*server_proxy_,
+              CreateEndpointFetcher(GURL(kServiceUrlForGet), kGetHttpMethod,
+                                    kEmptyPostData, _))
+      .Times(1);
+
+  base::RunLoop run_loop;
+  server_proxy_->Get(
+      SubscriptionType::kPriceTrack,
+      base::BindOnce(
+          [](base::RunLoop* run_loop, SubscriptionsRequestStatus status,
+             std::unique_ptr<std::vector<CommerceSubscription>> subscriptions) {
+            ASSERT_EQ(SubscriptionsRequestStatus::kSuccess, status);
             ASSERT_EQ(0, static_cast<int>(subscriptions->size()));
             run_loop->Quit();
           },

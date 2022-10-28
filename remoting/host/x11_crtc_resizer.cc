@@ -6,9 +6,12 @@
 
 #include <iterator>
 #include <utility>
+#include <vector>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
+#include "base/stl_util.h"
 #include "ui/gfx/x/future.h"
 
 namespace {
@@ -54,8 +57,14 @@ bool X11CrtcResizer::CrtcInfo::OffsetsChanged() const {
 
 X11CrtcResizer::X11CrtcResizer(
     x11::RandR::GetScreenResourcesCurrentReply* resources,
-    x11::RandR* randr)
-    : resources_(resources), randr_(randr) {}
+    x11::Connection* connection)
+    : resources_(resources), connection_(connection) {
+  // Unittests provide nullptr, and do not exercise code-paths that talk to the
+  // X server.
+  if (connection_) {
+    randr_ = &connection_->randr();
+  }
+}
 
 X11CrtcResizer::~X11CrtcResizer() = default;
 
@@ -105,7 +114,7 @@ void X11CrtcResizer::DisableCrtc(x11::RandR::Crtc crtc) {
 void X11CrtcResizer::UpdateActiveCrtcs(x11::RandR::Crtc crtc,
                                        x11::RandR::Mode mode,
                                        const webrtc::DesktopSize& new_size) {
-  resized_crtc_ = crtc;
+  updated_crtcs_.insert(crtc);
 
   // Find |crtc| in |active_crtcs_| and adjust its mode and size.
   auto iter = base::ranges::find(active_crtcs_, crtc, &CrtcInfo::crtc);
@@ -115,24 +124,142 @@ void X11CrtcResizer::UpdateActiveCrtcs(x11::RandR::Crtc crtc,
   DCHECK(iter != active_crtcs_.end());
 
   iter->mode = mode;
-  RelayoutCrtcs(*iter, new_size);
+  RelayoutCrtcs(iter->crtc, new_size);
   NormalizeCrtcs();
 }
 
-void X11CrtcResizer::RelayoutCrtcs(CrtcInfo& crtc_to_resize,
+void X11CrtcResizer::UpdateActiveCrtc(x11::RandR::Crtc crtc,
+                                      x11::RandR::Mode mode,
+                                      const webrtc::DesktopRect& new_rect) {
+  updated_crtcs_.insert(crtc);
+
+  // Find |crtc| in |active_crtcs_| and adjust its mode and size.
+  auto iter = base::ranges::find(active_crtcs_, crtc, &CrtcInfo::crtc);
+
+  // |crtc| was returned by GetCrtcForOutput() so it should definitely be in
+  // the list.
+  DCHECK(iter != active_crtcs_.end());
+
+  iter->mode = mode;
+  iter->x = new_rect.left();
+  iter->y = new_rect.top();
+  iter->width = new_rect.width();
+  iter->height = new_rect.height();
+}
+
+void X11CrtcResizer::AddActiveCrtc(
+    x11::RandR::Crtc crtc,
+    x11::RandR::Mode mode,
+    const std::vector<x11::RandR::Output>& outputs,
+    const webrtc::DesktopRect& new_rect) {
+  // |crtc| is not active so it must not be in |active_crtcs_|.
+  DCHECK(base::ranges::find(active_crtcs_, crtc, &CrtcInfo::crtc) ==
+         active_crtcs_.end());
+
+  active_crtcs_.emplace_back(crtc, new_rect.left(), new_rect.top(),
+                             new_rect.width(), new_rect.height(), mode,
+                             x11::RandR::Rotation::Rotate_0, outputs);
+  updated_crtcs_.insert(crtc);
+}
+
+void X11CrtcResizer::RemoveActiveCrtc(x11::RandR::Crtc crtc) {
+  auto iter = base::ranges::remove(active_crtcs_, crtc, &CrtcInfo::crtc);
+  DCHECK(iter != active_crtcs_.end());
+  active_crtcs_.erase(iter, active_crtcs_.end());
+}
+
+void X11CrtcResizer::RelayoutCrtcs(x11::RandR::Crtc crtc_to_resize,
                                    const webrtc::DesktopSize& new_size) {
   if (LayoutIsVertical()) {
-    PackVertically(new_size);
+    PackVertically(new_size, crtc_to_resize);
   } else {
-    PackHorizontally(new_size);
+    PackHorizontally(new_size, crtc_to_resize);
   }
 }
 
 void X11CrtcResizer::DisableChangedCrtcs() {
   for (const auto& crtc_info : active_crtcs_) {
-    // |resized_crtc_| is expected to be disabled by the caller.
-    if (crtc_info.OffsetsChanged() && crtc_info.crtc != resized_crtc_) {
+    // Updated CRTCs are expected to be disabled by the caller.
+    if (crtc_info.OffsetsChanged() &&
+        !updated_crtcs_.contains(crtc_info.crtc)) {
       DisableCrtc(crtc_info.crtc);
+    }
+  }
+}
+
+void X11CrtcResizer::NormalizeCrtcs() {
+  webrtc::DesktopRect bounding_box;
+  for (const auto& crtc : active_crtcs_) {
+    bounding_box.UnionWith(
+        webrtc::DesktopRect::MakeXYWH(crtc.x, crtc.y, crtc.width, crtc.height));
+  }
+  bounding_box_size_ = bounding_box.size();
+  webrtc::DesktopVector adjustment = -bounding_box.top_left();
+  if (adjustment.is_zero()) {
+    return;
+  }
+  for (auto& crtc : active_crtcs_) {
+    crtc.x += adjustment.x();
+    crtc.y += adjustment.y();
+  }
+}
+
+void X11CrtcResizer::MoveApplicationWindows() {
+  if (!connection_) {
+    // connection_ is nullptr in unittests.
+    return;
+  }
+
+  // Only direct descendants of the root window should be moved. Child
+  // windows automatically track the location of their parents, and can only
+  // be moved within their parent window.
+  auto query_response =
+      connection_->QueryTree({connection_->default_root()}).Sync();
+  if (!query_response) {
+    return;
+  }
+  for (const auto& window : query_response->children) {
+    auto attributes_response =
+        connection_->GetWindowAttributes({window}).Sync();
+    if (!attributes_response) {
+      continue;
+    }
+    if (attributes_response->map_state != x11::MapState::Viewable) {
+      // Unmapped or hidden windows can be left alone - their geometries
+      // might not be meaningful. If the window later becomes mapped, the
+      // window-manager will be responsible for its placement.
+      continue;
+    }
+    auto geometry_response = connection_->GetGeometry(window).Sync();
+    if (!geometry_response) {
+      continue;
+    }
+
+    // Look for any CRTC which contains the window's top-left corner. If the
+    // CRTC is being moved, request the window to be moved the same amount.
+    for (const auto& crtc_info : active_crtcs_) {
+      if (!crtc_info.OffsetsChanged()) {
+        continue;
+      }
+
+      auto old_rect = webrtc::DesktopRect::MakeXYWH(
+          crtc_info.old_x, crtc_info.old_y, crtc_info.width, crtc_info.height);
+      webrtc::DesktopVector window_top_left(geometry_response->x,
+                                            geometry_response->y);
+      if (!old_rect.Contains(window_top_left)) {
+        continue;
+      }
+
+      webrtc::DesktopVector adjustment(crtc_info.x - crtc_info.old_x,
+                                       crtc_info.y - crtc_info.old_y);
+      window_top_left = window_top_left.add(adjustment);
+
+      connection_->ConfigureWindow({
+          .window = window,
+          .x = window_top_left.x(),
+          .y = window_top_left.y(),
+      });
+      break;
     }
   }
 }
@@ -144,7 +271,7 @@ webrtc::DesktopSize X11CrtcResizer::GetBoundingBox() const {
 
 void X11CrtcResizer::ApplyActiveCrtcs() {
   for (const auto& crtc_info : active_crtcs_) {
-    if (crtc_info.OffsetsChanged() || crtc_info.crtc == resized_crtc_) {
+    if (crtc_info.OffsetsChanged() || updated_crtcs_.contains(crtc_info.crtc)) {
       x11::Time config_timestamp = resources_->config_timestamp;
       randr_->SetCrtcConfig({
           .crtc = crtc_info.crtc,
@@ -158,6 +285,7 @@ void X11CrtcResizer::ApplyActiveCrtcs() {
       });
     }
   }
+  updated_crtcs_.clear();
 }
 
 void X11CrtcResizer::SetCrtcsForTest(
@@ -183,23 +311,6 @@ void X11CrtcResizer::AddCrtcFromReply(
     const x11::RandR::GetCrtcInfoReply& reply) {
   active_crtcs_.emplace_back(crtc, reply.x, reply.y, reply.width, reply.height,
                              reply.mode, reply.rotation, reply.outputs);
-}
-
-void X11CrtcResizer::NormalizeCrtcs() {
-  webrtc::DesktopRect bounding_box;
-  for (const auto& crtc : active_crtcs_) {
-    bounding_box.UnionWith(
-        webrtc::DesktopRect::MakeXYWH(crtc.x, crtc.y, crtc.width, crtc.height));
-  }
-  bounding_box_size_ = bounding_box.size();
-  webrtc::DesktopVector adjustment = -bounding_box.top_left();
-  if (adjustment.is_zero()) {
-    return;
-  }
-  for (auto& crtc : active_crtcs_) {
-    crtc.x += adjustment.x();
-    crtc.y += adjustment.y();
-  }
 }
 
 bool X11CrtcResizer::LayoutIsVertical() const {
@@ -231,7 +342,8 @@ bool X11CrtcResizer::LayoutIsVertical() const {
   return right1 > left2 && right2 > left1;
 }
 
-void X11CrtcResizer::PackVertically(const webrtc::DesktopSize& new_size) {
+void X11CrtcResizer::PackVertically(const webrtc::DesktopSize& new_size,
+                                    x11::RandR::Crtc resized_crtc) {
   // Before applying the new size, test if right-alignment should be
   // preserved.
   DCHECK(!active_crtcs_.empty());
@@ -252,7 +364,7 @@ void X11CrtcResizer::PackVertically(const webrtc::DesktopSize& new_size) {
 
   // Apply the new size.
   for (auto& crtc_info : active_crtcs_) {
-    if (crtc_info.crtc == resized_crtc_) {
+    if (crtc_info.crtc == resized_crtc) {
       crtc_info.width = new_size.width();
       crtc_info.height = new_size.height();
       break;
@@ -279,10 +391,11 @@ void X11CrtcResizer::PackVertically(const webrtc::DesktopSize& new_size) {
   }
 }
 
-void X11CrtcResizer::PackHorizontally(const webrtc::DesktopSize& new_size) {
+void X11CrtcResizer::PackHorizontally(const webrtc::DesktopSize& new_size,
+                                      x11::RandR::Crtc resized_crtc) {
   webrtc::DesktopSize new_size_transposed(new_size.height(), new_size.width());
   Transpose();
-  PackVertically(new_size_transposed);
+  PackVertically(new_size_transposed, resized_crtc);
   Transpose();
 }
 

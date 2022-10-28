@@ -454,6 +454,7 @@
 <translation id="3435465986463792564">ウィンドウの数が多くてお困りの場合も、ここで管理できます</translation>
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
 <translation id="3444179773590444986">サイトのダークモードに関するフィードバックを共有しますか？</translation>
+<translation id="3452832259067974318">プライバシー保護のため、Chrome ではこの欄のパスワードの自動入力は行われません。</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 件のダウンロードがスケジュール設定されました}other{# 件のダウンロードがスケジュール設定されました}}</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> として続行</translation>
 <translation id="3478363558367712427">検索エンジンを選択できます</translation>
@@ -679,6 +680,7 @@
 <translation id="4763480195061959176">動画</translation>
 <translation id="4766313118839197559">パスワードは、このデバイスのパスワード マネージャーに保存されます</translation>
 <translation id="4766678251456904326">デバイスへのアカウントの追加</translation>
+<translation id="4787736314074622408"><ph name="ITEM_TITLE" />を削除しますか？</translation>
 <translation id="4791358705705538979">ウェブでの操作（購入手続きなど）を完了できるようにサポートします</translation>
 <translation id="4794291718671962615">（<ph name="MEGABYTES" />）<ph name="URL" /></translation>
 <translation id="4802417911091824046">パスフレーズ暗号化の対象に Google Pay のお支払い方法と住所は含まれません。
@@ -948,6 +950,7 @@
 <translation id="6192907950379606605">画像の説明文を取得する</translation>
 <translation id="6196315980958524839">パスワードは、このデバイスの Google パスワード マネージャーに保存されます</translation>
 <translation id="620197886010707372"><ph name="APPNAME" /> 用のアプリを Google Play で開きますか？</translation>
+<translation id="6202812185118613467">同期を開始するには、もう一度ログインしてください</translation>
 <translation id="6203593061661911168">Wi-Fi 接続時にダウンロードを開始します</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ではありませんか？</translation>
 <translation id="6211386937064921208">このページのプレビューを表示しています</translation>
@@ -1380,7 +1383,7 @@
 <translation id="8410695015584479363">料金をチェック</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
 <translation id="8414396119627470038"><ph name="SITE_ETLD_PLUS_ONE" /> に <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> の情報を使用してログイン</translation>
-<translation id="8416347857511542594">Chrome での広告のカスタマイズの詳細</translation>
+<translation id="8416347857511542594">Chrome での広告のパーソナライズの詳細</translation>
 <translation id="8419244640277402268">含める</translation>
 <translation id="8424781820952413435">ページを送信しました。<ph name="DEVICE_TYPE" /> で Chrome を開くと表示できます</translation>
 <translation id="8427875596167638501">[プレビュー] タブが半分開いています</translation>

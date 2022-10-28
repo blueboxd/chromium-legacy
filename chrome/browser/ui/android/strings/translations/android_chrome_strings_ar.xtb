@@ -381,7 +381,7 @@
 <translation id="3031225630520268969">‏واجهة المستخدم الخاصة بالموافقة على استخدام ميزة "البحث الصوتي" في "مساعد Google"</translation>
 <translation id="3034163383943672781">سيبدأ التنزيل بتاريخ <ph name="DATE" /></translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
-<translation id="3037177537145227281">يتم حاليًا تتبُّع السعر</translation>
+<translation id="3037177537145227281">تتبُّع السعر</translation>
 <translation id="3037517125981011456">‏عرض رسائل مطالبة تسجيل الدخول إلى Chrome</translation>
 <translation id="3046945242843292318">الوصول إلى هذا الموقع الإلكتروني بسرعة أكبر في المرة القادمة</translation>
 <translation id="3055113921564083271">الاهتمامات التي أزلتها</translation>
@@ -455,6 +455,7 @@
 <translation id="3435465986463792564">هل لديك العديد من النوافذ؟ يمكنك إدارتها من هنا.</translation>
 <translation id="3443221991560634068">إعادة تحميل الصفحة الحالية</translation>
 <translation id="3444179773590444986">هل تريد مشاركة ملاحظاتك وآرائك حول وضع "المظهر الداكن" للمواقع الإلكترونية؟</translation>
+<translation id="3452832259067974318">‏لحماية خصوصيتك، لن يملء متصفِّح Chrome تلقائيًا كلمة المرور في هذا الحقل.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{تمّت جدوَلة عملية تنزيل واحدة.}zero{تمّت جدوَلة # عملية تنزيل.}two{تمّت جدوَلة عمليتَي تنزيل.}few{تمّت جدوَلة # عمليات تنزيل.}many{تمّت جدوَلة # عملية تنزيل.}other{تمّت جدوَلة # عملية تنزيل.}}</translation>
 <translation id="3474624961160222204">المتابعة باسم <ph name="NAME" /></translation>
 <translation id="3478363558367712427">يمكنك استخدام محرّك بحث آخر.</translation>
@@ -680,6 +681,7 @@
 <translation id="4763480195061959176">فيديو</translation>
 <translation id="4766313118839197559">يتم حفظ كلمات المرور في تطبيق "مدير كلمات المرور" على هذا الجهاز.</translation>
 <translation id="4766678251456904326">إضافة حساب إلى الجهاز</translation>
+<translation id="4787736314074622408">هل تريد حذف "<ph name="ITEM_TITLE" />"؟</translation>
 <translation id="4791358705705538979">يساعدك على إنجاز المهام على الويب، مثل إتمام عملية الدفع.</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">‏لا يتضمّن التشفير باستخدام عبارة المرور طرق الدفع والعناوين من Google Pay.
@@ -949,6 +951,7 @@
 <translation id="6192907950379606605">عرض أوصاف الصور</translation>
 <translation id="6196315980958524839">‏يتم حفظ كلمات المرور في تطبيق "مدير كلمات المرور في Google" على هذا الجهاز.</translation>
 <translation id="620197886010707372">‏هل تريد فتح تطبيق <ph name="APPNAME" /> باستخدام Google Play؟</translation>
+<translation id="6202812185118613467">سجِّل الدخول مرة أخرى لبدء المزامنة.</translation>
 <translation id="6203593061661911168">‏ستبدأ عملية التنزيل عند الاتصال بشبكة Wi-Fi.</translation>
 <translation id="6210748933810148297">ليس <ph name="EMAIL" />؟</translation>
 <translation id="6211386937064921208">جارٍ معاينة هذه الصفحة</translation>

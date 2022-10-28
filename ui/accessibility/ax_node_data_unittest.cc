@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,6 +167,7 @@ TEST(AXNodeDataTest, IsClickable) {
       ax::mojom::Role::kCheckBox,
       ax::mojom::Role::kColorWell,
       ax::mojom::Role::kComboBoxMenuButton,
+      ax::mojom::Role::kComboBoxSelect,
       ax::mojom::Role::kDate,
       ax::mojom::Role::kDateTime,
       ax::mojom::Role::kDisclosureTriangle,
@@ -341,9 +342,12 @@ TEST(AXNodeDataTest, SupportsExpandCollapse) {
   AXNodeData data;
 
   std::unordered_set<ax::mojom::Role> roles_expected_supports_expand_collapse =
-      {ax::mojom::Role::kComboBoxGrouping, ax::mojom::Role::kComboBoxMenuButton,
+      {ax::mojom::Role::kComboBoxGrouping,
+       ax::mojom::Role::kComboBoxMenuButton,
+       ax::mojom::Role::kComboBoxSelect,
        ax::mojom::Role::kDisclosureTriangle,
-       ax::mojom::Role::kTextFieldWithComboBox, ax::mojom::Role::kTreeItem};
+       ax::mojom::Role::kTextFieldWithComboBox,
+       ax::mojom::Role::kTreeItem};
 
   for (int role_idx = static_cast<int>(ax::mojom::Role::kMinValue);
        role_idx <= static_cast<int>(ax::mojom::Role::kMaxValue); role_idx++) {

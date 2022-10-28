@@ -32,6 +32,7 @@ baru <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></transl
 <translation id="1587223624401073077">Mae Google Chrome yn defnyddio'ch camera.</translation>
 <translation id="1587325591171447154">Mae <ph name="FILE_NAME" /> yn beryglus, felly mae Chrome wedi ei rhwystro.</translation>
 <translation id="1597911401261118146">I wirio a yw'ch cyfrineiriau'n ddiogel rhag toriadau data a phroblemau diogelwch eraill, <ph name="BEGIN_LINK" />mewngofnodwch i Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Gwnaeth Chrome rwysto'r ffeil archif hon oherwydd mae'n bosib ei bod yn cuddio drwgwedd</translation>
 <translation id="1619887657840448962">I wneud Chrome yn fwy diogel, gwnaethom analluogi'r estyniad canlynol nad yw wedi'i restru yn y <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ac a allai fod wedi'i ychwanegu heb i chi wybod.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Sut gallwch reoli eich data:<ph name="END_BOLD" /> Er mwyn amddiffyn eich preifatrwydd, rydym yn awtoddileu eich diddordebau sy'n hŷn na 4 wythnos. Wrth i chi barhau i bori, mae'n bosib y bydd diddordeb yn ymddangos ar y rhestr eto. Neu gallwch gael gwared ar ddiddordebau nad ydych am i Chrome eu hystyried.</translation>
 <translation id="1628000112320670027">Cael help gyda Chrome</translation>
@@ -61,6 +62,7 @@ baru <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></transl
 <translation id="2094648590148273905">Termau ChromeOS Flex</translation>
 <translation id="2094919256425865063">Gadael Chrome beth bynnag?</translation>
 <translation id="2106831557840787829">Mae ChromeOS Flex yn bosib oherwydd <ph name="BEGIN_LINK_CROS_OSS" />meddalwedd ffynhonnell agored<ph name="END_LINK_CROS_OSS" /> ychwanegol, fel y mae <ph name="BEGIN_LINK_LINUX_OSS" />amgylchedd datblygu Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Pan fydd ymlaen, mae Chrome yn adfer cof o dabiau nad ydych yn eu defnyddio'n weithredol. Mae hyn yn rhyddhau adnoddau eich cyfrifiadur ar gyfer tasgau eraill ac yn cadw Chrome yn gyflym. Mae tabiau anweithredol yn ymddangos yn wag ac yn ail-lwytho'n awtomatig pan fyddwch yn clicio arnynt. <ph name="BEGIN_LINK" />Dysgu rhagor<ph name="END_LINK" /> neu <ph name="BEGIN_LINK_2" />anfon adborth<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Bydd hyn yn dileu <ph name="ITEMS_COUNT" /> eitem o'r ddyfais hon. I adfer eich data yn nes ymlaen, mewngofnodwch i Chrome fel <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Ail-lansiwch i Ddiweddaru &amp;Chrome</translation>
 <translation id="2123055963409958220">Helpwch i wneud Chrome yn well drwy adrodd am <ph name="BEGIN_LINK" />y gosodiadau presennol<ph name="END_LINK" /></translation>
@@ -279,6 +281,7 @@ Nid yw Google Chrome yn gallu adfer eich gosodiadau.</translation>
 <translation id="6735387454586646204">System ChromeOS Flex</translation>
 <translation id="6739177684496155661">Parhau mewn proffil Chrome newydd?</translation>
 <translation id="6750954913813541382">I drwsio gwallau sillafu, mae Chrome yn anfon y testun rydych yn ei deipio yn y porwr at Google</translation>
+<translation id="6756581345161130259">Yn ôl yr angen, mae Chrome yn adfer cof o dabiau nad ydych yn eu defnyddio'n weithredol. Gallwch newid hyn unrhyw bryd yn y gosodiadau.</translation>
 <translation id="677276454032249905">Gadael Chrome beth bynnag?</translation>
 <translation id="6785872064505734160">Gall Google Assistant yn Chrome gwblhau gweithredoedd i chi ar draws gwefannau</translation>
 <translation id="683440813066116847">Rheol dod i mewn ar gyfer Google Chrome Canary i ganiatáu traffig mDNS.</translation>

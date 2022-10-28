@@ -8,7 +8,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
@@ -34,6 +38,7 @@ import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.components.browser_ui.widget.chips.ChipProperties;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
@@ -41,6 +46,7 @@ import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.resources.ResourceManager;
+import org.chromium.ui.util.ColorUtils;
 
 import java.util.List;
 
@@ -876,6 +882,7 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
         // Details in https://crbug.com/848922.
         float statusBarAlpha =
                 (maxBrightness - basePageBrightness) / (maxBrightness - minBrightness);
+        if (!getCanHideAndroidBrowserControls()) scrimAndroidToolbar(statusBarAlpha);
         if (statusBarAlpha == 0.0) {
             if (mScrimCoordinator != null) mScrimCoordinator.hideScrim(false);
             mScrimProperties = null;
@@ -898,6 +905,39 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
             }
             mScrimCoordinator.setAlpha(statusBarAlpha);
         }
+    }
+
+    private void scrimAndroidToolbar(float scrimFraction) {
+        int toolbarColor = mToolbarManager.getToolbar().getPrimaryColor();
+        if (scrimFraction > 0.f) {
+            toolbarColor = getScrimmedColor(mActivity, toolbarColor, scrimFraction);
+        }
+        ToolbarLayout toolbarLayout = (ToolbarLayout) mActivity.findViewById(R.id.toolbar);
+        ColorDrawable toolbarBackground = (ColorDrawable) toolbarLayout.getBackground();
+        toolbarBackground.setColor(toolbarColor);
+
+        scrimImage(R.id.drag_handlebar, R.color.drag_handlebar_color_baseline, scrimFraction);
+        scrimImage(R.id.toolbar_hairline, R.color.divider_line_bg_color_baseline, scrimFraction);
+    }
+
+    private void scrimImage(int viewId, int colorId, float scrimFraction) {
+        ImageView view = (ImageView) mActivity.findViewById(viewId);
+        if (view == null) return;
+        int baseColor = mActivity.getColor(colorId);
+        if (scrimFraction > 0.f) {
+            view.setColorFilter(getScrimmedColor(mActivity, baseColor, scrimFraction));
+        } else {
+            view.clearColorFilter();
+        }
+    }
+
+    private static @ColorInt int getScrimmedColor(
+            Context context, @ColorInt int baseColor, float scrimFraction) {
+        int scrimColor = context.getResources().getColor(R.color.default_scrim_color);
+        float scrimColorAlpha = (scrimColor >>> 24) / 255f;
+        int scrimColorOpaque = scrimColor & 0xFF000000;
+        return ColorUtils.getColorWithOverlay(
+                baseColor, scrimColorOpaque, scrimFraction * scrimColorAlpha, false);
     }
 
     // ============================================================================================
@@ -1002,9 +1042,8 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
      */
     private ContextualSearchPromoControl getPromoControl() {
         if (mPromoControl == null) {
-            mPromoControl =
-                    new ContextualSearchPromoControl(this, getContextualSearchPromoHost(),
-                            mContext, mContainerView, mResourceLoader);
+            mPromoControl = new ContextualSearchPromoControl(this, getContextualSearchPromoHost(),
+                    mContext, getCoordinatorView(), mResourceLoader);
         }
         return mPromoControl;
     }
@@ -1051,6 +1090,15 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
         return mPromoHost;
     }
 
+    private ViewGroup getCoordinatorView() {
+        ViewGroup result = mContainerView;
+        // Use the coordinator inside of the container if we can get it. See crbug.com/1258902.
+        ViewGroup coordinator = mContainerView.findViewById(org.chromium.chrome.R.id.coordinator);
+        // Returns null in tests. TODO(donnd): figure out why - tests should have the same views.
+        if (coordinator != null) result = coordinator;
+        return result;
+    }
+
     // ============================================================================================
     // The Delayed Intelligence Feature support
     // ============================================================================================
@@ -1078,7 +1126,7 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
         if (mRelatedSearchesInContentControl == null) {
             mRelatedSearchesInContentControl =
                     new RelatedSearchesControl(this, getRelatedSearchesInContentHost(), false,
-                            mContext, mContainerView, mResourceLoader);
+                            mContext, getCoordinatorView(), mResourceLoader);
         }
         return mRelatedSearchesInContentControl;
     }
@@ -1135,8 +1183,9 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
     @VisibleForTesting
     public RelatedSearchesControl getRelatedSearchesInBarControl() {
         if (mRelatedSearchesInBarControl == null) {
-            mRelatedSearchesInBarControl = new RelatedSearchesControl(this,
-                    getRelatedSearchesInBarHost(), true, mContext, mContainerView, mResourceLoader);
+            mRelatedSearchesInBarControl =
+                    new RelatedSearchesControl(this, getRelatedSearchesInBarHost(), true, mContext,
+                            getCoordinatorView(), mResourceLoader);
         }
         return mRelatedSearchesInBarControl;
     }
@@ -1288,5 +1337,11 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
                 updatePanelForExpansion(1.0f);
                 break;
         }
+    }
+
+    @Override
+    @VisibleForTesting
+    public boolean getCanHideAndroidBrowserControls() {
+        return super.getCanHideAndroidBrowserControls();
     }
 }

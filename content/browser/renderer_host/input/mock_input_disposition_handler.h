@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router.h"
+#include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 
 namespace content {

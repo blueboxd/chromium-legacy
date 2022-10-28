@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -32,6 +32,7 @@ class URLLoaderThrottle;
 }  // namespace blink
 
 namespace net {
+class NetworkAnonymizationKey;
 class SourceStream;
 }  // namespace net
 
@@ -48,7 +49,6 @@ class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
 class SignedExchangePrefetchMetricRecorder;
 class SignedExchangeReporter;
-class SignedExchangeValidityPinger;
 
 // SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
 // created when a SignedExchangeRequestHandler recieves an origin-signed HTTP
@@ -76,7 +76,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       std::unique_ptr<SignedExchangeReporter> reporter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       int frame_tree_node_id,
       scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
       const std::string& accept_langs,
@@ -144,7 +144,6 @@ class CONTENT_EXPORT SignedExchangeLoader final
                            network::mojom::URLResponseHeadPtr resource_response,
                            std::unique_ptr<net::SourceStream> payload_stream);
 
-  void StartReadingBody();
   void FinishReadingBody(int result);
   void NotifyClientOnCompleteIfReady();
   void ReportLoadResult(SignedExchangeLoadResult result);
@@ -182,7 +181,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
-  const net::NetworkIsolationKey network_isolation_key_;
+  const net::NetworkAnonymizationKey network_anonymization_key_;
   const int frame_tree_node_id_;
   scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
 
@@ -207,8 +206,6 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // Keep the signed exchange info to be stored to
   // PrefetchedSignedExchangeCache.
   std::unique_ptr<PrefetchedSignedExchangeCacheEntry> cache_entry_;
-
-  std::unique_ptr<SignedExchangeValidityPinger> validity_pinger_;
 
   base::WeakPtrFactory<SignedExchangeLoader> weak_factory_{this};
 };

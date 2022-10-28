@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/pepper/pepper_file_io_host.h"

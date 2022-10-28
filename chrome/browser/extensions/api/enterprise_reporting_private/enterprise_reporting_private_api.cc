@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -505,8 +506,7 @@ void EnterpriseReportingPrivateGetCertificateFunction::OnClientCertFetched(
   if (cert) {
     base::StringPiece der_cert = net::x509_util::CryptoBufferAsStringPiece(
         cert->certificate()->cert_buffer());
-    ret.encoded_certificate = std::make_unique<std::vector<uint8_t>>(
-        der_cert.begin(), der_cert.end());
+    ret.encoded_certificate.emplace(der_cert.begin(), der_cert.end());
   }
 
   Respond(WithArguments(ret.ToValue()));

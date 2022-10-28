@@ -137,6 +137,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
@@ -3872,6 +3873,10 @@ bool Element::SkipStyleRecalcForContainer(
     const ComputedStyle& style,
     const StyleRecalcChange& child_change) {
   DCHECK(RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled());
+
+  if (!GetDocument().GetStyleEngine().SkipStyleRecalcAllowed())
+    return false;
+
   if (!child_change.TraversePseudoElements(*this)) {
     // If none of the children or pseudo elements need to be traversed for style
     // recalc, there is no point in marking the subtree as skipped.
@@ -7538,6 +7543,8 @@ SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {
 }
 
 bool Element::IsSpellCheckingEnabled() const {
+  // TODO(crbug.com/1365686): This is not compliant with the spec
+  // https://html.spec.whatwg.org/#concept-spellcheck-default
   for (const Element* element = this; element;
        element = element->ParentOrShadowHostElement()) {
     switch (element->GetSpellcheckAttributeState()) {
@@ -7546,6 +7553,10 @@ bool Element::IsSpellCheckingEnabled() const {
       case kSpellcheckAttributeFalse:
         return false;
       case kSpellcheckAttributeDefault:
+        if (const auto* input = DynamicTo<HTMLInputElement>(element)) {
+          if (input->HasBeenPasswordField())
+            return false;
+        }
         break;
     }
   }

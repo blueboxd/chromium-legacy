@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,10 @@ class VIEWS_EXPORT DesktopDragDropClientWin
 
   void OnNativeWidgetDestroying(HWND window);
 
+  base::WeakPtr<DesktopDragDropClientWin> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   bool drag_drop_in_progress_;
 
@@ -63,10 +67,10 @@ class VIEWS_EXPORT DesktopDragDropClientWin
 
   scoped_refptr<DesktopDropTargetWin> drop_target_;
 
-  // |this| will get deleted DesktopNativeWidgetAura is notified that the
+  // |this| will get deleted when DesktopNativeWidgetAura is notified that the
   // DesktopWindowTreeHost is being destroyed. So desktop_host_ should outlive
   // |this|.
-  raw_ptr<DesktopWindowTreeHostWin, DanglingUntriaged> desktop_host_ = nullptr;
+  raw_ptr<DesktopWindowTreeHostWin> desktop_host_ = nullptr;
 
   base::WeakPtrFactory<DesktopDragDropClientWin> weak_factory_{this};
 };

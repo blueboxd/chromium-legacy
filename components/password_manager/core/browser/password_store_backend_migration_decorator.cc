@@ -15,6 +15,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace password_manager {
 
@@ -28,10 +29,31 @@ constexpr int kMigrationToAndroidBackendDelay = 30;
 
 // Check the experiment stage allows migration and that user wasn't kicked out
 // from the experiment after receiving errors from the backend.
-bool ShouldAttemptMigration(PrefService* prefs) {
+bool ShouldAttemptMigration(const PrefService* prefs) {
   return features::RequiresMigrationForUnifiedPasswordManager() &&
          !prefs->GetBoolean(
              prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
+}
+
+// Returns if the limit of automatic reenrollment attempts if set, and, if yes,
+// whether the user has reached the limit.
+bool ReachedReenrollmentAttemptsLimit(const PrefService* prefs) {
+  int max_reenrollement_attempts =
+      password_manager::features::kMaxUPMReenrollmentAttempts.Get();
+  return max_reenrollement_attempts &&
+         prefs->GetInteger(
+             prefs::kTimesAttemptedToReenrollToGoogleMobileServices) >=
+             max_reenrollement_attempts;
+}
+
+// Returns if the limit of automatic reenrollments if set, and, if yes,
+// whether the user has reached the limit.
+bool ReachedReenrollmentsLimit(const PrefService* prefs) {
+  int max_reenrollements =
+      password_manager::features::kMaxUPMReenrollments.Get();
+  return max_reenrollements &&
+         prefs->GetInteger(prefs::kTimesReenrolledToGoogleMobileServices) >=
+             max_reenrollements;
 }
 
 }  // namespace
@@ -90,6 +112,49 @@ void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
   }
 }
 
+void PasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
+    OnSyncCycleCompleted(syncer::SyncService* sync) {
+  // Reenrollment check is made on the first sync cycle when password sync is
+  // active.
+  if (!sync_util::IsPasswordSyncActive(sync) ||
+      !is_waiting_for_the_first_sync_cycle_) {
+    return;
+  }
+  is_waiting_for_the_first_sync_cycle_ = false;
+
+  // If the sync cycle has completed successfully, the migrator
+  // exists and the user is unenrolled from the UPM experiment, the reenrollment
+  // attempt will be performed.
+  if (!migrator_ ||
+      !prefs_->GetBoolean(
+          prefs::kUnenrolledFromGoogleMobileServicesDueToErrors) ||
+      !base::FeatureList::IsEnabled(
+          features::kUnifiedPasswordManagerReenrollment)) {
+    return;
+  }
+
+  if (ReachedReenrollmentAttemptsLimit(prefs_) ||
+      ReachedReenrollmentsLimit(prefs_)) {
+    return;
+  }
+
+  if (sync_util::IsPasswordSyncActive(sync) &&
+      (sync->GetAuthError() ==
+       GoogleServiceAuthError(GoogleServiceAuthError::NONE))) {
+    int reenrollment_attempts = prefs_->GetInteger(
+        prefs::kTimesAttemptedToReenrollToGoogleMobileServices);
+    prefs_->SetInteger(prefs::kTimesAttemptedToReenrollToGoogleMobileServices,
+                       reenrollment_attempts + 1);
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            &BuiltInBackendToAndroidBackendMigrator::StartMigrationIfNecessary,
+            migrator_->GetWeakPtr(),
+            /*should_attempt_reenrollment=*/true),
+        base::Seconds(kMigrationToAndroidBackendDelay));
+  }
+}
+
 void PasswordStoreBackendMigrationDecorator::InitBackend(
     RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
@@ -116,11 +181,17 @@ void PasswordStoreBackendMigrationDecorator::InitBackend(
                                std::move(sync_enabled_or_disabled_cb),
                                std::move(completion));
 
-  // Attempt to start the migration only if the current experiment stage allows
-  // it and the user wasn't kicked out of the experiment.
-  if (ShouldAttemptMigration(prefs_)) {
-    migrator_ = std::make_unique<BuiltInBackendToAndroidBackendMigrator>(
-        built_in_backend_.get(), android_backend_.get(), prefs_);
+  // Create a migrator only if the current experiment stage allows it.
+  if (!features::RequiresMigrationForUnifiedPasswordManager())
+    return;
+
+  migrator_ = std::make_unique<BuiltInBackendToAndroidBackendMigrator>(
+      built_in_backend_.get(), android_backend_.get(), prefs_);
+  sync_settings_helper_.set_migrator(migrator_.get());
+
+  // Schedule a migration if the user wasn't evicted from UPM.
+  if (!prefs_->GetBoolean(
+          prefs::kUnenrolledFromGoogleMobileServicesDueToErrors)) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(
@@ -250,16 +321,15 @@ void PasswordStoreBackendMigrationDecorator::OnSyncServiceInitialized(
   sync_settings_helper_.CachePasswordSyncSettingOnStartup(sync_service);
   sync_service->AddObserver(&sync_settings_helper_);
   active_backend_->OnSyncServiceInitialized(sync_service);
-  if (migrator_) {
-    // The migrator exists only if the current experiment stage allows it
-    // and the user wasn't kicked out of the experiment.
-    DCHECK(ShouldAttemptMigration(prefs_));
+  if (migrator_)
     migrator_->OnSyncServiceInitialized(sync_service);
-  }
 }
 
 void PasswordStoreBackendMigrationDecorator::StartMigrationAfterInit() {
-  DCHECK(migrator_);
+  // Return early if the user was evicted after scheduling migration.
+  if (!ShouldAttemptMigration(prefs_))
+    return;
+
   if (prefs_->GetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange) &&
       !IsPasswordSyncEnabled(sync_service_)) {
     // Sync was disabled at the end of the last session, but migration from
@@ -273,7 +343,8 @@ void PasswordStoreBackendMigrationDecorator::StartMigrationAfterInit() {
     return;
   }
 
-  migrator_->StartMigrationIfNecessary();
+  migrator_->StartMigrationIfNecessary(
+      /*should_attempt_upm_reenrollment=*/false);
 }
 
 void PasswordStoreBackendMigrationDecorator::SyncStatusChanged() {
@@ -282,7 +353,8 @@ void PasswordStoreBackendMigrationDecorator::SyncStatusChanged() {
 
   sync_settings_helper_.SyncStatusChangeApplied();
   // Non-syncable data needs to be migrated to the new active backend.
-  migrator_->StartMigrationIfNecessary();
+  migrator_->StartMigrationIfNecessary(
+      /*should_attempt_upm_reenrollment=*/false);
 
   // TODO(crbug.com/1312387): Delete all the passwords from GMS Core
   // local storage if password sync was enabled.

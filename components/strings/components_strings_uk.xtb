@@ -174,6 +174,7 @@
 <translation id="1380591466760231819">Зігнути у вигляді конверта</translation>
 <translation id="138218114945450791">Світло-синій</translation>
 <translation id="1382194467192730611">Пристрій USB дозволив адміністратор</translation>
+<translation id="1382378825779654399">Якщо на якомусь сайті знизиться ціна, ви отримаєте сповіщення електронною поштою. Цю сторінку буде збережено в папці "<ph name="LAST_BOOKMARKS_FOLDER" />".</translation>
 <translation id="1382912999714108023">Не відображається актуальна інформація? Попросіть представника банку оновити її.</translation>
 <translation id="1384725838384960382">Екран автентифікації облікових даних для безпечних платежів</translation>
 <translation id="1386623374109090026">Примітки</translation>
@@ -250,7 +251,6 @@
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Безкоштовне й умовно безкоштовне програмне забезпечення</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
-<translation id="1554003749331233619">Тепер ви відстежуєте цей товар. Цю сторінку збережено в папці "<ph name="LAST_BOOKMARKS_FOLDER" />".</translation>
 <translation id="1555130319947370107">Синій</translation>
 <translation id="1559447966090556585">Отримувати сповіщення?</translation>
 <translation id="1559528461873125649">Такого файла або каталогу немає</translation>
@@ -298,7 +298,6 @@
 <translation id="1662550410081243962">Зберігати й заповнювати способи оплати</translation>
 <translation id="1663943134801823270">Дані картки та список адрес містяться в Chrome. Ними можна керувати в <ph name="BEGIN_LINK" />Налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1673886523110456987">Щоб скористатися пропозицією, здійсніть оплату за допомогою картки <ph name="CARD_DETAIL" /></translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Спочатку по ширині</translation>
 <translation id="168693727862418163">Не вдалося перевірити значення цього правила в схемі, тому воно ігноруватиметься.</translation>
@@ -423,6 +422,7 @@
 <translation id="2034971124472263449">Усе одно зберегти</translation>
 <translation id="2035400064145347639">Путівники та матеріали про подорожі</translation>
 <translation id="2036983605131262583">Альтернативний рулон</translation>
+<translation id="2040463897538655645">Знімний носій</translation>
 <translation id="2040894699575719559">Доступ до геоданих заблоковано</translation>
 <translation id="2042213636306070719">Лоток 7</translation>
 <translation id="204357726431741734">Увійдіть, щоб користуватися паролями, збереженими в обліковому записі Google</translation>
@@ -1005,7 +1005,6 @@
 <translation id="3633738897356909127">Кнопка "Оновити Chrome"; натисніть Enter, щоб оновити веб-переглядач Chrome у його налаштуваннях</translation>
 <translation id="3634530185120165534">Лоток 5</translation>
 <translation id="3634567936866541746">Щойно ви ввели пароль на оманливому сайті. Щоб захистити ваші облікові записи, Chrome радить перевірити збережені паролі.</translation>
-<translation id="3637033245385760976">Потрібно ввімкнути сповіщення Chrome. Для цього перейдіть у <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="3637662659967048211">Зберегти в обліковий запис Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Додаток:</translation>
@@ -1521,6 +1520,7 @@
 <translation id="5018422839182700155">Не вдається відкрити цю сторінку</translation>
 <translation id="5019198164206649151">Резервний носій пошкоджено</translation>
 <translation id="5020776957610079374">Музика народів світу</translation>
+<translation id="5021557570875267742">Відстежуйте ціни за допомогою Chrome</translation>
 <translation id="5023310440958281426">Перегляньте правила свого адміністратора</translation>
 <translation id="5029568752722684782">Видалити копію</translation>
 <translation id="5030338702439866405">Ким видано:</translation>
@@ -1977,7 +1977,7 @@
 <translation id="6259156558325130047">&amp;Повторити перевпорядкування</translation>
 <translation id="6263376278284652872">Закладки <ph name="DOMAIN" /></translation>
 <translation id="6264376385120300461">Усе одно завантажити</translation>
-<translation id="6264485186158353794">Повернутися до безпечного режиму</translation>
+<translation id="6264485186158353794">Повернутися на безпечну сторінку</translation>
 <translation id="6265794661083428563">Скопіювати значення правила <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Світло-бірюзовий</translation>
 <translation id="6272088941196661550">Щоб бачити релевантні дії в історії Chrome, відновіть сеанс</translation>
@@ -2242,6 +2242,7 @@
 <translation id="6993898126790112050">6x9 (конверт)</translation>
 <translation id="6996312675313362352">Завжди перекладати з такої мови: <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Індустрія розваг</translation>
+<translation id="7003335073762455340">Ви відстежуєте цей товар. Його сторінку збережено в папці "<ph name="LAST_BOOKMARKS_FOLDER" />".</translation>
 <translation id="7004583254764674281">Використовувати Windows Hello, щоб швидше підтверджувати картки</translation>
 <translation id="7006930604109697472">Усе одно надіслати</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2324,6 +2325,7 @@
 <translation id="7234638337680728591">Ціни на бензин і заправка автомобілів</translation>
 <translation id="7237492777898608035">Більше не показувати це повідомлення для цього сайту</translation>
 <translation id="7238585580608191973">Відбиток SHA-256</translation>
+<translation id="7239514174717251677">Сповіщення про зниження цін увімкнено. Щоб вимкнути їх, перейдіть у <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="7240120331469437312">Альтернативне ім'я суб'єкта сертифіката</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# збіг}one{# збіг}few{# збіги}many{# збігів}other{# збігу}}</translation>
@@ -2465,6 +2467,7 @@
 <translation id="7564049878696755256">Ви можете втратити доступ до облікового запису, який вам надає <ph name="ORG_NAME" />, або хтось може викрасти вашу особисту інформацію. Chrome радить змінити пароль.</translation>
 <translation id="7564680668369175887">Універсали</translation>
 <translation id="7567204685887185387">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Можливо, його сертифікат безпеки видали шахраї. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
+<translation id="7568616151991626879">Google Chrome намагається автоматично заповнити пароль у додатку <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Гольф</translation>
 <translation id="7569761772822664555">Кнопка "Керувати пошуковими системами"; натисніть Enter, щоб керувати пошуковою системою за умовчанням і пошуком на сайті.</translation>
 <translation id="7569952961197462199">Видалити дані кредитної картки з Chrome?</translation>
@@ -2822,7 +2825,6 @@
 <translation id="8559762987265718583">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="8564182942834072828">Окремі документи/непідібрані копії</translation>
 <translation id="8564985650692024650">Chromium радить скинути пароль <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, якщо ви застосовували його на інших сайтах.</translation>
-<translation id="8573969211731659953">Сповіщення про зниження цін увімкнено. Щоб вимкнути їх, перейдіть у <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="8576310925653847813">Системи домашнього кінотеатру</translation>
 <translation id="8577348305244205642">Віртуальна картка недоступна</translation>
 <translation id="858637041960032120">Додати тел.номер
@@ -3037,11 +3039,13 @@
 <translation id="9174623988242579721">Спеціалізовані та високопотужні транспортні засоби</translation>
 <translation id="9174917557437862841">Кнопка перемикання вкладки: натисніть Enter, щоб перейти на цю вкладку</translation>
 <translation id="9179703756951298733">Керувати платежами й даними кредитних карток у налаштуваннях Chrome</translation>
+<translation id="9179907736442194268">Отримуйте сповіщення електронною поштою, якщо на якомусь сайті знизиться ціна</translation>
 <translation id="9183302530794969518">Google Документи</translation>
 <translation id="9183425211371246419">Протокол, який використовує хост <ph name="HOST_NAME" />, не підтримується.</translation>
 <translation id="9187461866967718678">Екстремальні види спорту</translation>
 <translation id="9191834167571392248">Пробити отвір унизу ліворуч</translation>
 <translation id="9199905725844810519">Друк заблоковано</translation>
+<translation id="9202180858541326427">Потрібно ввімкнути сповіщення Chrome. Для цього перейдіть у <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="9205078245616868884">Ваші дані зашифровано за допомогою парольної фрази. Введіть її, щоб почати синхронізацію.</translation>
 <translation id="920511547311754821">Не вдається знайти код? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Не вдалося додати статтю.</translation>

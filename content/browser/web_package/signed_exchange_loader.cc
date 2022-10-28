@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/browser/web_package/signed_exchange_validity_pinger.h"
 #include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -61,7 +60,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     std::unique_ptr<SignedExchangeReporter> reporter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::NetworkAnonymizationKey& network_anonymization_key,
     int frame_tree_node_id,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs,
@@ -75,7 +74,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       devtools_proxy_(std::move(devtools_proxy)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
-      network_isolation_key_(network_isolation_key),
+      network_anonymization_key_(network_anonymization_key),
       frame_tree_node_id_(frame_tree_node_id),
       metric_recorder_(std::move(metric_recorder)),
       accept_langs_(accept_langs) {
@@ -188,7 +187,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
           std::move(response_body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
-      std::move(cert_fetcher_factory), network_isolation_key_,
+      std::move(cert_fetcher_factory), network_anonymization_key_,
       outer_request_.trusted_params
           ? absl::make_optional(outer_request_.trusted_params->isolation_info)
           : absl::nullopt,
@@ -334,36 +333,6 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
 
   body_data_pipe_adapter_ = std::make_unique<network::SourceStreamToDataPipe>(
       std::move(payload_stream), std::move(producer_handle));
-
-  StartReadingBody();
-}
-
-void SignedExchangeLoader::StartReadingBody() {
-  DCHECK(body_data_pipe_adapter_);
-
-  // If it's not for prefetch, kSignedHTTPExchangePingValidity is enabled
-  // and validity_pinger_ is not initialized yet, create a validity pinger
-  // and start it to ping the validity URL before start reading the inner
-  // response body.
-  if (!(outer_request_.load_flags & net::LOAD_PREFETCH) &&
-      base::FeatureList::IsEnabled(features::kSignedHTTPExchangePingValidity) &&
-      !validity_pinger_) {
-    DCHECK(url_loader_factory_);
-    DCHECK(url_loader_throttles_getter_);
-    DCHECK(inner_request_url_);
-    // For now we just use the fallback (request) URL to ping.
-    // TODO(kinuko): Use the validity URL extracted from the exchange.
-    validity_pinger_ = SignedExchangeValidityPinger::CreateAndStart(
-        *inner_request_url_, url_loader_factory_,
-        url_loader_throttles_getter_.Run(),
-        outer_request_.throttling_profile_id,
-        base::BindOnce(&SignedExchangeLoader::StartReadingBody,
-                       weak_factory_.GetWeakPtr()));
-    DCHECK(validity_pinger_);
-    return;
-  }
-
-  validity_pinger_.reset();
 
   // Start reading.
   body_data_pipe_adapter_->Start(base::BindOnce(

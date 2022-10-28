@@ -29,6 +29,7 @@
 <translation id="1587223624401073077">Google Chrome bruker kameraet ditt.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er farlig, så Chrome har blokkert den.</translation>
 <translation id="1597911401261118146">For å sjekke om passordene dine er trygge mot databrudd og andre sikkerhetsproblemer, <ph name="BEGIN_LINK" />logg på Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome har blokkert denne arkivfilen fordi den kan inneholde skadelig programvare</translation>
 <translation id="1619887657840448962">For å gjøre Chrome tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Slik kan du administrere dataene dine:<ph name="END_BOLD" /> For å beskytte personvernet ditt sletter vi automatisk interessene dine som er eldre enn fire uker. Når du fortsetter å surfe, kan det hende at interesser havner på listen igjen. Alternativt kan du fjerne interesse du ikke vil at Chrome skal vurdere.</translation>
 <translation id="1628000112320670027">Få hjelp med Chrome</translation>
@@ -56,6 +57,7 @@
 <translation id="2094648590148273905">Vilkår for ChromeOS Flex</translation>
 <translation id="2094919256425865063">Vil du avslutte Chrome likevel?</translation>
 <translation id="2106831557840787829">ChromeOS Flex er basert på <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />, i likhet med <ph name="BEGIN_LINK_LINUX_OSS" />Linux-utviklingsmiljøet<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Når denne innstillingen er på, gjenvinner Chrome minne fra faner du ikke bruker aktivt. Dette frigjør datamaskinens ressurser til andre oppgaver og sørger for at Chrome holder seg rask. Inaktive faner vises som tomme og lastes automatisk inn på nytt når du klikker på dem. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" />, eller <ph name="BEGIN_LINK_2" />send en tilbakemelding<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Dette sletter <ph name="ITEMS_COUNT" /> elementer fra denne enheten. For å hente dataene dine igjen senere må du logge på Chrome som <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Start på nytt for å oppdatere &amp;Chrome</translation>
 <translation id="2123055963409958220">Bidra til å gjøre Chrome bedre ved å rapportere de <ph name="BEGIN_LINK" />nåværende innstillingene<ph name="END_LINK" /></translation>
@@ -270,6 +272,7 @@
 <translation id="6735387454586646204">ChromeOS Flex-system</translation>
 <translation id="6739177684496155661">Vil du fortsette i en ny Chrome-profil?</translation>
 <translation id="6750954913813541382">For å rette stavefeil sender Chrome teksten du skriver inn i nettleseren, til Google</translation>
+<translation id="6756581345161130259">Ved behov tar Chrome tilbake minne fra faner du ikke bruker aktivt. Du kan når som helst endre dette i innstillingene.</translation>
 <translation id="677276454032249905">Vil du avslutte Chrome likevel?</translation>
 <translation id="6785872064505734160">Google-assistenten i Chrome kan utføre handlinger for deg på ulike nettsteder</translation>
 <translation id="683440813066116847">Regel om innkommende trafikk for Google Chrome Canary for å tillate mDNS-trafikk.</translation>

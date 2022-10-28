@@ -417,10 +417,9 @@ static ResourceId CreateResourceInLayerTree(
     const gfx::Size& size,
     bool is_overlay_candidate,
     ResourceFormat resource_format) {
-  auto resource = TransferableResource::MakeGL(
+  auto resource = TransferableResource::MakeGpu(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
-      size, is_overlay_candidate);
-  resource.format = resource_format;
+      size, resource_format, is_overlay_candidate);
 
   ResourceId resource_id =
       child_resource_provider->ImportResource(resource, base::DoNothing());
@@ -1916,7 +1915,7 @@ TEST_F(UnderlayTest, AllowVerticalFlip) {
       &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL,
-            candidate_list.back().transform);
+            absl::get<gfx::OverlayTransform>(candidate_list.back().transform));
 }
 
 TEST_F(UnderlayTest, AllowHorizontalFlip) {
@@ -1944,7 +1943,7 @@ TEST_F(UnderlayTest, AllowHorizontalFlip) {
       &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL,
-            candidate_list.back().transform);
+            absl::get<gfx::OverlayTransform>(candidate_list.back().transform));
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
@@ -2068,7 +2067,8 @@ TEST_F(UnderlayTest, Allow90DegreeRotation) {
       std::move(surface_damage_rect_list), nullptr, &candidate_list,
       &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
-  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90, candidate_list.back().transform);
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90,
+            absl::get<gfx::OverlayTransform>(candidate_list.back().transform));
 }
 
 TEST_F(UnderlayTest, Allow180DegreeRotation) {
@@ -2094,7 +2094,8 @@ TEST_F(UnderlayTest, Allow180DegreeRotation) {
       std::move(surface_damage_rect_list), nullptr, &candidate_list,
       &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
-  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_180, candidate_list.back().transform);
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_180,
+            absl::get<gfx::OverlayTransform>(candidate_list.back().transform));
 }
 
 TEST_F(UnderlayTest, Allow270DegreeRotation) {
@@ -2120,7 +2121,8 @@ TEST_F(UnderlayTest, Allow270DegreeRotation) {
       std::move(surface_damage_rect_list), nullptr, &candidate_list,
       &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
-  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270, candidate_list.back().transform);
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270,
+            absl::get<gfx::OverlayTransform>(candidate_list.back().transform));
 }
 
 TEST_F(UnderlayTest, AllowsOpaqueCandidates) {

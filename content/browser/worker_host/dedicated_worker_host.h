@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,10 @@ class DedicatedWorkerHost final
 
   const net::NetworkIsolationKey& GetNetworkIsolationKey() const {
     return isolation_info_.network_isolation_key();
+  }
+
+  const net::NetworkAnonymizationKey& GetNetworkAnonymizationKey() const {
+    return isolation_info_.network_anonymization_key();
   }
 
   const base::UnguessableToken& GetReportingSource() const {

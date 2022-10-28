@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,18 +32,19 @@ std::unique_ptr<LinuxInputMethodContext> CreateLinuxInputMethodContext(
   if (auto factory = GetInputMethodContextFactoryForTest())
     return factory.Run(delegate);
 
-  // Next, give the ozone platform a chance.
-  if (auto factory = GetInputMethodContextFactoryForOzone())
-    if (auto context = factory.Run(delegate))
-      return context;
-
 #if BUILDFLAG(IS_LINUX)
-  // Finally, let the toolkit create the context.
+  // Give the toolkit a chance to create the context.
   if (auto* linux_ui = LinuxUi::instance()) {
     if (auto context = linux_ui->CreateInputMethodContext(delegate))
       return context;
   }
 #endif
+
+  // Finally, give the ozone platform a chance.
+  if (auto factory = GetInputMethodContextFactoryForOzone()) {
+    if (auto context = factory.Run(delegate))
+      return context;
+  }
 
   // As a last resort, use a fake context.
   return std::make_unique<FakeInputMethodContext>();

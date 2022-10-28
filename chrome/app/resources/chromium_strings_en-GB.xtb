@@ -63,6 +63,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="2583187216237139145">Any Chromium data that is generated during the use of this profile (such as the creation of bookmarks, history, passwords and other settings) can be removed by the work profile administrator. <ph name="LEARN_MORE" /></translation>
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
 <translation id="2661879430930417727">If you share a device, friends and family can browse separately and set up Chromium just the way they want</translation>
+<translation id="2669853942967761236">Chromium blocked this archive file because it may hide malware</translation>
 <translation id="268602741124540128">Welcome to Chromium, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Chromium Tab</translation>
 <translation id="2718390899429598676">For added security, Chromium will encrypt your data.</translation>
@@ -303,6 +304,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7682601070171973634">Chromium is exploring new features that allow sites to deliver the same browsing experience using less of your data</translation>
 <translation id="7686590090926151193">Chromium isn't your default browser</translation>
 <translation id="7689606757190482937">Sync and personalise Chromium across your devices</translation>
+<translation id="7714577916146996629">When on, Chromium reclaims memory from tabs that you aren't actively using. This frees up your computer's resources for other tasks and keeps Chromium speedy. Inactive tabs appear empty and automatically reload when you click them. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /> or <ph name="BEGIN_LINK_2" />send feedback<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">This will delete your browsing data from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
@@ -332,6 +334,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="8463672209299734063">Optional: Help improve Chromium OS features and performance by automatically sending diagnostic and usage data to Google.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
+<translation id="8522220489792889625">As needed, Chromium reclaims memory from tabs that you aren't actively using. You can change this at any time in settings.</translation>
 <translation id="8550334526674375523">This work profile is completely separate from your personal profile.</translation>
 <translation id="8558383651099478961">Your parent has turned off 'Permissions for sites, apps and extensions' for Chromium. Adding this <ph name="EXTENSION_TYPE_PARAMETER" /> is not allowed.</translation>
 <translation id="8561285221328166383">To get future Chromium updates, you'll need macOS 10.13 or later. This computer is using macOS 10.12.</translation>

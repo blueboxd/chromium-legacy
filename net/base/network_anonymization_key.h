@@ -5,13 +5,19 @@
 #ifndef NET_BASE_NETWORK_ANONYMIZATION_KEY_H_
 #define NET_BASE_NETWORK_ANONYMIZATION_KEY_H_
 
+#include <cstddef>
 #include <string>
 #include <tuple>
 
 #include "base/unguessable_token.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace base {
+class Value;
+}
 
 namespace net {
 
@@ -54,6 +60,8 @@ namespace net {
 
 class NET_EXPORT NetworkAnonymizationKey {
  public:
+  // TODO(crbug/1372123): Consider having the constructor not pass
+  // `is_cross_site` since this may be unnecessary and confusing to consumers.
   NetworkAnonymizationKey(
       const SchemefulSite& top_frame_site,
       const absl::optional<SchemefulSite>& frame_site = absl::nullopt,
@@ -93,6 +101,31 @@ class NET_EXPORT NetworkAnonymizationKey {
                     other.is_cross_site_, other.nonce_);
   }
 
+  // Creates a NetworkAnonymizationKey from a NetworkAnonymizationKey. This is
+  // possible because a NetworkAnonymizationKey must always be more granular
+  // than a NetworkAnonymizationKey.
+  static NetworkAnonymizationKey CreateFromNetworkIsolationKey(
+      const net::NetworkIsolationKey& network_isolation_key);
+
+  // TODO(crbug/1372769)
+  // Intended for temporary use in locations that should be using main frame and
+  // frame origin, but are currently only using frame origin, because the
+  // creating object may be shared across main frame objects. Having a special
+  // constructor for these methods makes it easier to keep track of locating
+  // callsites that need to have their NetworkAnonymizationKey filled in.
+  static NetworkAnonymizationKey ToDoUseTopFrameOriginAsWell(
+      const url::Origin& incorrectly_used_frame_origin) {
+    net::SchemefulSite incorrectly_used_frame_site =
+        net::SchemefulSite(incorrectly_used_frame_origin);
+    return NetworkAnonymizationKey(incorrectly_used_frame_site,
+                                   incorrectly_used_frame_site);
+  }
+
+  // Creates a transient non-empty NetworkAnonymizationKey by creating an opaque
+  // origin. This prevents the NetworkAnonymizationKey from sharing data with
+  // other NetworkAnonymizationKey.
+  static NetworkAnonymizationKey CreateTransient();
+
   // Returns the string representation of the key.
   std::string ToDebugString() const;
 
@@ -125,7 +158,7 @@ class NET_EXPORT NetworkAnonymizationKey {
     return frame_site_;
   }
 
-  bool GetIsCrossSite() const;
+  absl::optional<bool> GetIsCrossSite() const;
 
   const absl::optional<base::UnguessableToken>& GetNonce() const {
     return nonce_;
@@ -154,9 +187,24 @@ class NET_EXPORT NetworkAnonymizationKey {
   // cross site from the top level site.
   static bool IsCrossSiteFlagSchemeEnabled();
 
+  // Returns a representation of |this| as a base::Value. Returns false on
+  // failure. Succeeds if either IsEmpty() or !IsTransient().
+  [[nodiscard]] bool ToValue(base::Value* out_value) const;
+
+  // Inverse of ToValue(). Writes the result to |network_anonymization_key|.
+  // Returns false on failure. Fails on values that could not have been produced
+  // by ToValue(), like transient origins.
+  [[nodiscard]] static bool FromValue(
+      const base::Value& value,
+      NetworkAnonymizationKey* out_network_anonymization_key);
+
  private:
   std::string GetSiteDebugString(
       const absl::optional<SchemefulSite>& site) const;
+
+  static absl::optional<std::string> SerializeSiteWithNonce(
+      const SchemefulSite& site);
+
   // The origin/etld+1 of the top frame of the page making the request. This
   // will always be populated unless all other fields are also nullopt.
   absl::optional<SchemefulSite> top_frame_site_;

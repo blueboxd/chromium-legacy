@@ -34,6 +34,8 @@
 # tags: [ mac-arm64 mac-x86_64 ]
 # Decoder
 # tags: [ passthrough no-passthrough ]
+# Browser Target CPU
+# tags: [ target-cpu-64 target-cpu-32 target-cpu-31 ]
 # ANGLE Backend
 # tags: [ angle-disabled
 #         angle-d3d9 angle-d3d11
@@ -563,6 +565,8 @@ crbug.com/1307905 [ win passthrough ] conformance/attribs/gl-vertexattribpointer
 
 # Fail when ANGLE GLES3 is requested for OOPR and SkiaRenderer.
 crbug.com/1336736 [ win angle-d3d11 ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+
+crbug.com/982294 [ win debug passthrough nvidia ] conformance/uniforms/uniform-samplers-test.html [ RetryOnFailure ]
 
 ####################
 # Mac failures     #

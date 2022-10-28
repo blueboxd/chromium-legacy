@@ -226,7 +226,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="218608176142494674">Partilha</translation>
 <translation id="2189903024544168260">Interesse removido</translation>
 <translation id="2194856509914051091">Aspetos a considerar</translation>
-<translation id="2200113223741723867">Efetue a gestão da partilha dos dados de utilização</translation>
+<translation id="2200113223741723867">Faça a gestão da partilha dos dados de utilização</translation>
 <translation id="2218567645332692482">Atualizar as navegações para HTTPS e avisar antes de carregar sites que não o suportam</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Janela vazia</translation>
@@ -575,7 +575,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="4141536112466364990">Conheça o Chrome</translation>
 <translation id="4162867837470729563">Lista de opções de partilha à altura total.</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
-<translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
+<translation id="4170011742729630528">O serviço não está disponível. Tente mais tarde.</translation>
 <translation id="4177222230309051052">Obtenha todos os marcadores</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
@@ -624,7 +624,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="4472118726404937099">Para sincronizar e personalizar entre dispositivos, inicie sessão e ative a sincronização.</translation>
 <translation id="4479839115899251637">Elimin. da Lista de leitura</translation>
 <translation id="4479972344484327217">A instalar o módulo <ph name="MODULE" /> para o Chrome…</translation>
-<translation id="4484496141267039529">Sem ligação. Tente novamente mais tarde.</translation>
+<translation id="4484496141267039529">Sem ligação. Tente mais tarde.</translation>
 <translation id="4487967297491345095">Todos os dados de apps do Chrome são eliminados permanentemente, incluindo todos os ficheiros, definições, contas, bases de dados, etc.</translation>
 <translation id="449126573531210296">Encriptar palavras-passe sincronizadas com a sua Conta Google</translation>
 <translation id="4504667196171871375">Com Wi-Fi e dados móveis</translation>
@@ -950,6 +950,7 @@ As avaliações da Privacy Sandbox ainda estão em desenvolvimento e estão disp
 <translation id="6192907950379606605">Obter descrições de imagens</translation>
 <translation id="6196315980958524839">As palavras-passe são guardadas no Gestor de Palavras-passe da Google neste dispositivo</translation>
 <translation id="620197886010707372">Abrir a app <ph name="APPNAME" /> com o Google Play?</translation>
+<translation id="6202812185118613467">Inicie sessão novamente para iniciar a sincronização</translation>
 <translation id="6203593061661911168">A transferência vai ser iniciada quando tiver ligação ao Wi-Fi</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> não é o seu email?</translation>
 <translation id="6211386937064921208">A pré-visualizar esta página…</translation>
@@ -1020,7 +1021,7 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="6532866250404780454">Os sites que visitar no Chrome não serão apresentados. Todos os temporizadores do site serão eliminados.</translation>
 <translation id="6534565668554028783">A Google demorou demasiado tempo a responder</translation>
-<translation id="6539092367496845964">Ocorreu um erro. Tente novamente mais tarde.</translation>
+<translation id="6539092367496845964">Ocorreu um erro. Tente mais tarde.</translation>
 <translation id="6541042852576515209">Redimensione e rode</translation>
 <translation id="6541983376925655882">{NUM_HOURS,plural, =1{Última verificação há 1 hora}other{Última verificação há # horas}}</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
@@ -1351,7 +1352,7 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8216351761227087153">Ver</translation>
 <translation id="8218052821161047641">Página rápida</translation>
-<translation id="8218622182176210845">Efetue a gestão da sua conta</translation>
+<translation id="8218622182176210845">Faça a gestão da sua conta</translation>
 <translation id="8221656072740924283">Continuar</translation>
 <translation id="8223642481677794647">Menu do cartão do feed</translation>
 <translation id="8250920743982581267">Docs</translation>
@@ -1398,7 +1399,7 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8460448946170646641">Rever os principais controlos de privacidade e segurança</translation>
 <translation id="8461694314515752532">Encriptar dados sincronizados com a sua própria frase de acesso de sincronização</translation>
 <translation id="8466613982764129868">Certifique-se de que o <ph name="TARGET_DEVICE_NAME" /> está ligado à Internet.</translation>
-<translation id="8473863474539038330">Endereços e mais</translation>
+<translation id="8473863474539038330">Moradas e mais</translation>
 <translation id="8481921391193215807">Quando esta opção está ativada, os sites podem utilizar as técnicas de preservação da privacidade mostradas aqui para fornecer o respetivo conteúdo e serviços. Estas incluem alternativas para a monitorização entre sites. Ao longo do tempo, podem ser adicionadas mais avaliações.
 
 <ph name="BEGIN_LIST_ITEM1" />Os anunciantes e os publicadores podem utilizar a APC.<ph name="END_LIST_ITEM1" />
@@ -1493,7 +1494,7 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8937267401510745927">Para ajudar a concluir as tarefas, a Google vai receber os URLs e os conteúdos dos sites nos quais utiliza o Assistente, bem como as informações que envia através do mesmo. Estas informações podem ser armazenadas na sua Conta Google. Pode desativar o Assistente nas definições do Chrome.</translation>
 <translation id="8937772741022875483">Remover a sua atividade do Chrome do Bem-estar digital?</translation>
 <translation id="8942627711005830162">Abrir noutra janela</translation>
-<translation id="8945143127965743188"><ph name="LANG" /> – Não foi possível transferir este idioma. Tente novamente mais tarde.</translation>
+<translation id="8945143127965743188"><ph name="LANG" /> – Não foi possível transferir este idioma. Tente mais tarde.</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8964479563882643397">Para abrir um novo separador de navegação anónima, abra o respetivo menu</translation>
 <translation id="8965591936373831584">pendente</translation>

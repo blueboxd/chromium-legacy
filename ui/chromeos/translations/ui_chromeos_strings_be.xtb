@@ -78,6 +78,7 @@
 <translation id="1722487484194605434">Элементы (<ph name="NUMBER_OF_ITEMS" />) архівуюцца...</translation>
 <translation id="1722687688096767818">Ідзе дадаванне профілю...</translation>
 <translation id="1726100011689679555">Серверы даменных імён</translation>
+<translation id="1726600877401297672">У сметніцу перамешчана наступная колькасць элементаў: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="1729953886957086472">Нямецкая (Германія)</translation>
 <translation id="1730235522912993863">Кітайская (цанцзе)</translation>
 <translation id="1731889557567069540">Скапіраваны элементы (<ph name="NUMBER_OF_ITEMS" />).</translation>
@@ -206,6 +207,7 @@
 <translation id="2888807692577297075">Няма элементаў, якія адпавядаюць запыту &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2894654529758326923">Інфармацыя</translation>
 <translation id="2902734494705624966">ЗША, пашыраная</translation>
+<translation id="2906052776158021882">У сметніцу перамяшчаецца наступная колькасць элементаў: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="290843123675549676">Маратхі</translation>
 <translation id="2923240520113693977">Эстонская</translation>
 <translation id="2938685643439809023">Мангольская</translation>
@@ -269,7 +271,7 @@
 <translation id="3414856743105198592">Фармаціраванне здымнага носьбіта мультымедыя прывядзе да страты ўсіх даных. Хочаце працягнуць?</translation>
 <translation id="3437801641691368414">Час стварэння</translation>
 <translation id="343907260260897561">Фотаапарат імгненнага друку</translation>
-<translation id="3452106565701029351">Адмацаваць у раздзеле "Абраныя файлы"</translation>
+<translation id="3452106565701029351">Выдаліць з раздзела "Хуткія файлы"</translation>
 <translation id="3455931012307786678">Эстонская</translation>
 <translation id="3475447146579922140">Табліца Google</translation>
 <translation id="3479552764303398839">Не зараз</translation>
@@ -422,6 +424,7 @@
 <translation id="4784330909746505604">Прэзентацыя PowerPoint</translation>
 <translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> КБ</translation>
 <translation id="4789067489790477934">Даць Parallels Desktop доступ да файлаў на Google Дыску. Змены будуць сінхранізавацца з іншымі прыладамі.</translation>
+<translation id="4790766916287588578">Хіндзі (з раскладкай InScript)</translation>
 <translation id="4801956050125744859">Пакінуць абодва</translation>
 <translation id="4804827417948292437">Авакада</translation>
 <translation id="4823651846660089135">Прылада толькі для чытання</translation>
@@ -458,6 +461,7 @@
 <translation id="5068919226082848014">Піца</translation>
 <translation id="5081517858322016911">Будуць выдалены файлы агульным памерам <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="508423945471810158">Ідзе перамяшчэнне элементаў (<ph name="NUMBER_OF_ITEMS" />) у папку "<ph name="FOLDER_NAME" />"</translation>
+<translation id="5092200349368278146">Файл "<ph name="FILE_NAME" />" перамешчаны ў сметніцу</translation>
 <translation id="509429900233858213">Адбылася памылка.</translation>
 <translation id="5098629044894065541">Іўрыт</translation>
 <translation id="5102922915594634436">Кіраваць сінхранізаванымі папкамі</translation>
@@ -560,6 +564,7 @@
 <translation id="5845721951356578987">Медработнік</translation>
 <translation id="5861477046012235702">Геймер</translation>
 <translation id="5864471791310927901">Не ўдалося выканаць пошук DHCP</translation>
+<translation id="5887342613489958822">Файл "<ph name="FILE_NAME" />" перамяшчаецца ў сметніцу</translation>
 <translation id="5896749729057314184">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, адключана, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падрабязныя звесткі</translation>
 <translation id="5911887972742538906">Узнікла памылка падчас усталявання Linux-праграмы.</translation>
 <translation id="5912396950572065471">Фармат</translation>
@@ -662,13 +667,14 @@
 <translation id="6874758081814639712">Чалавек займаецца тай-чы</translation>
 <translation id="6876155724392614295">Веласіпед</translation>
 <translation id="6878261347041253038">Клавіятура дэванагары (фанетычная)</translation>
+<translation id="6881853403185175088">Office</translation>
 <translation id="6885780034956018177">Слімак</translation>
 <translation id="6896758677409633944">Капіраваць</translation>
 <translation id="6898028766943174120">Іншыя ўкладзеныя папкі...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">ЗША (Workman)</translation>
 <translation id="6930242544192836755">Працягласць</translation>
-<translation id="6931302001003657424">Замацаваць у раздзеле "Абраныя файлы"</translation>
+<translation id="6931302001003657424">Замацаваць у раздзеле "Хуткія файлы"</translation>
 <translation id="6935521024859866267">Дагары нагамі</translation>
 <translation id="6943836128787782965">Памылка метаду HTTP GET</translation>
 <translation id="6949408524333579394">Сербская (транслітарацыя)</translation>

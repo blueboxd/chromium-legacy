@@ -110,7 +110,6 @@ import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.AutofillSessionLifetimeController;
 import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.tab.TabObscuringHandlerSupplier;
@@ -776,7 +775,7 @@ public class RootUiCoordinator
             mMessageQueueMediator = new ChromeMessageQueueMediator(mBrowserControlsManager,
                     mMessageContainerCoordinator, mActivityTabProvider,
                     mLayoutStateProviderOneShotSupplier, mModalDialogManagerSupplier,
-                    mActivityLifecycleDispatcher, mStartSurfaceSupplier, mMessageDispatcher);
+                    mActivityLifecycleDispatcher, mMessageDispatcher);
             mMessageDispatcher.setDelegate(mMessageQueueMediator);
             MessagesFactory.attachMessageDispatcher(mWindowAndroid, mMessageDispatcher);
         }
@@ -843,6 +842,7 @@ public class RootUiCoordinator
     }
 
     private void initHistoryClustersCoordinator(Profile profile) {
+        if (mActivity == null) return;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HISTORY_JOURNEYS)) {
             HistoryClustersDelegate historyClustersDelegate = new HistoryClustersDelegate() {
                 @Override
@@ -1235,17 +1235,10 @@ public class RootUiCoordinator
                     }
                 }
 
-                if (layoutType == LayoutType.TAB_SWITCHER
-                        || layoutType == LayoutType.START_SURFACE) {
+                if (layoutType == LayoutType.TAB_SWITCHER) {
                     // Hide find toolbar and app menu.
                     if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
                     hideAppMenu();
-
-                    // Hide current tab
-                    Tab currentTab = mTabModelSelectorSupplier.get().getCurrentTab();
-                    if (currentTab != null) {
-                        currentTab.hide(TabHidingType.OVERVIEW_SHOWN);
-                    }
                 }
             }
 

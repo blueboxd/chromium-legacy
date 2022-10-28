@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -355,11 +355,11 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   auto cloned_outside_fetch_client_settings_object =
       outside_fetch_client_settings_object.Clone();
 
-  // TODO(mmenke): The site-for-cookies and NetworkIsolationKey arguments leak
-  // data across NetworkIsolationKeys and allow same-site cookies to be sent in
-  // cross-site contexts. Fix this.
-  // Also, we should probably use `host->instance().storage_key().origin()`
-  // instead of `worker_origin`, see following DCHECK.
+  // TODO(mmenke): The site-for-cookies and NetworkAnonymizationKey arguments
+  // leak data across NetworkIsolationKeys and allow same-site cookies to be
+  // sent in cross-site contexts. Fix this. Also, we should probably use
+  // `host->instance().storage_key().origin()` instead of `worker_origin`, see
+  // following DCHECK.
   DCHECK(host->instance().url().SchemeIs(url::kDataScheme) ||
          GetContentClient()->browser()->DoesSchemeAllowCrossOriginSharedWorker(
              host->instance().storage_key().origin().scheme()) ||

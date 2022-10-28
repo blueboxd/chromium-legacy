@@ -271,6 +271,7 @@
 <translation id="3414856743105198592">Алынбалы тасымалдаушыны пішімдеу әрекеті барлық деректерді өшіреді. Жалғастырасыз ба?</translation>
 <translation id="3437801641691368414">Жасалған уақыты</translation>
 <translation id="343907260260897561">Лезде басып шығаратын камера</translation>
+<translation id="3452106565701029351">"Файлдарға жылдам өту" бөлімінен босату</translation>
 <translation id="3455931012307786678">Эстон</translation>
 <translation id="3475447146579922140">Google электрондық кестесі</translation>
 <translation id="3479552764303398839">Қазір емес</translation>
@@ -412,7 +413,7 @@
 <translation id="4706042980341760088">Тамиль (жазу машинасы пернетақтасымен)</translation>
 <translation id="4711094779914110278">түрікше</translation>
 <translation id="4712283082407695269">"<ph name="PATH" />" ашылуда</translation>
-<translation id="4720185134442950733">Мобильдік деректер желісі</translation>
+<translation id="4720185134442950733">Мобильдік интернет желісі</translation>
 <translation id="4725096204469550614">Осы жылдың басында</translation>
 <translation id="4725511304875193254">Корги</translation>
 <translation id="4737050008115666127">Қону</translation>
@@ -423,6 +424,7 @@
 <translation id="4784330909746505604">PowerPoint презентациясы</translation>
 <translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> КБ</translation>
 <translation id="4789067489790477934">Parallels Desktop үшін Google Drive дискісіндегі файлдарды пайдалануға рұқсат берілсін. Өзгертулер барлық құрылғыда болады.</translation>
+<translation id="4790766916287588578">Хинди (InScript пернетақтасымен)</translation>
 <translation id="4801956050125744859">Екеуін де сақтау</translation>
 <translation id="4804827417948292437">Авокадо</translation>
 <translation id="4823651846660089135">Құрылғы тек оқуға арналған</translation>
@@ -665,12 +667,14 @@
 <translation id="6874758081814639712">Тай-чимен айналысып жатқан адам</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6878261347041253038">Деванагари пернетақтасы (фонетикалық)</translation>
+<translation id="6881853403185175088">Office</translation>
 <translation id="6885780034956018177">Ұлу</translation>
 <translation id="6896758677409633944">Көшіру</translation>
 <translation id="6898028766943174120">Тағы басқа ішкі қалталар...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">АҚШ (Workman)</translation>
 <translation id="6930242544192836755">Ұзақтық</translation>
+<translation id="6931302001003657424">"Файлдарға жылдам өту" бөліміне бекіту</translation>
 <translation id="6935521024859866267">Төменгі жағын жоғары қаратып</translation>
 <translation id="6943836128787782965">HTTP сәтсіз аяқталды</translation>
 <translation id="6949408524333579394">Серб (транслитерация)</translation>

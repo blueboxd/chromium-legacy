@@ -290,7 +290,6 @@ bool ChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
         log_manager_.get());
     logger.LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT, ssl_errors);
   }
-
   return !ssl_errors && IsPasswordManagementEnabledForCurrentPage(url);
 }
 
@@ -402,8 +401,9 @@ void ChromePasswordManagerClient::FocusedInputChanged(
   password_manager::ContentPasswordManagerDriver* content_driver =
       static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
   if (!PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
-          web_contents(), content_driver, focused_field_type))
+          web_contents(), content_driver, focused_field_type)) {
     return;
+  }
 
   if (!content_driver->CanShowAutofillUi())
     return;
@@ -412,9 +412,16 @@ void ChromePasswordManagerClient::FocusedInputChanged(
     return;
 
   if (web_contents()->GetFocusedFrame()) {
+    bool manual_generation_available =
+        password_manager_util::ManualPasswordGenerationEnabled(driver);
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kUnifiedPasswordManagerErrorMessages)) {
+      manual_generation_available =
+          manual_generation_available &&
+          password_manager_.HaveFormManagersReceivedData(driver);
+    }
     GetOrCreatePasswordAccessory()->RefreshSuggestionsForField(
-        focused_field_type,
-        password_manager_util::ManualPasswordGenerationEnabled(driver));
+        focused_field_type, manual_generation_available);
   }
 
   PasswordGenerationController::GetOrCreate(web_contents())
@@ -448,6 +455,20 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 }
 
 #if BUILDFLAG(IS_ANDROID)
+void ChromePasswordManagerClient::ShowPasswordManagerErrorMessage(
+    password_manager::ErrorMessageFlowType flow_type,
+    password_manager::PasswordStoreBackendErrorType error_type) {
+  if (!password_manager_error_message_delegate_) {
+    password_manager_error_message_delegate_ =
+        std::make_unique<PasswordManagerErrorMessageDelegate>(
+            std::make_unique<PasswordManagerErrorMessageHelperBridgeImpl>());
+    password_manager_error_message_delegate_->MaybeDisplayErrorMessage(
+        web_contents(), flow_type, error_type,
+        base::BindOnce(&ChromePasswordManagerClient::ResetErrorMessageDelegate,
+                       base::Unretained(this)));
+  }
+}
+
 void ChromePasswordManagerClient::ShowTouchToFill(
     PasswordManagerDriver* driver,
     autofill::mojom::SubmissionReadinessState submission_readiness) {
@@ -494,7 +515,7 @@ bool ChromePasswordManagerClient::IsAutofillAssistantUIVisible() const {
 
 scoped_refptr<device_reauth::BiometricAuthenticator>
 ChromePasswordManagerClient::GetBiometricAuthenticator() {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   return ChromeBiometricAuthenticatorFactory::GetBiometricAuthenticator();
 #else
   return nullptr;
@@ -1673,5 +1694,11 @@ void ChromePasswordManagerClient::OnStateChanged(
   if (state == autofill_assistant::UIState::kNotShown)
     password_manager_.ResetPendingCredentials();
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void ChromePasswordManagerClient::ResetErrorMessageDelegate() {
+  password_manager_error_message_delegate_.reset();
+}
+#endif
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromePasswordManagerClient);

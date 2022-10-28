@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -585,8 +585,9 @@ void BindSocketManager(
     RenderFrameHostImpl* frame,
     mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver) {
   static_cast<RenderProcessHostImpl*>(frame->GetProcess())
-      ->BindP2PSocketManager(frame->GetNetworkIsolationKey(),
-                             std::move(receiver), frame->GetGlobalId());
+      ->BindP2PSocketManager(
+          frame->GetIsolationInfoForSubresources().network_anonymization_key(),
+          std::move(receiver), frame->GetGlobalId());
 }
 
 void BindGamepadMonitor(

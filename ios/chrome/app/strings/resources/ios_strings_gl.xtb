@@ -23,6 +23,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1104948393051856124">Aceptar e continuar</translation>
 <translation id="110724200315609752">Ir á ventá aberta</translation>
 <translation id="1112015203684611006">Erro impresión</translation>
+<translation id="1118569444314402022">Dámosche a benvida de novo, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Crear pestana nova</translation>
 <translation id="1126809382673880764">Non te protexe contra sitios web, descargas e extensións perigosos. Continuarás dispoñendo da protección da función Navegación segura, sempre que estea dispoñible, noutros servizos de Google (como Gmail e a Busca).</translation>
 <translation id="1135212215217513471">Obter Chrome para iOS</translation>
@@ -46,6 +47,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1272079795634619415">Deter</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="1281818060020671000">Xestionar datos</translation>
+<translation id="1282311502488501110">Non iniciar sesión</translation>
 <translation id="1283524564873030414">Últimas 24 horas</translation>
 <translation id="1285320974508926690">Non traducir nunca este sitio</translation>
 <translation id="1291506870746876680">Os permisos de <ph name="BEGIN_BOLD" /><ph name="SITE_NAME" /><ph name="END_BOLD" /> volverán desactivarse cando saias deste sitio.</translation>
@@ -54,6 +56,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1322735045095424339">A túa organización esixe o uso do modo de incógnito</translation>
 <translation id="1323735185997015385">Eliminar</translation>
 <translation id="132683371494960526">Toca dúas veces para cambiar o cartafol principal.</translation>
+<translation id="1335348992705722518">Xestionar configuración…</translation>
 <translation id="1340643665687018190">Pechar menú</translation>
 <translation id="1358214951266274152">Visitar ligazón que copiaches</translation>
 <translation id="1360432990279830238">Queres pechar sesión?</translation>
@@ -61,6 +64,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1377255359165588604">A sincronización deixou de funcionar.</translation>
 <translation id="1377321085342047638">Nº tarxeta</translation>
 <translation id="1383876407941801731">Buscar</translation>
+<translation id="138618066238211776">Continuar como <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">As últimas 4 semanas</translation>
 <translation id="1404330357948037222">Non tes a sesión iniciada</translation>
 <translation id="1407135791313364759">Abrir todo</translation>
@@ -174,9 +178,11 @@ Tampouco poden utilizalas para ver a túa actividade de navegación en distintos
 <translation id="2421044535038393232">Seguir editando</translation>
 <translation id="2434405374328098816">Xa gardaches un contrasinal de <ph name="USERNAME" /> para <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Mostrar contrasinal</translation>
+<translation id="2461070143328828326">Configuración dos contrasinais</translation>
 <translation id="2469960372084740698">Queres desactivar a función Navegación segura?</translation>
 <translation id="2473876017985765807">Xa gardaches un contrasinal para <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Non seleccionada</translation>
+<translation id="2482878487686419369">Notificacións</translation>
 <translation id="2500374554657206846">Opcións para gardar contrasinais</translation>
 <translation id="2523363575747517183">Este sitio web está tentando abrir outra aplicación.</translation>
 <translation id="2529021024822217800">Abrir todo</translation>
@@ -327,6 +333,7 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="3709582977625132201">Marcar como non lido</translation>
 <translation id="371230970611282515">Predí eventos perigosos antes de que se produzan e móstrache unha advertencia.</translation>
 <translation id="37207012422556617">Buscas populares</translation>
+<translation id="3726360487031500941">Inicia sesión de novo na túa conta (<ph name="USER_NAME" />)</translation>
 <translation id="3740397331642243698">Abre os URL escritos en Google Chrome no modo de incógnito.</translation>
 <translation id="3762232513783804601">Deseñado para iPad</translation>
 <translation id="3771033907050503522">Pestanas de incógnito</translation>
@@ -381,6 +388,7 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="4187450337729239226">Pegar e buscar</translation>
 <translation id="4223967053752765281">A túa organización desactivou o inicio de sesión. Podes seguir vendo os marcadores, o historial, os contrasinais e o resto das opcións de configuración que teñas neste dispositivo. Se fas cambios, non se sincronizarán coa túa conta.</translation>
 <translation id="4233831822770018312">Modificar permisos</translation>
+<translation id="4236584471598725073">Estase facendo un seguimento do prezo</translation>
 <translation id="4237377247299956313">Toca <ph name="BEGIN_BOLD" />Default Browser App<ph name="END_BOLD" /> (Aplicación de navegador predeterminada)</translation>
 <translation id="424315890655130736">Introducir contrasinal</translation>
 <translation id="4249955472157341256">Ordenar por máis recente</translation>
@@ -740,6 +748,7 @@ Co modo de incógnito activado, non poden utilizalas para ver a túa actividade 
 <translation id="6930799952781667037">Toca para cambiar a este idioma.</translation>
 <translation id="6944369514868857500">Escoller outra conta</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
+<translation id="6965382102122355670">Aceptar</translation>
 <translation id="6973630695168034713">Cartafoles</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Xestionar a túa Conta de Google</translation>

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -775,7 +775,7 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(
   }
   auto info_list =
       GetInfoListForNavigation(*exchange, verification_time, frame_tree_node_id,
-                               isolation_info.network_isolation_key());
+                               isolation_info.network_anonymization_key());
 
   mojo::Remote<network::mojom::RestrictedCookieManager> cookie_manager;
   auto* frame = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
@@ -823,7 +823,7 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     const PrefetchedSignedExchangeCacheEntry& main_exchange,
     const base::Time& verification_time,
     int frame_tree_node_id,
-    const net::NetworkIsolationKey& network_isolation_key) {
+    const net::NetworkAnonymizationKey& network_isolation_key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const url::Origin outer_url_origin =

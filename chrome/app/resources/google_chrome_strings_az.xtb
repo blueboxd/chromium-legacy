@@ -31,6 +31,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="1587223624401073077">Google Chrome kameranızı istifadə edir.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> təhlükəli olduğu üçün Chrome onu blok etdi.</translation>
 <translation id="1597911401261118146">Parollarınızın data pozuntuları və digər güvənlik məsələlərinə qarşı güvəndə olduğunu yoxlamaq üçün <ph name="BEGIN_LINK" />Chrome'a daxil olun<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome bu arxiv faylını bloklayıb, çünki faylda zərərli proqram ola bilər</translation>
 <translation id="1619887657840448962">Chrome'u təhlükəsiz etmək üçün, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> siyahısında olmayan və xəbəriniz olmadan əlavə edilən artırmanı deaktiv etdik.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Datanızı necə idarə edə bilərsiniz:<ph name="END_BOLD" /> Məxfiliyinizi qorumaq üçün 4 həftədən köhnə maraqlarınızı avtomatik silirik. Baxmağa davam etdikcə, maraq siyahıda yenidən görünə bilər. Və ya Chrome'un nəzərə almasını istəmədiyiniz maraqları silə bilərsiniz.</translation>
 <translation id="1628000112320670027">Chrome ilə yardım alın</translation>
@@ -58,6 +59,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2094648590148273905">ChromeOS Flex şərtləri</translation>
 <translation id="2094919256425865063">İstənilən halda Chrome'dan çıxılsın?</translation>
 <translation id="2106831557840787829">ChromeOS Flex <ph name="BEGIN_LINK_LINUX_OSS" />Linux tərtibat mühiti<ph name="END_LINK_LINUX_OSS" /> kimi əlavə <ph name="BEGIN_LINK_CROS_OSS" />açıq mənbə proqram təminatı<ph name="END_LINK_CROS_OSS" /> ilə əlçatan edilib.</translation>
+<translation id="2112742052114331084">Aktiv olduqda, Chrome aktiv istifadə etmədiyiniz tablardan yaddaşı geri alır. Bu, kompüterinizin resurslarını digər tapşırıqlar üçün boşaldır və Chrome'u sürətləndirir. Qeyri-aktiv tablar boş görünür və kliklədiyiniz zaman avtomatik olaraq yenidən yüklənir. <ph name="BEGIN_LINK" />Ətraflı məlumat əldə edin<ph name="END_LINK" /> və ya <ph name="BEGIN_LINK_2" />rəy göndərin<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> element bu cihazdan silinəcək. Sonradan datanızı bərpa etmək üçün Chrome'a <ph name="USER_EMAIL" /> kimi daxil olun.</translation>
 <translation id="2121284319307530122">&amp;Chrome'u Güncəlləmək üçün yenidən başladın</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />Cari ayarları<ph name="END_LINK" /> bildirməklə Chrome'u təkmilləşdirməyə kömək edin</translation>
@@ -174,6 +176,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Hansı data istifadə olunur:<ph name="END_BOLD" /> Baxış tarixçəniz, bu cihazda Chrome istifadə edərək ziyarət etdiyiniz saytların qeydi.</translation>
 <translation id="4281844954008187215">Xidmət Şərtləri</translation>
 <translation id="4293420128516039005">Chrome'u cihazlarda sinxronizasiya etmək və fərdiləşdirmək üçün daxil olun</translation>
+<translation id="430327780270213103">Chrome alətlər panelində artırmanın giriş sorğularını göstərməsinə icazə verin</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4334294535648607276">Endirmə tamamlandı.</translation>
 <translation id="4335235004908507846">Chrome Sizi data pozuntuları, xətalı artırmalar və digər güvənlik məsələlərinə qarşı qoruya bilər</translation>
@@ -273,6 +276,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="6735387454586646204">ChromeOS Flex Sistemi</translation>
 <translation id="6739177684496155661">Yeni Chrome profilində davam edilsin?</translation>
 <translation id="6750954913813541382">Orfoqrafik səhvləri düzəltmək üçün Chrome brauzerində yazdığınız mətni Google'a göndərir</translation>
+<translation id="6756581345161130259">Lazım olduqda, Chrome aktiv istifadə etmədiyiniz tablardan yaddaşı geri alır. Bunu istənilən zaman ayarlarda dəyişə bilərsiniz.</translation>
 <translation id="677276454032249905">Chrome'dan istənilən hada çıxılsın?</translation>
 <translation id="6785872064505734160">Chrome'da Google Assistent sizin üçün vebsaytlarda əməliyyatlar icra edə bilər</translation>
 <translation id="683440813066116847">mDNS trafikinə imkan vermək üçün Google Chrome Canary üçün daxil olan qayda.</translation>

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -392,12 +392,13 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
     return PP_ERROR_FAILED;
 
   // Intentionally using a HostPortPair because scheme isn't specified.
-  // TODO(mmenke): Pass in correct NetworkIsolationKey.
+  // TODO(mmenke): Pass in correct NetworkAnonymizationKey.
   network_context->ResolveHost(
       network::mojom::HostResolverHost::NewHostPortPair(
           net::HostPortPair(host, port)),
-      render_frame_host->GetNetworkIsolationKey(), nullptr,
-      receiver_.BindNewPipeAndPassRemote());
+      render_frame_host->GetIsolationInfoForSubresources()
+          .network_anonymization_key(),
+      nullptr, receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(base::BindOnce(
       &PepperTCPSocketMessageFilter::OnComplete, base::Unretained(this),
       net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),

@@ -30,6 +30,7 @@
 <translation id="1587223624401073077">‏Google Chrome משתמש במצלמה שלך.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chrome חסם אותו.</translation>
 <translation id="1597911401261118146">‏כדי לבדוק אם שאר הסיסמאות מוגנות מפני פרצות באבטחת מידע ובעיות אבטחה אחרות, <ph name="BEGIN_LINK" />יש להיכנס ל-Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">‏קובץ הארכיון הזה נחסם על ידי Chrome כי הוא עלול להסתיר תוכנה זדונית</translation>
 <translation id="1619887657840448962">‏כדי לשפר את האבטחה של Chrome, השבתנו את התוסף הבא שאינו רשום ב-<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוסף ללא ידיעתך.</translation>
 <translation id="1627304841979541023">‏<ph name="BEGIN_BOLD" />איך ניתן לנהל את הנתונים שלך:<ph name="END_BOLD" /> כדי להגן על הפרטיות שלך, תחומי עניין שהוגדרו לפני יותר מ-4 שבועות נמחקים אוטומטית. עם המשך הגלישה, תחום עניין כלשהו עשוי להופיע שוב ברשימה. יש גם אפשרות להסיר תחומי עניין מ-Chrome כדי שלא יילקחו בחשבון.</translation>
 <translation id="1628000112320670027">‏קבלת עזרה בנושא Chrome</translation>
@@ -57,6 +58,7 @@
 <translation id="2094648590148273905">‏התנאים של ChromeOS Flex</translation>
 <translation id="2094919256425865063">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="2106831557840787829">‏השימוש ב-ChromeOS Flex מתאפשר בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספת כמו <ph name="BEGIN_LINK_LINUX_OSS" />סביבת הפיתוח של Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">‏כשההגדרה מופעלת, מערכת Chrome משתמשת בזיכרון מכרטיסיות שאינן בשימוש באופן פעיל. כך המשאבים של המחשב מתפנים למשימות אחרות, ומערכת Chrome ממשיכה לפעול במהירות. כרטיסיות לא פעילות מופיעות ריקות ונטענות מחדש באופן אוטומטי כשלוחצים עליהן. אפשר <ph name="BEGIN_LINK" />לקבל מידע נוסף<ph name="END_LINK" /> או <ph name="BEGIN_LINK_2" />לשלוח משוב<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, יש להיכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">‏הפעלה מחדש לצורך עדכון &amp;Chrome</translation>
 <translation id="2123055963409958220">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chrome</translation>
@@ -173,6 +175,7 @@
 <translation id="4262915912852657291">‏<ph name="BEGIN_BOLD" />באילו נתונים נעשה שימוש:<ph name="END_BOLD" /> היסטוריית הגלישה – תיעוד האתרים שביקרת בהם באמצעות Chrome במכשיר הזה.</translation>
 <translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="4293420128516039005">‏כניסה לחשבון תסנכרן ותתאים אישית את Chrome בכל המכשירים שברשותך</translation>
+<translation id="430327780270213103">‏מתן הרשאה לתוסף להציג בקשות גישה בסרגל הכלים של Chrome</translation>
 <translation id="4328355335528187361">‏גרסת הפיתוח של Google Chrome ‏(mDNS-In)</translation>
 <translation id="4334294535648607276">ההורדה הושלמה.</translation>
 <translation id="4335235004908507846">‏Chrome עוזר להגן עליך מפני פרצות באבטחת המידע, תוספים לא תקינים ועוד</translation>
@@ -270,6 +273,7 @@
 <translation id="6735387454586646204">‏מערכת ChromeOS Flex</translation>
 <translation id="6739177684496155661">‏להמשיך בפרופיל Chrome חדש?</translation>
 <translation id="6750954913813541382">‏כדי לתקן שגיאות כתיב, הטקסט שהוקלד על ידך בדפדפן נשלח אל Google על ידי Chrome</translation>
+<translation id="6756581345161130259">‏מערכת Chrome משתמשת בזיכרון מכרטיסיות שאינן בשימוש באופן פעיל, לפי הצורך. תמיד אפשר לשנות זאת בהגדרות.</translation>
 <translation id="677276454032249905">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="6785872064505734160">‏Google Assistant ב-Chrome יכולה להשלים עבורך פעולות באתרים</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ namespace net {
 class HostResolver;
 class HostPortPair;
 class NetLog;
-class NetworkIsolationKey;
+class NetworkAnonymizationKey;
 }  // namespace net
 
 namespace network {
@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
 
   void ResolveHost(
       mojom::HostResolverHostPtr host,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       mojom::ResolveHostParametersPtr optional_parameters,
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
   void MdnsListen(const net::HostPortPair& host,

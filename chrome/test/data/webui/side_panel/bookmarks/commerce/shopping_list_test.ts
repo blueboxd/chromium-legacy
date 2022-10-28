@@ -15,6 +15,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, isVisible} from 'chrome://webui-test/test_util.js';
 
+import {fakeMetricsPrivate, MetricsTracker} from '../../metrics_test_support.js';
 import {TestBookmarksApiProxy} from '../test_bookmarks_api_proxy.js';
 
 import {TestShoppingListApiProxy} from './test_shopping_list_api_proxy.js';
@@ -23,6 +24,7 @@ suite('SidePanelShoppingListTest', () => {
   let shoppingList: ShoppingListElement;
   let bookmarksApi: TestBookmarksApiProxy;
   let shoppingListApi: TestShoppingListApiProxy;
+  let metrics: MetricsTracker;
 
   const products: BookmarkProductInfo[] = [
     {
@@ -63,7 +65,8 @@ suite('SidePanelShoppingListTest', () => {
         product.info.domain,
         element.querySelector('.product-domain')!.textContent);
 
-    const imageElement = element.querySelector<HTMLElement>('.product-image');
+    const imageElement =
+        element.querySelector<HTMLElement>('.product-image-container');
     const faviconElement = element.querySelector<HTMLElement>('.favicon-image');
     if (!product.info.imageUrl.url) {
       assertFalse(isVisible(imageElement));
@@ -71,8 +74,10 @@ suite('SidePanelShoppingListTest', () => {
     } else {
       assertFalse(isVisible(faviconElement));
       assertTrue(isVisible(imageElement));
-      assertEquals(
-          imageElement!.getAttribute('auto-src'), product.info.imageUrl.url);
+      const productImage =
+          imageElement!.querySelector<HTMLElement>(
+                           '.product-image')!.getAttribute('auto-src');
+      assertEquals(productImage, product.info.imageUrl.url);
     }
     const priceElements = Array.from(element.querySelectorAll('.price'));
     if (!product.info.previousPrice) {
@@ -111,6 +116,8 @@ suite('SidePanelShoppingListTest', () => {
   setup(async () => {
     document.body.innerHTML = '';
 
+    metrics = fakeMetricsPrivate();
+
     bookmarksApi = new TestBookmarksApiProxy();
     BookmarksApiProxyImpl.setInstance(bookmarksApi);
 
@@ -118,7 +125,7 @@ suite('SidePanelShoppingListTest', () => {
     ShoppingListApiProxyImpl.setInstance(shoppingListApi);
 
     shoppingList = document.createElement('shopping-list');
-    shoppingList.productInfos = products;
+    shoppingList.productInfos = products.slice();
     document.body.appendChild(shoppingList);
 
     await flushTasks();
@@ -138,7 +145,7 @@ suite('SidePanelShoppingListTest', () => {
   });
 
   test('OpensAndClosesShoppingList', async () => {
-    const productElements = getProductElements(shoppingList);
+    let productElements = getProductElements(shoppingList);
     const arrowIcon =
         shoppingList.shadowRoot!.querySelector<HTMLElement>('#arrowIcon')!;
     assertTrue(arrowIcon.hasAttribute('open'));
@@ -152,9 +159,34 @@ suite('SidePanelShoppingListTest', () => {
     for (let i = 0; i < productElements.length; i++) {
       assertFalse(isVisible(productElements[i]!));
     }
-    assertEquals(
-        false,
+    assertFalse(
         JSON.parse(window.localStorage[LOCAL_STORAGE_EXPAND_STATUS_KEY]));
+    assertEquals(
+        0,
+        metrics.count(
+            'Commerce.PriceTracking.SidePanel.TrackedProductsExpanded'));
+    assertEquals(
+        1,
+        metrics.count(
+            'Commerce.PriceTracking.SidePanel.TrackedProductsCollapsed'));
+
+    shoppingList.shadowRoot!.querySelector<HTMLElement>('.row')!.click();
+    await flushTasks();
+    assertTrue(arrowIcon.hasAttribute('open'));
+    productElements = getProductElements(shoppingList);
+    for (let i = 0; i < productElements.length; i++) {
+      assertTrue(isVisible(productElements[i]!));
+    }
+    assertTrue(
+        JSON.parse(window.localStorage[LOCAL_STORAGE_EXPAND_STATUS_KEY]));
+    assertEquals(
+        1,
+        metrics.count(
+            'Commerce.PriceTracking.SidePanel.TrackedProductsExpanded'));
+    assertEquals(
+        1,
+        metrics.count(
+            'Commerce.PriceTracking.SidePanel.TrackedProductsCollapsed'));
   });
 
   test('OpensProductItem', async () => {
@@ -164,6 +196,10 @@ suite('SidePanelShoppingListTest', () => {
     assertEquals(products[0]!.bookmarkId.toString(), id);
     assertEquals(0, parentFolderDepth);
     assertEquals(ActionSource.kPriceTracking, source);
+    assertEquals(
+        1,
+        metrics.count(
+            'Commerce.PriceTracking.SidePanel.ClickedTrackedProduct'));
   });
 
   test('OpensProductItemContextMenu', async () => {
@@ -183,6 +219,10 @@ suite('SidePanelShoppingListTest', () => {
     assertEquals(products[0]!.bookmarkId.toString(), id);
     assertEquals(0, parentFolderDepth);
     assertEquals(ActionSource.kPriceTracking, source);
+    assertEquals(
+        1,
+        metrics.count(
+            'Commerce.PriceTracking.SidePanel.ClickedTrackedProduct'));
 
     bookmarksApi.resetResolver('openBookmark');
 
@@ -190,6 +230,10 @@ suite('SidePanelShoppingListTest', () => {
     getProductElements(shoppingList)[0]!.dispatchEvent(
         new MouseEvent('auxclick', {button: 2}));
     assertEquals(0, bookmarksApi.getCallCount('openBookmark'));
+    assertEquals(
+        1,
+        metrics.count(
+            'Commerce.PriceTracking.SidePanel.ClickedTrackedProduct'));
   });
 
   test('InitializesShoppingListExpandStatus', async () => {
@@ -217,11 +261,21 @@ suite('SidePanelShoppingListTest', () => {
     let id = await shoppingListApi.whenCalled('untrackPriceForBookmark');
     assertEquals(id, products[0]!.bookmarkId);
     checkActionButtonStatus(actionButton, false);
+    assertEquals(
+        0, metrics.count('Commerce.PriceTracking.SidePanel.Track.BellButton'));
+    assertEquals(
+        1,
+        metrics.count('Commerce.PriceTracking.SidePanel.Untrack.BellButton'));
 
     actionButton.click();
     id = await shoppingListApi.whenCalled('trackPriceForBookmark');
     assertEquals(id, products[0]!.bookmarkId);
     checkActionButtonStatus(actionButton, true);
+    assertEquals(
+        1, metrics.count('Commerce.PriceTracking.SidePanel.Track.BellButton'));
+    assertEquals(
+        1,
+        metrics.count('Commerce.PriceTracking.SidePanel.Untrack.BellButton'));
   });
 
   test('ObservesTrackAndUntrackPriceForNewProduct', async () => {
@@ -282,5 +336,53 @@ suite('SidePanelShoppingListTest', () => {
     shoppingListApi.getCallbackRouterRemote().priceTrackedForBookmark(product);
     await flushTasks();
     checkActionButtonStatus(actionButtonA, true);
+  });
+
+  test('ObservesTrackedProductInfoUpdate', async () => {
+    let productElements = getProductElements(shoppingList);
+    assertEquals(2, products.length);
+
+    for (let i = 0; i < products.length; i++) {
+      checkProductElementRender(productElements[i]!, products[i]!);
+    }
+
+    const updatedProduct = {
+      bookmarkId: BigInt(3),
+      info: {
+        title: 'Product Baz',
+        domain: 'baz.com',
+        imageUrl: {url: 'https://baz.com/image'},
+        productUrl: {url: 'https://baz.com/product'},
+        currentPrice: '$56',
+        previousPrice: '$78',
+      },
+    };
+    shoppingListApi.getCallbackRouterRemote().priceTrackedForBookmark(
+        updatedProduct);
+    await flushTasks();
+
+    productElements = getProductElements(shoppingList);
+    assertEquals(2, products.length);
+
+    checkProductElementRender(productElements[0]!, updatedProduct);
+    checkProductElementRender(productElements[1]!, products[1]!);
+  });
+
+  test('UntrackedItemsResetsWithProductInfos', async () => {
+    let actionButton = getProductElements(shoppingList)[0]!.querySelector(
+                           '.action-button')! as HTMLElement;
+    actionButton.click();
+    const id = await shoppingListApi.whenCalled('untrackPriceForBookmark');
+    assertEquals(id, products[0]!.bookmarkId);
+    checkActionButtonStatus(actionButton, false);
+
+    // Reset shoppingList.productInfos to empty and then re-initialize it, the
+    // untracked items list should be reset to empty.
+    shoppingList.productInfos = [];
+    shoppingList.productInfos = products.slice();
+
+    actionButton = getProductElements(shoppingList)[0]!.querySelector(
+                       '.action-button')! as HTMLElement;
+    checkActionButtonStatus(actionButton, true);
   });
 });

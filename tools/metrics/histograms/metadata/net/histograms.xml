@@ -1,5 +1,5 @@
 <!--
-Copyright 2020 The Chromium Authors. All rights reserved.
+Copyright 2020 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -367,6 +367,55 @@ chromium-metrics-reviews@google.com.
     While parsing an RSASSA-PSS signature algorithm, whether any invalid
     parameters were encountered that currently are not enforced as parsing
     errors.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertVerifier.MacKeychainCerts.IntermediateCacheInitTime"
+    units="ms" expires_after="2023-02-01">
+  <owner>mattm@chromium.org</owner>
+  <owner>hchao@chromium.org</owner>
+  <summary>
+    When initializing the builtin certificate verifier on Mac using the
+    DomainCacheFullCerts implementation of the system trust store integration,
+    this records how long it took to query the Mac keychain and initialize the
+    cache of intermediate certificates.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertVerifier.MacKeychainCerts.IntermediateCount"
+    units="certificates" expires_after="2023-02-01">
+  <owner>mattm@chromium.org</owner>
+  <owner>hchao@chromium.org</owner>
+  <summary>
+    When initializing the builtin certificate verifier on Mac using the
+    DomainCacheFullCerts implementation of the system trust store integration,
+    this records the number of certificates that were included in the cache of
+    intermediate certificates.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertVerifier.MacKeychainCerts.TotalCount"
+    units="certificates" expires_after="2023-02-01">
+  <owner>mattm@chromium.org</owner>
+  <owner>hchao@chromium.org</owner>
+  <summary>
+    When initializing the builtin certificate verifier on Mac using the
+    DomainCacheFullCerts implementation of the system trust store integration,
+    this records the number of certificates found in the Mac keychain.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertVerifier.MacTrustDomainCacheInitTime" units="ms"
+    expires_after="2023-02-01">
+  <owner>mattm@chromium.org</owner>
+  <owner>hchao@chromium.org</owner>
+  <summary>
+    When the builtin certificate verifier is used on Mac and the platform
+    trusted certificates cache is initialized (or re-initialized if keychain
+    trust settings changed), records how long it took to initialize all the
+    trust domain caches. Only recorded by the DomainCacheFullCerts
+    implementation, which may or may not be used depending on Finch trial
+    parameters.
   </summary>
 </histogram>
 

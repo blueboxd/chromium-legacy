@@ -247,6 +247,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     kEnabled,
   };
 
+  enum class BucketDistribution : uint8_t { kDefault, kCoarser, kDenser };
+
   // Flags accessed on fast paths.
   //
   // Careful! PartitionAlloc's performance is sensitive to its layout.  Please
@@ -259,15 +261,23 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     // Defines whether the root should be scanned.
     ScanMode scan_mode;
 
+    // It's important to default to the coarser distribution, otherwise a switch
+    // from dense -> coarse would leave some buckets with dirty memory forever,
+    // since no memory would be allocated from these, their freelist would
+    // typically not be empty, making these unreclaimable.
+    BucketDistribution bucket_distribution = BucketDistribution::kCoarser;
+
     bool with_thread_cache = false;
-    bool with_denser_bucket_distribution = false;
 
     bool allow_aligned_alloc;
     bool allow_cookie;
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     bool brp_enabled_;
     bool brp_zapping_enabled_;
-#endif
+#if defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
+    bool mac11_malloc_size_hack_enabled_ = false;
+#endif  // defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     bool use_configurable_pool;
 
 #if defined(PA_EXTRAS_REQUIRED)
@@ -384,6 +394,10 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   // PartitionRoots over the lifetime of a process, which can exhaust the
   // GigaCage and cause tests to fail.
   void DestructForTesting();
+
+#if defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
+  void EnableMac11MallocSizeHackForTesting();
+#endif  // defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
 
   // Public API
   //
@@ -514,6 +528,11 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
                                              uintptr_t slot_start);
 
   PA_ALWAYS_INLINE static size_t GetUsableSize(void* ptr);
+  // Same as GetUsableSize() except it adjusts the return value for macOS 11
+  // malloc_size() hack.
+  PA_ALWAYS_INLINE static size_t GetUsableSizeWithMac11MallocSizeHack(
+      void* ptr);
+
   PA_ALWAYS_INLINE PageAccessibilityConfiguration GetPageAccessibility() const;
 
   PA_ALWAYS_INLINE size_t
@@ -546,8 +565,12 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   static void DeleteForTesting(PartitionRoot* partition_root);
   void ResetBookkeepingForTesting();
 
+  PA_ALWAYS_INLINE BucketDistribution GetBucketDistribution() const {
+    return flags.bucket_distribution;
+  }
+
   static uint16_t SizeToBucketIndex(size_t size,
-                                    bool with_denser_bucket_distribution);
+                                    BucketDistribution bucket_distribution);
 
   PA_ALWAYS_INLINE void FreeInSlotSpan(uintptr_t slot_start,
                                        SlotSpan* slot_span)
@@ -571,15 +594,18 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   // more buckets, meaning any allocations we have done before the switch are
   // guaranteed to have a bucket under the new distribution when they are
   // eventually deallocated. We do not need synchronization here or below.
+  void SwitchToDefaultBucketDistribution() {
+    flags.bucket_distribution = BucketDistribution::kDefault;
+  }
   void SwitchToDenserBucketDistribution() {
-    flags.with_denser_bucket_distribution = true;
+    flags.bucket_distribution = BucketDistribution::kDenser;
   }
   // Switching back to the less dense bucket distribution is ok during tests.
   // At worst, we end up with deallocations that are sent to a bucket that we
   // cannot allocate from, which will not cause problems besides wasting
   // memory.
   void ResetBucketDistributionForTesting() {
-    flags.with_denser_bucket_distribution = false;
+    flags.bucket_distribution = BucketDistribution::kCoarser;
   }
 
   ThreadCache* thread_cache_for_testing() const {
@@ -1664,6 +1690,32 @@ PA_ALWAYS_INLINE size_t PartitionRoot<thread_safe>::GetUsableSize(void* ptr) {
   return slot_span->GetUsableSize(root);
 }
 
+template <bool thread_safe>
+PA_ALWAYS_INLINE size_t
+PartitionRoot<thread_safe>::GetUsableSizeWithMac11MallocSizeHack(void* ptr) {
+  // malloc_usable_size() is expected to handle NULL gracefully and return 0.
+  if (!ptr)
+    return 0;
+  auto* slot_span = SlotSpan::FromObjectInnerPtr(ptr);
+  auto* root = FromSlotSpan(slot_span);
+  size_t usable_size = slot_span->GetUsableSize(root);
+#if defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
+  // Check |mac11_malloc_size_hack_enabled_| flag first as this doesn't
+  // concern OS versions other than macOS 11.
+  if (PA_UNLIKELY(root->flags.mac11_malloc_size_hack_enabled_ &&
+                  usable_size == internal::kMac11MallocSizeHackUsableSize)) {
+    uintptr_t slot_start =
+        internal::PartitionAllocGetSlotStartInBRPPool(UntagPtr(ptr));
+    auto* ref_count = internal::PartitionRefCountPointer(slot_start);
+    if (ref_count->NeedsMac11MallocSizeHack()) {
+      return internal::kMac11MallocSizeHackRequestedSize;
+    }
+  }
+#endif  // defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
+
+  return usable_size;
+}
+
 // Returns the page configuration to use when mapping slot spans for a given
 // partition root. ReadWriteTagged is used on MTE-enabled systems for
 // PartitionRoots supporting it.
@@ -1693,10 +1745,15 @@ PartitionRoot<thread_safe>::AllocationCapacityFromSlotStart(
 template <bool thread_safe>
 PA_ALWAYS_INLINE uint16_t PartitionRoot<thread_safe>::SizeToBucketIndex(
     size_t size,
-    bool with_denser_bucket_distribution) {
-  if (with_denser_bucket_distribution)
-    return internal::BucketIndexLookup::GetIndexForDenserBuckets(size);
-  return internal::BucketIndexLookup::GetIndex(size);
+    BucketDistribution bucket_distribution) {
+  switch (bucket_distribution) {
+    case BucketDistribution::kDefault:
+      return internal::BucketIndexLookup::GetIndexForDenserBuckets(size);
+    case BucketDistribution::kCoarser:
+      return internal::BucketIndexLookup::GetIndex(size);
+    case BucketDistribution::kDenser:
+      return internal::BucketIndexLookup::GetIndexFor8Buckets(size);
+  }
 }
 
 template <bool thread_safe>
@@ -1777,11 +1834,11 @@ PA_ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocWithFlagsNoHooks(
   PA_CHECK(raw_size >= requested_size);  // check for overflows
 
   // We should only call |SizeToBucketIndex| at most once when allocating.
-  // Otherwise, we risk having |with_denser_bucket_distribution| changed
+  // Otherwise, we risk having |bucket_distribution| changed
   // underneath us (between calls to |SizeToBucketIndex| during the same call),
   // which would result in an inconsistent state.
   uint16_t bucket_index =
-      SizeToBucketIndex(raw_size, this->flags.with_denser_bucket_distribution);
+      SizeToBucketIndex(raw_size, this->GetBucketDistribution());
   size_t usable_size;
   bool is_already_zeroed = false;
   uintptr_t slot_start = 0;
@@ -1918,8 +1975,18 @@ PA_ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocWithFlagsNoHooks(
   // TODO(keishi): Add PA_LIKELY when brp is fully enabled as |brp_enabled| will
   // be false only for the aligned partition.
   if (brp_enabled()) {
+    bool needs_mac11_malloc_size_hack = false;
+#if defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
+    // Only apply hack to size 32 allocations on macOS 11. There is a buggy
+    // assertion that malloc_size() equals sizeof(class_rw_t) which is 32.
+    if (PA_UNLIKELY(this->flags.mac11_malloc_size_hack_enabled_ &&
+                    requested_size ==
+                        internal::kMac11MallocSizeHackRequestedSize)) {
+      needs_mac11_malloc_size_hack = true;
+    }
+#endif  // defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
     auto* ref_count = new (internal::PartitionRefCountPointer(slot_start))
-        internal::PartitionRefCount();
+        internal::PartitionRefCount(needs_mac11_malloc_size_hack);
 #if defined(PA_REF_COUNT_STORE_REQUESTED_SIZE)
     ref_count->SetRequestedSize(requested_size);
 #else
@@ -2079,8 +2146,7 @@ PartitionRoot<thread_safe>::AllocationCapacityFromRequestedSize(
 #else
   PA_DCHECK(PartitionRoot<thread_safe>::initialized);
   size = AdjustSizeForExtrasAdd(size);
-  auto& bucket =
-      bucket_at(SizeToBucketIndex(size, flags.with_denser_bucket_distribution));
+  auto& bucket = bucket_at(SizeToBucketIndex(size, GetBucketDistribution()));
   PA_DCHECK(!bucket.slot_size || bucket.slot_size >= size);
   PA_DCHECK(!(bucket.slot_size % internal::kSmallestBucket));
 

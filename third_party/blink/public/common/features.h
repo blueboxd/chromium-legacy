@@ -668,12 +668,24 @@ enum class DelayAsyncScriptDelayType {
 };
 BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptDelayType>
     kDelayAsyncScriptExecutionDelayParam;
-BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
-    kDelayAsyncScriptExecutionCrossSiteOnlyParam;
+enum class DelayAsyncScriptTarget {
+  kAll,
+  kCrossSiteOnly,
+  // Unlike other options (that are more like scheduling changes within the
+  // spec),  kCrossSiteWithAllowList and kCrossSiteWithAllowListReportOnly are
+  // used only for LazyEmbeds intervention.
+  kCrossSiteWithAllowList,
+  kCrossSiteWithAllowListReportOnly,
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<DelayAsyncScriptTarget>
+    kDelayAsyncScriptTargetParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kDelayAsyncScriptExecutionDelayLimitParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kDelayAsyncScriptExecutionFeatureLimitParam;
+BLINK_COMMON_EXPORT extern const base::Feature kDelayAsyncScriptUrls;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kDelayAsyncScriptAllowList;
 
 // If enabled, async scripts will be run on a lower priority task queue.
 // See https://crbug.com/1348467.
@@ -682,6 +694,13 @@ BLINK_COMMON_EXPORT extern const base::Feature kLowPriorityAsyncScriptExecution;
 // lower priority queue until this timeout elapsed.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kTimeoutForLowPriorityAsyncScriptExecution;
+// kLowPriorityAsyncScriptExecution will be disabled after document elapsed more
+// than |feature_limit|. Zero value means no limit.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kLowPriorityAsyncScriptExecutionFeatureLimitParam;
+// kLowPriorityAsyncScriptExecution will be applied only for cross site scripts.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kLowPriorityAsyncScriptExecutionCrossSiteOnlyParam;
 
 // If enabled, DOMContentLoaded will be fired after all async scripts are
 // executed.
@@ -737,6 +756,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kPendingBeaconAPI;
 // both in Chromium & in Blink.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPendingBeaconAPIRequiresOriginTrial;
+// Allows control to decide whether to forced sending out beacons on navigating
+// away a page (transitioning to dispatch pagehide event).
+// Details in https://github.com/WICG/unload-beacon/issues/30
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kPendingBeaconAPIForcesSendingOnNavigation;
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 // If enabled, font lookup tables will be prefetched on renderer startup.
@@ -813,6 +837,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebRtcMetronome;
 
 // If enabled, all of FileSystemAccessSyncAccessHandle methods are synchronous.
 BLINK_COMMON_EXPORT extern const base::Feature kSyncAccessHandleAllSyncSurface;
+
+// If enabled, some paint property updates (e.g., transform changes) will be
+// applied directly instead of using the property tree builder.
+BLINK_COMMON_EXPORT extern const base::Feature kFastPathPaintPropertyUpdates;
 
 }  // namespace features
 }  // namespace blink

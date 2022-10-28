@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,6 +123,8 @@ class HttpCacheDataRemoverTest : public testing::Test {
     request_info.method = "GET";
     request_info.network_isolation_key =
         net::NetworkIsolationKey(kOrigin, kOrigin);
+    request_info.network_anonymization_key = net::NetworkAnonymizationKey(
+        net::SchemefulSite(kOrigin), net::SchemefulSite(kOrigin));
     return *cache_->GenerateCacheKeyForRequest(&request_info);
   }
 

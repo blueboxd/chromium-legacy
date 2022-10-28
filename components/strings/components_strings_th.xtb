@@ -174,6 +174,7 @@
 <translation id="1380591466760231819">พับแบบจดหมาย</translation>
 <translation id="138218114945450791">ฟ้าอ่อน</translation>
 <translation id="1382194467192730611">อุปกรณ์ USB ที่ผู้ดูแลระบบอนุญาต</translation>
+<translation id="1382378825779654399">คุณจะได้รับการแจ้งเตือนทางอีเมลหากราคาลดลงในเว็บไซต์ใดก็ตาม ระบบจะบันทึกหน้านี้ไว้ใน<ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="1382912999714108023">หากไม่เห็นข้อมูลปัจจุบันของคุณ โปรดติดต่อธนาคารเพื่ออัปเดต</translation>
 <translation id="1384725838384960382">ชีตการตรวจสอบสิทธิ์ข้อมูลเข้าสู่ระบบการชำระเงินที่ปลอดภัย</translation>
 <translation id="1386623374109090026">คำอธิบายประกอบ</translation>
@@ -250,7 +251,6 @@
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">ฟรีแวร์และแชร์แวร์</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
-<translation id="1554003749331233619">คุณกำลังติดตามผลิตภัณฑ์นี้ บันทึกหน้านี้ใน <ph name="LAST_BOOKMARKS_FOLDER" /> แล้ว</translation>
 <translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="1559447966090556585">รับการแจ้งเตือนไหม</translation>
 <translation id="1559528461873125649">ไม่มีไฟล์หรือไดเรกทอรีดังกล่าว</translation>
@@ -298,7 +298,6 @@
 <translation id="1662550410081243962">บันทึกและกรอกวิธีการชำระเงิน</translation>
 <translation id="1663943134801823270">ข้อมูลบัตรและที่อยู่มาจาก Chrome คุณสามารถจัดการข้อมูลเหล่านี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="1671391448414634642">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="1673886523110456987">ชําระเงินด้วย <ph name="CARD_DETAIL" /> เพื่อใช้ข้อเสนอ</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />เป็น<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">ด้านขอบสั้นก่อน</translation>
 <translation id="168693727862418163">ตรวจสอบค่านโยบายนี้กับสคีมาไม่ได้ ระบบจะเพิกเฉยต่อค่านี้</translation>
@@ -423,6 +422,7 @@
 <translation id="2034971124472263449">บันทึกเลย</translation>
 <translation id="2035400064145347639">คู่มือและสารคดีการท่องเที่ยว</translation>
 <translation id="2036983605131262583">ม้วนกระดาษอื่น</translation>
+<translation id="2040463897538655645">พื้นที่เก็บข้อมูลแบบถอดได้</translation>
 <translation id="2040894699575719559">ตำแหน่งถูกบล็อก</translation>
 <translation id="2042213636306070719">ถาด 7</translation>
 <translation id="204357726431741734">ลงชื่อเข้าใช้เพื่อใช้รหัสผ่านที่บันทึกไว้ในบัญชี Google</translation>
@@ -1004,7 +1004,6 @@
 <translation id="3633738897356909127">ปุ่มอัปเดต Chrome กด Enter เพื่ออัปเดต Chrome จากการตั้งค่า Chrome</translation>
 <translation id="3634530185120165534">ถาด 5</translation>
 <translation id="3634567936866541746">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้เพื่อรักษาความปลอดภัยของบัญชี</translation>
-<translation id="3637033245385760976">ต้องเปิดการแจ้งเตือนของ Chrome ซึ่งทำได้ใน<ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="3637662659967048211">บันทึกลงในบัญชี Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">แอปพลิเคชัน:</translation>
@@ -1520,6 +1519,7 @@
 <translation id="5018422839182700155">ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5019198164206649151">ไม่สามารถจัดเก็บเนื่องจากระบบแบ็คเอนด์อยู่ในสถานะไม่ดี</translation>
 <translation id="5020776957610079374">เวิลด์มิวสิก</translation>
+<translation id="5021557570875267742">ติดตามราคาด้วย Chrome</translation>
 <translation id="5023310440958281426">ตรวจสอบนโยบายของผู้ดูแลระบบของคุณ</translation>
 <translation id="5029568752722684782">ล้างสำเนา</translation>
 <translation id="5030338702439866405">ออกโดย</translation>
@@ -2241,6 +2241,7 @@
 <translation id="6993898126790112050">6x9 (ซองจดหมาย)</translation>
 <translation id="6996312675313362352">แปลภาษา<ph name="ORIGINAL_LANGUAGE" />เสมอ</translation>
 <translation id="6999969238895751684">อุตสาหกรรมบันเทิง</translation>
+<translation id="7003335073762455340">คุณกำลังติดตามผลิตภัณฑ์นี้ บันทึกหน้านี้ใน<ph name="LAST_BOOKMARKS_FOLDER" />แล้ว</translation>
 <translation id="7004583254764674281">ใช้ Windows Hello เพื่อยืนยันบัตรได้เร็วขึ้น</translation>
 <translation id="7006930604109697472">ส่งเลย</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2323,6 +2324,7 @@
 <translation id="7234638337680728591">ราคาน้ำมันและเชื้อเพลิงยานพาหนะ</translation>
 <translation id="7237492777898608035">ไม่ต้องแสดงข้อความนี้อีกสำหรับเว็บไซต์นี้</translation>
 <translation id="7238585580608191973">ลายนิ้วมือ SHA-256</translation>
+<translation id="7239514174717251677">การแจ้งเตือนเมื่อราคาลดลงเปิดอยู่ คุณเปลี่ยนการตั้งค่านี้ได้ใน<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">ชื่อสำรองของหัวเรื่องใบรับรอง</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" /> <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{ตรงกัน # รายการ}other{ตรงกัน # รายการ}}</translation>
@@ -2464,6 +2466,7 @@
 <translation id="7564049878696755256">คุณอาจเข้าถึงบัญชี <ph name="ORG_NAME" /> ไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="7564680668369175887">รถโดยสาร</translation>
 <translation id="7567204685887185387">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะอาจมีการออกใบรับรองความปลอดภัยปลอม โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
+<translation id="7568616151991626879">Google Chrome กำลังพยายามป้อนรหัสผ่านของคุณใน "<ph name="APP_NAME" />"</translation>
 <translation id="7569490014721427265">กอล์ฟ</translation>
 <translation id="7569761772822664555">ปุ่มจัดการเครื่องมือค้นหา กด Enter เพื่อจัดการเครื่องมือค้นหาและการค้นหาเว็บไซต์เริ่มต้น</translation>
 <translation id="7569952961197462199">นำบัตรเครดิตออกจาก Chrome ไหม</translation>
@@ -2821,7 +2824,6 @@
 <translation id="8559762987265718583">ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ได้เนื่องจากวันที่และเวลาของอุปกรณ์ (<ph name="DATE_AND_TIME" />) ไม่ถูกต้อง</translation>
 <translation id="8564182942834072828">เอกสารแยกกัน/ไม่จัดชุดสำเนา</translation>
 <translation id="8564985650692024650">Chromium ขอแนะนำให้รีเซ็ตรหัสผ่าน <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> หากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
-<translation id="8573969211731659953">การแจ้งเตือนเมื่อราคาลดลงเปิดอยู่ คุณเปลี่ยนค่ากำหนดนี้ได้ใน<ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="8576310925653847813">ระบบโฮมเธียเตอร์</translation>
 <translation id="8577348305244205642">บัตรเสมือนไม่พร้อมใช้งาน</translation>
 <translation id="858637041960032120">เพิ่มเบอร์โทร
@@ -3036,11 +3038,13 @@
 <translation id="9174623988242579721">ยานพาหนะสั่งผลิตและสมรรถนะสูง</translation>
 <translation id="9174917557437862841">ปุ่มเปลี่ยนแท็บ โปรดกด Enter เพื่อเปลี่ยนไปยังแท็บนี้</translation>
 <translation id="9179703756951298733">จัดการการชำระเงินและข้อมูลบัตรเครดิตในการตั้งค่า Chrome</translation>
+<translation id="9179907736442194268">รับการแจ้งเตือนทางอีเมลหากราคาลดลงในเว็บไซต์ใดก็ตาม</translation>
 <translation id="9183302530794969518">Google เอกสาร</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> ใช้โปรโตคอลที่ไม่รองรับ</translation>
 <translation id="9187461866967718678">กีฬาผาดโผน</translation>
 <translation id="9191834167571392248">เจาะรูด้านซ้ายล่าง</translation>
 <translation id="9199905725844810519">การพิมพ์ถูกบล็อก</translation>
+<translation id="9202180858541326427">ต้องเปิดการแจ้งเตือนของ Chrome ซึ่งทำได้ใน<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">ข้อมูลของคุณมีการเข้ารหัสด้วยรหัสผ่านการซิงค์ โปรดป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="920511547311754821">หากไม่พบรหัส <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">การเพิ่มบทความล้มเหลว</translation>

@@ -63,6 +63,7 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="2583187216237139145">Podatke v Chromiumu, ki se ustvarijo med uporabo tega profila (na primer zaznamke, zgodovino, gesla in druge nastavitve), lahko odstrani skrbnik delovnega profila. <ph name="LEARN_MORE" /></translation>
 <translation id="2648074677641340862">Napaka v operacijskem sistemu med namestitvijo. Znova prenesite Chromium.</translation>
 <translation id="2661879430930417727">Če napravo souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chromium tako, kot ga želijo.</translation>
+<translation id="2669853942967761236">Chromium je blokiral to datoteko arhiva, ker morda skriva zlonamerno programsko opremo.</translation>
 <translation id="268602741124540128">Pozdravljeni v Chromiumu, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Zavihek v Chromiumu</translation>
 <translation id="2718390899429598676">Zaradi večje varnosti bo Chromium šifriral vaše podatke.</translation>
@@ -210,6 +211,7 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="6072279588547424923">Razširitev <ph name="EXTENSION_NAME" /> je dodana v Chromium</translation>
 <translation id="608006075545470555">Dodajanje delovnega profila v ta brskalnik</translation>
 <translation id="6096348254544841612">Prilagodite in nadzirajte Chromium. Posodobitev je na voljo.</translation>
+<translation id="6119438414301547735">Omogočanje razširitve za prikaz zahtev za dostop v orodni vrstici Chromiuma</translation>
 <translation id="6120345080069858279">Chromium bo shranil to geslo v Google Računu. Ni si vam ga treba zapomniti.</translation>
 <translation id="6129621093834146363">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chromium blokiral.</translation>
 <translation id="6134968993075716475">Varno brskanje je izklopljeno. Chromium priporoča, da ga vklopite.</translation>
@@ -303,6 +305,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="7682601070171973634">Chromium raziskuje nove funkcije, ki spletnim mestom omogočajo, da z manjšo količino prenesenih podatkov zagotavljajo isto izkušnjo pri brskanju.</translation>
 <translation id="7686590090926151193">Chromium ni privzeti brskalnik</translation>
 <translation id="7689606757190482937">V vseh svojih napravah sinhronizirajte in prilagodite Chromium</translation>
+<translation id="7714577916146996629">Če je vklopljena ta nastavitev, Chromium znova pridobi pomnilnik z zavihkov, ki jih ne uporabljate aktivno. S tem sprostite sredstva računalnika za druga opravila in poskrbite, da Chromium še naprej deluje hitro. Neaktivni zavihki so videti prazni in se samodejno znova naložijo, ko jih kliknete. <ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> ali <ph name="BEGIN_LINK_2" />pošljite povratne informacije<ph name="END_LINK_2" />.</translation>
 <translation id="7745317241717453663">S tem bodo iz te naprave izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chromium prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Namestitvenemu programu ni uspelo ustvariti začasnega imenika. Preverite, ali je na disku dovolj prostora in ali imate dovoljenje za namestitev programske opreme.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – delovna različica Chromiuma</translation>
@@ -332,6 +335,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="8453117565092476964">Arhiv namestitvenega programa je poškodovan ali neveljaven. Znova prenesite Chromium.</translation>
 <translation id="8463672209299734063">Izbirno: Pomagajte izboljšati funkcije sistema Chromium OS in njegovo delovanje s samodejnim pošiljanjem diagnostičnih podatkov in podatkov o uporabi Googlu.</translation>
 <translation id="8493179195440786826">Chromium je zastarel</translation>
+<translation id="8522220489792889625">Chromium po potrebi znova pridobi pomnilnik z zavihkov, ki jih ne uporabljate aktivno. To lahko kadar koli spremenite v nastavitvah.</translation>
 <translation id="8550334526674375523">Ta delovni profil je v celoti ločen od osebnega profila.</translation>
 <translation id="8558383651099478961">Tvoj starš je izklopil »Dovoljenja za spletna mesta, aplikacije in razširitve« za Chromium. Dodajanje tega ni dovoljeno: <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8561285221328166383">Če želite prejemati prihodnje posodobitve Chromiuma, potrebujete macOS 10.13 ali novejšega. V tem računalniku je nameščen macOS 10.12.</translation>

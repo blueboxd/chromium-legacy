@@ -174,6 +174,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="1380591466760231819">Prepogibanje v obliki pisma</translation>
 <translation id="138218114945450791">Svetlo modra</translation>
 <translation id="1382194467192730611">Naprava USB, ki jo je dovolil skrbnik</translation>
+<translation id="1382378825779654399">Če se cena zniža na katerem koli spletnem mestu, boste prejeli e-poštna opozorila. Ta stran bo shranjena v mapi <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">Niso prikazani najnovejši podatki? Obrnite se na banko in jih posodobite.</translation>
 <translation id="1384725838384960382">Preglednica za preverjanje pristnosti poverilnice za varno plačilo</translation>
 <translation id="1386623374109090026">Pripisi</translation>
@@ -250,7 +251,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Programska oprema brez denarnega plačila in preizkusna programska oprema</translation>
 <translation id="1553358976309200471">Posodobi Chrome</translation>
-<translation id="1554003749331233619">Zdaj spremljate ta izdelek. Ta stran je shranjena v mapi <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1555130319947370107">Modra</translation>
 <translation id="1559447966090556585">Želite prejemati obvestila?</translation>
 <translation id="1559528461873125649">Taka datoteka ali imenik ne obstaja</translation>
@@ -298,7 +298,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="1662550410081243962">Shranjevanje in izpolnjevanje podatkov o plačilnih sredstvih</translation>
 <translation id="1663943134801823270">Kartice in naslovi so iz Chroma. Upravljate jih lahko v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Strani v jeziku <ph name="SOURCE_LANGUAGE" /> bodo odslej prevedene v jezik <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1673886523110456987">Če želite izkoristiti ponudbo, na blagajni uporabite kartico <ph name="CARD_DETAIL" />.</translation>
 <translation id="1674504678466460478">Iz jezika <ph name="SOURCE_LANGUAGE" /> v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Najprej kratki rob</translation>
 <translation id="168693727862418163">Preverjanje vrednosti tega pravilnika v skladu z njegovo shemo ni uspelo in bo prezrta.</translation>
@@ -423,6 +422,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2034971124472263449">Vseeno shrani</translation>
 <translation id="2035400064145347639">Vodniki in potopisi</translation>
 <translation id="2036983605131262583">Nadomestni kolut</translation>
+<translation id="2040463897538655645">Izmenljiva shramba</translation>
 <translation id="2040894699575719559">Lokacija je blokirana</translation>
 <translation id="2042213636306070719">Pladenj 7</translation>
 <translation id="204357726431741734">Prijavite se, če želite uporabljati gesla, shranjena v računu Google</translation>
@@ -1005,7 +1005,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="3633738897356909127">Gumb za posodobitev Chroma, pritisnite Enter, če želite posodobiti Chrome v Chromovih nastavitvah</translation>
 <translation id="3634530185120165534">Pladenj 5</translation>
 <translation id="3634567936866541746">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome zaradi zaščite računov priporoča, da preverite shranjena gesla.</translation>
-<translation id="3637033245385760976">Obvestila v Chromu morajo biti vklopljena. Vklopite jih lahko tu: <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="3637662659967048211">Shranjevanje v račun Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Program:</translation>
@@ -1521,6 +1520,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5018422839182700155">Te strani ni mogoče odpreti</translation>
 <translation id="5019198164206649151">Neprimerno stanje rezervne shrambe</translation>
 <translation id="5020776957610079374">Svetovna glasba</translation>
+<translation id="5021557570875267742">Spremljanje cen v Chromu</translation>
 <translation id="5023310440958281426">Preverite skrbnikove pravilnike</translation>
 <translation id="5029568752722684782">Počisti kopijo</translation>
 <translation id="5030338702439866405">Izdajatelj</translation>
@@ -2242,6 +2242,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Vedno prevedi ta jezik: <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Zabavna industrija</translation>
+<translation id="7003335073762455340">Spremljate ta izdelek. Ta stran je shranjena v mapi <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Uporabite Windows Hello za hitrejše potrjevanje kartic</translation>
 <translation id="7006930604109697472">Vseeno pošlji</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2324,6 +2325,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="7234638337680728591">Cene zemeljskega plina in gorivo za vozila</translation>
 <translation id="7237492777898608035">Tega sporočila ne kaži več za to spletno mesto</translation>
 <translation id="7238585580608191973">Prstni odtis SHA-256</translation>
+<translation id="7239514174717251677">Opozorila o znižanju cen so vklopljena. To lahko spremenite tu: <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="7240120331469437312">Nadomestno ime subjekta potrdila</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# ujemanje}one{# ujemanje}two{# ujemanji}few{# ujemanja}other{# ujemanj}}</translation>
@@ -2465,6 +2467,7 @@ Dodatne podrobnosti:
 <translation id="7564049878696755256">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chrome priporoča, da spremenite geslo.</translation>
 <translation id="7564680668369175887">Kombiji</translation>
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
+<translation id="7568616151991626879">Google Chrome poskuša izpolniti vaše geslo na <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golf</translation>
 <translation id="7569761772822664555">Gumb za upravljanje iskalnikov, pritisnite Enter, če želite upravljati privzeti iskalnik in iskanje po spletnih mestih.</translation>
 <translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
@@ -2822,7 +2825,6 @@ Dodatne podrobnosti:
 <translation id="8559762987265718583">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v napravi nepravilna.</translation>
 <translation id="8564182942834072828">Ločeni dokumenti/nezbrane kopije</translation>
 <translation id="8564985650692024650">Chromium priporoča, da ponastavite geslo za <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, če ste ga uporabljali tudi na drugih spletnih mestih.</translation>
-<translation id="8573969211731659953">Opozorila o znižanju cen so vklopljena. To lahko spremenite tu: <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="8576310925653847813">Sistemi za domači kino</translation>
 <translation id="8577348305244205642">Virtualna kartica ni na voljo</translation>
 <translation id="858637041960032120">Dodajte tel. št. </translation>
@@ -3036,11 +3038,13 @@ Dodatne podrobnosti:
 <translation id="9174623988242579721">Vozila po meri in predelana vozila</translation>
 <translation id="9174917557437862841">Gumb za preklop zavihkov, pritisnite Enter, če želite preklopiti na ta zavihek</translation>
 <translation id="9179703756951298733">Upravljanje plačil in podatkov o kreditnih karticah v nastavitvah v Chromu</translation>
+<translation id="9179907736442194268">Prejmite e-poštna opozorila, če se cena zniža na katerem koli spletnem mestu.</translation>
 <translation id="9183302530794969518">Google Dokumenti</translation>
 <translation id="9183425211371246419">Spletno mesto <ph name="HOST_NAME" /> uporablja nepodprt protokol.</translation>
 <translation id="9187461866967718678">Ekstremni športi</translation>
 <translation id="9191834167571392248">Luknjanje spodaj levo</translation>
 <translation id="9199905725844810519">Tiskanje je blokirano</translation>
+<translation id="9202180858541326427">Obvestila v Chromu morajo biti vklopljena. Vklopite jih lahko tu: <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="9205078245616868884">Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite začeti sinhronizacijo.</translation>
 <translation id="920511547311754821">Ne najdete kode? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Članka ni bilo mogoče dodati.</translation>

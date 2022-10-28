@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -516,7 +516,7 @@ void BrowserTestBase::SetUp() {
   // process startup code. Pass the currently active trials to the subsequent
   // list via the command line.
   std::string field_trial_states;
-  base::FieldTrialList::AllStatesToString(&field_trial_states, false);
+  base::FieldTrialList::AllStatesToString(&field_trial_states);
   if (!field_trial_states.empty()) {
     // Please use ScopedFeatureList to modify feature and field trials at the
     // same time.

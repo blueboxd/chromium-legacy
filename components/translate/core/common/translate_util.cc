@@ -49,7 +49,14 @@ const base::Feature kDesktopPartialTranslate{"DesktopPartialTranslate",
 const base::FeatureParam<int>
     kDesktopPartialTranslateTextSelectionMaxCharacters{
         &kDesktopPartialTranslate,
-        "kDesktopPartialTranslateTextSelectionMaxCharacters", 150};
+        "DesktopPartialTranslateTextSelectionMaxCharacters", 150};
+const base::FeatureParam<int> kDesktopPartialTranslateBubbleShowDelayMs{
+    &kDesktopPartialTranslate, "DesktopPartialTranslateBubbleShowDelayMs", 500};
+
+#if !BUILDFLAG(IS_WIN)
+const base::Feature kMmapLanguageDetectionModel{
+    "MmapLanguageDetectionModel", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 GURL GetTranslateSecurityOrigin() {
   std::string security_origin(kSecurityOrigin);

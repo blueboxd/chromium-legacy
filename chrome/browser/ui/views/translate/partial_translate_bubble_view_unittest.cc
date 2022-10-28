@@ -26,6 +26,10 @@ class FakePartialTranslateBubbleModel : public PartialTranslateBubbleModel {
     current_view_state_ = view_state;
   }
 
+  void AddObserver(PartialTranslateBubbleModel::Observer* observer) override {}
+  void RemoveObserver(
+      PartialTranslateBubbleModel::Observer* observer) override {}
+
   PartialTranslateBubbleModel::ViewState GetViewState() const override {
     return current_view_state_;
   }
@@ -35,18 +39,29 @@ class FakePartialTranslateBubbleModel : public PartialTranslateBubbleModel {
     current_view_state_ = view_state;
   }
 
-  void ShowError(translate::TranslateErrors error_type) override {}
+  void SetSourceLanguage(const std::string& language_code) override {}
+  void SetTargetLanguage(const std::string& language_code) override {}
+
+  void SetSourceText(const std::u16string& text) override {}
+  std::u16string GetSourceText() const override { return u"source"; }
+  void SetTargetText(const std::u16string& text) override {}
+  std::u16string GetTargetText() const override { return u"target"; }
+
+  void SetError(translate::TranslateErrors error_type) override {}
+  translate::TranslateErrors GetError() const override {
+    return translate::TranslateErrors::NONE;
+  }
 
   int GetNumberOfSourceLanguages() const override { return 1000; }
 
   int GetNumberOfTargetLanguages() const override { return 1000; }
 
   std::u16string GetSourceLanguageNameAt(int index) const override {
-    return u"English";
+    return source_name_;
   }
 
   std::u16string GetTargetLanguageNameAt(int index) const override {
-    return u"English";
+    return target_name_;
   }
 
   int GetSourceLanguageIndex() const override { return 1; }
@@ -61,17 +76,19 @@ class FakePartialTranslateBubbleModel : public PartialTranslateBubbleModel {
 
   std::string GetTargetLanguageCode() const override { return "en"; }
 
-  void Translate() override { translate_called_ = true; }
-
-  void RevertTranslation() override {}
-
-  bool IsCurrentSelectionTranslated() const override { return false; }
+  void Translate(content::WebContents* web_contents) override {
+    translate_called_ = true;
+  }
 
   void TranslateFullPage(content::WebContents* web_contents) override {
     full_page_translate_called_ = true;
   }
 
+  void SetSourceTextTruncated(bool is_truncated) override {}
+
   ViewState current_view_state_;
+  std::u16string source_name_ = u"English";
+  std::u16string target_name_ = u"English";
   bool translate_called_ = false;
   bool full_page_translate_called_ = false;
 };
@@ -96,10 +113,9 @@ class PartialTranslateBubbleViewTest : public ChromeViewsTestBase {
 
   void CreateAndShowBubble() {
     std::unique_ptr<PartialTranslateBubbleModel> model(mock_model_);
-    bubble_ = new PartialTranslateBubbleView(
-        anchor_widget_->GetContentsView(), std::move(model),
-        translate::TranslateErrors::NONE, nullptr, std::u16string(),
-        base::DoNothing());
+    bubble_ = new PartialTranslateBubbleView(anchor_widget_->GetContentsView(),
+                                             std::move(model), nullptr,
+                                             base::DoNothing());
     views::BubbleDialogDelegateView::CreateBubble(bubble_)->Show();
   }
 
@@ -123,14 +139,15 @@ class PartialTranslateBubbleViewTest : public ChromeViewsTestBase {
   raw_ptr<PartialTranslateBubbleView> bubble_;
 };
 
-TEST_F(PartialTranslateBubbleViewTest, TargetLanguageTabTriggersTranslate) {
+TEST_F(PartialTranslateBubbleViewTest,
+       TargetLanguageTabDoesntTriggerTranslate) {
   base::HistogramTester histogram_tester;
   CreateAndShowBubble();
   EXPECT_FALSE(mock_model_->translate_called_);
 
   // Press the target language tab to start translation.
   bubble_->TabSelectedAt(1);
-  EXPECT_TRUE(mock_model_->translate_called_);
+  EXPECT_FALSE(mock_model_->translate_called_);
   histogram_tester.ExpectUniqueSample(
       translate::kPartialTranslateBubbleUiEventHistogramName,
       translate::PartialTranslateBubbleUiEvent::TARGET_LANGUAGE_TAB_SELECTED,
@@ -146,11 +163,24 @@ TEST_F(PartialTranslateBubbleViewTest, TabSelectedAfterTranslation) {
             static_cast<size_t>(1));
 }
 
+TEST_F(PartialTranslateBubbleViewTest, UpdateLanguageTabsFromResponse) {
+  CreateAndShowBubble();
+  EXPECT_EQ(bubble_->tabbed_pane_->GetTabAt(0)->GetTitleText(), u"English");
+  EXPECT_EQ(bubble_->tabbed_pane_->GetTabAt(1)->GetTitleText(), u"English");
+
+  mock_model_->source_name_ = u"Japanese";
+  mock_model_->target_name_ = u"French";
+  bubble_->SwitchView(PartialTranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
+
+  EXPECT_EQ(bubble_->tabbed_pane_->GetTabAt(0)->GetTitleText(), u"Japanese");
+  EXPECT_EQ(bubble_->tabbed_pane_->GetTabAt(1)->GetTitleText(), u"French");
+}
+
 TEST_F(PartialTranslateBubbleViewTest, SourceLanguageTabUpdatesViewState) {
   CreateAndShowBubble();
   // Select target language tab to translate.
   bubble_->TabSelectedAt(1);
-  EXPECT_EQ(PartialTranslateBubbleModel::VIEW_STATE_TRANSLATING,
+  EXPECT_EQ(PartialTranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
             bubble_->GetViewState());
 
   // Select source language tab to revert translation.

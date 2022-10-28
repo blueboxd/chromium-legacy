@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">全画面を録画</translation>
 <translation id="2135456203358955318">ドッキング拡大鏡</translation>
 <translation id="2148716181193084225">今日</translation>
+<translation id="2161132820593978283">ビデオ通話で画面の中央にくるように、カメラのフレーミングをお試しください。クイック設定でオンにできます。</translation>
 <translation id="2170530631236737939">概要モードを終了するには、3 本の指で下にスワイプします</translation>
 <translation id="219905428774326614">ランチャー、すべてのアプリ</translation>
 <translation id="2201071101391734388">最近の <ph name="INDEX" /> / <ph name="TOTAL_COUNT" /> 件の写真。</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">未接続</translation>
 <translation id="2408955596600435184">PIN を入力してください</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
+<translation id="2426051945783024481">カメラのフレームの中央にくるよう自動的に調整されます</translation>
 <translation id="2427507373259914951">左クリック</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">向き</translation>
 <translation id="3153444934357957346">マルチログインに使用できるのは <ph name="MULTI_PROFILE_USER_LIMIT" /> アカウントまでです。</translation>
 <translation id="3154351730702813399">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
+<translation id="3157931365184549694">復元</translation>
 <translation id="316086887565479535">テンプレートでサポートされていないアプリ</translation>
 <translation id="3161500364292033097">デスクとウィンドウを閉じる</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> が <ph name="DEVICE_TYPE" /> をロールバックしています。デバイスはリセットされ、データはすべて削除されます。</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">並べ替え</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="3765841986579723851">今日編集したファイル</translation>
-<translation id="3771549900096082774">ハイ コントラスト モード</translation>
 <translation id="3773700760453577392"><ph name="USER_EMAIL" /> へのマルチログインは、管理者によって禁止されています。続行するには、すべてのユーザーがログアウトする必要があります。</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> を接続しています</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">カメラは右上にスナップされています。システムのサーフェスと競合しています。</translation>
 <translation id="4316910396681052118">すべてのアプリ</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">ハイ コントラストのキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4322742403972824594">キーボード ショートカット「Ctrl+Alt+上矢印」が変更されました。Home キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+左矢印キーを押してください。</translation>
 <translation id="4333628967105022692">複数のユーザーがログインしている場合、Lacros はサポートされません。</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
 <translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
-<translation id="4356930093361201197">ハイ コントラスト モード</translation>
 <translation id="4371348193907997655">キャスト設定</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />、電波強度 <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4378551569595875038">接続中...</translation>
@@ -745,6 +745,7 @@
 <translation id="5283198616748585639">1 分追加</translation>
 <translation id="528468243742722775">終了</translation>
 <translation id="5286194356314741248">スキャン中</translation>
+<translation id="5293671101077843611">今日の予定はありません</translation>
 <translation id="5297423144044956168">モバイル デバイスが見つかりませんでした</translation>
 <translation id="5297704307811127955">オフ</translation>
 <translation id="5300589172476337783">表示</translation>
@@ -876,7 +877,6 @@
 <translation id="5980301590375426705">ゲストを終了</translation>
 <translation id="598407983968395253">テンプレートを使用</translation>
 <translation id="598882571027504733">アップデートを取得するには、キーボードを接続した状態で Chromebook を再起動してください。</translation>
-<translation id="5992218262414051481">ハイコントラスト モードが有効になりました。無効にするには、Ctrl+検索+H キーをもう一度押します。</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" /> ページ</translation>
 <translation id="6018164090099858612">ミラーモードを終了しています</translation>
 <translation id="602001110135236999">左にスクロール</translation>
@@ -1042,6 +1042,7 @@
 <translation id="6960565108681981554">無効です。ご利用の携帯通信会社にお問い合わせください。</translation>
 <translation id="6961121602502368900">スマートフォンの消音は仕事用プロファイルでは使用できません</translation>
 <translation id="6961840794482373852">キーボード ショートカット「Alt+上矢印」が変更されました。PageUp キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+上矢印キーを押してください。</translation>
+<translation id="696267987219125751">カメラのフレーミングはオフです。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">開始する</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
@@ -1133,6 +1134,7 @@
 <translation id="7513922695575567867">カレンダー、<ph name="DATE" /> の週、現在 <ph name="SELECTED_DATE" /> が選択されています。</translation>
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">カメラのフレーミングはオンです。</translation>
 <translation id="7526573455193969409">ネットワークが監視されている可能性があります</translation>
 <translation id="7536035074519304529">IP アドレス: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux アプリとシークレット ウィンドウは現在サポートされていません。他のアプリは保存されます。</translation>
@@ -1151,10 +1153,12 @@
 <translation id="7607002721634913082">一時停止中</translation>
 <translation id="7609951632080598826">カレンダー表示、<ph name="DATE" />、<ph name="TIME" /></translation>
 <translation id="7611213136657090146">カメラが再接続されました。</translation>
+<translation id="761736749114493194">カメラのフレーミングを切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027">華氏 <ph name="TEMPERATURE_F" /> 度</translation>
 <translation id="7633755430369750696">ニアバイシェア設定を表示します。</translation>
 <translation id="7634648064048557203">カメラは右下にスナップされています</translation>
 <translation id="7641938616688887143">録画</translation>
+<translation id="7642106959537987271">色反転モード</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> の設定を開きます、<ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>
@@ -1233,7 +1237,6 @@
 <translation id="8051716679295756675">「<ph name="DESK_TEMPLATE_NAME" />」という名前のテンプレートはすでに存在しています</translation>
 <translation id="8052898407431791827">クリップボードにコピーしました</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
-<translation id="8061464966246066292">ハイコントラスト</translation>
 <translation id="8083540854303889870">後で実行するために保存</translation>
 <translation id="8091387634532529612">自動更新</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> への画面のキャストを停止する</translation>
@@ -1261,6 +1264,7 @@
 <translation id="8209010265547628927">リセット</translation>
 <translation id="8214996719228530800">Canary チャンネル</translation>
 <translation id="8219451629189078428">この間は Chromebook の電源をオンにしておく必要があります。充電器またはアダプタのケーブルが、Chromebook とコンセントの両方にしっかりと接続されていることを確認してください。また、Chromebook の電源をオフにしないでください。</translation>
+<translation id="8230305195727960608">色反転モード</translation>
 <translation id="8236042855478648955">休憩の時間です</translation>
 <translation id="8246282815785366524">ようこそ、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />、電池残量 <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1316,7 @@
 <translation id="851458219935658693">現在のデスクのウィンドウを表示する、ラジオボタンが選択されています</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンのままでは充電できない可能性があります。</translation>
 <translation id="8535393432370007982">色による並べ替えを元に戻す</translation>
+<translation id="8541078764854166027">カメラのフレーミング</translation>
 <translation id="8542053257095774575">保存したデスクやテンプレートはありません</translation>
 <translation id="8546059259582788728">並べ替えを元に戻しました</translation>
 <translation id="8551588720239073785">日時の設定</translation>
@@ -1386,6 +1391,7 @@
 <translation id="8982906748181120328">周辺ユーザーによる検出</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> を使用しています</translation>
+<translation id="8991617137207906966">色反転モードをオンにしました。オフにするには Ctrl+検索+H キーをもう一度押します。</translation>
 <translation id="899350903320462459">通知に関する操作を行うには、<ph name="LOGIN_ID" /> でデバイスのロックを解除してください</translation>
 <translation id="9000771174482730261">ストレージを管理</translation>
 <translation id="9017320285115481645">ファミリー リンクの保護者のアクセスコードを入力してください。</translation>
@@ -1434,6 +1440,7 @@
 <translation id="921989828232331238">保護者の方がこのデバイスを終日ロックしています</translation>
 <translation id="9220525904950070496">アカウントを削除</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
+<translation id="92580429198593979">色反転のキーボード ショートカットを押しました。オンにしますか？</translation>
 <translation id="925832987464884575">プレビューを非表示</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> が今すぐ <ph name="DEVICE_TYPE" /> を更新するよう求めています</translation>
 <translation id="938963181863597773">カレンダーに予定は入ってる？</translation>

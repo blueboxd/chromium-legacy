@@ -160,6 +160,7 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/channel_info.h"
@@ -932,14 +933,17 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   }
 #endif
 
-  if (side_search::IsEnabledForBrowser(browser_.get())) {
-    if (!base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-      side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
-      left_aligned_side_panel_separator_ =
-          AddChildView(std::make_unique<ContentsSeparator>());
-      side_search_controller_ = std::make_unique<SideSearchBrowserController>(
-          side_search_side_panel_, this);
-    }
+  if (side_search::IsEnabledForBrowser(browser_.get()) &&
+      !side_search::ShouldUseUnifiedSidePanel()) {
+    bool dse_support =
+        base::FeatureList::IsEnabled(features::kSideSearchDSESupport);
+    side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(
+        this, dse_support ? SidePanel::HorizontalAlignment::kAlignRight
+                          : SidePanel::HorizontalAlignment::kAlignLeft));
+    left_aligned_side_panel_separator_ =
+        AddChildView(std::make_unique<ContentsSeparator>());
+    side_search_controller_ = std::make_unique<SideSearchBrowserController>(
+        side_search_side_panel_, this);
   }
 
   // InfoBarContainer needs to be added as a child here for drop-shadow, but
@@ -2387,7 +2391,7 @@ void BrowserView::MaybeShowReadingListInSidePanelIPH() {
   if (pref_service &&
       pref_service->GetBoolean(
           reading_list::prefs::kReadingListDesktopFirstUseExperienceShown)) {
-    feature_promo_controller_->MaybeShowPromo(
+    MaybeShowFeaturePromo(
         feature_engagement::kIPHReadingListInSidePanelFeature);
   }
 }
@@ -2711,9 +2715,10 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
 }
 
 DownloadBubbleUIController* BrowserView::GetDownloadBubbleUIController() {
-  return (toolbar() && toolbar()->download_button())
-             ? toolbar()->download_button()->bubble_controller()
-             : nullptr;
+  DCHECK(toolbar_button_provider_);
+  if (auto* download_button = toolbar_button_provider_->GetDownloadButton())
+    return download_button->bubble_controller();
+  return nullptr;
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads(

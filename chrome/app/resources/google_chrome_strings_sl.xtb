@@ -32,6 +32,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1587223624401073077">Google Chrome uporablja vašo kamero.</translation>
 <translation id="1587325591171447154">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chrome blokiral.</translation>
 <translation id="1597911401261118146">Če želite preveriti, ali so gesla varna pred podatkovnimi kršitvami in drugimi varnostnimi težavami, <ph name="BEGIN_LINK" />se prijavite v Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome je blokiral to datoteko arhiva, ker morda skriva zlonamerno programsko opremo.</translation>
 <translation id="1619887657840448962">Zaradi večje varnosti smo v Chromu onemogočili to razširitev, ki ni navedena tukaj in je bila morda dodana brez vaše vednosti: <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Kako lahko upravljate podatke:<ph name="END_BOLD" /> Zaradi zaščite vaše varnosti samodejno izbrišemo vaša zanimanja, starejša od 4 tednov. Ko brskate naprej, se zanimanje morda znova prikaže na seznamu. Odstranite lahko tudi zanimanja, za katera ne želite, da jih Chrome predlaga.</translation>
 <translation id="1628000112320670027">Pomoč za Chrome</translation>
@@ -61,6 +62,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2094648590148273905">Pogoji za ChromeOS Flex</translation>
 <translation id="2094919256425865063">Želite vseeno zapreti Chrome?</translation>
 <translation id="2106831557840787829">ChromeOS Flex omogoča dodatna <ph name="BEGIN_LINK_CROS_OSS" />odprtokodna programska oprema<ph name="END_LINK_CROS_OSS" />, enako kot <ph name="BEGIN_LINK_LINUX_OSS" />razvojno okolje Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Če je vklopljena ta nastavitev, Chrome znova pridobi pomnilnik z zavihkov, ki jih ne uporabljate aktivno. S tem sprostite sredstva računalnika za druga opravila in poskrbite, da Chrome še naprej deluje hitro. Neaktivni zavihki so videti prazni in se samodejno znova naložijo, ko jih kliknete. <ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> ali <ph name="BEGIN_LINK_2" />pošljite povratne informacije<ph name="END_LINK_2" />.</translation>
 <translation id="2120620239521071941">S tem bo iz te naprave izbrisanih več elementov (<ph name="ITEMS_COUNT" />). Če želite pozneje prenesti podatke, se v Chrome prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Znova zaženite, če želite posodobiti &amp;Chrome</translation>
 <translation id="2123055963409958220">Pomagajte izboljšati Google Chrome s <ph name="BEGIN_LINK" />poročanjem trenutnih nastavitev<ph name="END_LINK" /></translation>
@@ -177,6 +179,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Kateri podatki se uporabljajo:<ph name="END_BOLD" /> Zgodovina brskanja, evidenca spletnih mest, ki ste jih obiskali s Chromom v tej napravi.</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="4293420128516039005">Prijavite se, da boste lahko Chrome sinhronizirali in prilagodili v vseh svojih napravah</translation>
+<translation id="430327780270213103">Omogočanje razširitve za prikaz zahtev za dostop v orodni vrstici Chroma</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4334294535648607276">Prenos končan.</translation>
 <translation id="4335235004908507846">Chrome vas lahko varuje pred podatkovnimi kršitvami, zlonamernimi razširitvami in drugim</translation>
@@ -278,6 +281,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6735387454586646204">Sistem ChromeOS Flex</translation>
 <translation id="6739177684496155661">Želite nadaljevati v novem profilu v Chromu?</translation>
 <translation id="6750954913813541382">Chrome zaradi odpravljanja napak pri črkovanju Googlu pošlje besedilo, ki ga vnesete v brskalnik</translation>
+<translation id="6756581345161130259">Chrome po potrebi znova pridobi pomnilnik z zavihkov, ki jih ne uporabljate aktivno. To lahko kadar koli spremenite v nastavitvah.</translation>
 <translation id="677276454032249905">Želite vseeno zapreti Chrome?</translation>
 <translation id="6785872064505734160">Pomočnik Google v Chromu lahko dokonča dejanja na spletnih mestih namesto vas</translation>
 <translation id="683440813066116847">Pravilo za dohodni promet za Google Chrome Canary, ki dovoli promet mDNS.</translation>

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ class ManifestManagerHost : public PageUserData<ManifestManagerHost>,
 
   blink::mojom::ManifestManager& GetManifestManager();
 
-  void DispatchPendingCallbacks();
+  std::vector<GetManifestCallback> ExtractPendingCallbacks();
   void OnConnectionError();
 
   void OnRequestManifestResponse(int request_id,

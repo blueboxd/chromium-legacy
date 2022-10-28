@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   std::u16string GetPluginDisplayNameByPath(
       const base::FilePath& path) override;
   void GetPlugins(GetPluginsCallback callback) override;
+  std::vector<WebPluginInfo> GetPluginsSynchronous() override;
   const ContentPluginInfo* GetRegisteredPluginInfo(
       const base::FilePath& plugin_path) override;
   void SetFilter(PluginServiceFilter* filter) override;

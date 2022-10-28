@@ -374,7 +374,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   [self.NTPMetrics recordContentSuggestionsActionForType:
                        IOSContentSuggestionsActionType::kTrendingQuery];
   UrlLoadParams params = UrlLoadParams::InCurrentTab(config.URL);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  params.web_params.transition_type = ui::PAGE_TRANSITION_LINK;
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
@@ -610,16 +610,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
        !IsFeedAblationEnabled()) &&
       pref_service->GetBoolean(feed::prefs::kArticlesListVisible);
   if (ShouldOnlyShowTrendingQueriesForDisabledFeed() && isFeedVisible) {
-    // Notify consumer with empty array so it knows to remove the module.
-    [self.consumer setTrendingQueriesWithConfigs:@[]];
-    return;
-  }
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  BOOL isSignedIn =
-      authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
-  if (ShouldOnlyShowTrendingQueriesForSignedOut() && isSignedIn) {
     // Notify consumer with empty array so it knows to remove the module.
     [self.consumer setTrendingQueriesWithConfigs:@[]];
     return;

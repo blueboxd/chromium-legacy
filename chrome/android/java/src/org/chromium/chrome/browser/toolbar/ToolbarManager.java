@@ -202,8 +202,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             new ObservableSupplierImpl<>();
     private final ObservableSupplierImpl<Boolean> mStartSurfaceAsHomepageSupplier =
             new ObservableSupplierImpl<>();
-    private final ObservableSupplierImpl<Boolean> mIdentityDiscStateSupplier =
-            new ObservableSupplierImpl<>();
     private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
     private final ConstraintsProxy mConstraintsProxy = new ConstraintsProxy();
 
@@ -646,7 +644,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 identityDiscController, isGridTabSwitcherEnabled, isTabletGtsPolishEnabled,
                 isTabToGtsAnimationEnabled, mIsStartSurfaceEnabled,
                 isTabGroupsAndroidContinuationEnabled, initializeWithIncognitoColors,
-                profileSupplier, startSurfaceLogoClickedCallback, mConstraintsProxy);
+                startSurfaceLogoClickedCallback, mConstraintsProxy);
         mActionModeController =
                 new ActionModeController(mActivity, mActionBarDelegate, toolbarActionModeCallback);
 
@@ -856,22 +854,26 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
 
             @Override
-            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-                if (navigation.hasCommitted() && navigation.isInPrimaryMainFrame()
-                        && !navigation.isSameDocument()) {
+            public void onDidFinishNavigationInPrimaryMainFrame(
+                    Tab tab, NavigationHandle navigation) {
+                if (navigation.hasCommitted() && !navigation.isSameDocument()) {
                     mToolbar.onNavigatedToDifferentPage();
                 }
 
                 // If the load failed due to a different navigation, there is no need to reset the
                 // location bar animations.
-                if (navigation.errorCode() != NetError.OK && navigation.isInPrimaryMainFrame()
-                        && !hasPendingNonNtpNavigation(tab)) {
+                if (navigation.errorCode() != NetError.OK && !hasPendingNonNtpNavigation(tab)) {
                     NewTabPage ntp = getNewTabPageForCurrentTab();
                     if (ntp == null) return;
 
                     ntp.setUrlFocusAnimationsDisabled(false);
                     onTabOrModelChanged();
                 }
+            }
+
+            @Override
+            public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigation) {
+                if (!navigation.isInPrimaryMainFrame()) return;
             }
 
             @Override
@@ -1085,8 +1087,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             IdentityDiscController identityDiscController, boolean isGridTabSwitcherEnabled,
             boolean isTabletGtsPolishEnabled, boolean isTabToGtsAnimationEnabled,
             boolean isStartSurfaceEnabled, boolean isTabGroupsAndroidContinuationEnabled,
-            boolean initializeWithIncognitoColors, ObservableSupplier<Profile> profileSupplier,
-            Callback<LoadUrlParams> logoClickedCallback,
+            boolean initializeWithIncognitoColors, Callback<LoadUrlParams> logoClickedCallback,
             ObservableSupplier<Integer> constraintsSupplier) {
         ViewStub tabSwitcherToolbarStub = mActivity.findViewById(R.id.tab_switcher_toolbar_stub);
         ViewStub tabSwitcherFullscreenToolbarStub = null;
@@ -1100,7 +1101,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 mAppThemeColorProvider, mMenuButtonCoordinator, mOverviewModeMenuButtonCoordinator,
                 mMenuButtonCoordinator.getMenuButtonHelperSupplier(), mTabModelSelectorSupplier,
                 mHomepageEnabledSupplier,
-                mIdentityDiscStateSupplier, (client) -> {
+                identityDiscController, (client) -> {
                     if (invalidator != null) {
                         invalidator.invalidate(client);
                     } else {
@@ -1115,42 +1116,21 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 isStartSurfaceEnabled, isTabGroupsAndroidContinuationEnabled,
                 HistoryManagerUtils::showHistoryManager,
                 PartnerBrowserCustomizations.getInstance()::isHomepageProviderAvailableAndEnabled,
-                DownloadUtils::downloadOfflinePage, initializeWithIncognitoColors, profileSupplier,
+                DownloadUtils::downloadOfflinePage, initializeWithIncognitoColors,
                 logoClickedCallback, mIsStartSurfaceRefactorEnabled, constraintsSupplier);
         // clang-format on
         mHomepageStateListener = () -> {
-            Boolean wasHomepageEnabled = mHomepageEnabledSupplier.get();
-            boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();
-            mHomepageEnabledSupplier.set(isHomepageEnabled);
-
+            mHomepageEnabledSupplier.set(HomepageManager.isHomepageEnabled());
             // Whether to show start surface as homepage is affected by whether homepage URI is
             // customized. So we add a supplier to observe homepage URI change.
-            Boolean wasStartSurfaceAsHomepage = mStartSurfaceAsHomepageSupplier.get();
-            boolean isStartSurfaceAsHomepage =
-                    ReturnToChromeUtil.shouldShowStartSurfaceAsTheHomePage(mActivity);
-            mStartSurfaceAsHomepageSupplier.set(isStartSurfaceAsHomepage);
+            mStartSurfaceAsHomepageSupplier.set(
+                    ReturnToChromeUtil.shouldShowStartSurfaceAsTheHomePage(mActivity));
             mHomepageManagedByPolicySupplier.set(HomepagePolicyManager.isHomepageManagedByPolicy());
-
-            // We need to skip recreating CTA the first time when mStartSurfaceAsHomepageSupplier
-            // is set, i.e., mStartSurfaceAsHomepageSupplier.get() is changed from null to
-            // true/false. Otherwise, it will cause infinite loop of calling recreate().
-            if (wasStartSurfaceAsHomepage == null || wasHomepageEnabled == null) return;
-
-            if (mIsStartSurfaceEnabled != ReturnToChromeUtil.isStartSurfaceEnabled(mActivity)
-                    && !sSkipRecreateForTesting) {
-                // If the state of whether Start surface is enabled is changed due to the homepage
-                // settings change, we need to recreate CTA to adopt this config change.
-                recreateActivityWithTabReparenting();
-            }
         };
+
         HomepageManager.getInstance().addListener(mHomepageStateListener);
         mHomepageStateListener.onHomepageStateUpdated();
 
-        if (toolbarLayout instanceof ToolbarPhone
-                && ReturnToChromeUtil.isStartSurfaceEnabled(mActivity)) {
-            identityDiscController.addObserver(
-                    (canShowHint) -> mIdentityDiscStateSupplier.set(canShowHint));
-        }
         HomeButton homeButton = toolbarLayout.getHomeButton();
         if (homeButton != null) {
             homeButton.init(mHomepageEnabledSupplier, HomepageManager.getInstance()::onMenuClick,
@@ -1199,8 +1179,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             if (mIsStartSurfaceRefactorEnabled && mLayoutStateProvider != null
                     && mLayoutStateProvider.getActiveLayoutType() == LayoutType.START_SURFACE) {
                 return false;
-            } else if (ReturnToChromeUtil.isStartSurfaceEnabled(mActivity)
-                    && mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE) {
+            } else if (mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE
+                    && ReturnToChromeUtil.isStartSurfaceEnabled(mActivity)) {
                 return false;
             }
 

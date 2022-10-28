@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -31,6 +31,7 @@ _VALID_PERF_POOLS = {
     'chromeos-kevin-perf-fyi': {'chrome.tests'},
     'chromeos-amd64-generic-lacros-builder-perf': {'chrome.tests'},
     'chromeos-arm-generic-lacros-builder-perf': {'chrome.tests'},
+    'chromeos-arm64-generic-lacros-builder-perf': {'chrome.tests'},
     'fuchsia-perf-fyi': {'chrome.tests'},
     'fuchsia-perf-atlas-fyi': {'chrome.tests'},
     'fuchsia-perf-sherlock-fyi': {'chrome.tests'},
@@ -127,6 +128,7 @@ def _ValidateBrowserType(builder_name, test_config):
   elif 'Android' in builder_name or 'android' in builder_name:
     android_browsers = ('android-chromium', 'android-chrome',
                         'android-chrome-bundle', 'android-chrome-64-bundle',
+                        'android-trichrome-chrome-google-64-32-bundle',
                         'android-trichrome-bundle', 'exact')
     if browser_options.browser not in android_browsers:
       raise ValueError( 'The browser type for %s must be one of %s' % (

@@ -149,6 +149,19 @@ bool NeedsAppIdentityUpdateDialog(bool title_changing,
                                   bool icons_changing,
                                   const AppId& app_id,
                                   const WebAppRegistrar& registrar) {
+  // Shortcut apps can trigger the update check (https://crbug.com/1366600) on
+  // subsequent runs of the app, if the user changed the title of the app when
+  // creating the shortcut. But we should never run the App Identity dialog for
+  // shortcut apps. Also, ideally we should just use IsShortcutApp here instead
+  // of checking the install source, but as per https://crbug.com/1368592 there
+  // is a bug with that where it returns the wrong thing for Shortcut apps that
+  // specify `scope`.
+  if (registrar.IsShortcutApp(app_id) ||
+      registrar.GetAppInstallSourceForMetrics(app_id) ==
+          webapps::WebappInstallSource::MENU_CREATE_SHORTCUT) {
+    return false;
+  }
+
   if (title_changing && !AllowUnpromptedNameUpdate(app_id, registrar))
     return true;
   if (icons_changing && !AllowUnpromptedIconUpdate(app_id, registrar))
@@ -353,10 +366,9 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
     }
   }
 
-  // Allows updating start_url and manifest_id when kWebAppEnableManifestId is
-  // enabled. Both fields are allowed to change as long as the app_id generated
-  // from them doesn't change.
-  if (base::FeatureList::IsEnabled(blink::features::kWebAppEnableManifestId)) {
+  // Allows updating start_url and manifest_id. Both fields are allowed to
+  // change as long as the app_id generated from them doesn't change.
+  {
     if (install_info_->manifest_id != app->manifest_id())
       return true;
     if (install_info_->start_url != app->start_url())

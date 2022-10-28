@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.history_clusters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -15,6 +17,7 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 
@@ -41,6 +44,7 @@ class HistoryClusterView extends SelectableItemView<HistoryCluster> {
         super(context, attrs);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -48,6 +52,8 @@ class HistoryClusterView extends SelectableItemView<HistoryCluster> {
         mDividerView.addToParent(this, generateDefaultLayoutParams());
         mEndButtonView.setVisibility(GONE);
         mEndButtonView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        mEndButtonView.setOnTouchListener(
+                (v, event) -> HistoryClusterView.this.onTouchEvent(event));
         setAccessibilityDelegate(new AccessibilityDelegate() {
             @Override
             public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
@@ -91,6 +97,11 @@ class HistoryClusterView extends SelectableItemView<HistoryCluster> {
         super.setStartIconDrawable(drawable);
     }
 
+    public void setStartIconBackgroundRes(@DrawableRes int resId) {
+        mStartIconView.setBackgroundResource(resId);
+        ApiCompatibilityUtils.setImageTintList(mStartIconView, getDefaultStartIconTint());
+    }
+
     void setEndButtonDrawable(Drawable drawable) {
         mEndButtonView.setVisibility(VISIBLE);
         mEndButtonView.setImageDrawable(drawable);
@@ -115,10 +126,6 @@ class HistoryClusterView extends SelectableItemView<HistoryCluster> {
 
     void setIconDrawableVisibility(int visibility) {
         mStartIconView.setVisibility(visibility);
-    }
-
-    public void setEndButtonClickListener(OnClickListener clickListener) {
-        mEndButtonView.setOnClickListener(clickListener);
     }
 
     public void setAccessibilityState(@ClusterViewAccessibilityState int accessibilityState) {

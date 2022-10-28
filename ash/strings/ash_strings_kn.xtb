@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡ್ ಮಾಡಿ</translation>
 <translation id="2135456203358955318">ಡಾಕ್‌‌ ಮಾಡಿರುವ ವರ್ಧಕ</translation>
 <translation id="2148716181193084225">ಇಂದು</translation>
+<translation id="2161132820593978283">ಕ್ಯಾಮರಾ ಫ್ರೇಮಿಂಗ್ ಅನ್ನು ಬಳಸಿ ನೋಡಿ, ಇದರಿಂದ ನೀವು ವೀಡಿಯೊ ಕರೆಗಳಲ್ಲಿ ಸ್ಕ್ರೀನ್‌ನ ಮಧ್ಯಭಾಗದಲ್ಲಿರುತ್ತೀರಿ. ಅದನ್ನು ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="2170530631236737939">ಸಮಗ್ರ ನೋಟದಿಂದ ನಿರ್ಗಮಿಸಲು ಮೂರು ಬೆರಳುಗಳಿಂದ ಕೆಳಗೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="219905428774326614">ಲಾಂಚರ್‌, ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="2201071101391734388">ಇತ್ತೀಚಿನ ಫೋಟೋ <ph name="TOTAL_COUNT" /> ರಲ್ಲಿ <ph name="INDEX" />.</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿಲ್ಲ</translation>
 <translation id="2408955596600435184">ನಿಮ್ಮ ಪಿನ್ ನಮೂದಿಸಿ</translation>
 <translation id="2412593942846481727">ಅಪ್‌ಡೇಟ್‌‌ ಲಭ್ಯವಿದೆ</translation>
+<translation id="2426051945783024481">ಕ್ಯಾಮರಾ ಫ್ರೇಮ್ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕೇಂದ್ರೀಕೃತವಾಗಿದೆ</translation>
 <translation id="2427507373259914951">ಎಡ-ಕ್ಲಿಕ್</translation>
 <translation id="2429753432712299108">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಸಮ್ಮತಿಸುವುದಕ್ಕೂ ಮೊದಲು, ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತರಿಪಡಿಸಿಕೊಳ್ಳಿ: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ತೋರಿಸಿ</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">ಓರಿಯಂಟೇಶನ್</translation>
 <translation id="3153444934357957346">ಹಲವು ಪ್ರೊಫೈಲ್ ಸೈನ್-ಇನ್‌ ಮಾಡುವಾಗ ನೀವು <ph name="MULTI_PROFILE_USER_LIMIT" /> ಖಾತೆಗಳವರೆಗೆ ಮಾತ್ರ ಹೊಂದಬಹುದು.</translation>
 <translation id="3154351730702813399">ಸಾಧನದ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಯ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು.</translation>
+<translation id="3157931365184549694">ಮರುಸ್ಥಾಪನೆ</translation>
 <translation id="316086887565479535">ಟೆಂಪ್ಲೇಟ್‌ನಲ್ಲಿ ಬೆಂಬಲಿಸದ ಆ್ಯಪ್‌ಗಳು</translation>
 <translation id="3161500364292033097">ಡೆಸ್ಕ್ ಮತ್ತು ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="316356270129335934">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು <ph name="MANAGER" /> ಹಿಂತಿರುಗಿಸುತ್ತಿದೆ. ನಿಮ್ಮ ಸಾಧನವನ್ನು ರೀಸೆಟ್ ಮಾಡಲಾಗುತ್ತದೆ ಮತ್ತು ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ.</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">ಈ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="3742055079367172538">ಸ್ಕ್ರಿನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ</translation>
 <translation id="3765841986579723851">ಇಂದು ಎಡಿಟ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="3771549900096082774">ಉನ್ನತ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್</translation>
 <translation id="3773700760453577392"><ph name="USER_EMAIL" /> ಗೆ ಬಹು ಸೈನ್‌-ಇನ್‌ ಅನುಮತಿಯನ್ನು ನಿರ್ವಾಹಕರು ರದ್ದುಗೊಳಿಸಿದ್ದಾರೆ. ಮುಂದುವರಿಯಲು ಎಲ್ಲ ಬಳಕೆದಾರರು ಸೈನ್‌ ಔಟ್‌ ಮಾಡಬೇಕು.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> ಗೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">ಕ್ಯಾಮರಾವನ್ನು ಮೇಲಿನ ಬಲ ಮೂಲೆಯಲ್ಲಿ ಸ್ನ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ. ಸಿಸ್ಟಮ್ ಮೇಲ್ಮೈ ಜೊತೆಗೆ ಸಂಘರ್ಷ.</translation>
 <translation id="4316910396681052118">ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">ನೀವು ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್‌ನ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4322742403972824594">Ctrl + Alt + ಅಪ್ ಆ್ಯರೋ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಬದಲಿಸಲಾಗಿದೆ. Home ಕೀ ಬಳಸಲು, <ph name="LAUNCHER_KEY_NAME" /> ಕೀ + ಲೆಫ್ಟ್ ಆ್ಯರೋ ಒತ್ತಿ.</translation>
 <translation id="4333628967105022692">ಅನೇಕ ಬಳಕೆದಾರರು ಸೈನ್ ಇನ್ ಆಗಿರುವಾಗ ಲ್ಯಾಕ್ರೋಸ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="4338109981321384717">ಭೂತಕನ್ನಡಿ</translation>
 <translation id="4351433414020964307">ಸಹಾಯಕವು ಲೋಡ್ ಆಗುತ್ತಿದೆ...</translation>
-<translation id="4356930093361201197">ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್</translation>
 <translation id="4371348193907997655">ಕ್ಯಾಸ್ಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ ಶೇಕಡಾ <ph name="SIGNAL_STRENGTH" /> ಶೇಕಡಾ</translation>
 <translation id="4378551569595875038">ಕನೆಕ್ಟ್...</translation>
@@ -877,8 +877,6 @@
 <translation id="5980301590375426705">ಅತಿಥಿ ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="598407983968395253">ಟೆಂಪ್ಲೇಟ್‌ ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="598882571027504733">ಅಪ್‌ಡೇಟ್‌ ಪಡೆಯಲು, ಕೀಬೋರ್ಡ್ ಲಗತ್ತಿನೊಂದಿಗೆ ನಿಮ್ಮ Chromebook ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
-<translation id="5992218262414051481">ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು ಪುನಃ
-Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="6012623610530968780">ಪುಟ <ph name="SELECTED_PAGE" /> ರಲ್ಲಿ <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">ಪ್ರತಿಬಿಂಬ ಮೋಡ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="602001110135236999">ಎಡಕ್ಕೆ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ</translation>
@@ -1044,6 +1042,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6960565108681981554">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿಲ್ಲ. ನಿಮಗೆ ವಾಹಕವನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="6961121602502368900">ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಫೋನ್ ನಿಶ್ಯಬ್ದಗೊಳಿಸಿ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="6961840794482373852">Alt + ಅಪ್ ಆ್ಯರೋ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಬದಲಿಸಲಾಗಿದೆ. Page Up ಕೀ ಬಳಸಲು, <ph name="LAUNCHER_KEY_NAME" /> ಕೀ + ಅಪ್ ಆ್ಯರೋ ಒತ್ತಿ.</translation>
+<translation id="696267987219125751">ಕ್ಯಾಮರಾ ಫ್ರೇಮಿಂಗ್ ಆಫ್ ಆಗಿದೆ.</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="6972754398087986839">ಪ್ರಾರಂಭಗೊಂಡಿದೆ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1134,6 +1133,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7513922695575567867">ಕ್ಯಾಲೆಂಡರ್, <ph name="DATE" /> ನ ವಾರ, ಪ್ರಸ್ತುತವಾಗಿ <ph name="SELECTED_DATE" /> ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="7514365320538308">ಡೌನ್‌ಲೋಡ್</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">ಕ್ಯಾಮರಾ ಫ್ರೇಮಿಂಗ್ ಆನ್ ಆಗಿದೆ.</translation>
 <translation id="7526573455193969409">ನೆಟ್‌ವರ್ಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದಾಗಿದೆ</translation>
 <translation id="7536035074519304529">ಐಪಿ ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಅಜ್ಞಾತ ವಿಂಡೋಗಳು ಪ್ರಸ್ತುತ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ಇತರ ಆ್ಯಪ್‌ಗಳನ್ನು ಉಳಿಸಲಾಗುತ್ತದೆ.</translation>
@@ -1152,10 +1152,12 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7607002721634913082">ವಿರಾಮದಲ್ಲಿದೆ</translation>
 <translation id="7609951632080598826">ಕ್ಯಾಲೆಂಡರ್ ವೀಕ್ಷಣೆ, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">ಕ್ಯಾಮರಾವನ್ನು ಮರುಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
+<translation id="761736749114493194">ಕ್ಯಾಮರಾ ಫ್ರೇಮಿಂಗ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Nearby ಶೇರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ.</translation>
 <translation id="7634648064048557203">ಕ್ಯಾಮರಾವನ್ನು ಕೆಳಗಿನ ಬಲ ಮೂಲೆಯಲ್ಲಿ ಸ್ನ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7641938616688887143">ರೆಕಾರ್ಡ್</translation>
+<translation id="7642106959537987271">ಬಣ್ಣ ವಿಲೋಮದ ಮೋಡ್</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> ಗೆ ಸಂಬಂಧಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ಮಾಲೀಕರು)</translation>
 <translation id="7647488630410863958">ನಿಮ್ಮ ಅಧಿಸೂಚನೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
@@ -1234,7 +1236,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> ಹೆಸರಿನ ಟೆಂಪ್ಲೇಟ್ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ</translation>
 <translation id="8052898407431791827">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
-<translation id="8061464966246066292">ಉನ್ನತ ಕಾಂಟ್ರಾಸ್ಟ್</translation>
 <translation id="8083540854303889870">ನಂತರ ಬಳಕೆಗಾಗಿ ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="8091387634532529612">ಸ್ವಯಂಚಾಲಿತ ಅಪ್‌ಡೇಟ್‌ಗಳು</translation>
 <translation id="8098591350844501178">ಪರದೆಯನ್ನು <ph name="RECEIVER_NAME" /> ಗೆ ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
@@ -1262,6 +1263,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8209010265547628927">ರೀಸೆಟ್ ಮಾಡಿ</translation>
 <translation id="8214996719228530800">Canary ಚಾನಲ್</translation>
 <translation id="8219451629189078428">ಈ ಸಮಯದಲ್ಲಿ ನಿಮ್ಮ Chromebook ಆನ್‌ನಲ್ಲಿ ಇರಬೇಕಾಗುತ್ತದೆ ಮತ್ತು ವಿದ್ಯುತ್ ಸಂಪರ್ಕ ಹೊಂದಿರಬೇಕಾಗುತ್ತದೆ. ನಿಮ್ಮ Chromebook ಮತ್ತು ವಿದ್ಯುತ್ ಔಟ್‌ಲೆಟ್ ಎರಡಕ್ಕೂ ಚಾರ್ಜರ್ ಅಥವಾ ಅಡಾಪ್ಟರ್ ಕೇಬಲ್‌ಗಳನ್ನು ಸಂಪೂರ್ಣವಾಗಿ ಪ್ಲಗ್ ಇನ್ ಮಾಡಲಾಗಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ. ನಿಮ್ಮ Chromebook ಅನ್ನು ಆಫ್ ಮಾಡಬೇಡಿ.</translation>
+<translation id="8230305195727960608">ಬಣ್ಣ ವಿಲೋಮದ ಮೋಡ್</translation>
 <translation id="8236042855478648955">ವಿರಾಮದ ಸಮಯ</translation>
 <translation id="8246282815785366524">ಮರಳಿ ಸುಸ್ವಾಗತ, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />, ಫೋನ್ ಬ್ಯಾಟರಿ <ph name="BATTERY_STATUS" /></translation>
@@ -1313,6 +1315,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="851458219935658693">ಪ್ರಸ್ತುತ ಡೆಸ್ಕ್‌ನಿಂದ ವಿಂಡೋಗಳನ್ನು ತೋರಿಸಿ, ರೇಡಿಯೋ ಬಟನ್ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8535393432370007982">ಬಣ್ಣದ ಪ್ರಕಾರ ಮಾಡಿರುವ ವಿಂಗಡಣೆಯನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
+<translation id="8541078764854166027">ಕ್ಯಾಮರಾ ಫ್ರೇಮಿಂಗ್</translation>
 <translation id="8542053257095774575">ಯಾವುದೇ ಡೆಸ್ಕ್‌ಗಳು ಅಥವಾ ಟೆಂಪ್ಲೇಟ್‌ಗಳನ್ನು ಉಳಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="8546059259582788728">ವಿಂಗಡಣೆಯ ರದ್ದತಿ ಯಶಸ್ವಿಯಾಗಿದೆ</translation>
 <translation id="8551588720239073785">ದಿನಾಂಕ ಮತ್ತು ಸಮಯದ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -1387,6 +1390,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8982906748181120328">ಸಮೀಪದ ಗೋಚರತೆ</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="8991617137207906966">ಬಣ್ಣ ವಿಲೋಮದ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ ಅದನ್ನು ಟಾಗಲ್ ಆಫ್ ಮಾಡಲು Ctrl+Search+H ಅನ್ನು ಪುನಃ ಒತ್ತಿ.</translation>
 <translation id="899350903320462459">ಅಧಿಸೂಚನೆ ಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧನವನ್ನು <ph name="LOGIN_ID" /> ನಂತೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="9000771174482730261">ಸಂಗ್ರಹಣೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="9017320285115481645">Family Link ಪೋಷಕ ಪ್ರವೇಶದ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
@@ -1435,6 +1439,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="921989828232331238">ಈ ದಿನ ನಿಮ್ಮ ಪೋಷಕರು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡಿದ್ದಾರೆ</translation>
 <translation id="9220525904950070496">ಖಾತೆಯನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="923686485342484400">ಸೈನ್ ಔಟ್ ಮಾಡಲು Control Shift Q ಅನ್ನು ಎರಡುಬಾರಿ ಒತ್ತಿರಿ.</translation>
+<translation id="92580429198593979">ಬಣ್ಣದ ವಿಲೋಮಕ್ಕಾಗಿ ನೀವು ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆಫ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="925832987464884575">ಪೂರ್ವವೀಕ್ಷಣೆಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="937214777182567951">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಕೂಡಲೇ ನೀವು ಅಪ್‌ಡೇಟ್ ಮಾಡಬೇಕೆಂದು <ph name="MANAGER" /> ಬಯಸುತ್ತದೆ</translation>
 <translation id="938963181863597773">ನನ್ನ ಕ್ಯಾಲೆಂಡರ್‌ನಲ್ಲಿ ಏನಿದೆ?</translation>

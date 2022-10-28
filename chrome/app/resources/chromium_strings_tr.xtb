@@ -61,6 +61,7 @@ Web sitelerine ve uygulamalara verdiğiniz izinler, bu hesap için geçerli olab
 <translation id="2583187216237139145">Bu profil kullanılırken oluşturulan tüm Chromium verileri (yer işaretleri, geçmiş, şifreler ve diğer ayarlar gibi) iş profili yöneticisi tarafından kaldırılabilir. <ph name="LEARN_MORE" /></translation>
 <translation id="2648074677641340862">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="2661879430930417727">Bir cihazı paylaşıyorsanız arkadaşlarınız ve aileniz ayrı olarak göz atabilir ve Chromium'u tam olarak istedikleri şekilde ayarlayabilirler.</translation>
+<translation id="2669853942967761236">Chromium, içinde kötü amaçlı yazılım gizli olabileceğinden bu arşiv dosyasını engelledi</translation>
 <translation id="268602741124540128">Chromium'a hoş geldiniz <ph name="ACCOUNT_FIRST_NAME" />.</translation>
 <translation id="2711502716910134313">Chromium Sekmesi</translation>
 <translation id="2718390899429598676">Chromium ek güvenlik için verilerinizi şifreler.</translation>
@@ -299,6 +300,7 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="7682601070171973634">Chromium, sitelerin daha az veri kullanarak aynı tarama deneyimini sunmasını sağlayan yeni özellikleri keşfediyor</translation>
 <translation id="7686590090926151193">Chromium varsayılan tarayıcınız değil</translation>
 <translation id="7689606757190482937">Chromium'u cihazlarınız arasında senkronize edin ve kişiselleştirin</translation>
+<translation id="7714577916146996629">Bu ayar etkinleştirildiğinde Chromium, aktif olarak kullanmadığınız sekmelerdeki belleği geri kazanır. Böylece, bilgisayarınızın kaynaklarında diğer görevler için yer açılır ve Chromium hızlı çalışmaya devam eder. Aktif olmayan sekmeler boş görünür ve bunları tıkladığınızda otomatik olarak yeniden yüklenir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /> veya <ph name="BEGIN_LINK_2" />geri bildirim gönderin<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">Bu işlem tarama verilerinizi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chromium'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
@@ -328,6 +330,7 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="8453117565092476964">Yükleyici arşivi bozuk veya geçersiz. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="8463672209299734063">İsteğe bağlı: Teşhis ve kullanım verilerini Google'a otomatik olarak göndererek ChromiumOS özelliklerini ve performansını iyileştirmeye yardımcı olun.</translation>
 <translation id="8493179195440786826">Chromium Sürümü Eski</translation>
+<translation id="8522220489792889625">Chromium, aktif olarak kullanmadığınız sekmelerdeki belleği gerektiğinde geri kazanır. İstediğiniz zaman bunu Ayarlar'dan değiştirebilirsiniz.</translation>
 <translation id="8550334526674375523">Bu iş profili, kişisel profilinizden tamamen ayrıdır.</translation>
 <translation id="8558383651099478961">Ebeveyniniz, Chromium'a yönelik "Siteler, uygulamalar ve uzantılar için izinler"i kapattı. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> uzantısını eklemeye izin verilmiyor.</translation>
 <translation id="8561285221328166383">Gelecekteki Chromium güncellemelerini almak için macOS 10.13 veya sonraki bir sürümün yüklü olması gerekir. Bu bilgisayar macOS 10.12 kullanıyor.</translation>

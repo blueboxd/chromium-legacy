@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,9 @@ class CONTENT_EXPORT Page : public base::SupportsUserData {
       base::OnceCallback<void(const GURL&, blink::mojom::ManifestPtr)>;
 
   // Requests the manifest URL and the Manifest of the main frame's document.
+  // |callback| may be called after the WebContents has been destroyed.
+  // This must be invoked on the UI thread, |callback| will be invoked on the UI
+  // thread.
   virtual void GetManifest(GetManifestCallback callback) = 0;
 
   // Returns true iff this Page is primary for the associated `WebContents`

@@ -23,6 +23,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="1104948393051856124">Aceptar y continuar</translation>
 <translation id="110724200315609752">Cambiar a ventana abierta</translation>
 <translation id="1112015203684611006">Error al imprimir.</translation>
+<translation id="1118569444314402022">Te damos la bienvenida de nuevo, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Crear nueva pestaña.</translation>
 <translation id="1126809382673880764">No te protege frente a descargas, extensiones ni sitios web peligrosos. Seguirás disfrutando de protección con la función Navegación segura, si está disponible, en otros servicios de Google, como Gmail y la Búsqueda.</translation>
 <translation id="1135212215217513471">Descarga Chrome para iOS</translation>
@@ -46,6 +47,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="1272079795634619415">Detener</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="1281818060020671000">Gestionar datos</translation>
+<translation id="1282311502488501110">No iniciar sesión</translation>
 <translation id="1283524564873030414">Últimas 24 horas</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
 <translation id="1291506870746876680">Los permisos de <ph name="BEGIN_BOLD" /><ph name="SITE_NAME" /><ph name="END_BOLD" /> se desactivarán cuando salgas de este sitio.</translation>
@@ -54,6 +56,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="1322735045095424339">Tu organización requiere que uses el modo Incógnito</translation>
 <translation id="1323735185997015385">Eliminar</translation>
 <translation id="132683371494960526">Toca dos veces para cambiar la carpeta principal.</translation>
+<translation id="1335348992705722518">Gestionar configuración...</translation>
 <translation id="1340643665687018190">Cerrar el menú</translation>
 <translation id="1358214951266274152">Ir al enlace que has copiado</translation>
 <translation id="1360432990279830238">¿Cerrar sesión y detener sincronización?</translation>
@@ -61,6 +64,7 @@ Usas el buscador <ph name="DSE_NAME" />. Consulta las instrucciones del buscador
 <translation id="1377255359165588604">La sincronización ha dejado de funcionar.</translation>
 <translation id="1377321085342047638">Número de tarjeta</translation>
 <translation id="1383876407941801731">Buscar</translation>
+<translation id="138618066238211776">Continuar como <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">Últimas 4 semanas</translation>
 <translation id="1404330357948037222">Se ha cerrado tu sesión</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
@@ -174,9 +178,11 @@ Los sitios no pueden usar cookies para ver tu actividad de navegación en otros 
 <translation id="2421044535038393232">Seguir editando</translation>
 <translation id="2434405374328098816">Ya has guardado una contraseña para <ph name="USERNAME" /> en <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
+<translation id="2461070143328828326">Ajustes de contraseña</translation>
 <translation id="2469960372084740698">¿Desactivar Navegación segura?</translation>
 <translation id="2473876017985765807">Ya has guardado una contraseña para <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">No seleccionada</translation>
+<translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2500374554657206846">Opciones para guardar las contraseñas</translation>
 <translation id="2523363575747517183">Este sitio web está intentando abrir otra aplicación reiteradamente.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
@@ -327,6 +333,7 @@ Consulta las instrucciones del buscador para eliminar tu historial de búsqueda 
 <translation id="3709582977625132201">Marcar como no leído</translation>
 <translation id="371230970611282515">Predice y te advierte de eventos peligrosos antes de que se produzcan.</translation>
 <translation id="37207012422556617">Tendencias de búsqueda</translation>
+<translation id="3726360487031500941">Vuelve a iniciar sesión en tu cuenta <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">Abre las URL introducidas en Google Chrome en incógnito.</translation>
 <translation id="3762232513783804601">Diseñado para tu iPad</translation>
 <translation id="3771033907050503522">Pestañas incógnito</translation>
@@ -381,6 +388,7 @@ Consulta las instrucciones del buscador para eliminar tu historial de búsqueda 
 <translation id="4187450337729239226">Pegar y buscar</translation>
 <translation id="4223967053752765281">Tu organización ha desactivado el inicio de sesión. Podrás seguir viendo tus marcadores, el historial, las contraseñas y otros ajustes en este dispositivo. Si realizas cambios, no se sincronizarán con tu cuenta.</translation>
 <translation id="4233831822770018312">Editar permisos</translation>
+<translation id="4236584471598725073">Seguimiento de precios</translation>
 <translation id="4237377247299956313">Toca <ph name="BEGIN_BOLD" />App del navegador por omisión<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Introduce tu frase de contraseña</translation>
 <translation id="4249955472157341256">Ordenar por más recientes</translation>
@@ -654,7 +662,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="6387994324662817823">Las contraseñas se guardan en el gestor de contraseñas de Google solo en este dispositivo.</translation>
 <translation id="6389470377220713856">Nombre de la tarjeta</translation>
 <translation id="6406506848690869874">Sincronización</translation>
-<translation id="6410390304316730527">La función Navegación segura te protege frente a atacantes que pueden intentar engañarte para que realices alguna acción peligrosa, como instalar software malicioso o revelar información personal, incluidas contraseñas, números de teléfono o tarjetas de crédito. Si desactivas esta función, debes tener cuidado al navegar por sitios desconocidos o que no sean de confianza.</translation>
+<translation id="6410390304316730527">La función Navegación segura te protege frente a atacantes que pueden intentar engañarte para que realices alguna acción peligrosa, como instalar malware o revelar información personal, incluidas contraseñas, números de teléfono o tarjetas de crédito. Si desactivas esta función, debes tener cuidado al navegar por sitios desconocidos o que no sean de confianza.</translation>
 <translation id="6410883413783534063">Abre pestañas para visitar varias páginas al mismo tiempo</translation>
 <translation id="641799622251403418">Has iniciado sesión como <ph name="EMAIL" />.
 
@@ -740,6 +748,7 @@ Mientras estás en modo Incógnito, los sitios no pueden usar tus cookies para v
 <translation id="6930799952781667037">Toca para cambiar a este idioma.</translation>
 <translation id="6944369514868857500">Elegir otra cuenta</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
+<translation id="6965382102122355670">Aceptar</translation>
 <translation id="6973630695168034713">Carpetas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Gestionar tu cuenta de Google</translation>

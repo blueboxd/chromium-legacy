@@ -456,6 +456,26 @@ ci.builder(
     name = "linux-chromeos-annotator-rel",
     builderless = True,
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "rel",
@@ -1145,6 +1165,27 @@ ci.builder(
     reclient_cache_silo = "Comparison Windows - cache siloed",
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = 250,
+    os = os.WINDOWS_DEFAULT,
+    free_space = builders.free_space.high,
+)
+
+ci.builder(
+    name = "Comparison Windows (reclient) (reproxy cache)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win|expcache",
+        short_name = "re",
+    ),
+    cores = 32,
+    goma_jobs = 250,
+    executable = "recipe:reclient_goma_comparison",
+    execution_timeout = 6 * time.hour,
+    reclient_cache_silo = "Comparison Windows (reproxy cache) - cache siloed",
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = 250,
+    reclient_bootstrap_env = {
+        "RBE_experimental_goma_deps_cache": "true",
+    },
     os = os.WINDOWS_DEFAULT,
     free_space = builders.free_space.high,
 )
@@ -2015,23 +2056,9 @@ fyi_ios_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     notifies = ["cronet"],
-)
-
-fyi_ios_builder(
-    name = "ios-simulator-cronet (reclient shadow)",
-    branch_selector = branches.STANDARD_MILESTONE,
-    builder_spec = builder_config.copy_from(
-        "ci/ios-simulator-cronet",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "cronet",
-        short_name = "rec",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    builderless = True,
     goma_backend = None,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
-    reclient_jobs = 40,
+    reclient_jobs = reclient.jobs.DEFAULT,
 )
 
 fyi_ios_builder(

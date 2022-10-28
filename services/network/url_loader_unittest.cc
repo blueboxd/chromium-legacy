@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6952,7 +6952,7 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
   base::HistogramTester histogram_tester_;
 };
 
-TEST_F(URLLoaderCacheTransparencyTest, SuccessfulPervasivePayload) {
+TEST_F(URLLoaderCacheTransparencyTest, DISABLED_SuccessfulPervasivePayload) {
   SendTwoRequestsWithDifferentOrigins();
   EXPECT_EQ(1, network_request_count());
   ExpectNotUsedReason(

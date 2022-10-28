@@ -174,6 +174,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="1380591466760231819">Lipatan surat</translation>
 <translation id="138218114945450791">Biru Terang</translation>
 <translation id="1382194467192730611">Perangkat USB diizinkan oleh administrator Anda</translation>
+<translation id="1382378825779654399">Anda akan mendapatkan peringatan email jika ada diskon di situs mana pun. Halaman ini akan disimpan ke <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">Info Anda yang ditampilkan bukan yang terbaru? Hubungi bank Anda untuk memperbaruinya.</translation>
 <translation id="1384725838384960382">Sheet autentikasi kredensial pembayaran aman</translation>
 <translation id="1386623374109090026">Anotasi</translation>
@@ -250,7 +251,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Freeware &amp; shareware</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
-<translation id="1554003749331233619">Saat ini Anda sedang memantau produk ini. Halaman ini disimpan di <ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="1555130319947370107">Biru</translation>
 <translation id="1559447966090556585">Dapatkan notifikasi?</translation>
 <translation id="1559528461873125649">Tidak ada file atau direktori tersebut</translation>
@@ -298,7 +298,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="1662550410081243962">Simpan dan isi metode pembayaran</translation>
 <translation id="1663943134801823270">Kartu dan alamat berasal dari Chrome. Anda dapat mengelolanya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Mulai sekarang, halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan ke dalam bahasa <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1673886523110456987">Check out dengan <ph name="CARD_DETAIL" /> untuk menggunakan penawaran</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Tepi pendek lebih dulu</translation>
 <translation id="168693727862418163">Nilai kebijakan ini gagal memvalidasi skemanya dan akan diabaikan.</translation>
@@ -423,6 +422,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2034971124472263449">Simpan saja</translation>
 <translation id="2035400064145347639">Panduan &amp; petunjuk perjalanan</translation>
 <translation id="2036983605131262583">Rol Alternatif</translation>
+<translation id="2040463897538655645">Penyimpanan eksternal</translation>
 <translation id="2040894699575719559">Lokasi diblokir</translation>
 <translation id="2042213636306070719">Baki 7</translation>
 <translation id="204357726431741734">Login untuk menggunakan sandi yang disimpan di Akun Google Anda</translation>
@@ -1004,7 +1004,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3633738897356909127">Tombol Update Chrome, tekan Enter untuk mengupdate Chrome dari setelan Chrome</translation>
 <translation id="3634530185120165534">Baki 5</translation>
 <translation id="3634567936866541746">Anda baru saja memasukkan sandi ke situs penipuan. Untuk mengamankan akun Anda, Chrome merekomendasikan pemeriksaan sandi tersimpan Anda.</translation>
-<translation id="3637033245385760976">Notifikasi Chrome harus aktif. Anda dapat mengaktifkannya di <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="3637662659967048211">Simpan ke Akun Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Aplikasi:</translation>
@@ -1071,7 +1070,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3789841737615482174">Instal</translation>
 <translation id="3793574014653384240">Jumlah dan penyebab error yang terjadi baru-baru ini</translation>
 <translation id="3795344968043407227">Musik alternatif &amp; indie</translation>
-<translation id="3797522431967816232">Prc3 (Envelope)</translation>
+<translation id="3797522431967816232">Prc3 (Amplop)</translation>
 <translation id="3799805948399000906">Font diminta</translation>
 <translation id="380329542618494757">Nama</translation>
 <translation id="3807270098669886186">Penyedia layanan telepon</translation>
@@ -1520,6 +1519,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5018422839182700155">Tidak dapat membuka halaman ini</translation>
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>
 <translation id="5020776957610079374">Musik dunia</translation>
+<translation id="5021557570875267742">Pantau harga dengan Chrome</translation>
 <translation id="5023310440958281426">Periksa kebijakan administrator Anda</translation>
 <translation id="5029568752722684782">Hapus salinan</translation>
 <translation id="5030338702439866405">Diterbitkan Oleh</translation>
@@ -2241,6 +2241,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Selalu terjemahkan bahasa <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Industri hiburan</translation>
+<translation id="7003335073762455340">Anda memantau produk ini. Halaman ini disimpan di <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Gunakan Windows Hello untuk mengonfirmasi kartu lebih cepat</translation>
 <translation id="7006930604109697472">Tetap kirim</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2323,6 +2324,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7234638337680728591">Harga gas &amp; bahan bakar kendaraan</translation>
 <translation id="7237492777898608035">Jangan tampilkan pesan ini lagi untuk situs ini</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
+<translation id="7239514174717251677">Notifikasi diskon aktif. Anda dapat mengubahnya di <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">Nama Alternatif Subjek Sertifikat</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# kecocokan}other{# kecocokan}}</translation>
@@ -2462,6 +2464,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7564049878696755256">Anda dapat kehilangan akses ke akun <ph name="ORG_NAME" /> atau mengalami pencurian identitas. Chrome menyarankan Anda untuk mengubah sandi sekarang.</translation>
 <translation id="7564680668369175887">Mobil station wagon</translation>
 <translation id="7567204685887185387">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin telah dikeluarkan dengan curang. Hal ini disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
+<translation id="7568616151991626879">Google Chrome mencoba mengisi sandi Anda di <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golf</translation>
 <translation id="7569761772822664555">Tombol Kelola mesin telusur, tekan Enter untuk mengelola mesin telusur dan penelusuran situs default Anda</translation>
 <translation id="7569952961197462199">Hapus kartu kredit dari Chrome?</translation>
@@ -2817,7 +2820,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8559762987265718583">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat tidak benar.</translation>
 <translation id="8564182942834072828">Dokumen terpisah/Salinan tidak tersusun</translation>
 <translation id="8564985650692024650">Chromium menyarankan untuk menyetel ulang sandi <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> jika Anda juga menggunakannya di situs lain.</translation>
-<translation id="8573969211731659953">Notifikasi diskon aktif. Anda dapat mengubahnya di <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="8576310925653847813">Sistem home theater</translation>
 <translation id="8577348305244205642">Kartu virtual tidak tersedia</translation>
 <translation id="858637041960032120">+ nomor telepon</translation>
@@ -3031,11 +3033,13 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="9174623988242579721">Kendaraan modifikasi &amp; performa tinggi</translation>
 <translation id="9174917557437862841">Tombol beralih tab, tekan Enter untuk beralih ke tab ini</translation>
 <translation id="9179703756951298733">Kelola informasi pembayaran dan kartu kredit Anda di setelan Chrome</translation>
+<translation id="9179907736442194268">Dapatkan peringatan email jika ada diskon di situs mana pun</translation>
 <translation id="9183302530794969518">Google Dokumen</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> menggunakan protokol yang tidak didukung.</translation>
 <translation id="9187461866967718678">Olahraga ekstrem</translation>
 <translation id="9191834167571392248">Lubang di kiri bawah</translation>
 <translation id="9199905725844810519">Pencetakan diblokir</translation>
+<translation id="9202180858541326427">Notifikasi Chrome harus aktif. Anda dapat mengaktifkannya di <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="920511547311754821">Tidak dapat menemukan kode? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Gagal menambahkan artikel.</translation>

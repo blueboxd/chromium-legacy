@@ -215,6 +215,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2132302418721800944">Opname van volledig scherm maken</translation>
 <translation id="2135456203358955318">Vastgezet vergrootglas</translation>
 <translation id="2148716181193084225">Vandaag</translation>
+<translation id="2161132820593978283">Probeer cameraframing, zodat je bij videogesprekken in het midden van het scherm te zien bent. Zet dit aan via Snelle instellingen.</translation>
 <translation id="2170530631236737939">Swipe met 3 vingers omlaag om het overzicht te sluiten</translation>
 <translation id="219905428774326614">Launcher, alle apps</translation>
 <translation id="2201071101391734388">Recente foto <ph name="INDEX" /> van <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2405664212338326887">Niet verbonden</translation>
 <translation id="2408955596600435184">Je pincode opgeven</translation>
 <translation id="2412593942846481727">Update beschikbaar</translation>
+<translation id="2426051945783024481">Cameraframe automatisch gecentreerd</translation>
 <translation id="2427507373259914951">Klik met linkermuisknop</translation>
 <translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil rechten om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt getoond: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Wachtwoord bekijken</translation>
@@ -373,6 +375,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3151786313568798007">Stand</translation>
 <translation id="3153444934357957346">Je kunt maximaal <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts hebben in Toegang tot meerdere accounts.</translation>
 <translation id="3154351730702813399">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
+<translation id="3157931365184549694">Herstellen</translation>
 <translation id="316086887565479535">Niet-ondersteunde apps in template</translation>
 <translation id="3161500364292033097">Bureau en vensters sluiten</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> zet je <ph name="DEVICE_TYPE" /> terug naar een oudere versie. Je apparaat wordt gereset en alle gegevens worden verwijderd.</translation>
@@ -476,7 +479,6 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="3735740477244556633">Sorteren op</translation>
 <translation id="3742055079367172538">Screenshot gemaakt</translation>
 <translation id="3765841986579723851">Vandaag bewerkt</translation>
-<translation id="3771549900096082774">Modus voor hoog contrast</translation>
 <translation id="3773700760453577392">Een beheerder heeft geen toestemming gegeven voor toegang tot meerdere accounts voor <ph name="USER_EMAIL" />. Alle gebruikers moeten uitloggen om door te gaan.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> koppelen</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4312840429157639164">Camera uitgelijnd op de rechterbovenhoek. Conflict met systeemoppervlak.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Je hebt op de sneltoets voor hoog contrast gedrukt. Wil je deze functie aanzetten?</translation>
 <translation id="4322742403972824594">De sneltoets Ctrl + Alt + pijl-omhoog is veranderd. Als je de toets Home wilt gebruiken, druk je op de <ph name="LAUNCHER_KEY_NAME" />-toets + pijl-links.</translation>
 <translation id="4333628967105022692">Lacros wordt niet ondersteund terwijl er meerdere gebruikers zijn ingelogd.</translation>
 <translation id="4338109981321384717">Vergrootglas</translation>
 <translation id="4351433414020964307">Assistent wordt geladen...</translation>
-<translation id="4356930093361201197">modus voor hoog contrast</translation>
 <translation id="4371348193907997655">Cast-instellingen</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, signaalsterkte <ph name="SIGNAL_STRENGTH" /> procent</translation>
 <translation id="4378551569595875038">Verbinden...</translation>
@@ -877,7 +877,6 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="5980301590375426705">Gastsessie sluiten</translation>
 <translation id="598407983968395253">Template gebruiken</translation>
 <translation id="598882571027504733">Als je de update wilt downloaden, sluit je het toetsenbord aan en start je je Chromebook opnieuw op</translation>
-<translation id="5992218262414051481">De modus voor hoog contrast staat aan. Druk nogmaals op Ctrl+Zoeken+H om deze uit te zetten.</translation>
 <translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> van <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Mirrormodus wordt gesloten</translation>
 <translation id="602001110135236999">Naar links scrollen</translation>
@@ -1043,6 +1042,7 @@ Nieuwe installatie</translation>
 <translation id="6960565108681981554">Niet geactiveerd. Neem contact op met je provider.</translation>
 <translation id="6961121602502368900">Geluid van telefoon kan niet worden uitgezet in je werkprofiel</translation>
 <translation id="6961840794482373852">De sneltoets Alt + pijl-omhoog is veranderd. Als je de toets Page Up wilt gebruiken, druk je op de <ph name="LAUNCHER_KEY_NAME" />-toets + pijl-omhoog.</translation>
+<translation id="696267987219125751">Cameraframing staat uit.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Aan de slag</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1130,6 +1130,7 @@ Nieuwe installatie</translation>
 <translation id="7513922695575567867">Agenda, week van <ph name="DATE" />, momenteel is <ph name="SELECTED_DATE" /> geselecteerd.</translation>
 <translation id="7514365320538308">Downloaden</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Cameraframing staat aan.</translation>
 <translation id="7526573455193969409">Netwerk kan worden bijgehouden</translation>
 <translation id="7536035074519304529">IP-adres: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux-apps en incognitovensters worden momenteel niet ondersteund. Andere apps worden opgeslagen.</translation>
@@ -1148,10 +1149,12 @@ Nieuwe installatie</translation>
 <translation id="7607002721634913082">Onderbroken</translation>
 <translation id="7609951632080598826">Agendaweergave, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Camera opnieuw verbonden.</translation>
+<translation id="761736749114493194">Cameraframing aan-/uitzetten. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Instellingen bekijken voor Dichtbij delen.</translation>
 <translation id="7634648064048557203">Camera uitgelijnd op de rechterbenedenhoek</translation>
 <translation id="7641938616688887143">Opnemen</translation>
+<translation id="7642106959537987271">modus voor kleurinversie</translation>
 <translation id="7642647758716480637">Instellingen openen voor <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eigenaar)</translation>
 <translation id="7647488630410863958">Ontgrendel het apparaat om je meldingen te bekijken</translation>
@@ -1230,7 +1233,6 @@ Nieuwe installatie</translation>
 <translation id="8051716679295756675">Er bestaat al een template met de naam <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="8052898407431791827">Gekopieerd naar klembord</translation>
 <translation id="8054466585765276473">Accuduur berekenen.</translation>
-<translation id="8061464966246066292">Hoog contrast</translation>
 <translation id="8083540854303889870">Opgeslagen voor later</translation>
 <translation id="8091387634532529612">Automatische updates</translation>
 <translation id="8098591350844501178">Schermcast naar <ph name="RECEIVER_NAME" /> stopzetten</translation>
@@ -1258,6 +1260,7 @@ Nieuwe installatie</translation>
 <translation id="8209010265547628927">Resetten</translation>
 <translation id="8214996719228530800">Canary-kanaal</translation>
 <translation id="8219451629189078428">Je Chromebook moet ondertussen aan blijven en zijn aangesloten op een stopcontact. Zorg dat de kabels van de oplader of adapter goed zijn aangesloten, zowel op je Chromebook als op het stopcontact. Zet je Chromebook niet uit.</translation>
+<translation id="8230305195727960608">Modus voor kleurinversie</translation>
 <translation id="8236042855478648955">Tijd voor een pauze</translation>
 <translation id="8246282815785366524">Welkom terug, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />, telefoonbatterij <ph name="BATTERY_STATUS" /></translation>
@@ -1309,6 +1312,7 @@ Nieuwe installatie</translation>
 <translation id="851458219935658693">Vensters van het huidige bureau bekijken, keuzerondje geselecteerd</translation>
 <translation id="8517041960877371778">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen als deze aanstaat.</translation>
 <translation id="8535393432370007982">Sorteren op kleur ongedaan maken</translation>
+<translation id="8541078764854166027">Cameraframing</translation>
 <translation id="8542053257095774575">Geen opgeslagen bureaus of templates</translation>
 <translation id="8546059259582788728">Sorteren is ongedaan gemaakt</translation>
 <translation id="8551588720239073785">Instellingen voor datum en tijd</translation>
@@ -1383,6 +1387,7 @@ Nieuwe installatie</translation>
 <translation id="8982906748181120328">Dichtbij aan</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> gebruiken</translation>
+<translation id="8991617137207906966">Modus voor kleurinversie aangezet. Druk nogmaals op Ctrl+Zoeken+H om dit uit te zetten.</translation>
 <translation id="899350903320462459">Ontgrendel het apparaat als <ph name="LOGIN_ID" /> om de meldingsactie uit te voeren</translation>
 <translation id="9000771174482730261">OPSLAG BEHEREN</translation>
 <translation id="9017320285115481645">Geef de Family Link-toegangscode voor ouders op.</translation>
@@ -1431,6 +1436,7 @@ Nieuwe installatie</translation>
 <translation id="921989828232331238">Je ouder heeft je apparaat de hele dag vergrendeld</translation>
 <translation id="9220525904950070496">Account verwijderen</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>
+<translation id="92580429198593979">Je hebt op de sneltoets voor kleurinversie gedrukt. Wil je dit aanzetten?</translation>
 <translation id="925832987464884575">Voorbeelden verbergen</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> vereist dat je je <ph name="DEVICE_TYPE" /> onmiddellijk updatet</translation>
 <translation id="938963181863597773">Wat staat er in mijn agenda?</translation>

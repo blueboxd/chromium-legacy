@@ -11,7 +11,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -19,7 +18,6 @@ import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Flag configuration for Start Surface. Source of truth for whether it should be enabled and
@@ -45,6 +43,10 @@ public class StartSurfaceConfiguration {
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "open_ntp_instead_of_start", true);
 
+    public static final BooleanCachedFieldTrialParameter START_SURFACE_OPEN_START_AS_HOMEPAGE =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.START_SURFACE_ANDROID, "open_start_as_homepage", false);
+
     private static final String TAB_COUNT_BUTTON_ON_START_SURFACE_PARAM =
             "tab_count_button_on_start_surface";
     public static final BooleanCachedFieldTrialParameter TAB_COUNT_BUTTON_ON_START_SURFACE =
@@ -60,16 +62,6 @@ public class StartSurfaceConfiguration {
     public static final BooleanCachedFieldTrialParameter SUPPORT_ACCESSIBILITY =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, SUPPORT_ACCESSIBILITY_PARAM, true);
-
-    private static final String WARM_UP_RENDERER_PARAM = "warm_up_renderer";
-    public static final BooleanCachedFieldTrialParameter WARM_UP_RENDERER =
-            new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.START_SURFACE_ANDROID, WARM_UP_RENDERER_PARAM, false);
-
-    private static final String SPARE_RENDERER_DELAY_MS_PARAM = "spare_renderer_delay_ms";
-    public static final IntCachedFieldTrialParameter SPARE_RENDERER_DELAY_MS =
-            new IntCachedFieldTrialParameter(
-                    ChromeFeatureList.START_SURFACE_ANDROID, SPARE_RENDERER_DELAY_MS_PARAM, 1000);
 
     private static final String CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP_PARAM =
             "check_sync_before_show_start_at_startup";
@@ -174,11 +166,5 @@ public class StartSurfaceConfiguration {
     static void setFeedVisibilityForTesting(boolean isVisible) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, isVisible);
-    }
-
-    @NativeMethods
-    interface Natives {
-        // Native methods
-        void warmupRenderer(Profile profile);
     }
 }

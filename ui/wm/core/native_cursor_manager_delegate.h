@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,10 @@
 
 #include "base/component_export.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace gfx {
+class Size;
+}
 
 namespace ui {
 enum class CursorSize;

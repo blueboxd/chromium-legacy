@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">फ़ुल स्क्रीन रिकॉर्ड करें</translation>
 <translation id="2135456203358955318">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा</translation>
 <translation id="2148716181193084225">आज</translation>
+<translation id="2161132820593978283">ऑटो फ़्रेमिंग की सुविधा आज़माएं, ताकि वीडियो कॉल के दौरान आप स्क्रीन के बीच में रहें. इसे 'फटाफट सेटिंग' में जाकर चालू करें.</translation>
 <translation id="2170530631236737939">खास जानकारी बंद करने के लिए, स्क्रीन पर तीन उंगलियों से नीचे की ओर स्वाइप करें</translation>
 <translation id="219905428774326614">लॉन्चर, सभी ऐप्लिकेशन</translation>
 <translation id="2201071101391734388"><ph name="TOTAL_COUNT" /> में से <ph name="INDEX" /> हाल ही की फ़ोटो.</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">कनेक्ट नहीं है</translation>
 <translation id="2408955596600435184">अपना पिन डालें</translation>
 <translation id="2412593942846481727">अपडेट मौजूद है</translation>
+<translation id="2426051945783024481">ऑटो फ़्रेमिंग ने कैमरे के फ़ोकस को अपने-आप बीच में कर दिया है</translation>
 <translation id="2427507373259914951">बायां क्लिक</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" जोड़ने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया पुष्टि करें कि यह पासकी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">पासवर्ड दिखाएं</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">अभिविन्‍यास</translation>
 <translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा के लिए आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
+<translation id="3157931365184549694">वापस लाएं</translation>
 <translation id="316086887565479535">टेंप्लेट में मौजूद, काम नहीं करने वाले ऐप्लिकेशन</translation>
 <translation id="3161500364292033097">डेस्क और विंडो बंद करें</translation>
 <translation id="316356270129335934"><ph name="MANAGER" />, आपके <ph name="DEVICE_TYPE" /> को रोल बैक कर रहा है. आपका डिवाइस रीसेट हो जाएगा. साथ ही, आपका सारा डेटा मिट जाएगा.</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">इसके अनुसार क्रम से लगाएं</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट लिया गया</translation>
 <translation id="3765841986579723851">इसमें, आज बदलाव किया गया था</translation>
-<translation id="3771549900096082774">उच्च कंट्रास्ट मोड</translation>
 <translation id="3773700760453577392">किसी एडमिन ने <ph name="USER_EMAIL" /> के लिए एक से ज़्यादा 'साइन इन' नामंज़ूर कर दिए हैं.
 जारी रखने के लिए सभी उपयोगकर्ताओं को साइन आउट करना होगा.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> कनेक्ट हो रहा है</translation>
@@ -568,7 +570,7 @@
 <translation id="4274537685965975248">Ctrl + Alt + डाउन ऐरो कीबोर्ड शॉर्टकट बदल गया है. End बटन का इस्तेमाल करने के लिए, <ph name="LAUNCHER_KEY_NAME" /> बटन + राइट ऐरो दबाएं.</translation>
 <translation id="4279490309300973883">स्क्रीन शेयर करने की सुविधा चालू है</translation>
 <translation id="4283888303416325161">ज़्यादा सुरक्षा के लिए पासवर्ड डालें</translation>
-<translation id="4285498937028063278">टैब बड़ी करें</translation>
+<translation id="4285498937028063278">अनपिन करें</translation>
 <translation id="4294319844246081198">गुड मॉर्निंग <ph name="GIVEN_NAME" />,</translation>
 <translation id="4296136865091727875">सभी <ph name="COUNT" /> सूचनाएं हटाएं</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> को <ph name="FOLDER_NAME" /> में ले जाया गया</translation>
@@ -577,12 +579,10 @@
 <translation id="4312840429157639164">कैमरा इनपुट की झलक, अब ऊपर दाएं कोने में दिखेगी. ऐसा, सिस्टम पर दूसरे ऐप्लिकेशन के साथ ओवरलैप होने की वजह से किया गया है.</translation>
 <translation id="4316910396681052118">सभी ऐप्लिकेशन</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">आपने 'हाई कंट्रास्ट' का कीबोर्ड शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="4322742403972824594">Ctrl + Alt + अप ऐरो कीबोर्ड शॉर्टकट बदल गया है. Home बटन का इस्तेमाल करने के लिए, <ph name="LAUNCHER_KEY_NAME" /> बटन + लेफ़्ट ऐरो दबाएं.</translation>
 <translation id="4333628967105022692">अगर एक से ज़्यादा उपयोगकर्ताओं ने साइन इन किया हो, तो Lacros काम नहीं करता.</translation>
 <translation id="4338109981321384717">आवर्धक ग्लास</translation>
 <translation id="4351433414020964307">Assistant सेवा लोड हो रही है...</translation>
-<translation id="4356930093361201197">ज़्यादा कॉन्ट्रास्ट (हाई कॉन्ट्रास्ट) वाला मोड</translation>
 <translation id="4371348193907997655">कास्ट करने की सेटिंग</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" /> प्रतिशत है</translation>
 <translation id="4378551569595875038">कनेक्टिंग...</translation>
@@ -878,7 +878,6 @@
 <translation id="5980301590375426705">मेहमान मोड से निकलें</translation>
 <translation id="598407983968395253">टेंप्लेट का इस्तेमाल करें</translation>
 <translation id="598882571027504733">अपडेट पाने के लिए, अटैच किए गए कीबोर्ड से अपने Chromebook को रीस्टार्ट करें.</translation>
-<translation id="5992218262414051481">हाई कंट्रास्ट मोड चालू है. उसे टॉगल करने के लिए फिर से Ctrl+Search+H दबाएं.</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> में से <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="6018164090099858612">मिरर मोड से बाहर निकाला जा रहा है</translation>
 <translation id="602001110135236999">बाईं ओर स्क्रोल करें</translation>
@@ -1044,6 +1043,7 @@
 <translation id="6960565108681981554">यह चालू नहीं है. मोबाइल और इंटरनेट सेवा देने वाली कंपनी से संपर्क करें.</translation>
 <translation id="6961121602502368900">वर्क प्रोफ़ाइल में, फ़ोन को साइलेंट रखने की सुविधा उपलब्ध नहीं है</translation>
 <translation id="6961840794482373852">Alt + अप ऐरो कीबोर्ड शॉर्टकट बदल गया है. Page Up बटन का इस्तेमाल करने के लिए, <ph name="LAUNCHER_KEY_NAME" /> बटन + अप ऐरो दबाएं.</translation>
+<translation id="696267987219125751">ऑटो फ़्रेमिंग की सुविधा बंद है.</translation>
 <translation id="6965382102122355670">ठीक है</translation>
 <translation id="6972754398087986839">शुरू करें</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1134,6 +1134,7 @@
 <translation id="7513922695575567867"><ph name="DATE" /> वाले हफ़्ते के कैलेंडर में, फ़िलहाल<ph name="SELECTED_DATE" /> को चुना गया है.</translation>
 <translation id="7514365320538308">डाउनलोड करें</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">ऑटो फ़्रेमिंग की सुविधा चालू है.</translation>
 <translation id="7526573455193969409">नेटवर्क की निगरानी की जा सकती है</translation>
 <translation id="7536035074519304529">आईपी पता: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">फ़िलहाल, Linux ऐप्लिकेशन और गुप्त विंडो काम नहीं कर रही हैं. अन्य ऐप्लिकेशन सेव हो जाएंगे.</translation>
@@ -1152,10 +1153,12 @@
 <translation id="7607002721634913082">रोका गया</translation>
 <translation id="7609951632080598826">कैलेंडर व्यू, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">कैमरा फिर से कनेक्ट हो गया है.</translation>
+<translation id="761736749114493194">ऑटो फ़्रेमिंग की सुविधा टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° फ़ैरनहाइट</translation>
 <translation id="7633755430369750696">आस-पास शेयर करने की सेटिंग दिखाएं.</translation>
 <translation id="7634648064048557203">कैमरा इनपुट की झलक, अब नीचे बाएं कोने में दिखेगी</translation>
 <translation id="7641938616688887143">रिकॉर्ड करें</translation>
+<translation id="7642106959537987271">रंग बदलने की सुविधा वाला मोड</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> के लिए सेटिंग खोलें</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालिक)</translation>
 <translation id="7647488630410863958">अपने नोटिफ़िकेशन देखने के लिए डिवाइस अनलॉक करें</translation>
@@ -1234,7 +1237,6 @@
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> नाम का टेंप्लेट पहले से मौजूद है</translation>
 <translation id="8052898407431791827">स्क्रीनशॉट को क्लिपबोर्ड पर कॉपी किया गया</translation>
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
-<translation id="8061464966246066292">उच्च स्क्रीन की रोशनी</translation>
 <translation id="8083540854303889870">बाद के लिए सेव किया गया</translation>
 <translation id="8091387634532529612">अपने-आप होने वाले अपडेट</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> को स्‍क्रीन कास्‍ट करना बंद करें</translation>
@@ -1262,6 +1264,7 @@
 <translation id="8209010265547628927">रीसेट करें</translation>
 <translation id="8214996719228530800">कैनरी चैनल</translation>
 <translation id="8219451629189078428">इस दौरान यह ज़रूरी है कि आपका Chromebook चालू रहे और चार्ज हो रहा हो. पक्का करें कि चार्जर या अडैप्टर केबल आपके Chromebook और पावर सॉकेट में अच्छी तरह से प्लग इन हैं. अपने Chromebook को बंद न करें.</translation>
+<translation id="8230305195727960608">रंग बदलने की सुविधा वाला मोड</translation>
 <translation id="8236042855478648955">ब्रेक लेने का समय हो गया</translation>
 <translation id="8246282815785366524"><ph name="GIVEN_NAME" />, आपका फिर से स्वागत है</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, फ़ोन की बैटरी <ph name="BATTERY_STATUS" /></translation>
@@ -1313,6 +1316,7 @@
 <translation id="851458219935658693">मौजूदा डेस्क से विंडो देखें, रेडियो बटन चुना गया</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8535393432370007982">रंग के हिसाब से लगाए गए क्रम को पहले जैसा करें</translation>
+<translation id="8541078764854166027">ऑटो फ़्रेमिंग</translation>
 <translation id="8542053257095774575">कोई डेस्क या टेंप्लेट सेव नहीं किया गया है</translation>
 <translation id="8546059259582788728">लगाए गए क्रम को पहले जैसा कर दिया गया है</translation>
 <translation id="8551588720239073785">तारीख और समय की सेटिंग</translation>
@@ -1387,6 +1391,7 @@
 <translation id="8982906748181120328">आस-पास दिखे</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> का इस्तेमाल करें</translation>
+<translation id="8991617137207906966">रंग बदलने की सुविधा चालू की गई. इस सुविधा को फिर से बंद करने के लिए, Ctrl+Search+H दबाएं.</translation>
 <translation id="899350903320462459">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को <ph name="LOGIN_ID" /> के तौर पर अनलॉक करें</translation>
 <translation id="9000771174482730261">डिवाइस का स्टोरेज मैनेज करें</translation>
 <translation id="9017320285115481645">Family Link का अभिभावक ऐक्सेस कोड डालें.</translation>
@@ -1431,10 +1436,11 @@
 <translation id="9211490828691860325">सभी डेस्क</translation>
 <translation id="9211681782751733685">बैटरी के पूरी तरह से चार्ज होने में<ph name="TIME_REMAINING" /> का समय बाकी है.</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करें</translation>
-<translation id="9219103736887031265">Images</translation>
+<translation id="9219103736887031265">इमेज</translation>
 <translation id="921989828232331238">आपके अभिभावक ने आज के लिए यह डिवाइस लॉक कर दिया है</translation>
 <translation id="9220525904950070496">खाता हटाएं</translation>
 <translation id="923686485342484400">साइन आउट करने के लिए दो बार Control Shift Q दबाएं.</translation>
+<translation id="92580429198593979">आपने रंग बदलने की सुविधा के लिए कीबोर्ड शॉर्टकट दबाया है. क्या आपको इस सुविधा को बंद करना है?</translation>
 <translation id="925832987464884575">झलक छिपाएं</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> के लिए ज़रूरी है कि आप अपना <ph name="DEVICE_TYPE" /> तुरंत अपडेट करें</translation>
 <translation id="938963181863597773">मेरे कैलेंडर पर आज के लिए क्या काम हैं?</translation>

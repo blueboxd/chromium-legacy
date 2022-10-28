@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">Толық экранды жазу</translation>
 <translation id="2135456203358955318">Бекітілген ұлғайтқыш</translation>
 <translation id="2148716181193084225">Бүгін</translation>
+<translation id="2161132820593978283">Бейнеқоңыраулар кезінде экранның ортасында тұруыңыз үшін, камерамен кадрлап көріңіз. Оны жылдам параметрлерден қоса аласыз.</translation>
 <translation id="2170530631236737939">Үш саусақпен төмен сырғытып, "Шолу" бөлімінен шығыңыз.</translation>
 <translation id="219905428774326614">Launcher, барлық қолданбалар</translation>
 <translation id="2201071101391734388">Соңғы фото: <ph name="INDEX" />/<ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">Қосылмаған</translation>
 <translation id="2408955596600435184">PIN кодын енгізіңіз</translation>
 <translation id="2412593942846481727">Жаңартылған нұсқа қолжетімді</translation>
+<translation id="2426051945783024481">Камерамен кадрлау автоматты түрде ортасына тураланды.</translation>
 <translation id="2427507373259914951">Тінтуірдің сол жақ түймесін басу</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптау рұқсатын сұрайды. Қабылдаудан бұрын бұл кіру кілті аталмыш құрылғыда көрсетілетінін растаңыз: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Құпия сөзді көрсету</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">Бағдары</translation>
 <translation id="3153444934357957346">Бірнеше аккаунтқа кіру мүмкіндігінде <ph name="MULTI_PROFILE_USER_LIMIT" /> аккаунтқа ғана рұқсат етілген.</translation>
 <translation id="3154351730702813399">Құрылғы әкімшісі интернетті шолуыңызға қатысты ақпаратты көре алады.</translation>
+<translation id="3157931365184549694">Қалпына келтіру</translation>
 <translation id="316086887565479535">Үлгіде қолдау көрсетілмейтін қолданбалар бар</translation>
 <translation id="3161500364292033097">Жұмыс үстелі мен терезелерді жабу</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> <ph name="DEVICE_TYPE" /> құрылғыңызды алдыңғы нұсқаға қайтарады. Құрылғы бастапқы күйге қайтарылады және барлық дерек жойылады.</translation>
@@ -450,7 +453,7 @@
 <translation id="3600061223661453002">Өшіру</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> үстелі жасалды.</translation>
 <translation id="3606978283550408104">Брайль дисплейі қосылды.</translation>
-<translation id="3615926715408477684">Мобильдік деректерді қоссаңыз, Bluetooth та қосылады.</translation>
+<translation id="3615926715408477684">Мобильдік интернетті қоссаңыз, Bluetooth та қосылады.</translation>
 <translation id="3616883743181209306">Мәзір экранның жоғарғы оң жақ бұрышына жылжытылды.</translation>
 <translation id="3619536907358025872">Скриншот параметрлері</translation>
 <translation id="3621202678540785336">Енгізу</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">Сұрыптау шарты</translation>
 <translation id="3742055079367172538">Скриншот түсірілді</translation>
 <translation id="3765841986579723851">Бүгін өзгертілді.</translation>
-<translation id="3771549900096082774">Жоғары контраст режимі</translation>
 <translation id="3773700760453577392">Әкімшінің шешімі бойынша енді <ph name="USER_EMAIL" /> электрондық поштасына бір уақытта бірнеше пайдаланушы кіре алмайды. Жалғастыру үшін пайдаланушылардың барлығы аккаунттан шығуы керек.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> құрылғысы қосылуда</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">Камера жоғарғы оң жақ бұрышқа ауыстырылды. Жүйе платформасына қатысты қарама-қайшылық туындады.</translation>
 <translation id="4316910396681052118">БАРЛЫҚ ҚОЛДАНБАЛАР</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Жоғары контрасқа арналған пернелер тіркесімін бастыңыз. Оны қосқыңыз келе ме?</translation>
 <translation id="4322742403972824594">Ctrl + Alt + жоғарыға бағыттауыш перне тіркесімінің функциясы өзгерді. Home пернесінің әрекетін орындау үшін <ph name="LAUNCHER_KEY_NAME" /> пернесі + сол жаққа бағыттауыш перне тіркесімін басыңыз.</translation>
 <translation id="4333628967105022692">Бірнеше пайдаланушы кірген жағдайда, Lacros браузеріне қолдау көрсетілмейді.</translation>
 <translation id="4338109981321384717">Ұлғайтқыш шыны</translation>
 <translation id="4351433414020964307">Assistant жүктелуде...</translation>
-<translation id="4356930093361201197">жоғары контраст режимі</translation>
 <translation id="4371348193907997655">Трансляция параметрлері</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, сигнал күші <ph name="SIGNAL_STRENGTH" /> пайыз.</translation>
 <translation id="4378551569595875038">Қосылуда…</translation>
@@ -745,6 +745,7 @@
 <translation id="5283198616748585639">1 мин қосу</translation>
 <translation id="528468243742722775">Соңы</translation>
 <translation id="5286194356314741248">Ізделуде</translation>
+<translation id="5293671101077843611">Бүгінге ешқандай іс-шара жоқ.</translation>
 <translation id="5297423144044956168">Ешқандай мобильдік құрылғы табылмады.</translation>
 <translation id="5297704307811127955">Өшірулі</translation>
 <translation id="5300589172476337783">Көрсету</translation>
@@ -876,7 +877,6 @@
 <translation id="5980301590375426705">Қонақты шығару</translation>
 <translation id="598407983968395253">Үлгіні қолдану</translation>
 <translation id="598882571027504733">Жаңартылған нұсқаны алу үшін, пернетақта жалғанған күйі Chromebook ноутбугын қайта қосыңыз.</translation>
-<translation id="5992218262414051481">Жоғары контраст режимі қосылды. Оны өшіру үшін қайтадан Ctrl+Search+H пернелерін басыңыз.</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /> бет</translation>
 <translation id="6018164090099858612">Айна режимінен шығуда</translation>
 <translation id="602001110135236999">Солға айналдыру</translation>
@@ -1042,6 +1042,7 @@
 <translation id="6960565108681981554">Іске қосылмаған. Операторға хабарласыңыз.</translation>
 <translation id="6961121602502368900">Жұмыс профилінде дыбыссыз телефон функциясы қолжетімді емес.</translation>
 <translation id="6961840794482373852">Alt + жоғарыға бағыттауыш перне тіркесімінің функциясы өзгерді. Page Up пернесінің әрекетін орындау үшін <ph name="LAUNCHER_KEY_NAME" /> пернесі + жоғарыға бағыттауыш перне тіркесімін басыңыз.</translation>
+<translation id="696267987219125751">Камерамен кадрлау өшірулі.</translation>
 <translation id="6965382102122355670">Жарайды</translation>
 <translation id="6972754398087986839">Іске кірісу</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1132,6 +1133,7 @@
 <translation id="7513922695575567867">Күнтізбе, <ph name="DATE" /> аптасы, <ph name="SELECTED_DATE" /> қазір таңдалды.</translation>
 <translation id="7514365320538308">Жүктеу</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Камерамен кадрлау қосулы.</translation>
 <translation id="7526573455193969409">Желі бақылануы мүмкін</translation>
 <translation id="7536035074519304529">IP мекенжайы: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux қолданбалары мен инкогнито терезелеріне қазір қолдау көрсетілмейді. Басқа қолданбалар сақталады.</translation>
@@ -1150,10 +1152,12 @@
 <translation id="7607002721634913082">Кідіртілген</translation>
 <translation id="7609951632080598826">Күнтізбе көрінісі: <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Камера қайта жалғанды.</translation>
+<translation id="761736749114493194">Камерамен кадрлауды ауыстыру. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Nearby Share параметрлерін көрсету.</translation>
 <translation id="7634648064048557203">Камера төменгі оң жақ бұрышқа ауыстырылды.</translation>
 <translation id="7641938616688887143">Жазу</translation>
+<translation id="7642106959537987271">түс инверсиясы режимі</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> параметрлерін ашу, күйі: <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (иесі)</translation>
 <translation id="7647488630410863958">Хабарландыруларды көру үшін құрылғының құлпын ашыңыз</translation>
@@ -1232,7 +1236,6 @@
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> атты үлгі бұрыннан бар.</translation>
 <translation id="8052898407431791827">Буферге көшірілді.</translation>
 <translation id="8054466585765276473">Батарея уақытын есептеу.</translation>
-<translation id="8061464966246066292">Жоғары контраст</translation>
 <translation id="8083540854303889870">Кейінге сақталған</translation>
 <translation id="8091387634532529612">Автоматты жаңартулар</translation>
 <translation id="8098591350844501178">Экран мазмұнын <ph name="RECEIVER_NAME" /> құрылғысына трансляциялауды тоқтату</translation>
@@ -1260,6 +1263,7 @@
 <translation id="8209010265547628927">Бастапқы күйге қайтару</translation>
 <translation id="8214996719228530800">Canary арнасы</translation>
 <translation id="8219451629189078428">Chromebook құрылғысы осы уақыт бойы қосулы болып, қуат көзіне жалғанулы тұруы керек. Зарядтағыш не адаптер кабельдері Chromebook құрылғысына да, розеткаға да толығымен жалғанғанын тексеріңіз. Chromebook құрылғысын өшірмеңіз.</translation>
+<translation id="8230305195727960608">Түс инверсиясы режимі</translation>
 <translation id="8236042855478648955">Үзіліс жасайтын кез келді</translation>
 <translation id="8246282815785366524">Қайта оралуыңызбен, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />, телефонның батарея заряды: <ph name="BATTERY_STATUS" /></translation>
@@ -1311,6 +1315,7 @@
 <translation id="851458219935658693">Терезелерді қазіргі жұмыс үстелінен көрсету, ауыстырып қосқыш таңдалды.</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> іске қосылғанда зарядталмауы мүмкін.</translation>
 <translation id="8535393432370007982">Түс бойынша сұрыптау ретін қайтару</translation>
+<translation id="8541078764854166027">Камерамен кадрлау</translation>
 <translation id="8542053257095774575">Сақталған жұмыс үстелі немесе үлгі жоқ.</translation>
 <translation id="8546059259582788728">Сұрыптау реті қайтарылды.</translation>
 <translation id="8551588720239073785">Күн және уақыт параметрлері</translation>
@@ -1385,6 +1390,7 @@
 <translation id="8982906748181120328">Nearby көрсетілуі</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> пайдалану</translation>
+<translation id="8991617137207906966">Түс инверсиясы режимі қосылды. Оны өшіру үшін Ctrl+Search+H пернелер тіркесімін қайта басыңыз.</translation>
 <translation id="899350903320462459">Хабарландыруда ұсынылған әрекетті орындау үшін <ph name="LOGIN_ID" /> арқылы құрылғының құлпын ашыңыз</translation>
 <translation id="9000771174482730261">ЖАДТЫ БАСҚАРУ</translation>
 <translation id="9017320285115481645">Family Link ата-ананың рұқсат кодын енгізіңіз.</translation>
@@ -1433,6 +1439,7 @@
 <translation id="921989828232331238">Ата-анаңыз құрылғыны бір күнге құлыптап қойды</translation>
 <translation id="9220525904950070496">Аккаунтты жою</translation>
 <translation id="923686485342484400">Шығу үшін Control + Shift + Q тіркесімін екі рет басыңыз.</translation>
+<translation id="92580429198593979">Түс инверсиясы үшін перне тіркесімін бастыңыз. Оны қосқыңыз келе ме?</translation>
 <translation id="925832987464884575">Алдын ала көріністерді жасыру</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> сізден <ph name="DEVICE_TYPE" /> құрылғысын дереу жаңартуды талап етеді.</translation>
 <translation id="938963181863597773">Күнтізбемде не бар?</translation>

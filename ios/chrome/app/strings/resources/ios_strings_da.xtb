@@ -23,6 +23,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1104948393051856124">Acceptér og fortsæt</translation>
 <translation id="110724200315609752">Skift til åbent vindue</translation>
 <translation id="1112015203684611006">Udskrift mislykkedes.</translation>
+<translation id="1118569444314402022">Velkommen tilbage, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Opret ny fane.</translation>
 <translation id="1126809382673880764">Beskytter dig ikke mod skadelige websites, downloads og udvidelser. Du er stadig beskyttet med Beskyttet browsing i andre Google-tjenester som f.eks. Gmail og Søgning, hvor dette er tilgængeligt.</translation>
 <translation id="1135212215217513471">Hent Chrome til iOS</translation>
@@ -46,6 +47,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="1281818060020671000">Administrer data</translation>
+<translation id="1282311502488501110">Log ikke ind</translation>
 <translation id="1283524564873030414">De seneste 24 timer</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1291506870746876680">Tilladelser for <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> nulstilles til deres deaktiverede tilstand, når du forlader dette website.</translation>
@@ -54,6 +56,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1322735045095424339">Din organisation kræver inkognitotilstand</translation>
 <translation id="1323735185997015385">Slet</translation>
 <translation id="132683371494960526">Tryk to gange for at ændre den overordnede mappe.</translation>
+<translation id="1335348992705722518">Administrer indstillinger...</translation>
 <translation id="1340643665687018190">Luk menu</translation>
 <translation id="1358214951266274152">Gå til link, du har kopieret</translation>
 <translation id="1360432990279830238">Log ud, og deaktiver synkronisering?</translation>
@@ -61,6 +64,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1377255359165588604">Synkroniseringen fungerer ikke.</translation>
 <translation id="1377321085342047638">Kortnummer</translation>
 <translation id="1383876407941801731">Søg</translation>
+<translation id="138618066238211776">Fortsæt som <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">Seneste fire uger</translation>
 <translation id="1404330357948037222">Du er logget ud</translation>
 <translation id="1407135791313364759">Åbn alle</translation>
@@ -174,9 +178,11 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 <translation id="2421044535038393232">Rediger videre</translation>
 <translation id="2434405374328098816">Du har allerede gemt en adgangskode for "<ph name="USERNAME" />" på <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
+<translation id="2461070143328828326">Adgangskodeindstillinger</translation>
 <translation id="2469960372084740698">Vil du deaktivere Beskyttet browsing?</translation>
 <translation id="2473876017985765807">Du har allerede gemt en adgangskode til <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Ikke valgt</translation>
+<translation id="2482878487686419369">Notifikationer</translation>
 <translation id="2500374554657206846">Valgmuligheder for at gemme adgangskode</translation>
 <translation id="2523363575747517183">Dette website forsøger hele tiden at åbne en anden app.</translation>
 <translation id="2529021024822217800">Åbn alle</translation>
@@ -327,6 +333,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3709582977625132201">Markér som ulæst</translation>
 <translation id="371230970611282515">Forudser og advarer dig om skadelige hændelser, før de opstår.</translation>
 <translation id="37207012422556617">Populære søgninger</translation>
+<translation id="3726360487031500941">Log ind på din konto, <ph name="USER_NAME" />, igen</translation>
 <translation id="3740397331642243698">Åbner de angivne webadresser i Google Chrome i inkognito.</translation>
 <translation id="3762232513783804601">Udviklet til din iPad</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
@@ -381,6 +388,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4187450337729239226">Indsæt og søg</translation>
 <translation id="4223967053752765281">Din organisation har deaktiveret login. Du kan stadig se din historik samt dine bogmærker, adgangskoder og andre indstillinger på din enhed. Hvis du foretager nogen ændringer, bliver de dog ikke synkroniseret med din konto.</translation>
 <translation id="4233831822770018312">Rediger tilladelser</translation>
+<translation id="4236584471598725073">Der holdes øje med prisen</translation>
 <translation id="4237377247299956313">Tryk på <ph name="BEGIN_BOLD" />Standardbrowserapp<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Angiv adgangssætning</translation>
 <translation id="4249955472157341256">Sortér efter seneste</translation>
@@ -740,6 +748,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="6930799952781667037">Tryk for at skifte til dette sprog.</translation>
 <translation id="6944369514868857500">Vælg en anden konto</translation>
 <translation id="6945221475159498467">Vælg</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="6988572888918530647">Administrer din Google-konto</translation>

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@
 #include "url/origin.h"
 
 namespace net {
+class NetworkAnonymizationKey;
 class NetworkIsolationKey;
 class IsolationInfo;
 }  // namespace net
@@ -124,12 +125,12 @@ class TestNetworkContext : public mojom::NetworkContext {
       const std::string& group,
       const GURL& url,
       const absl::optional<base::UnguessableToken>& reporting_source,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       const absl::optional<std::string>& user_agent,
       base::Value::Dict body) override {}
   void QueueSignedExchangeReport(
       mojom::SignedExchangeReportPtr report,
-      const net::NetworkIsolationKey& network_isolation_key) override {}
+      const net::NetworkAnonymizationKey& network_anonymization_key) override {}
   void CloseAllConnections(CloseAllConnectionsCallback callback) override {}
   void CloseIdleConnections(CloseIdleConnectionsCallback callback) override {}
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
@@ -143,17 +144,19 @@ class TestNetworkContext : public mojom::NetworkContext {
 #endif
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void SetCTPolicy(mojom::CTPolicyPtr ct_policy) override {}
-  void AddExpectCT(const std::string& domain,
-                   base::Time expiry,
-                   bool enforce,
-                   const GURL& report_uri,
-                   const net::NetworkIsolationKey& network_isolation_key,
-                   AddExpectCTCallback callback) override {}
+  void AddExpectCT(
+      const std::string& domain,
+      base::Time expiry,
+      bool enforce,
+      const GURL& report_uri,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      AddExpectCTCallback callback) override {}
   void SetExpectCTTestReport(const GURL& report_uri,
                              SetExpectCTTestReportCallback callback) override {}
-  void GetExpectCTState(const std::string& domain,
-                        const net::NetworkIsolationKey& network_isolation_key,
-                        GetExpectCTStateCallback callback) override {}
+  void GetExpectCTState(
+      const std::string& domain,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      GetExpectCTStateCallback callback) override {}
   void SetCTLogListAlwaysTimelyForTesting() override {}
   void SetSCTAuditingMode(mojom::SCTAuditingMode mode) override {}
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
@@ -202,20 +205,20 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateWebTransport(
       const GURL& url,
       const url::Origin& origin,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       std::vector<mojom::WebTransportCertificateFingerprintPtr> fingerprints,
       mojo::PendingRemote<mojom::WebTransportHandshakeClient> handshake_client)
       override {}
   void LookUpProxyForURL(
       const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       mojo::PendingRemote<::network::mojom::ProxyLookupClient>
           proxy_lookup_client) override {}
   void CreateNetLogExporter(
       mojo::PendingReceiver<mojom::NetLogExporter> receiver) override {}
   void ResolveHost(
       mojom::HostResolverHostPtr host,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       mojom::ResolveHostParametersPtr optional_parameters,
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override {}
   void CreateHostResolver(
@@ -229,7 +232,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       const std::string& ocsp_result,
       const std::string& sct_list,
       VerifyCertForSignedExchangeCallback callback) override {}
@@ -258,10 +261,10 @@ class TestNetworkContext : public mojom::NetworkContext {
       uint32_t num_streams,
       const GURL& url,
       bool allow_credentials,
-      const net::NetworkIsolationKey& network_isolation_key) override {}
+      const net::NetworkAnonymizationKey& network_anonymization_key) override {}
 #if BUILDFLAG(IS_P2P_ENABLED)
   void CreateP2PSocketManager(
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient> client,
       mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
           trusted_socket_manager,
@@ -284,21 +287,22 @@ class TestNetworkContext : public mojom::NetworkContext {
       AddDomainReliabilityContextForTestingCallback callback) override {}
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override {}
-  void SetSplitAuthCacheByNetworkIsolationKey(
-      bool split_auth_cache_by_network_isolation_key) override {}
+  void SetSplitAuthCacheByNetworkAnonymizationKey(
+      bool split_auth_cache_by_network_anonymization_key) override {}
   void SaveHttpAuthCacheProxyEntries(
       SaveHttpAuthCacheProxyEntriesCallback callback) override {}
   void LoadHttpAuthCacheProxyEntries(
       const base::UnguessableToken& cache_key,
       LoadHttpAuthCacheProxyEntriesCallback callback) override {}
-  void AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
-                         const net::NetworkIsolationKey& network_isolation_key,
-                         const net::AuthCredentials& credentials,
-                         AddAuthCacheEntryCallback callback) override {}
+  void AddAuthCacheEntry(
+      const net::AuthChallengeInfo& challenge,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
+      const net::AuthCredentials& credentials,
+      AddAuthCacheEntryCallback callback) override {}
   void SetCorsNonWildcardRequestHeadersSupport(bool value) override {}
   void LookupServerBasicAuthCredentials(
       const GURL& url,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       LookupServerBasicAuthCredentialsCallback callback) override {}
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void LookupProxyAuthCredentials(

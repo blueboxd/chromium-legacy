@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 
+#import "base/feature_list.h"
 #import "base/metrics/field_trial_params.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
@@ -94,7 +95,9 @@
 #endif
 
 namespace {
-
+// Flag to enable the checking of new content for the Follow Feed.
+const base::Feature kEnableCheckForNewFollowContent{
+    "EnableCheckForNewFollowContent", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace
 
 @interface NewTabPageCoordinator () <AppStateObserver,
@@ -219,12 +222,14 @@ namespace {
 @property(nonatomic, strong)
     FeedTopSectionCoordinator* feedTopSectionCoordinator;
 
+// Currently selected feed. Redefined to readwrite.
+@property(nonatomic, assign, readwrite) FeedType selectedFeed;
+
 @end
 
 @implementation NewTabPageCoordinator
 
 // Synthesize NewTabPageConfiguring properties.
-@synthesize selectedFeed = _selectedFeed;
 @synthesize shouldScrollIntoFeed = _shouldScrollIntoFeed;
 @synthesize baseViewController = _baseViewController;
 
@@ -342,10 +347,6 @@ namespace {
     }
   }
 
-  if (IsDiscoverFeedTopSyncPromoEnabled()) {
-    self.feedTopSectionCoordinator = [self createFeedTopSectionCoordinator];
-  }
-
   self.contentSuggestionsCoordinator =
       [self createContentSuggestionsCoordinator];
 
@@ -402,6 +403,9 @@ namespace {
   self.ntpViewController = nil;
   self.feedHeaderViewController.ntpDelegate = nil;
   self.feedHeaderViewController = nil;
+  self.feedTopSectionCoordinator.ntpDelegate = nil;
+  self.feedTopSectionCoordinator = nil;
+
   self.alertCoordinator = nil;
   self.authService = nil;
   self.templateURLService = nil;
@@ -617,7 +621,8 @@ namespace {
 }
 
 - (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent {
-  if (![self isFollowingFeedAvailable]) {
+  if (![self isFollowingFeedAvailable] ||
+      !base::FeatureList::IsEnabled(kEnableCheckForNewFollowContent)) {
     return;
   }
   if ([self doesFollowingFeedHaveContent]) {
@@ -637,18 +642,14 @@ namespace {
   }
 }
 
-- (void)selectFeedType:(FeedType)feedType {
-  if (!self.ntpViewController.viewDidAppear) {
-    self.selectedFeed = feedType;
-    return;
-  }
-  [self handleFeedSelected:feedType];
-}
-
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible && self.started) {
-      [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
+      if (NewTabPageTabHelper::FromWebState(self.webState)
+              ->ShouldShowStartSurface()) {
+        self.headerController.isStartShowing = YES;
+        [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
+      }
       if ([self isFollowingFeedAvailable]) {
         self.ntpViewController.shouldScrollIntoFeed = self.shouldScrollIntoFeed;
         self.shouldScrollIntoFeed = NO;
@@ -877,8 +878,25 @@ namespace {
 }
 
 - (BOOL)isStartSurface {
-  return NewTabPageTabHelper::FromWebState(self.webState)
-      ->ShouldShowStartSurface();
+  DCHECK(self.webState);
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  return NTPHelper && NTPHelper->ShouldShowStartSurface();
+}
+
+- (void)handleFeedTopSectionClosed {
+  [self.ntpViewController updateScrollPositionForFeedTopSectionClosed];
+}
+
+#pragma mark - NewTabPageConfiguring
+
+- (void)selectFeedType:(FeedType)feedType {
+  if (!self.ntpViewController.viewDidAppear ||
+      ![self isFollowingFeedAvailable]) {
+    self.selectedFeed = feedType;
+    return;
+  }
+  [self handleFeedSelected:feedType];
 }
 
 #pragma mark - AppStateObserver
@@ -1124,6 +1142,7 @@ namespace {
   self.ntpViewController.feedTopSectionViewController = nil;
   self.feedWrapperViewController = nil;
   self.feedViewController = nil;
+  self.feedTopSectionCoordinator = nil;
 
   // Fetches feed header and conditionally fetches feed. Feed can only be
   // visible if feed header is visible.
@@ -1149,6 +1168,7 @@ namespace {
       self.feedWrapperViewController;
 
   [self.ntpViewController layoutContentInParentCollectionView];
+  [self updateFeedLayout];
 }
 
 // Creates and configures the feed and feed header based on user prefs.
@@ -1157,6 +1177,10 @@ namespace {
 
   self.ntpViewController.feedHeaderViewController =
       self.feedHeaderViewController;
+
+  if ([self isFeedTopSectionVisible]) {
+    self.feedTopSectionCoordinator = [self createFeedTopSectionCoordinator];
+  }
 
   // Requests feeds here if the correct flags and prefs are enabled.
   if ([self shouldFeedBeVisible]) {
@@ -1191,11 +1215,12 @@ namespace {
 
 // Whether the feed top section, which contains all content between the feed
 // header and the feed, is currently visible.
-// TODO(crbug.com/1331010): The feed top section should still work with the
-// sticky header, but for now we only show the content without it.
+// TODO(crbug.com/1331010): The feed top section may include content that is not
+// the signin promo, which may need to be visible when the user is signed in.
 - (BOOL)isFeedTopSectionVisible {
   return IsDiscoverFeedTopSyncPromoEnabled() && [self shouldFeedBeVisible] &&
-         ![self isContentHeaderSticky];
+         self.authService &&
+         !self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 }
 
 // Creates, configures and returns a Discover feed view controller.
@@ -1354,11 +1379,15 @@ namespace {
 - (FeedHeaderViewController*)feedHeaderViewController {
   DCHECK(!self.browser->GetBrowserState()->IsOffTheRecord());
   if (!_feedHeaderViewController) {
-    // Only show the dot if the user follows available publishers.
-    BOOL followingSegmentDotVisible =
-        [self doesFollowingFeedHaveContent] &&
-        self.discoverFeedService->GetFollowingFeedHasUnseenContent() &&
-        self.selectedFeed != FeedTypeFollowing;
+    BOOL followingSegmentDotVisible = NO;
+    if (base::FeatureList::IsEnabled(kEnableCheckForNewFollowContent) &&
+        IsWebChannelsEnabled()) {
+      // Only show the dot if the user follows available publishers.
+      followingSegmentDotVisible =
+          [self doesFollowingFeedHaveContent] &&
+          self.discoverFeedService->GetFollowingFeedHasUnseenContent() &&
+          self.selectedFeed != FeedTypeFollowing;
+    }
     _feedHeaderViewController = [[FeedHeaderViewController alloc]
         initWithFollowingFeedSortType:self.followingFeedSortType
            followingSegmentDotVisible:followingSegmentDotVisible];

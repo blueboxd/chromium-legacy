@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,8 +35,8 @@ import zlib
 # https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-16-init-4438-gc922cac8'
-CLANG_SUB_REVISION = 1
+CLANG_REVISION = 'llvmorg-16-init-4609-g025a5b22'
+CLANG_SUB_REVISION = 2
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
 RELEASE_VERSION = '16.0.0'

@@ -29,6 +29,7 @@
 <translation id="1587223624401073077">Pārlūkā Google Chrome tiek izmantota kamera.</translation>
 <translation id="1587325591171447154">Fails <ph name="FILE_NAME" /> ir bīstams, tādēļ Chrome to bloķēja.</translation>
 <translation id="1597911401261118146">Lai pārbaudītu, vai jūsu paroles ir aizsargātas pret datu pārkāpumiem un citām drošības problēmām, <ph name="BEGIN_LINK" />pierakstieties pārlūkā Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Pārlūkā Chrome šis arhīva fails tika bloķēts, jo tas var slēpt ļaunprātīgu programmatūru.</translation>
 <translation id="1619887657840448962">Lai uzlabotu Chrome drošību, mēs atspējojām tālāk norādīto paplašinājumu, kas nav norādīts vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> un iespējams, tika pievienots, jums nezinot.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Kā varat pārvaldīt savus datus:<ph name="END_BOLD" /> lai aizsargātu jūsu konfidencialitāti, mēs automātiski dzēšam intereses, kas ir glabātas ilgāk par četrām nedēļām. Intereses var tikt atkārtoti pievienotas sarakstam, kad turpināsiet pārlūkošanu. Varat arī noņemt intereses, ja nevēlaties, lai Chrome tās apsvērtu.</translation>
 <translation id="1628000112320670027">Saņemt palīdzību par Chrome</translation>
@@ -58,6 +59,7 @@
 <translation id="2094648590148273905">Chrome OS Flex noteikumi</translation>
 <translation id="2094919256425865063">Vai tik un tā aizvērt pārlūku Chrome?</translation>
 <translation id="2106831557840787829">Chrome OS Flex, kā arī <ph name="BEGIN_LINK_LINUX_OSS" />Linux izstrādes vides<ph name="END_LINK_LINUX_OSS" /> darbību nodrošina papildu <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūra<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="2112742052114331084">Kad šis iestatījums ir ieslēgts, Chrome atgūst atmiņas lietojumu no cilnēm, kuras aktīvi neizmantojat. Tādējādi tiek atbrīvoti datora resursi citiem uzdevumiem un tiek nodrošināta ātra Chrome darbība. Neaktīvās cilnes tiek rādītas tukšas un tiek automātiski atkārtoti ielādētas, kad uz tām noklikšķināt. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /> vai <ph name="BEGIN_LINK_2" />nosūtiet atsauksmes<ph name="END_LINK_2" />.</translation>
 <translation id="2120620239521071941">Veicot šo darbību, no šīs ierīces tiks dzēsts(-i) <ph name="ITEMS_COUNT" /> vienums(-i). Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chrome kā <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Atkārtoti palaist, lai atjauninātu &amp;Chrome</translation>
 <translation id="2123055963409958220">Palīdziet uzlabot pārlūku Chrome, ziņojot par <ph name="BEGIN_LINK" />pašreizējiem iestatījumiem<ph name="END_LINK" />.</translation>
@@ -274,6 +276,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="6735387454586646204">Chrome OS Flex sistēma</translation>
 <translation id="6739177684496155661">Vai turpināt jaunā Chrome profilā?</translation>
 <translation id="6750954913813541382">Lai labotu pareizrakstības kļūdas, Chrome nosūta jūsu pārlūkprogrammā ievadīto tekstu Google serveriem</translation>
+<translation id="6756581345161130259">Chrome pēc vajadzības atgūst atmiņas lietojumu no cilnēm, kuras jūs aktīvi neizmantojat. Iestatījumos varat jebkurā laikā to mainīt.</translation>
 <translation id="677276454032249905">Vai tik un tā aizvērt pārlūku Chrome?</translation>
 <translation id="6785872064505734160">Google asistents pārlūkprogrammā Chrome var veikt darbības vietnēs jūsu vārdā.</translation>
 <translation id="683440813066116847">Ienākošo savienojumu kārtula pārlūkam Google Chrome Canary, lai atļautu mDNS datplūsmu.</translation>

@@ -950,6 +950,7 @@
 <translation id="6192907950379606605">ပုံရှင်းလင်းချက်များ ရယူရန်</translation>
 <translation id="6196315980958524839">စကားဝှက်များကို ဤစက်ရှိ ‘Google စကားဝှက်မန်နေဂျာ’ တွင် သိမ်းသည်</translation>
 <translation id="620197886010707372"><ph name="APPNAME" /> အတွက် အက်ပ်ကို Google Play ဖြင့် ဖွင့်မလား။</translation>
+<translation id="6202812185118613467">စတင်စင့်ခ်လုပ်ရန် ပြန်လည်လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="6203593061661911168">Wi-Fi ချိတ်မိပါက ဒေါင်းလုဒ် စတင်ပါမည်</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> မဟုတ်ဘူးလား။</translation>
 <translation id="6211386937064921208">ဤစာမျက်နှာကို အစမ်းကြည့်ရှုနေသည်</translation>
@@ -1173,7 +1174,7 @@
 <translation id="7339898014177206373">ဝင်ဒိုး အသစ်</translation>
 <translation id="7340958967809483333">Discover အတွက် ရွေးစရာများ</translation>
 <translation id="7352339641508007922">ဖန်သားပြင်ဓာတ်ပုံအရှည် ရိုက်ရန် ဖိဆွဲပါ</translation>
-<translation id="7352651011704765696">တစ်ခုခု မှားနေပြီ</translation>
+<translation id="7352651011704765696">တစ်ခုခု မှားသွားသည်</translation>
 <translation id="7352939065658542140">ဗီဒီယို</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{ရွေးချယ်ထားသည့် အကြောင်းအရာ ၁ ခုကို မျှဝေရန်}other{ရွေးချယ်ထားသည့် အကြောင်းအရာ # ခုကို မျှဝေရန်}}</translation>
 <translation id="7359002509206457351">ငွေပေးချေနည်းလမ်းများ ကြည့်ခွင့်</translation>

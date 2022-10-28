@@ -93,6 +93,7 @@
 <translation id="3949671998904569433">కామా గుర్తు</translation>
 <translation id="3976863468609830880">మీ అరలోని చివరి చిహ్నాన్ని క్లిక్ చేయండి</translation>
 <translation id="3994783594793697310">డిస్‌ప్లే జూమ్ స్థాయిని రీసెట్ చేస్తుంది</translation>
+<translation id="4026837045671473537">కలర్ మార్పిడి మోడ్‌ను ఆన్ చేయండి</translation>
 <translation id="4026843240379844265">యాక్టివ్ విండోను డిస్‌ప్లేల మధ్య తరల్చండి</translation>
 <translation id="4035482366624727273">పేజీలోని ప్రతిదాన్ని ఎంచుకోండి</translation>
 <translation id="4060703249685950734">మీరు చివరిసారి మూసివేసిన ట్యాబ్ లేదా విండోను తిరిగి తెరవండి</translation>
@@ -117,7 +118,7 @@
 <translation id="492453977506755176">క్యాప్చర్ మోడ్ కీ</translation>
 <translation id="5030659775136592441">బుక్‌మార్క్ మేనేజర్‌ను చూపండి</translation>
 <translation id="5034421018520995080">పేజీ ఎగువకు వెళ్లండి</translation>
-<translation id="5042305953558921026">అవలోకనం మోడ్ కీ</translation>
+<translation id="5042305953558921026">ఓవర్‌వ్యూ మోడ్ కీ</translation>
 <translation id="5104462712192763270">మీ ప్రస్తుత పేజీని సేవ్ చేయండి</translation>
 <translation id="5121628974188116412">పేజీ దిగువకు వెళ్లండి</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
@@ -125,7 +126,7 @@
 <translation id="526651782186312376">పంక్తి ప్రారంభం వరకు వచనాన్ని ఎంచుకోండి</translation>
 <translation id="5316716239522500219">మానిటర్‌లను ప్రతిబింబించు</translation>
 <translation id="539072479502328326">డాక్ చేసిన మాగ్నిఫైయర్‌ను ఆన్ లేదా ఆఫ్ చేస్తుంది</translation>
-<translation id="5466615362193675484">లాక్ మోడ్ పరిమాణం మార్చడానికి మెనూను టోగుల్ చేయండి</translation>
+<translation id="5466615362193675484">లాక్ మోడ్ సైజ్‌ మార్చడానికి మెనూను టోగుల్ చేయండి</translation>
 <translation id="5541719484267030947">ట్యాబ్‌ను లాగే సమయంలో, <ph name="ESC" />ని నొక్కండి</translation>
 <translation id="5554139136362089836">ప్రస్తుత పేజీని వెతకండి</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
@@ -141,7 +142,6 @@
 <translation id="5921745308587794300">విండోను తిప్పు</translation>
 <translation id="5926306472221400972">ఫుల్ స్క్రీన్ స్క్రీన్‌షాట్‌ను తీయండి</translation>
 <translation id="6022924867608035986">శోధన పెట్టె వచనాన్ని క్లియర్ చేయండి</translation>
-<translation id="6045998054441862242">అధిక కాంట్రాస్ట్ మోడ్‌ని ఆన్ చేయండి</translation>
 <translation id="6052614013050385269">లింక్‌ను కుడి-క్లిక్ చేయండి</translation>
 <translation id="6129953537138746214">ఖాళీ</translation>
 <translation id="6143669479988153888">పేజీలో దగ్గరకు జూమ్ చేయండి</translation>
@@ -173,7 +173,7 @@
 <translation id="6760706756348334449">వాల్యూమ్ తగ్గించండి</translation>
 <translation id="6941333068993625698">అభిప్రాయాన్ని సమర్పించండి</translation>
 <translation id="6981982820502123353">యాక్సెసిబిలిటీ</translation>
-<translation id="7020813747703216897">సరిపోలే ఫలితాలు ఏవీ కనుగొనబడలేదు</translation>
+<translation id="7020813747703216897">మ్యాచ్ అయ్యే ఫలితాలు ఏవీ కనుగొనబడలేదు</translation>
 <translation id="7025325401470358758">తరువాత పేన్</translation>
 <translation id="7076878155205969899">ధ్వనిని మ్యూట్ చేస్తుంది</translation>
 <translation id="7077383985738259936">బుక్‌మార్క్‌ల బార్‌పై దృష్టి ఉంచండి లేదా దానిని హైలైట్ చేయండి (చూపబడినట్లయితే)</translation>

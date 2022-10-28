@@ -31,6 +31,7 @@
 <translation id="1587223624401073077">Google Chrome तुमचा कॅमेरा वापरत आहे.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chrom ने ती ब्लॉक केली आहे.</translation>
 <translation id="1597911401261118146">तुमचे पासवर्ड डेटा भंग आणि इतर सुरक्षा समस्यांपासून सुरक्षित आहेत हे तपासण्यासाठी, <ph name="BEGIN_LINK" />Chrome मध्ये साइन इन करा<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome ने ही संग्रहण फाइल ब्लॉक केली, कारण त्यामध्ये मालवेअर लपलेले असू शकते</translation>
 <translation id="1619887657840448962">Chrome अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेला आणि तुमच्या माहितीशिवाय कदाचित जोडले गेलेले खालील एक्स्टेंशन बंद केले आहे.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />तुम्ही तुमचा डेटा कसा व्यवस्थापित करू शकता:<ph name="END_BOLD" /> तुमच्या गोपनीयतेचे संरक्षण करण्यासाठी, आम्ही तुमची चार आठवड्यांपेक्षा जुनी स्वारस्ये ऑटो-डिलीट करतो. तुम्ही ब्राउझ करत राहाल, तसे सूचीमध्ये स्वारस्य पुन्हा दिसू शकते. किंवा Chrome ने विचारात घेऊ नये असे तुम्हाला वाटत असलेली स्वारस्ये तुम्ही काढून टाकू शकता.</translation>
 <translation id="1628000112320670027">Chrome सह मदत मिळवा</translation>
@@ -60,6 +61,7 @@
 <translation id="2094648590148273905">ChromeOS Flex अटी</translation>
 <translation id="2094919256425865063">तरीही Chrome बंद करायचे?</translation>
 <translation id="2106831557840787829">ChromeOS Flex हे <ph name="BEGIN_LINK_LINUX_OSS" />Linux डेव्हलपमेंट पद्धत<ph name="END_LINK_LINUX_OSS" /> यासारख्या अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_CROS_OSS" /> याद्वारे तयार करण्यात आले आहे.</translation>
+<translation id="2112742052114331084">सुरू असेल, तेव्हा Chrome हे तुम्ही सक्रियपणे वापरत नसलेली मेमरी परत मिळवते. हे इतर टास्कसाठी तुमच्या कॉंप्युटरचे स्रोत मोकळे करते आणि Chrome ला वेगवान ठेवते. निष्क्रिय टॅब हे रिकामे दिसतात आणि तुम्ही त्यांवर क्लिक करता, तेव्हा ते आपोआप रीलोड होतात. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /> किंवा <ph name="BEGIN_LINK_2" />फीडबॅक पाठवा<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">हे या डिव्‍हाइस मधून <ph name="ITEMS_COUNT" /> आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2121284319307530122">&amp;Chrome अपडेट करण्यासाठी पुन्हा लाँच करा</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />वर्तमान सेटिंग्ज<ph name="END_LINK" /> चा अहवाल देऊन Chrome ला आणखी चांगले बनवण्यात मदत करा</translation>
@@ -176,6 +178,7 @@
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />कोणता डेटा वापरला जातो:<ph name="END_BOLD" /> तुमचा ब्राउझिंग इतिहास, या डिव्हाइसवर तुम्ही Chrome वापरून भेट दिलेल्या साइटची नोंद.</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
 <translation id="4293420128516039005">तुमच्या डिव्हाइसवर Chrome सिंक आणि पर्सनलाइझ करण्यासाठी साइन इन करा</translation>
+<translation id="430327780270213103">Chrome टूलबारमध्ये अ‍ॅक्सेसशी संबंधित विनंत्या दाखवण्यासाठी एक्स्टेंशनला अनुमती द्या</translation>
 <translation id="4328355335528187361">Google Chrome डेव्हलपर (mDNS-In)</translation>
 <translation id="4334294535648607276">डाउनलोड पूर्ण.</translation>
 <translation id="4335235004908507846">Chrome तुम्हाला डेटा भंग, खराब एक्स्टेंशन आणि बर्‍याच गोष्टींपासून सुरक्षित ठेवण्यात मदत करू शकते</translation>
@@ -276,6 +279,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6735387454586646204">ChromeOS Flex सिस्टीम</translation>
 <translation id="6739177684496155661">नवीन Chrome प्रोफाइलमध्ये सुरू ठेवायचे आहे का?</translation>
 <translation id="6750954913813541382">शब्दलेखनाच्या चुकांमध्ये सुधारणा करण्यासाठी, तुम्ही ब्राउझरमध्ये टाइप करता तो मजकूर Chrome Google ला पाठवते</translation>
+<translation id="6756581345161130259">आवश्यकतेनुसार, Chrome हे तुम्ही सक्रियपणे वापरत नसलेली मेमरी परत मिळवते. तुम्ही सेटिंग्जमध्ये हे कधीही बदलू शकता.</translation>
 <translation id="677276454032249905">तरीही Chrome बंद करायचे?</translation>
 <translation id="6785872064505734160">Chrome मधील Google Assistant तुमच्यासाठी सर्व वेबसाइटवर कृती पूर्ण करू शकतो</translation>
 <translation id="683440813066116847">mDNS रहदारीस अनुमती देण्यासाठी Google Chrome कॅनरी साठी अंतर्गामी नियम.</translation>

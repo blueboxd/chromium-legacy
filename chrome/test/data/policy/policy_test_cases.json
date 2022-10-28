@@ -569,7 +569,8 @@
       "mac",
       "chromeos_ash",
       "chromeos_lacros",
-      "fuchsia"
+      "fuchsia",
+      "android"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -19908,6 +19909,40 @@
             "value": [
               "example.com"
             ]
+          }
+        }
+      }
+    ]
+  },
+  "RecoveryFactorBehavior": {
+    "os": ["chromeos_ash"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.recovery.recovery_factor_behavior": {
+            "check_for_recommended": false,
+            "location": "user_profile",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": { "RecoveryFactorBehavior": true },
+        "prefs": {
+          "ash.recovery.recovery_factor_behavior": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "RecoveryFactorBehavior": false },
+        "prefs": {
+          "ash.recovery.recovery_factor_behavior": {
+            "location": "user_profile",
+            "value": false
           }
         }
       }

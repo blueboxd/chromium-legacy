@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -864,7 +864,7 @@
       'dimensions': {
         'cpu': 'arm64',
         'mac_model': 'Macmini9,1',
-        'os': 'Mac-11|Mac-12',
+        'os': 'Mac-12.4|Mac-12.5',
         'pool': 'chromium.tests',
         'display_attached': '1',
       },
@@ -901,7 +901,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-12.4',
+        'os': 'Mac-12.4|Mac-12.5',
         'display_attached': '1',
       },
     },
@@ -1039,6 +1039,13 @@
     'swarming': {
       'dimensions': {
         'gpu': 'none',
+      },
+    },
+  },
+  'nougat': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'N2G48C',
       },
     },
   },

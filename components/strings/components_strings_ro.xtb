@@ -174,6 +174,7 @@
 <translation id="1380591466760231819">Îndoire tip scrisoare</translation>
 <translation id="138218114945450791">Albastru deschis</translation>
 <translation id="1382194467192730611">Dispozitiv USB permis de administrator</translation>
+<translation id="1382378825779654399">Vei primi alerte prin e-mail dacă prețul scade pe orice site. Pagina se va salva în <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">Nu apar informațiile curente? Contactează banca pentru a le actualiza.</translation>
 <translation id="1384725838384960382">Foaie de autentificare cu date de conectare pentru plăți securizate</translation>
 <translation id="1386623374109090026">Adnotări</translation>
@@ -250,7 +251,6 @@
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Freeware și shareware</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
-<translation id="1554003749331233619">Urmărești acest produs. Pagina este salvată în <ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="1555130319947370107">Albastru</translation>
 <translation id="1559447966090556585">Primești notificări?</translation>
 <translation id="1559528461873125649">Nu există un astfel de fișier sau director</translation>
@@ -298,7 +298,6 @@
 <translation id="1662550410081243962">Salvează și completează metodele de plată</translation>
 <translation id="1663943134801823270">Cardurile și adresele sunt din Chrome. Le poți gestiona în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Paginile în <ph name="SOURCE_LANGUAGE" /> vor fi traduse în <ph name="TARGET_LANGUAGE" /> de acum înainte.</translation>
-<translation id="1673886523110456987">Finalizează achiziția cu cardul <ph name="CARD_DETAIL" /> pentru a folosi oferta</translation>
 <translation id="1674504678466460478">Din <ph name="SOURCE_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Cu latura scurtă înainte</translation>
 <translation id="168693727862418163">Valoarea politicii nu s-a validat în raport cu schema și va fi ignorată.</translation>
@@ -423,6 +422,7 @@
 <translation id="2034971124472263449">Salvează oricum</translation>
 <translation id="2035400064145347639">Ghiduri turistice și jurnale de călătorie</translation>
 <translation id="2036983605131262583">Rolă alternativă</translation>
+<translation id="2040463897538655645">Stocare amovibilă</translation>
 <translation id="2040894699575719559">Accesul la locație a fost blocat</translation>
 <translation id="2042213636306070719">Tava 7</translation>
 <translation id="204357726431741734">Conectează-te pentru a folosi parolele salvate în Contul Google</translation>
@@ -1005,7 +1005,6 @@
 <translation id="3633738897356909127">Butonul Actualizează Chrome, apasă pe Enter pentru a actualiza Chrome din setările Chrome</translation>
 <translation id="3634530185120165534">Tava 5</translation>
 <translation id="3634567936866541746">Ai introdus parola pe un site înșelător. Pentru a-ți proteja conturile, Chrome recomandă să verifici parolele salvate.</translation>
-<translation id="3637033245385760976">Notificările Chrome trebuie să fie activate. Le poți activa în <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="3637662659967048211">Salvează în Contul Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Aplicație:</translation>
@@ -1521,6 +1520,7 @@
 <translation id="5018422839182700155">Pagina nu poate fi deschisă</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
 <translation id="5020776957610079374">Muzică World Music</translation>
+<translation id="5021557570875267742">Urmărește prețurile cu Chrome</translation>
 <translation id="5023310440958281426">Consultați politicile administratorului</translation>
 <translation id="5029568752722684782">Șterge copia</translation>
 <translation id="5030338702439866405">Emis de</translation>
@@ -2242,6 +2242,7 @@
 <translation id="6993898126790112050">6x9 (Plic)</translation>
 <translation id="6996312675313362352">Tradu întotdeauna din <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Industria divertismentului</translation>
+<translation id="7003335073762455340">Urmărești acest produs. Pagina se salvează în <ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="7004583254764674281">Folosește Windows Hello ca să confirmi mai repede cardurile</translation>
 <translation id="7006930604109697472">Trimite oricum</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2324,6 +2325,7 @@
 <translation id="7234638337680728591">Prețuri la combustibil și combustibili pentru vehicule</translation>
 <translation id="7237492777898608035">Nu mai afișa mesajul pentru acest site</translation>
 <translation id="7238585580608191973">Amprentă digitală SHA-256</translation>
+<translation id="7239514174717251677">Alertele privind scăderea prețurilor sunt activate. Poți modifica asta în <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">Nume alternativ subiect certificat</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# potrivire}few{# potriviri}other{# de potriviri}}</translation>
@@ -2465,6 +2467,7 @@ Detalii suplimentare:
 <translation id="7564049878696755256">Este posibil să pierzi accesul la contul <ph name="ORG_NAME" /> sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
 <translation id="7564680668369175887">Automobile break</translation>
 <translation id="7567204685887185387">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fi fost emis fraudulos. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
+<translation id="7568616151991626879">Google Chrome încearcă să completeze parola în <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golf</translation>
 <translation id="7569761772822664555">Butonul Gestionează motoarele de căutare, apasă pe Enter pentru a gestiona opțiunile prestabilite pentru motoarele de căutare și căutarea pe site</translation>
 <translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
@@ -2822,7 +2825,6 @@ Detalii suplimentare:
 <translation id="8559762987265718583">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
 <translation id="8564182942834072828">Documente separate/Copii necolaționate</translation>
 <translation id="8564985650692024650">Chromium îți recomandă să resetezi parola pentru <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> dacă ai folosit-o și pe alte site-uri.</translation>
-<translation id="8573969211731659953">Alertele privind scăderea prețurilor sunt activate. Poți modifica asta în <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="8576310925653847813">Sisteme Home Theater</translation>
 <translation id="8577348305244205642">Cardul virtual nu este disponibil</translation>
 <translation id="858637041960032120">Adăugați telefon
@@ -3037,11 +3039,13 @@ Detalii suplimentare:
 <translation id="9174623988242579721">Vehicule personalizate și de performanță</translation>
 <translation id="9174917557437862841">Butonul Comută între file, apasă pe Enter pentru a comuta la această filă</translation>
 <translation id="9179703756951298733">Gestionează informațiile despre plăți și carduri de credit din setările Chrome</translation>
+<translation id="9179907736442194268">Primește alerte prin e-mail dacă prețul scade pe orice site</translation>
 <translation id="9183302530794969518">Documente Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> folosește un protocol neacceptat.</translation>
 <translation id="9187461866967718678">Sporturi extreme</translation>
 <translation id="9191834167571392248">Perforare în stânga jos</translation>
 <translation id="9199905725844810519">Printarea este blocată</translation>
+<translation id="9202180858541326427">Notificările Chrome trebuie să fie activate. Le poți activa în <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="920511547311754821">Nu găsești codul? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>

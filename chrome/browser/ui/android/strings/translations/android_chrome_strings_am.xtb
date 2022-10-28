@@ -313,7 +313,7 @@
 <translation id="2718352093833049315">በWi-Fi ላይ ብቻ</translation>
 <translation id="2718846868787000099">በመረጡት ቋንቋዎች ውስጥ ይዘትን ለማሳየት፣ የሚጎበኟቸው ጣቢያዎች ምርጫዎችዎን ማየት ይችላሉ</translation>
 <translation id="2722945394406572875">የግላዊነት Sandbox ጥያቄ ተዘግቷል</translation>
-<translation id="2723001399770238859">ድምጽ</translation>
+<translation id="2723001399770238859">ድምፅ</translation>
 <translation id="2732063072010454421">የተሻለ የድምፅ ተሞክሮ ያግኙ</translation>
 <translation id="2760989362628427051">የእርስዎ መሣሪያ በጨለማ ገጽታ ላይ ሲሆን ወይም ባትሪ ቆጣሪ ሲበራ የጨለማ ገጽታን አብራ</translation>
 <translation id="2762000892062317888">አሁን</translation>
@@ -454,6 +454,7 @@
 <translation id="3435465986463792564">ብዙ መስኮቶች አሉዎት? ከዚህ ሆነው እነሱን ማስተዳደር ይችላሉ።</translation>
 <translation id="3443221991560634068">የአሁኑን ገጽ ዳግም ጫን</translation>
 <translation id="3444179773590444986">ለጣቢያዎች ጠቆር ያለ ገጽታ ላይ ግብረመልስ ይጋራ?</translation>
+<translation id="3452832259067974318">የእርስዎን ግላዊነት ለመጠበቅ፣ Chrome በዚህ መስክ ላይ የእርስዎን የይለፍ ቃል በራስ-ሰር አይሞላም።</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 ውርድ መርሐግብት ተይዞለታል}one{# ውርዶች መርሐግብር ተይዞላቸዋል}other{# ውርዶች መርሐግብር ተይዞላቸዋል}}</translation>
 <translation id="3474624961160222204">እንደ <ph name="NAME" /> ይቀጥሉ</translation>
 <translation id="3478363558367712427">የፍለጋ ፕሮግራምዎን መምረጥ ይችላሉ</translation>
@@ -484,7 +485,7 @@
 <translation id="3587482841069643663">ሁሉም</translation>
 <translation id="3587596251841506391">ድር ላይ ደህንነትን ለማሻሻል ያግዙ</translation>
 <translation id="3602290021589620013">ቅድመ-ዕይታ</translation>
-<translation id="3616113530831147358">ድምጽ</translation>
+<translation id="3616113530831147358">ድምፅ</translation>
 <translation id="3622349720008044802">መስኮቶች ያቀናብሩ</translation>
 <translation id="3631987586758005671">ለ <ph name="DEVICE_NAME" /> በማጋራት ላይ</translation>
 <translation id="363596933471559332">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች መለያ ይግቡ። ባህሪው ሲጠፋ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
@@ -679,6 +680,7 @@
 <translation id="4763480195061959176">ቪዲዮ</translation>
 <translation id="4766313118839197559">የይለፍ ቃላት የሚቀመጡት በዚህ መሣሪያ ላይ ባለው የይለፍ ቃል አስተዳዳሪ ላይ ነው</translation>
 <translation id="4766678251456904326">መለያ ወደ መሣሪያው ያክሉ</translation>
+<translation id="4787736314074622408"><ph name="ITEM_TITLE" />ን መሰረዝ ይፈልጋሉ?</translation>
 <translation id="4791358705705538979">እንደ ተመዝግቦ መውጫ ያለ በመላው ድር ላይ ተግባራትን እንዲያጠናቅቁ ያግዘዎታል</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">የይለፍ ሐረግ ምስጠራ ከGoogle Pay የመክፈያ ዘዴዎችን እና አድራሻዎችን አያካትትም።
@@ -948,6 +950,7 @@
 <translation id="6192907950379606605">የምስል መግለጫዎችን ያግኙ</translation>
 <translation id="6196315980958524839">የይለፍ ቃላት የሚቀመጡት በዚህ መሣሪያ ላይ ባለው የGoogle የይለፍ ቃል አስተዳዳሪ ላይ ነው</translation>
 <translation id="620197886010707372">የ<ph name="APPNAME" /> መተግበሪያ በGoogle Play ይከፈት?</translation>
+<translation id="6202812185118613467">ስምረትን ለማስጀመር መልሰው በመለያ ይግቡ</translation>
 <translation id="6203593061661911168">ውርድ በWi-Fi ላይ ሲሆን ይጀመራል።</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> አይደለም?</translation>
 <translation id="6211386937064921208">ይህን ገጽ በቅድመ-ዕይታ በማሳየት ላይ</translation>

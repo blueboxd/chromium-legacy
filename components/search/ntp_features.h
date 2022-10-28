@@ -54,10 +54,17 @@ extern const base::Feature kNtpPhotosModuleSplitSvgOptInArtWork;
 extern const base::Feature kNtpFeedModule;
 extern const base::Feature kNtpOneGoogleBar;
 extern const base::Feature kNtpRecipeTasksModule;
+extern const base::Feature kNtpRemoveScrim;
 extern const base::Feature kNtpSafeBrowsingModule;
 extern const base::Feature kNtpShortcuts;
 
 extern const base::Feature kNtpHandleMostVisitedNavigationExplicitly;
+
+// Parameter for the CSS selector for the button elements on the OGB.
+extern const base::FeatureParam<std::string> kNtpOgbButtonSelectorParam;
+// Parameter for the CSS selector for the unprotected text on the OGB.
+extern const base::FeatureParam<std::string>
+    kNtpOgbUnprotectedTextSelectorParam;
 
 // Parameter determining the module load timeout.
 extern const char kNtpModulesLoadTimeoutMillisecondsParam[];
@@ -85,6 +92,8 @@ extern const char kNtpDriveModuleCacheMaxAgeSParam[];
 extern const char kNtpDriveModuleExperimentGroupParam[];
 // Parameter determining the type of middle slot promo data to render.
 extern const char kNtpMiddleSlotPromoDismissalParam[];
+// Parameter determining the modules that are eligigle for HATS.
+extern const char kNtpModulesEligibleForHappinessTrackingSurveyParam[];
 // Parameter determining the type of Photos data to render.
 extern const char kNtpPhotosModuleDataParam[];
 // Parameter determining the art work in opt-in card.

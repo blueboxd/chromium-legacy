@@ -23,6 +23,7 @@
 <translation id="1104948393051856124">স্বীকার করুন ও চালিয়ে যান</translation>
 <translation id="110724200315609752">এই উইন্ডো থেকে পাল্টে খুলে রাখা উইন্ডোতে যান</translation>
 <translation id="1112015203684611006">প্রিন্ট ব্যর্থ হয়েছে।</translation>
+<translation id="1118569444314402022">আপনাকে আবার স্বাগত জানাই, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">নতুন ট্যাব তৈরি করুন।</translation>
 <translation id="1126809382673880764">এই মোডে আপনার ডিভাইসের ক্ষতি করতে পারে এমন ওয়েবসাইট, ডাউনলোড অথবা এক্সটেনশন থেকে কোনও সুরক্ষা পাওয়া সম্ভব হয় না। তবে Gmail এবং Search-এর মতো অন্যান্য Google পরিষেবায়, যেখানে উপলভ্য সেখানে আপনি এখনও 'Safe Browsing'-এর সুরক্ষা পাবেন।</translation>
 <translation id="1135212215217513471">iOS-এর জন্য Chrome ইনস্টল করুন</translation>
@@ -46,6 +47,7 @@
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1275718070701477396">নির্বাচিত</translation>
 <translation id="1281818060020671000">ডেটা ম্যানেজ করুন</translation>
+<translation id="1282311502488501110">সাইন-ইন করতে চাই না</translation>
 <translation id="1283524564873030414">গত ২৪ ঘণ্টা</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="1291506870746876680">আপনি এই সাইট বন্ধ করে দিলে, <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> এর সাথে সম্পর্কিত অনুমতি রিসেট হয়ে বন্ধ হয়ে যাবে।</translation>
@@ -54,6 +56,7 @@
 <translation id="1322735045095424339">আপনার সংস্থা আপনাকে 'ছদ্মবেশী মোড' ব্যবহার করতে বলছে</translation>
 <translation id="1323735185997015385">মুছুন</translation>
 <translation id="132683371494960526">মূল ফোল্ডার পরিবর্তন করতে দুবার আলতো চাপুন।</translation>
+<translation id="1335348992705722518">সেটিংস ম্যানেজ করুন...</translation>
 <translation id="1340643665687018190">মেনু বন্ধ করুন</translation>
 <translation id="1358214951266274152">আপনার কপি করা লিঙ্কে যান</translation>
 <translation id="1360432990279830238">সাইন-আউট করে সিঙ্ক বন্ধ করবেন?</translation>
@@ -61,6 +64,7 @@
 <translation id="1377255359165588604">সিঙ্ক কাজ করা বন্ধ করে দিয়েছে।</translation>
 <translation id="1377321085342047638">কার্ড নম্বর</translation>
 <translation id="1383876407941801731">Search</translation>
+<translation id="138618066238211776"><ph name="USER_NAME" /> হিসেবে চালিয়ে যান</translation>
 <translation id="1400642268715879018">গত ৪ সপ্তাহ</translation>
 <translation id="1404330357948037222">আপনি সাইন-আউট করেছেন</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
@@ -174,9 +178,11 @@
 <translation id="2421044535038393232">এডিট করতে থাকুন</translation>
 <translation id="2434405374328098816">আপনি আগে থেকেই "<ph name="USERNAME" />"-এর জন্য <ph name="WEBSITE" />-এ পাসওয়ার্ড সেভ করেছেন</translation>
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
+<translation id="2461070143328828326">পাসওয়ার্ড সেটিংস</translation>
 <translation id="2469960372084740698">Safe Browsing বন্ধ করতে চান?</translation>
 <translation id="2473876017985765807">আপনি আগেই <ph name="WEBSITE" />-এর জন্য পাসওয়ার্ড সেভ করেছেন</translation>
 <translation id="2476359652512522418">বেছে নেওয়া হয়নি</translation>
+<translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2500374554657206846">পাসওয়ার্ড সেভ করার বিকল্প</translation>
 <translation id="2523363575747517183">এই ওয়েবসাইটটি ক্রমাগত অন্য অ্যাপ্লিকেশন খোলার চেষ্টা করছে।</translation>
 <translation id="2529021024822217800">সবকটি খুলুন</translation>
@@ -327,6 +333,7 @@
 <translation id="3709582977625132201">'পড়া হয়নি' হিসেবে চিহ্নিত করুন</translation>
 <translation id="371230970611282515">কোনও ঝুঁকিপূর্ণ ঘটনা ঘটলে সেটি অনুমান করে আপনাকে সতর্ক করা হয়।</translation>
 <translation id="37207012422556617">জনপ্রিয় সার্চ</translation>
+<translation id="3726360487031500941">আপনার অ্যাকাউন্ট <ph name="USER_NAME" />-এ আবার সাইন-ইন করুন</translation>
 <translation id="3740397331642243698">এটি ইনপুট করা ইউআরএলগুলিকে Google Chrome-এ, 'ছদ্মবেশী' মোডে খোলে।</translation>
 <translation id="3762232513783804601">আপনার iPad-এর জন্য তৈরি করা হয়েছে</translation>
 <translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
@@ -381,6 +388,7 @@
 <translation id="4187450337729239226">পেস্ট ও সার্চ করুন</translation>
 <translation id="4223967053752765281">আপনার প্রতিষ্ঠান সাইন-ইনের সুবিধা বন্ধ করে দিয়েছেন। এখনও এই ডিভাইসে আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্য সেটিংস দেখতে পাবেন। আপনি কোনও পরিবর্তন করলে, তা আপনার অ্যাকাউন্টে সিঙ্ক হবে না।</translation>
 <translation id="4233831822770018312">অনুমতিতে পরিবর্তন করুন</translation>
+<translation id="4236584471598725073">দাম ট্র্যাক করা</translation>
 <translation id="4237377247299956313"><ph name="BEGIN_BOLD" />ডিফল্ট ব্রাউজার অ্যাপ<ph name="END_BOLD" /> বিকল্পে ট্যাপ করুন</translation>
 <translation id="424315890655130736">পাসফ্রেজ লিখুন</translation>
 <translation id="4249955472157341256">লেটেস্ট অনুযায়ী সাজান</translation>
@@ -741,6 +749,7 @@
 <translation id="6930799952781667037">এই ভাষায় পরিবর্তন করতে ট্যাপ করুন।</translation>
 <translation id="6944369514868857500">অন্য অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
+<translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6973630695168034713">ফোল্ডারগুলি</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">আপনার Google অ্যাকাউন্ট ম্যানেজ করুন</translation>

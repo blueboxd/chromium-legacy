@@ -32,6 +32,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1587223624401073077">Ginagamit ng Google Chrome ang iyong camera.</translation>
 <translation id="1587325591171447154">Mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chrome.</translation>
 <translation id="1597911401261118146">Para makita kung ligtas ang iyong mga password mula sa mga paglabag sa data at iba pang isyu sa seguridad, <ph name="BEGIN_LINK" />mag-sign in sa Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Na-block ng Chrome ang naka-archive na file na ito dahil posibleng nagtatago ito ng malware</translation>
 <translation id="1619887657840448962">Upang mas gawing ligtas ang Chrome, na-disable namin ang sumusunod na extension na hindi nakalista sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na maaaring naidagdag nang hindi mo nalalalaman.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Paano mo mapapamahalaan ang iyong data:<ph name="END_BOLD" /> Para protektahan ang iyong privacy, awtomatiko naming dine-delete ang mga interes mo na mas matagal sa 4 na linggo. Habang patuloy kang nagba-browse, posibleng lumabas ulit sa listahan ang isang interes. O puwede kang mag-alis ng mga interes na ayaw mong isaalang-alang ng Chrome.</translation>
 <translation id="1628000112320670027">Humingi ng tulong sa Chrome</translation>
@@ -61,6 +62,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2094648590148273905">Mga tuntunin ng ChromeOS Flex</translation>
 <translation id="2094919256425865063">Umalis pa rin sa Chrome?</translation>
 <translation id="2106831557840787829">Pinapagana ng karagdagang <ph name="BEGIN_LINK_CROS_OSS" />open source na software<ph name="END_LINK_CROS_OSS" /> ang ChromeOS Flex, pati na rin ang <ph name="BEGIN_LINK_LINUX_OSS" />environment sa pag-develop ng Linux <ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Kapag naka-on, binabawi ng Chrome ang memory mula sa mga tab na hindi mo aktibong ginagamit. Binabakante nito ang mga resource ng iyong computer para sa iba pang gawain at pinapanatili nitong mabilis ang Chrome. Mukhang walang laman ang mga hindi aktibong tab at awtomatikong nagre-reload ang mga ito kapag na-click mo ang mga ito. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /> o <ph name="BEGIN_LINK_2" />magpadala ng feedback<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Magde-delete ito ng <ph name="ITEMS_COUNT" /> (na) item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Ilunsad Ulit para Ma-update ang Chrome</translation>
 <translation id="2123055963409958220">Tulungang pahusayin ang Chrome sa pamamagitan ng pag-ulat sa <ph name="BEGIN_LINK" />mga kasalukuyang setting<ph name="END_LINK" /></translation>
@@ -279,6 +281,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6735387454586646204">System ng ChromeOS Flex</translation>
 <translation id="6739177684496155661">Magpatuloy sa bagong profile sa Chrome?</translation>
 <translation id="6750954913813541382">Para ayusin ang mga error sa pagbabaybay, ipinapadala ng Chrome sa Google ang text na na-type mo sa browser</translation>
+<translation id="6756581345161130259">Gaya ng kinakailangan, binabawi ng Chrome ang memory mula sa mga tab na hindi mo aktibong ginagamit. Puwede mo itong baguhin anumang oras sa mga setting.</translation>
 <translation id="677276454032249905">Lumabas pa rin sa Chrome?</translation>
 <translation id="6785872064505734160">Makakakumpleto ang Google Assistant sa Chrome ng mga pagkilos sa lahat ng website para sa iyo</translation>
 <translation id="683440813066116847">Inbound na panuntunan para sa Google Chrome Canary upang payagan ang trapiko ng mDNS.</translation>

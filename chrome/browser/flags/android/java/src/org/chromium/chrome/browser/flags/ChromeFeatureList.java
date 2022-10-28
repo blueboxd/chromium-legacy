@@ -269,6 +269,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_RETAINING_STATE = "CCTRetainingState";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
+    public static final String CCT_SHOW_ABOUT_BLANK_URL = "CCTShowAboutBlankUrl";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
     public static final String CLOSE_TAB_SUGGESTIONS = "CloseTabSuggestions";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
@@ -514,6 +515,14 @@ public abstract class ChromeFeatureList {
             "RequestDesktopSiteDefaultsControl";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS_DOWNGRADE =
             "RequestDesktopSiteDefaultsDowngrade";
+    public static final String REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL_SYNTHETIC =
+            "RequestDesktopSiteDefaultsControlSynthetic";
+    public static final String REQUEST_DESKTOP_SITE_DEFAULTS_SYNTHETIC =
+            "RequestDesktopSiteDefaultsSynthetic";
+    public static final String REQUEST_DESKTOP_SITE_OPT_IN_SYNTHETIC =
+            "RequestDesktopSiteOptInSynthetic";
+    public static final String REQUEST_DESKTOP_SITE_OPT_IN_CONTROL_SYNTHETIC =
+            "RequestDesktopSiteOptInControlSynthetic";
     public static final String REQUEST_DESKTOP_SITE_FOR_TABLETS = "RequestDesktopSiteForTablets";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
@@ -593,6 +602,8 @@ public abstract class ChromeFeatureList {
     public static final String UNIFIED_CREDENTIAL_MANAGER_DRY_RUN =
             "UnifiedCredentialManagerDryRun";
     public static final String UNIFIED_PASSWORD_MANAGER_ANDROID = "UnifiedPasswordManagerAndroid";
+    public static final String UNIFIED_PASSWORD_MANAGER_ERROR_MESSAGES =
+            "UnifiedPasswordManagerErrorMessages";
     public static final String UPCOMING_SHARING_FEATURES = "UpcomingSharingFeatures";
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
             "UpdateNotificationScheduleServiceImmediateShowOption";

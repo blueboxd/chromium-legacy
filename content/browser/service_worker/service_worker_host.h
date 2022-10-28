@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,6 +98,7 @@ class CONTENT_EXPORT ServiceWorkerHost : public BucketContext {
   }
 
   net::NetworkIsolationKey GetNetworkIsolationKey() const;
+  net::NetworkAnonymizationKey GetNetworkAnonymizationKey() const;
   const base::UnguessableToken& GetReportingSource() const;
 
   StoragePartition* GetStoragePartition() const;

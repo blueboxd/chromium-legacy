@@ -949,6 +949,7 @@
 <translation id="6192907950379606605">फोटोका विवरणहरू पाउनुहोस्</translation>
 <translation id="6196315980958524839">पासवर्डहरू यो डिभाइसको Google पासवर्ड म्यानेजरमा सेभ गरिन्छन्</translation>
 <translation id="620197886010707372">Google Play मार्फत <ph name="APPNAME" /> एप खोल्ने हो?</translation>
+<translation id="6202812185118613467">सिंक गर्न थाल्न फेरि साइन इन गर्नुहोस्</translation>
 <translation id="6203593061661911168">Wi-Fi मा कनेक्ट भएपछि डाउनलोड गर्न थालिने छ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> होइन?</translation>
 <translation id="6211386937064921208">यो पृष्ठको प्रिभ्यु हेरिँदै छ</translation>
@@ -1173,7 +1174,7 @@
 <translation id="7339898014177206373">नयाँ विन्डो</translation>
 <translation id="7340958967809483333">Discover का विकल्पहरू</translation>
 <translation id="7352339641508007922">लामो स्क्रिनसट खिच्न ड्र्याग गर्नुहोस्</translation>
-<translation id="7352651011704765696">केही गल्ती भयो</translation>
+<translation id="7352651011704765696">कुनै त्रुटि भयो</translation>
 <translation id="7352939065658542140">भिडियो</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{चयन गरिएको १ वस्तु सेयर गर्नुहोस्}other{चयन गरिएका # वस्तुहरू सेयर गर्नुहोस्}}</translation>
 <translation id="7359002509206457351">भुक्तानी विधिहरूमाथि पहुँच राख्नुहोस्</translation>

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ namespace network {
 ResolveHostRequest::ResolveHostRequest(
     net::HostResolver* resolver,
     mojom::HostResolverHostPtr host,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::NetworkAnonymizationKey& network_anonymization_key,
     const absl::optional<net::HostResolver::ResolveHostParameters>&
         optional_parameters,
     net::NetLog* net_log) {
@@ -28,13 +28,13 @@ ResolveHostRequest::ResolveHostRequest(
 
   if (host->is_host_port_pair()) {
     internal_request_ = resolver->CreateRequest(
-        host->get_host_port_pair(), network_isolation_key,
+        host->get_host_port_pair(), network_anonymization_key,
         net::NetLogWithSource::Make(
             net_log, net::NetLogSourceType::NETWORK_SERVICE_HOST_RESOLVER),
         optional_parameters);
   } else {
     internal_request_ = resolver->CreateRequest(
-        host->get_scheme_host_port(), network_isolation_key,
+        host->get_scheme_host_port(), network_anonymization_key,
         net::NetLogWithSource::Make(
             net_log, net::NetLogSourceType::NETWORK_SERVICE_HOST_RESOLVER),
         optional_parameters);

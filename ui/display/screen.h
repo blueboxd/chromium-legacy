@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@ class Rect;
 
 namespace display {
 class DisplayObserver;
+enum class TabletState;
 
 // A utility class for getting various info about screen size, displays,
 // cursor position, etc.
@@ -193,6 +194,12 @@ class DISPLAY_EXPORT Screen {
   // other system properties related to the compositing.
   virtual base::Value::List GetGpuExtraInfo(
       const gfx::GpuExtraInfo& gpu_extra_info);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Returns tablet state.
+  // TODO(crbug.com/1170013): Support this on ash-chrome as well.
+  virtual TabletState GetTabletState() const;
+#endif
 
  protected:
   void set_shutdown(bool shutdown) { shutdown_ = shutdown; }

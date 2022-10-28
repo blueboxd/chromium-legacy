@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,6 +126,7 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   static absl::optional<AXTreeID> last_focused_node_tree_id_;
 
  private:
+  friend class AXDummyTreeManager;
   friend class TestAXTreeManager;
 
   static AXTreeManagerMap& GetMap();

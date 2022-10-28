@@ -32,6 +32,7 @@
 <translation id="1587223624401073077">Google Chrome ກໍາລັງໃຊ້ກ້ອງຖ່າຍຮູບຂອງທ່ານ.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ອັນຕະລາຍ, ສະນັ້ນ Chrome ໄດ້ບລັອກມັນໄວ້ແລ້ວ.</translation>
 <translation id="1597911401261118146">ເພື່ອກວດເບິ່ງວ່າລະຫັດຜ່ານຂອງທ່ານປອດໄພຈາກການລະເມີດຂໍ້ມູນ ແລະ ບັນຫາຄວາມປອດໄພອື່ນຫຼືບໍ່, ກະລຸນາ <ph name="BEGIN_LINK" />ເຂົ້າສູ່ລະບົບ Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome ບລັອກໄຟລ໌ແຟ້ມຈັດເກັບນີ້ແລ້ວເນື່ອງຈາກມັນເຊື່ອງເມົາແວໄວ້</translation>
 <translation id="1619887657840448962">ເພື່ອເຮັດໃຫ້ Chrome ປອດໄພຂຶ້ນ, ພວກເຮົາປິດໃຊ້ງານບາງສ່ວນການ​ຕໍ່​ເຂົ້າ​ຫາ ທີ່​ບໍ່​ໄດ້​ເຮັດ​ເປັນ​ລາຍ​ການ​ໄວ້​ຢູ່​ໃນ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ແລະ​ອາດ​ຈະ​ຖືກ​ເອົາ​ເພີ່ມ​ເຂົ້າ​ໂດຍ​ທີ່​ທ່ານ​ບໍ່​ຮູ້​ຈັກ.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />ທ່ານສາມາດຈັດການຂໍ້ມູນຂອງທ່ານໄດ້ແນວໃດ:<ph name="END_BOLD" /> ເພື່ອປົກປ້ອງຄວາມເປັນສ່ວນຕົວຂອງທ່ານ, ພວກເຮົາຈະລຶບຄວາມສົນໃຈຂອງທ່ານທີ່ເກົ່າກວ່າ 4 ອາທິດອອກໂດຍອັດຕະໂນມັດ. ໃນເວລາທີ່ທ່ານສືບຕໍ່ການທ່ອງເວັບ, ຄວາມສົນໃຈອາດປາກົດຢູ່ລາຍຊື່ຄືນໃໝ່. ຫຼື ທ່ານສາມາດລຶບຄວາມສົນໃຈອອກໄດ້ຫາກທ່ານບໍ່ຕ້ອງການໃຫ້ Chrome ພິຈາລະນາ.</translation>
 <translation id="1628000112320670027">ຂໍຄວາມຊ່ວຍເຫຼືອເລື່ອງ Chrome</translation>
@@ -61,6 +62,7 @@
 <translation id="2094648590148273905">ຂໍ້ກຳນົດ ChromeOS Flex</translation>
 <translation id="2094919256425865063">ຢືນຢັນການອອກຈາກ Chrome ບໍ?</translation>
 <translation id="2106831557840787829">ChromeOS Flex ເກີດຂຶ້ນໄດ້ດ້ວຍການສະໜັບສະໜຸນຈາກ <ph name="BEGIN_LINK_CROS_OSS" />ຊອບແວໂອເພນຊອດ<ph name="END_LINK_CROS_OSS" /> ເພີ່ມເຕີມ, ເຊັ່ນດຽວກັບ <ph name="BEGIN_LINK_LINUX_OSS" />ສະພາບແວດລ້ອມການພັດທະນາ Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">ເມື່ອເປີດແລ້ວ, Chrome ຈະຮຽກຄືນໜ່ວຍຄວາມຈຳແຖບຕ່າງໆທີ່ທ່ານບໍ່ໄດ້ນຳໃຊ້. ສິ່ງນີ້ຈະເຮັດໃຫ້ພື້ນທີ່ຫວ່າງຂອງຊັບພະຍາກອນໃນຄອມພິວເຕີຂອງທ່ານເພີ່ມຂຶ້ນເພື່ອໃຊ້ໃນໜ້າວຽກອື່ນໆ ແລະ ເຮັດໃຫ້ Chrome ເຮັດວຽກໄດ້ຢ່າງວ່ອງໄວ. ແຖບທີ່ບໍ່ໄດ້ນຳໃຊ້ຈະຫວ່າງເປົ່າ ແລະ ໂຫຼດໃໝ່ໂດຍອັດຕະໂນມັດເມື່ອທ່ານຄລິກໃສ່ພວກມັນ. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /> ຫຼື <ph name="BEGIN_LINK_2" />ສົ່ງຄຳຕິຊົມ<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">ນີ້ຈະລຶບ <ph name="ITEMS_COUNT" /> ລາຍການອອກຈາກວິດີໂອນີ້. ເພື່ອກູ້ຂໍ້ມູນຂອງທ່ານຄືນໃນພາຍຫຼັງ, ກະລຸນາເຂົ້າສູ່ລະບົບ Chrome ເປັນ <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">ເລີ່ມເປີດໃຊ້ໃໝ່ເພື່ອອັບເດດ &amp;Chrome</translation>
 <translation id="2123055963409958220">ຊ່ວຍເຮັດໃຫ້ Chrome ດີຂຶ້ນໂດຍການລາຍງານ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າປັດຈຸບັນ<ph name="END_LINK" /></translation>
@@ -177,6 +179,7 @@
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />ມີການໃຊ້ຂໍ້ມູນໃດ:<ph name="END_BOLD" /> ປະຫວັດການທ່ອງເວັບຂອງທ່ານ, ບັນທຶກຂອງເວັບໄຊທີ່ທ່ານເຂົ້າເບິ່ງໂດຍໃຊ້ Chrome ຢູ່ອຸປະກອນນີ້.</translation>
 <translation id="4281844954008187215">ຂໍ້ກໍານົດການບໍລິການ</translation>
 <translation id="4293420128516039005">ເຂົ້າສູ່ລະບົບເພື່ອຊິ້ງຂໍ້ມູນ ແລະ ປັບແຕ່ງ Chrome ໃຫ້ເປັນແບບສ່ວນຕົວໃນທົ່ວອຸປະກອນຂອງທ່ານ</translation>
+<translation id="430327780270213103">ອະນຸຍາດໃຫ້ສ່ວນຂະຫຍາຍສະແດງຄຳຮ້ອງຂໍສິດເຂົ້າເຖິງໃນແຖບເຄື່ອງມື Chrome</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4334294535648607276">ດາວ​ໂຫຼດ​ສຳ​ເລັດ.</translation>
 <translation id="4335235004908507846">Chrome ສາມາດຊ່ວຍຮັກສາໃຫ້ທ່ານປອດໄພຈາກການລະເມີດຂໍ້ມູນ, ສ່ວນຂະຫຍາຍທີ່ບໍ່ດີ ແລະ ອື່ນໆອີກໄດ້</translation>
@@ -278,6 +281,7 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="6735387454586646204">ລະບົບ ChromeOS Flex</translation>
 <translation id="6739177684496155661">ສືບຕໍ່ໃນໂປຣໄຟລ໌ Chrome ໃໝ່ບໍ?</translation>
 <translation id="6750954913813541382">ເພື່ອແກ້ໄຂຂໍ້ຜິດພາດກ່ຽວກັບການສະກົດຄຳ, Chrome ສົ່ງຂໍ້ຄວາມທີ່ທ່ານພິມໃນໂປຣແກຣມທ່ອງເວັບໃຫ້ Google</translation>
+<translation id="6756581345161130259">Chrome ຈະເອີ້ນໜ່ວຍຄວາມຈຳກັບຄືນມາຈາກແຖບທີ່ທ່ານບໍ່ໄດ້ໃຊ້ເປັນປະຈຳຕາມທີ່ຕ້ອງການ. ທ່ານສາມາດປ່ຽນສິ່ງນີ້ຕອນໃດກໍໄດ້ໃນການຕັ້ງຄ່າ.</translation>
 <translation id="677276454032249905">ຢືນຢັນການອອກຈາກ Chrome ບໍ?</translation>
 <translation id="6785872064505734160">ຜູ້ຊ່ວຍ Google ໃນ Chrome ສາມາດເຮັດຄຳສັ່ງຕ່າງໆໃຫ້ສຳເລັດໃນທົ່ວເວັບໄຊໃຫ້ທ່ານໄດ້</translation>
 <translation id="683440813066116847">ກົດລະບຽບຂາເຂົ້າສໍາລັບ Google Chrome Canary ເພື່ອອະນຸຍາດໃຫ້ການຈາລະຈອນ mDNS.</translation>

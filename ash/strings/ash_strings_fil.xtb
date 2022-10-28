@@ -215,6 +215,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="2132302418721800944">I-record ang full screen</translation>
 <translation id="2135456203358955318">Naka-dock na magnifier</translation>
 <translation id="2148716181193084225">Ngayong Araw</translation>
+<translation id="2161132820593978283">Subukan ang camera framing para mapunta ka sa gitna ng screen sa mga video call. I-on ito sa Mga Mabilisang Setting.</translation>
 <translation id="2170530631236737939">Mag-swipe pababa gamit ang tatlong daliri para lumabas sa Overview</translation>
 <translation id="219905428774326614">Launcher, lahat ng app</translation>
 <translation id="2201071101391734388">Kamakailang larawan <ph name="INDEX" /> ng <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="2405664212338326887">Hindi nakakonekta</translation>
 <translation id="2408955596600435184">Ilagay ang iyong PIN</translation>
 <translation id="2412593942846481727">May available na update</translation>
+<translation id="2426051945783024481">Awtomatikong napupunta sa gitna ang camera frame</translation>
 <translation id="2427507373259914951">Mag-left click</translation>
 <translation id="2429753432712299108">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares . Bago tanggapin, pakikumpirma na ipinapakita ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
@@ -373,6 +375,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="3151786313568798007">Oryentasyon</translation>
 <translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
 <translation id="3154351730702813399">Maaaring subaybayan ng admin ng device ang iyong aktibidad sa pag-browse.</translation>
+<translation id="3157931365184549694">Ipanumbalik</translation>
 <translation id="316086887565479535">Mga hindi sinusuportahang app sa template</translation>
 <translation id="3161500364292033097">Isara ang desk at mga window</translation>
 <translation id="316356270129335934">Iniro-roll back ng <ph name="MANAGER" /> ang iyong <ph name="DEVICE_TYPE" />. Mare-reset ang iyong device at made-delete ang lahat ng data.</translation>
@@ -476,7 +479,6 @@ Isaksak ang iyong device.</translation>
 <translation id="3735740477244556633">Pagbukud-bukurin ayon sa</translation>
 <translation id="3742055079367172538">Nakakuha na ng screenshot</translation>
 <translation id="3765841986579723851">Na-edit ngayon</translation>
-<translation id="3771549900096082774">High Contrast Mode</translation>
 <translation id="3773700760453577392">Hindi pinayagan ng isang administrator ang maraming pag-sign in para sa <ph name="USER_EMAIL" />. Dapat mag-sign out ang lahat ng user para makapagpatuloy.</translation>
 <translation id="3779139509281456663">Ikinokonekta ang <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@ Isaksak ang iyong device.</translation>
 <translation id="4312840429157639164">Nag-snap ang camera sa kanang sulok sa itaas. Pagsasalungat sa surface ng system.</translation>
 <translation id="4316910396681052118">LAHAT NG APP</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Napindot mo ang keyboard shortcut para sa mataas na contrast. Gusto mo ba itong i-on?</translation>
 <translation id="4322742403972824594">Nagbago ang keyboard shortcut na Ctrl + Alt + Pataas na Arrow. Para magamit ang Home key, pindutin ang <ph name="LAUNCHER_KEY_NAME" /> key + Kaliwang Arrow.</translation>
 <translation id="4333628967105022692">Hindi sinusuportahan ang Lacros kapag maraming user ang naka-sign in.</translation>
 <translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4351433414020964307">Naglo-load ang Assistant...</translation>
-<translation id="4356930093361201197">high-contrast mode</translation>
 <translation id="4371348193907997655">Mga Cast Setting</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, lakas ng signal <ph name="SIGNAL_STRENGTH" /> porsyento</translation>
 <translation id="4378551569595875038">Kumokonekta...</translation>
@@ -877,7 +877,6 @@ Isaksak ang iyong device.</translation>
 <translation id="5980301590375426705">Lumabas</translation>
 <translation id="598407983968395253">Gamitin ang template</translation>
 <translation id="598882571027504733">Para makuha ang update, i-restart ang iyong Chromebook nang nakakabit ang keyboard.</translation>
-<translation id="5992218262414051481">Na-enable ang High Contrast Mode. Pinduting muli ang Ctrl+Search+H upang i-off ito.</translation>
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> ng <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Lumalabas sa mirror mode</translation>
 <translation id="602001110135236999">Mag-scroll pakaliwa</translation>
@@ -1043,6 +1042,7 @@ Kaka-install lang</translation>
 <translation id="6960565108681981554">Hindi na-activate. Makipag-ugnayan sa iyong carrier.</translation>
 <translation id="6961121602502368900">Hindi available ang Pag-silent ng telepono sa profile sa trabaho</translation>
 <translation id="6961840794482373852">Nagbago ang keyboard shortcut na Alt + Pataas na Arrow. Para magamit ang Page Up key, pindutin ang <ph name="LAUNCHER_KEY_NAME" /> key + Pataas na Arrow.</translation>
+<translation id="696267987219125751">Naka-off ang camera framing.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Magsimula</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1133,6 +1133,7 @@ Kaka-install lang</translation>
 <translation id="7513922695575567867">Kalendaryo, linggo ng <ph name="DATE" />, kasalukuyang pinili ang <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">I-download</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Naka-on ang camera framing.</translation>
 <translation id="7526573455193969409">Maaaring sinusubaybayan ang network</translation>
 <translation id="7536035074519304529">IP address: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Kasalukuyang hindi sinusuportahan ang mga Linux app at Incognito window. Mase-save ang iba pang app.</translation>
@@ -1151,10 +1152,12 @@ Kaka-install lang</translation>
 <translation id="7607002721634913082">I-pause</translation>
 <translation id="7609951632080598826">View ng kalendaryo, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Nakakonekta ulit ang camera.</translation>
+<translation id="761736749114493194">I-toggle ang camera framing. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Ipakita ang mga setting ng Nearby Share.</translation>
 <translation id="7634648064048557203">Nag-snap ang camera sa kanang sulok sa ibaba</translation>
 <translation id="7641938616688887143">I-record</translation>
+<translation id="7642106959537987271">color inversion mode</translation>
 <translation id="7642647758716480637">Buksan ang mga setting para sa <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (may-ari)</translation>
 <translation id="7647488630410863958">I-unlock ang device upang tingnan ang iyong mga notification</translation>
@@ -1233,7 +1236,6 @@ Kaka-install lang</translation>
 <translation id="8051716679295756675">May template nang may pangalang <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="8052898407431791827">Kinopya sa clipboard</translation>
 <translation id="8054466585765276473">Kinakalkula ang oras ng baterya.</translation>
-<translation id="8061464966246066292">Mataas na contrast</translation>
 <translation id="8083540854303889870">Naka-save para sa ibang pagkakataon</translation>
 <translation id="8091387634532529612">Mga awtomatikong update</translation>
 <translation id="8098591350844501178">Ihinto ang pag-cast ng screen sa <ph name="RECEIVER_NAME" /></translation>
@@ -1261,6 +1263,7 @@ Kaka-install lang</translation>
 <translation id="8209010265547628927">I-reset</translation>
 <translation id="8214996719228530800">Canary Channel</translation>
 <translation id="8219451629189078428">Kailangang manatiling naka-on at nakasaksak ang iyong Chromebook sa panahong ito. Tiyaking nakasaksak nang maayos ang charger o mga adapter cable, sa iyong Chromebook at sa saksakan. Huwag i-off ang iyong Chromebook.</translation>
+<translation id="8230305195727960608">Color Inversion Mode</translation>
 <translation id="8236042855478648955">Oras na para magpahinga</translation>
 <translation id="8246282815785366524">Maligayang pagbabalik, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />, Baterya ng Telepono <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@ Kaka-install lang</translation>
 <translation id="851458219935658693">Ipakita ang mga window mula sa kasalukuyang desk at piniling radio button</translation>
 <translation id="8517041960877371778">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito.</translation>
 <translation id="8535393432370007982">I-undo ang ayos ng pagkakasunod-sunod ayon sa kulay</translation>
+<translation id="8541078764854166027">Camera framing</translation>
 <translation id="8542053257095774575">Walang naka-save na desk o template</translation>
 <translation id="8546059259582788728">Na-undo ang pagbubukod-bukod</translation>
 <translation id="8551588720239073785">Mga setting ng petsa at oras</translation>
@@ -1386,6 +1390,7 @@ Kaka-install lang</translation>
 <translation id="8982906748181120328">Visible Nearby</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Gamit ang <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Naka-enable ang Color Inversion Mode. Pindutin ulit ang Ctrl+Search+H para i-off ito.</translation>
 <translation id="899350903320462459">I-unlock ang device bilang <ph name="LOGIN_ID" /> para maisagawa ang pagkilos sa notification</translation>
 <translation id="9000771174482730261">PAMAHALAAN ANG STORAGE</translation>
 <translation id="9017320285115481645">Ilagay ang access code ng magulang sa Family Link.</translation>
@@ -1434,6 +1439,7 @@ Kaka-install lang</translation>
 <translation id="921989828232331238">Ni-lock ng iyong magulang ang device mo para sa araw na ito</translation>
 <translation id="9220525904950070496">Alisin ang account</translation>
 <translation id="923686485342484400">Pindutin ang Control Shift Q nang dalawang beses upang mag-sign out.</translation>
+<translation id="92580429198593979">Napindot mo ang keyboard shortcut para sa pag-invert ng kulay. Gusto mo ba itong i-on?</translation>
 <translation id="925832987464884575">Itago ang mga preview</translation>
 <translation id="937214777182567951">Hinihiling sa iyo ng <ph name="MANAGER" /> na i-update kaagad ang <ph name="DEVICE_TYPE" /> mo</translation>
 <translation id="938963181863597773">Ano'ng nakaiskedyul sa kalendaryo ko?</translation>

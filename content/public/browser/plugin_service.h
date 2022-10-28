@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,6 +97,11 @@ class CONTENT_EXPORT PluginService {
   // provided function on the calling sequence on completion.
   // This can be called from any thread.
   virtual void GetPlugins(GetPluginsCallback callback) = 0;
+
+  // Synchronously loads plugins if necessary and returns the list of plugin
+  // infos. This can be called from any thread. This method is expected to
+  // not perform any disk IO.
+  virtual std::vector<WebPluginInfo> GetPluginsSynchronous() = 0;
 
   // Returns information about a plugin if it exists, otherwise `nullptr`. The
   // caller does not own the pointer, and it's not guaranteed to live past the

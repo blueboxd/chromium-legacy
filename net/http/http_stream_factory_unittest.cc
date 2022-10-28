@@ -373,7 +373,7 @@ TestCase kTests[] = {
 
 void PreconnectHelperForURL(int num_streams,
                             const GURL& url,
-                            NetworkIsolationKey network_isolation_key,
+                            NetworkAnonymizationKey network_anonymization_key,
                             SecureDnsPolicy secure_dns_policy,
                             HttpNetworkSession* session) {
   HttpNetworkSessionPeer peer(session);
@@ -386,7 +386,7 @@ void PreconnectHelperForURL(int num_streams,
   request.method = "GET";
   request.url = url;
   request.load_flags = 0;
-  request.network_isolation_key = network_isolation_key;
+  request.network_anonymization_key = network_anonymization_key;
   request.secure_dns_policy = secure_dns_policy;
   request.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -398,7 +398,7 @@ void PreconnectHelperForURL(int num_streams,
 void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
   GURL url =
       test.ssl ? GURL("https://www.google.com") : GURL("http://www.google.com");
-  PreconnectHelperForURL(test.num_streams, url, NetworkIsolationKey(),
+  PreconnectHelperForURL(test.num_streams, url, NetworkAnonymizationKey(),
                          SecureDnsPolicy::kAllow, session);
 }
 
@@ -406,12 +406,12 @@ ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
   if (test.ssl) {
     return ClientSocketPool::GroupId(
         url::SchemeHostPort(url::kHttpsScheme, "www.google.com", 443),
-        PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+        PrivacyMode::PRIVACY_MODE_DISABLED, NetworkAnonymizationKey(),
         SecureDnsPolicy::kAllow);
   }
   return ClientSocketPool::GroupId(
       url::SchemeHostPort(url::kHttpScheme, "www.google.com", 80),
-      PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+      PrivacyMode::PRIVACY_MODE_DISABLED, NetworkAnonymizationKey(),
       SecureDnsPolicy::kAllow);
 }
 
@@ -438,7 +438,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     last_group_id_ = ClientSocketPool::GroupId(
         url::SchemeHostPort(url::kHttpsScheme,
                             "unexpected.to.conflict.with.anything.test", 9999),
-        PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
+        PrivacyMode::PRIVACY_MODE_ENABLED, NetworkAnonymizationKey(),
         SecureDnsPolicy::kAllow);
   }
 
@@ -593,7 +593,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
     SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                        PRIVACY_MODE_DISABLED,
                        SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                       NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+                       NetworkAnonymizationKey(), SecureDnsPolicy::kAllow);
     std::ignore = CreateFakeSpdySession(session->spdy_session_pool(), key);
 
     CommonConnectJobParams common_connect_job_params =
@@ -642,12 +642,12 @@ TEST_F(HttpStreamFactoryTest, PreconnectUnsafePort) {
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   PreconnectHelperForURL(1, GURL("http://www.google.com:7"),
-                         NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+                         NetworkAnonymizationKey(), SecureDnsPolicy::kAllow,
                          session.get());
   EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
 }
 
-// Verify that preconnects use the specified NetworkIsolationKey.
+// Verify that preconnects use the specified NetworkAnonymizationKey.
 TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -674,19 +674,19 @@ TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
   const GURL kURL("http://foo.test/");
   SchemefulSite kSiteFoo(GURL("http://foo.test"));
   SchemefulSite kSiteBar(GURL("http://bar.test"));
-  const NetworkIsolationKey kKey1(kSiteFoo, kSiteFoo);
-  const NetworkIsolationKey kKey2(kSiteBar, kSiteBar);
+  const NetworkAnonymizationKey kKey1(kSiteFoo, kSiteFoo);
+  const NetworkAnonymizationKey kKey2(kSiteBar, kSiteBar);
   PreconnectHelperForURL(1, kURL, kKey1, SecureDnsPolicy::kAllow,
                          session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
   EXPECT_EQ(kKey1,
-            transport_conn_pool->last_group_id().network_isolation_key());
+            transport_conn_pool->last_group_id().network_anonymization_key());
 
   PreconnectHelperForURL(2, kURL, kKey2, SecureDnsPolicy::kAllow,
                          session.get());
   EXPECT_EQ(2, transport_conn_pool->last_num_streams());
   EXPECT_EQ(kKey2,
-            transport_conn_pool->last_group_id().network_isolation_key());
+            transport_conn_pool->last_group_id().network_anonymization_key());
 }
 
 // Verify that preconnects use the specified Secure DNS Tag.
@@ -712,13 +712,13 @@ TEST_F(HttpStreamFactoryTest, PreconnectDisableSecureDns) {
   const GURL kURL("http://foo.test/");
   SchemefulSite kSiteFoo(GURL("http://foo.test"));
   SchemefulSite kSiteBar(GURL("http://bar.test"));
-  PreconnectHelperForURL(1, kURL, NetworkIsolationKey(),
+  PreconnectHelperForURL(1, kURL, NetworkAnonymizationKey(),
                          SecureDnsPolicy::kAllow, session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
   EXPECT_EQ(SecureDnsPolicy::kAllow,
             transport_conn_pool->last_group_id().secure_dns_policy());
 
-  PreconnectHelperForURL(2, kURL, NetworkIsolationKey(),
+  PreconnectHelperForURL(2, kURL, NetworkAnonymizationKey(),
                          SecureDnsPolicy::kDisable, session.get());
   EXPECT_EQ(2, transport_conn_pool->last_num_streams());
   EXPECT_EQ(SecureDnsPolicy::kDisable,
@@ -1010,7 +1010,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     url::SchemeHostPort server("https", host_port_pair.host(),
                                host_port_pair.port());
     http_server_properties.SetQuicAlternativeService(
-        server, NetworkIsolationKey(), alternative_service, expiration,
+        server, NetworkAnonymizationKey(), alternative_service, expiration,
         DefaultSupportedQuicVersions());
 
     HttpNetworkSessionContext session_context =
@@ -1031,7 +1031,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server, std::move(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-    PreconnectHelperForURL(num_streams, url, NetworkIsolationKey(),
+    PreconnectHelperForURL(num_streams, url, NetworkAnonymizationKey(),
                            SecureDnsPolicy::kAllow, session.get());
     EXPECT_EQ(num_streams, http_proxy_pool_ptr->last_num_streams());
   }
@@ -1643,8 +1643,8 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
 
   HttpServerProperties* http_server_properties =
       session->spdy_session_pool()->http_server_properties();
-  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
-                                                       NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(
+      scheme_host_port, NetworkAnonymizationKey()));
 
   // Now request a stream.
   HttpRequestInfo request_info;
@@ -1671,19 +1671,21 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
       0, GetSocketPoolGroupCount(session->GetSocketPool(
              HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
-  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port,
-                                                      NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(
+      scheme_host_port, NetworkAnonymizationKey()));
 }
 
 // Same as above, but checks HttpServerProperties is updated using the correct
-// NetworkIsolationKey. When/if NetworkIsolationKey is enabled by default, this
-// should probably be merged into the above test.
+// NetworkAnonymizationKey. When/if NetworkAnonymizationKey is enabled by
+// default, this should probably be merged into the above test.
 TEST_F(HttpStreamFactoryTest,
-       RequestSpdyHttpStreamHttpURLWithNetworkIsolationKey) {
+       RequestSpdyHttpStreamHttpURLWithNetworkAnonymizationKey) {
   const SchemefulSite kSite1(GURL("https://foo.test/"));
+  const NetworkAnonymizationKey kNetworkAnonymizationKey1(kSite1, kSite1);
   const NetworkIsolationKey kNetworkIsolationKey1(kSite1, kSite1);
   const SchemefulSite kSite2(GURL("https://bar.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
+  const NetworkAnonymizationKey kNetworkAnonymizationKey2(kSite2, kSite2);
+  const NetworkIsolationKey kNetworkIsolationKey2(kSite1, kSite1);
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -1713,8 +1715,8 @@ TEST_F(HttpStreamFactoryTest,
 
   HttpServerProperties* http_server_properties =
       session->spdy_session_pool()->http_server_properties();
-  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
-                                                       kNetworkIsolationKey1));
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(
+      scheme_host_port, kNetworkAnonymizationKey1));
 
   // Now request a stream.
   HttpRequestInfo request_info;
@@ -1722,6 +1724,7 @@ TEST_F(HttpStreamFactoryTest,
   request_info.url = GURL("http://www.google.com");
   request_info.load_flags = 0;
   request_info.network_isolation_key = kNetworkIsolationKey1;
+  request_info.network_anonymization_key = kNetworkAnonymizationKey1;
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -1742,13 +1745,13 @@ TEST_F(HttpStreamFactoryTest,
       0, GetSocketPoolGroupCount(session->GetSocketPool(
              HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
-  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port,
-                                                      kNetworkIsolationKey1));
-  // Other NetworkIsolationKeys should not be recorded as supporting SPDY.
-  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
-                                                       NetworkIsolationKey()));
-  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
-                                                       kNetworkIsolationKey2));
+  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(
+      scheme_host_port, kNetworkAnonymizationKey1));
+  // Other NetworkAnonymizationKeys should not be recorded as supporting SPDY.
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(
+      scheme_host_port, NetworkAnonymizationKey()));
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(
+      scheme_host_port, kNetworkAnonymizationKey2));
 }
 
 // Tests that when a new SpdySession is established, duplicated idle H2 sockets
@@ -1789,8 +1792,8 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
             std::move(ssl_config_for_origin),
             /*ssl_config_for_proxy=*/nullptr);
     ClientSocketPool::GroupId group_id(
-        destination, PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-        SecureDnsPolicy::kAllow);
+        destination, PrivacyMode::PRIVACY_MODE_DISABLED,
+        NetworkAnonymizationKey(), SecureDnsPolicy::kAllow);
     int rv = connection->Init(
         group_id, socket_params, absl::nullopt /* proxy_annotation_tag */,
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -2059,7 +2062,7 @@ class HttpStreamFactoryBidirectionalQuicTest
                                                  alternative_destination, 443);
     base::Time expiration = base::Time::Now() + base::Days(1);
     http_server_properties_.SetQuicAlternativeService(
-        request_url, NetworkIsolationKey(), alternative_service, expiration,
+        request_url, NetworkAnonymizationKey(), alternative_service, expiration,
         session_->context().quic_context->params()->supported_versions);
   }
 
@@ -3559,16 +3562,16 @@ TEST_F(ProcessAlternativeServicesTest, ProcessEmptyAltSvc) {
   session_ =
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin;
-  NetworkIsolationKey network_isolation_key;
+  NetworkAnonymizationKey network_anonymization_key;
 
   auto headers = base::MakeRefCounted<HttpResponseHeaders>("");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
-      session_.get(), network_isolation_key, headers.get(), origin);
+      session_.get(), network_anonymization_key, headers.get(), origin);
 
   AlternativeServiceInfoVector alternatives =
-      http_server_properties_.GetAlternativeServiceInfos(origin,
-                                                         network_isolation_key);
+      http_server_properties_.GetAlternativeServiceInfos(
+          origin, network_anonymization_key);
   EXPECT_TRUE(alternatives.empty());
 }
 
@@ -3577,29 +3580,30 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
 
-  NetworkIsolationKey network_isolation_key(
+  NetworkAnonymizationKey network_anonymization_key(
       SchemefulSite(GURL("https://example.com")),
       SchemefulSite(GURL("https://example.com")));
 
   http_server_properties_.SetAlternativeServices(
-      origin, network_isolation_key,
+      origin, network_anonymization_key,
       {AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           {kProtoQUIC, "", 443}, base::Time::Now() + base::Seconds(30),
           quic::AllSupportedVersions())});
 
-  EXPECT_FALSE(http_server_properties_
-                   .GetAlternativeServiceInfos(origin, network_isolation_key)
-                   .empty());
+  EXPECT_FALSE(
+      http_server_properties_
+          .GetAlternativeServiceInfos(origin, network_anonymization_key)
+          .empty());
 
   auto headers = base::MakeRefCounted<HttpResponseHeaders>("");
   headers->AddHeader("alt-svc", "clear");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
-      session_.get(), network_isolation_key, headers.get(), origin);
+      session_.get(), network_anonymization_key, headers.get(), origin);
 
   AlternativeServiceInfoVector alternatives =
-      http_server_properties_.GetAlternativeServiceInfos(origin,
-                                                         network_isolation_key);
+      http_server_properties_.GetAlternativeServiceInfos(
+          origin, network_anonymization_key);
   EXPECT_TRUE(alternatives.empty());
 }
 
@@ -3609,7 +3613,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
 
-  NetworkIsolationKey network_isolation_key(
+  NetworkAnonymizationKey network_anonymization_key(
       SchemefulSite(GURL("https://example.com")),
       SchemefulSite(GURL("https://example.com")));
 
@@ -3620,7 +3624,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
                      "h3-Q043=\":443\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
-      session_.get(), network_isolation_key, headers.get(), origin);
+      session_.get(), network_anonymization_key, headers.get(), origin);
 
   quic::ParsedQuicVersionVector versions = {
       quic::ParsedQuicVersion::Draft29(),
@@ -3628,8 +3632,8 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       quic::ParsedQuicVersion::Q043(),
   };
   AlternativeServiceInfoVector alternatives =
-      http_server_properties_.GetAlternativeServiceInfos(origin,
-                                                         network_isolation_key);
+      http_server_properties_.GetAlternativeServiceInfos(
+          origin, network_anonymization_key);
   ASSERT_EQ(versions.size(), alternatives.size());
   for (size_t i = 0; i < alternatives.size(); ++i) {
     EXPECT_EQ(kProtoQUIC, alternatives[i].protocol());
@@ -3646,7 +3650,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
 
-  NetworkIsolationKey network_isolation_key(
+  NetworkAnonymizationKey network_anonymization_key(
       SchemefulSite(GURL("https://example.com")),
       SchemefulSite(GURL("https://example.com")));
 
@@ -3654,11 +3658,11 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
   headers->AddHeader("alt-svc", "h2=\"other.example.com:443\"");
 
   session_->http_stream_factory()->ProcessAlternativeServices(
-      session_.get(), network_isolation_key, headers.get(), origin);
+      session_.get(), network_anonymization_key, headers.get(), origin);
 
   AlternativeServiceInfoVector alternatives =
-      http_server_properties_.GetAlternativeServiceInfos(origin,
-                                                         network_isolation_key);
+      http_server_properties_.GetAlternativeServiceInfos(
+          origin, network_anonymization_key);
   ASSERT_EQ(1u, alternatives.size());
   EXPECT_EQ(kProtoHTTP2, alternatives[0].protocol());
   EXPECT_EQ(HostPortPair("other.example.com", 443),

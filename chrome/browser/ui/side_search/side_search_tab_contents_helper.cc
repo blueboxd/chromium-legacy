@@ -219,9 +219,8 @@ SideSearchTabContentsHelper::SideSearchTabContentsHelper(
     : content::WebContentsObserver(web_contents),
       content::WebContentsUserData<SideSearchTabContentsHelper>(*web_contents) {
   config_observation_.Observe(GetConfig());
-  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+  if (side_search::ShouldUseUnifiedSidePanel())
     CreateUnifiedSideSearchController(this, web_contents);
-  }
 }
 
 SideSearchSideContentsHelper*
@@ -235,10 +234,15 @@ void SideSearchTabContentsHelper::OpenSidePanelFromContextMenuSearch(
     const GURL& url) {
   DCHECK(url.is_valid());
   last_search_url_ = url;
-  // Updates SidePanelContents if it exists. Otherwise its creation will be
-  // deferred to Views code.
-  if (side_panel_contents_)
+  if (!side_panel_contents_) {
+    CreateSidePanelContents();
+    auto* SideContentsHelper = GetSideContentsHelper();
+    DCHECK(SideContentsHelper);
+    SideContentsHelper->set_is_created_from_menu_option(true);
+  } else {
+    DCHECK(side_panel_contents_);
     UpdateSideContentsNavigation();
+  }
   delegate_->OpenSidePanel();
 }
 

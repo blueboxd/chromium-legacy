@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,11 @@ import org.junit.Assert;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.RenderFrameHostTestExt;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +48,7 @@ public class FencedFrameUtils {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             new WebContentsObserver(webContents) {
                 @Override
-                public void didFinishNavigation(NavigationHandle navigation) {
+                public void didStopLoading(GURL url, boolean isKnownValid) {
                     latch.countDown();
                     webContents.removeObserver(this);
                 }

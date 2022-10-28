@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,8 @@
 namespace blink {
 
 class Other : public RefCounted<Other> {
-  USING_FAST_MALLOC();
-
- public:
-  bool foo() { return true; }
+public:
+    bool foo() { return true; }
 };
 
 class HeapObject;

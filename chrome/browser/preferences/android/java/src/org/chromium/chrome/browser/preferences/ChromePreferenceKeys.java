@@ -255,6 +255,12 @@ public final class ChromePreferenceKeys {
     public static final String DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT =
             "Chrome.RequestDesktopSiteGlobalSetting.DefaultEnabledCohort";
     /**
+     * Indicates whether the device qualifies for showing a message to opt-in to the desktop site
+     * global setting.
+     */
+    public static final String DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT =
+            "Chrome.RequestDesktopSiteGlobalSetting.OptInMessageCohort";
+    /**
      * Indicates whether an opt-in message was shown for the desktop site global setting based on
      * device conditions.
      */
@@ -752,6 +758,8 @@ public final class ChromePreferenceKeys {
     public static final String OPEN_RECENT_TABS_COUNT = "Chrome.StartSurface.OpenRecentTabCount";
     public static final String SHOW_START_SEGMENTATION_RESULT =
             "Chrome.StartSurface.ShowSegmentationResult";
+    public static final String START_RETURN_TIME_SEGMENTATION_RESULT_MS =
+            "Chrome.StartSurface.StartReturnTimeSegmentationResultMs";
 
     public static final String REGULAR_TAB_COUNT = "Chrome.StartSurface.RegularTabCount";
     public static final String INCOGNITO_TAB_COUNT = "Chrome.StartSurface.IncognitoTabCount";
@@ -1053,6 +1061,7 @@ public final class ChromePreferenceKeys {
                 DEFAULT_ENABLE_DESKTOP_SITE_GLOBAL_SETTING_COHORT,
                 DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_GLOBAL_SETTING_ENABLED,
                 DESKTOP_SITE_EXCEPTIONS_DOWNGRADE_TAB_SETTING_SET,
+                DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_COHORT,
                 DESKTOP_SITE_GLOBAL_SETTING_OPT_IN_MESSAGE_SHOWN,
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
@@ -1134,6 +1143,7 @@ public final class ChromePreferenceKeys {
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,
                 SHOW_START_SEGMENTATION_RESULT,
+                START_RETURN_TIME_SEGMENTATION_RESULT_MS,
                 SYNC_PROMO_SHOW_COUNT.pattern(),
                 SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME,
                 SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,

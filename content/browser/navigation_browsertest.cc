@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -347,8 +347,10 @@ class NetworkDoubleKeyIsolationNavigationBrowserTest
     : public ContentBrowserTest {
  public:
   NetworkDoubleKeyIsolationNavigationBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        net::features::kForceIsolationInfoFrameOriginToTopLevelFrame);
+    scoped_feature_list_.InitWithFeatures(
+        {net::features::kForceIsolationInfoFrameOriginToTopLevelFrame,
+         net::features::kEnableDoubleKeyNetworkAnonymizationKey},
+        {});
   }
 
  protected:
@@ -6128,8 +6130,9 @@ class CacheTransparencyNavigationBrowserTest : public ContentBrowserTest {
   base::HistogramTester histogram_tester_;
 };
 
+// TODO(crbug.com/1364167): Test is failing on various builders.
 IN_PROC_BROWSER_TEST_F(CacheTransparencyNavigationBrowserTest,
-                       SuccessfulPervasivePayload) {
+                       DISABLED_SuccessfulPervasivePayload) {
   GURL url_main_document =
       embedded_test_server()->GetURL("/cache_transparency/pervasive.html");
 

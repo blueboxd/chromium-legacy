@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -247,7 +247,11 @@ void WaylandToplevelWindow::Activate() {
                            ZAURA_SURFACE_ACTIVATE_SINCE_VERSION) {
     zaura_surface_activate(aura_surface_.get());
   } else if (connection()->xdg_activation()) {
-    connection()->xdg_activation()->Activate(root_surface()->surface());
+    // xdg-activation implementation in some compositors is still buggy and
+    // Mutter crashes were observed when windows are activated during window
+    // dragging sessions. See https://crbug.com/1366504.
+    if (!connection()->IsDragInProgress())
+      connection()->xdg_activation()->Activate(root_surface()->surface());
   } else if (gtk_surface1_) {
     gtk_surface1_->RequestFocus();
   }

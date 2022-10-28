@@ -29,6 +29,15 @@ extern const base::Feature kDesktopPartialTranslate;
 // break respecting the threshold.
 extern const base::FeatureParam<int>
     kDesktopPartialTranslateTextSelectionMaxCharacters;
+// The number of milliseconds to wait before showing the Partial Translate
+// bubble, even if no response has been received. In this case, a waiting view
+// is shown.
+extern const base::FeatureParam<int> kDesktopPartialTranslateBubbleShowDelayMs;
+
+#if !BUILDFLAG(IS_WIN)
+// Controls whether mmap is used to load the language detection model.
+extern const base::Feature kMmapLanguageDetectionModel;
+#endif
 
 // Isolated world sets following security-origin by default.
 extern const char kSecurityOrigin[];

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -428,7 +428,7 @@ void DedicatedWorkerHost::DidStartScriptLoad(
   coep_reporter_ = std::make_unique<CrossOriginEmbedderPolicyReporter>(
       storage_partition->GetWeakPtr(), final_response_url,
       coep.reporting_endpoint, coep.report_only_reporting_endpoint,
-      reporting_source_, isolation_info_.network_isolation_key());
+      reporting_source_, isolation_info_.network_anonymization_key());
   // TODO(crbug.com/1197041): Bind the receiver of ReportingObserver to the
   // worker in the renderer process.
 
@@ -657,7 +657,7 @@ void DedicatedWorkerHost::CreateWebTransportConnector(
       std::make_unique<WebTransportConnectorImpl>(
           worker_process_host_->GetID(),
           ancestor_render_frame_host->GetWeakPtr(), GetStorageKey().origin(),
-          isolation_info_.network_isolation_key()),
+          isolation_info_.network_anonymization_key()),
       std::move(receiver));
 }
 

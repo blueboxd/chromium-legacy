@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -167,6 +167,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/notification_tester/resources.grd": {
     "META": {"sizes": {"includes": [5]}},
     "includes": [1490],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/password_change/resources.grd": {
+    "META": {"sizes": {"includes": [30]}},
+    "includes": [1495],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/commander/resources.grd": {
     "META": {"sizes": {"includes": [15]}},

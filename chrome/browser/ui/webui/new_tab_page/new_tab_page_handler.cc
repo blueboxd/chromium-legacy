@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,9 +42,11 @@
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
+#include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
 #include "chrome/browser/ui/webui/realbox/realbox.mojom.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -72,6 +75,16 @@ namespace {
 
 const int64_t kMaxDownloadBytes = 1024 * 1024;
 const int64_t kMaxModuleFreImpressions = 8;
+
+// Returns a list of module IDs that are eligible for HATS.
+std::vector<std::string> GetSurveyEligibleModuleIds() {
+  return base::SplitString(
+      base::GetFieldTrialParamValueByFeature(
+          features::kHappinessTrackingSurveysForDesktopNtpModules,
+          ntp_features::kNtpModulesEligibleForHappinessTrackingSurveyParam),
+      ",:;", base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SplitResult::SPLIT_WANT_NONEMPTY);
+}
 
 // Returns true if the scrim (dark gradient overlay) should be hidden for the
 // NTP's background image. This is done to fix specific GWS themes where the
@@ -225,6 +238,13 @@ new_tab_page::mojom::ThemePtr MakeTheme(
     }
   } else {
     background_image = nullptr;
+  }
+
+  if (base::FeatureList::IsEnabled(ntp_features::kNtpRemoveScrim) &&
+      background_image) {
+    // If a background image is defined and the scrim removal flag is active
+    // disable the scrim.
+    background_image->scrim_display = "none";
   }
 
   // The special case handling that removes the scrim and forces dark foreground
@@ -432,7 +452,7 @@ NewTabPageHandler::NewTabPageHandler(
       ntp_custom_background_service_.get());
   promo_service_observation_.Observe(promo_service_.get());
   OnThemeChanged();
-  if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel)) {
+  if (customize_chrome::IsSidePanelEnabled()) {
     auto* customize_chrome_tab_helper =
         CustomizeChromeTabHelper::FromWebContents(web_contents_);
     // Lifetime is tied to NewTabPageUI which owns the NewTabPageHandler.
@@ -654,7 +674,18 @@ void NewTabPageHandler::UpdateDisabledModules() {
       std::move(module_ids));
 }
 
-void NewTabPageHandler::OnModulesLoadedWithData() {
+void NewTabPageHandler::OnModulesLoadedWithData(
+    const std::vector<std::string>& module_ids) {
+  std::vector<std::string> survey_eligible_module_ids =
+      GetSurveyEligibleModuleIds();
+  // If none of the loaded modules are eligible for HATS, return early.
+  if (!std::any_of(module_ids.begin(), module_ids.end(),
+                   [&survey_eligible_module_ids](std::string id) {
+                     return base::Contains(survey_eligible_module_ids, id);
+                   })) {
+    return;
+  }
+
   HatsService* hats_service =
       HatsServiceFactory::GetForProfile(profile_, /*create_if_necessary=*/true);
   CHECK(hats_service);

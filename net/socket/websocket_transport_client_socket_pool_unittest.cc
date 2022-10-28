@@ -81,7 +81,7 @@ class WebSocketTransportClientSocketPoolTest : public TestWithTaskEnvironment {
   WebSocketTransportClientSocketPoolTest()
       : group_id_(url::SchemeHostPort(url::kHttpScheme, "www.google.com", 80),
                   PrivacyMode::PRIVACY_MODE_DISABLED,
-                  NetworkIsolationKey(),
+                  NetworkAnonymizationKey(),
                   SecureDnsPolicy::kAllow),
         params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()),
         host_resolver_(std::make_unique<
@@ -208,7 +208,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
       ERR_IO_PENDING,
       handle.Init(ClientSocketPool::GroupId(
                       std::move(endpoint), PRIVACY_MODE_DISABLED,
-                      NetworkIsolationKey(), SecureDnsPolicy::kAllow),
+                      NetworkAnonymizationKey(), SecureDnsPolicy::kAllow),
                   ClientSocketPool::SocketParams::CreateForHttpForTesting(),
                   absl::nullopt /* proxy_annotation_tag */, kDefaultPriority,
                   SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -1240,10 +1240,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest, EndpointLockIsOnlyReleasedOnce) {
             request(2)->handle()->GetLoadState());
 }
 
-// Make sure that WebSocket requests use the correct NetworkIsolationKey.
-TEST_F(WebSocketTransportClientSocketPoolTest, NetworkIsolationKey) {
+// Make sure that WebSocket requests use the correct NetworkAnonymizationKey.
+TEST_F(WebSocketTransportClientSocketPoolTest, NetworkAnonymizationKey) {
   const SchemefulSite kSite(GURL("https://foo.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey(kSite, kSite);
+  const NetworkAnonymizationKey kNetworkAnonymizationKey(
+      kSite, kSite, /*is_cross_site=*/false);
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1259,7 +1260,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, NetworkIsolationKey) {
   ClientSocketHandle handle;
   ClientSocketPool::GroupId group_id(
       url::SchemeHostPort(url::kHttpScheme, "www.google.com", 80),
-      PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
+      PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkAnonymizationKey,
       SecureDnsPolicy::kAllow);
   EXPECT_THAT(
       handle.Init(group_id, params_, absl::nullopt /* proxy_annotation_tag */,
@@ -1270,8 +1271,8 @@ TEST_F(WebSocketTransportClientSocketPoolTest, NetworkIsolationKey) {
       IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, host_resolver_->last_id());
-  EXPECT_EQ(kNetworkIsolationKey,
-            host_resolver_->request_network_isolation_key(1));
+  EXPECT_EQ(kNetworkAnonymizationKey,
+            host_resolver_->request_network_anonymization_key(1));
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest,
@@ -1289,7 +1290,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   TestConnectJobDelegate test_delegate;
   scoped_refptr<TransportSocketParams> params =
       base::MakeRefCounted<TransportSocketParams>(
-          HostPortPair(kHostName, 80), NetworkIsolationKey(),
+          HostPortPair(kHostName, 80), NetworkAnonymizationKey(),
           SecureDnsPolicy::kAllow, OnHostResolutionCallback(),
           /*supported_alpns=*/base::flat_set<std::string>());
 
@@ -1322,7 +1323,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
   TestConnectJobDelegate test_delegate;
   scoped_refptr<TransportSocketParams> params =
       base::MakeRefCounted<TransportSocketParams>(
-          HostPortPair(kHostName, 80), NetworkIsolationKey(),
+          HostPortPair(kHostName, 80), NetworkAnonymizationKey(),
           SecureDnsPolicy::kAllow, OnHostResolutionCallback(),
           /*supported_alpns=*/base::flat_set<std::string>());
 
@@ -1347,11 +1348,11 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LoadState) {
       MockTransportClientSocketFactory::Type::kDelayedFailing);
 
   auto params_v6_only = base::MakeRefCounted<TransportSocketParams>(
-      HostPortPair("v6-only.test", 80), NetworkIsolationKey(),
+      HostPortPair("v6-only.test", 80), NetworkAnonymizationKey(),
       SecureDnsPolicy::kAllow, OnHostResolutionCallback(),
       /*supported_alpns=*/base::flat_set<std::string>());
   auto params_v6_and_v4 = base::MakeRefCounted<TransportSocketParams>(
-      HostPortPair("v6-and-v4.test", 80), NetworkIsolationKey(),
+      HostPortPair("v6-and-v4.test", 80), NetworkAnonymizationKey(),
       SecureDnsPolicy::kAllow, OnHostResolutionCallback(),
       /*supported_alpns=*/base::flat_set<std::string>());
 

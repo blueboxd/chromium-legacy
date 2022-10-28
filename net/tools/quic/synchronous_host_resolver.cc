@@ -67,10 +67,10 @@ void ResolverThread::Run() {
   std::unique_ptr<net::HostResolver> resolver =
       net::HostResolver::CreateStandaloneResolver(NetLog::Get(), options);
 
-  // No need to use a NetworkIsolationKey here, since this is an external tool
-  // not used by net/ consumers.
+  // No need to use a NetworkAnonymizationKey here, since this is an external
+  // tool not used by net/ consumers.
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request =
-      resolver->CreateRequest(scheme_host_port_, NetworkIsolationKey(),
+      resolver->CreateRequest(scheme_host_port_, NetworkAnonymizationKey(),
                               NetLogWithSource(), absl::nullopt);
 
   base::RunLoop run_loop;

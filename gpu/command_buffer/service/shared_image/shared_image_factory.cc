@@ -65,7 +65,7 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "gpu/command_buffer/service/dxgi_keyed_mutex_manager.h"
+#include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing_factory.h"
 #include "ui/gl/gl_angle_util_win.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -330,7 +330,7 @@ SharedImageFactory::SharedImageFactory(
     // TODO(sunnyps): Should we get the device from SharedContextState instead?
     auto d3d_factory = std::make_unique<D3DImageBackingFactory>(
         gl::QueryD3D11DeviceObjectFromANGLE(),
-        shared_image_manager_->dxgi_keyed_mutex_manager());
+        shared_image_manager_->dxgi_shared_handle_manager());
     d3d_backing_factory_ = d3d_factory.get();
     factories_.push_back(std::move(d3d_factory));
   }
@@ -397,8 +397,8 @@ SharedImageFactory::SharedImageFactory(
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
   // Desktop Linux, not ChromeOS.
   if (ShouldUseOzoneImageBackingFactory()) {
-    auto ozone_factory =
-        std::make_unique<OzoneImageBackingFactory>(context_state, workarounds);
+    auto ozone_factory = std::make_unique<OzoneImageBackingFactory>(
+        context_state, workarounds, gpu_preferences);
     factories_.push_back(std::move(ozone_factory));
   }
   if (gr_context_type_ == GrContextType::kVulkan &&
@@ -410,8 +410,8 @@ SharedImageFactory::SharedImageFactory(
   }
 #elif BUILDFLAG(IS_FUCHSIA)
   if (gr_context_type_ == GrContextType::kVulkan) {
-    auto ozone_factory =
-        std::make_unique<OzoneImageBackingFactory>(context_state, workarounds);
+    auto ozone_factory = std::make_unique<OzoneImageBackingFactory>(
+        context_state, workarounds, gpu_preferences);
     factories_.push_back(std::move(ozone_factory));
     auto external_vk_image_factory =
         std::make_unique<ExternalVkImageBackingFactory>(context_state);
@@ -419,8 +419,8 @@ SharedImageFactory::SharedImageFactory(
   }
   vulkan_context_provider_ = context_state->vk_context_provider();
 #elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto ozone_factory =
-      std::make_unique<OzoneImageBackingFactory>(context_state, workarounds);
+  auto ozone_factory = std::make_unique<OzoneImageBackingFactory>(
+      context_state, workarounds, gpu_preferences);
   factories_.push_back(std::move(ozone_factory));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // defined(USE_OZONE)

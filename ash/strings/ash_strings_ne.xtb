@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">फुल स्क्रिनको भिडियो रेकर्ड गर्नुहोस्</translation>
 <translation id="2135456203358955318">डक गरिएको म्याग्निफायर</translation>
 <translation id="2148716181193084225">आज</translation>
+<translation id="2161132820593978283">भिडियो कल गर्दा आफूलाई स्क्रिनको बिचमा राखिराख्न क्यामेरा फ्रेमिङ प्रयोग गरी हेर्नुहोस्। "द्रुत सेटिङ" मा गई यो सुविधा अन गर्नुहोस्।</translation>
 <translation id="2170530631236737939">हालैका स्क्रिन देखाइने मोड बन्द गर्न तीनवटा औँलाले तलतिर स्वाइप गर्नुहोस्</translation>
 <translation id="219905428774326614">लन्चर, सबै एपहरू</translation>
 <translation id="2201071101391734388">हालसालैका <ph name="TOTAL_COUNT" /> वटा फोटोमध्ये <ph name="INDEX" /> औँ फोटो।</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">कनेक्ट गरिएको छैन</translation>
 <translation id="2408955596600435184">आफ्नो PIN प्रविष्टि गर्नुहोस्</translation>
 <translation id="2412593942846481727">अद्यावधिक उपलब्ध छ</translation>
+<translation id="2426051945783024481">क्यामेराको फ्रेम स्वतः बिच भागमा पारियो</translation>
 <translation id="2427507373259914951">बायाँ क्लिक गर्नुहोस्</translation>
 <translation id="2429753432712299108">ब्लुतुथ यन्त्र "<ph name="DEVICE_NAME" />" ले मेल गर्न अनुमति चाहन्छ। स्वीकार गर्नुअघि, कृपया पक्का गर्नुहोस् की यो पासकुञ्जी त्यो यन्त्रमा देखाइएको छ: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">पासवर्ड देखाउनुहोस्</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">अभिमुखीकरण</translation>
 <translation id="3153444934357957346">तपाईंसँग बहुविध साइन-इनमा <ph name="MULTI_PROFILE_USER_LIMIT" /> सम्म खाताहरू मात्रै हुन सक्छ।</translation>
 <translation id="3154351730702813399">यन्त्रको प्रशासकले तपाईंको ब्राउजिङ सम्बन्धी गतिविधिको अनुगमन गर्न सक्छ।</translation>
+<translation id="3157931365184549694">पुन: भण्डारण</translation>
 <translation id="316086887565479535">टेम्प्लेटमा प्रयोग गर्न नमिल्ने एपहरू छन्</translation>
 <translation id="3161500364292033097">डेस्क तथा विन्डोहरू बन्द गर्नुहोस्</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> तपाईंको <ph name="DEVICE_TYPE" /> मा अघिल्लो संस्करण रिस्टोर गर्दै छ। तपाईंको डिभाइस रिसेट हुने छ र डिभाइसमा भएका सबै डेटा मेटाइने छ।</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">यसअनुसार क्रमबद्ध गर्नुहोस्</translation>
 <translation id="3742055079367172538">स्क्रिनसट लिइयो</translation>
 <translation id="3765841986579723851">आज सम्पादन गरिएको</translation>
-<translation id="3771549900096082774">उच्च कन्ट्रास्ट मोड</translation>
 <translation id="3773700760453577392">कुनै प्रशासकले <ph name="USER_EMAIL" /> बाट एकभन्दा बढी साइन इन गर्ने अनुमति दिनुभएको छैन। जारी राख्न सबै प्रयोगकर्ताहरूले अनिवार्य रूपमा साइन आउट गर्नु पर्छ।</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> कनेक्ट गरिँदै छ</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">क्यामेरा सिरानको दायाँ कुनामा स्न्याप गरियो। सिस्टमको सतहसँग बाझियो।</translation>
 <translation id="4316910396681052118">सबै एपहरू</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">तपाईंले उच्च कन्ट्रास्ट मोडको किबोर्ड सर्टकट थिच्नुभयो। तपाईं यसलाई सक्रिय गर्न चाहनुहुन्छ?</translation>
 <translation id="4322742403972824594">Ctrl + Alt + अप एरो किबोर्ड सर्टकट परिवर्तन गरिएको छ। Home की प्रयोग गर्न <ph name="LAUNCHER_KEY_NAME" /> की + लेफ्ट एरो थिच्नुहोस्।</translation>
 <translation id="4333628967105022692">एकभन्दा बढी प्रयोगकर्ताहरू साइन इन अवस्थामा हुँदा Lacros ले काम गर्दैन।</translation>
 <translation id="4338109981321384717">म्याग्निफाइङ्ग ग्लास</translation>
 <translation id="4351433414020964307">सहायक लोड हुँदैछ...</translation>
-<translation id="4356930093361201197">उच्च कन्ट्रास्ट मोड</translation>
 <translation id="4371348193907997655">कास्टका सेटिङहरू</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" /> प्रतिशत छ</translation>
 <translation id="4378551569595875038">जडान गर्दै...</translation>
@@ -877,7 +877,6 @@
 <translation id="5980301590375426705">अतिथि सत्रबाट निस्कनु…</translation>
 <translation id="598407983968395253">टेम्प्लेट प्रयोग गर्नुहोस्</translation>
 <translation id="598882571027504733">अद्यावधिक प्राप्त गर्न, उक्त किबोर्ड जोडिएकै अवस्थामा आफ्नो Chromebook पुनः सुरु गर्नुहोस्।</translation>
-<translation id="5992218262414051481">उच्च कन्ट्रास्ट मोड सक्षम गरिएको छ। यसलाई टगल गर्दै निष्क्रिय पार्न फेरि Ctrl+Search+H थिच्नुहोस्।</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> मध्ये <ph name="SELECTED_PAGE" /> पृष्ठ</translation>
 <translation id="6018164090099858612">मिरर मोडबाट बाहिर निस्कँदै</translation>
 <translation id="602001110135236999">बायाँतिर स्क्रोल गर्नुहोस्</translation>
@@ -1043,6 +1042,7 @@
 <translation id="6960565108681981554">सक्रिय गरिएको छैन। आफ्नो सेवा प्रदायकमा सम्पर्क गर्नुहोस्।</translation>
 <translation id="6961121602502368900">कार्य प्रोफाइल प्रयोग गरिएका बेला फोन साइलेन्ट बनाउने सुविधा उपलब्ध हुँदैन</translation>
 <translation id="6961840794482373852">Alt + अप एरो किबोर्ड सर्टकट परिवर्तन गरिएको छ। Page Up की प्रयोग गर्न <ph name="LAUNCHER_KEY_NAME" /> की + अप एरो की थिच्नुहोस्।</translation>
+<translation id="696267987219125751">क्यामेरा फ्रेमिङ अफ छ।</translation>
 <translation id="6965382102122355670">ठिक छ</translation>
 <translation id="6972754398087986839">सुरु गर्नुहोस्</translation>
 <translation id="6979158407327259162">Google ड्राइभ</translation>
@@ -1133,6 +1133,7 @@
 <translation id="7513922695575567867">पात्रो, <ph name="DATE" /> को हप्ता, हाल चयन गरिएको मिति: <ph name="SELECTED_DATE" />।</translation>
 <translation id="7514365320538308">डाउनलोड गर्नुहोस्</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">क्यामेरा फ्रेमिङ अन छ।</translation>
 <translation id="7526573455193969409">नेटवर्कको अनुगमन गरिने सम्भावना छ</translation>
 <translation id="7536035074519304529">IP एड्रेस: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux एप र इन्कोग्निटो विन्डो हाल प्रयोग गर्न मिल्दैन। अन्य एपहरू सेभ गरिने छन्।</translation>
@@ -1151,10 +1152,12 @@
 <translation id="7607002721634913082">रोकिएको छ</translation>
 <translation id="7609951632080598826">पात्रोको भ्यू, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">क्यामेरा पुनः कनेक्ट गरियो।</translation>
+<translation id="761736749114493194">क्यामेरा फ्रेमिङ टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">नजिकैका डिभाइससँग सेयर गर्ने सुविधासम्बन्धी सेटिङ देखाउनुहोस्।</translation>
 <translation id="7634648064048557203">क्यामेरा पुछारको दायाँ कुनामा स्न्याप गरियो</translation>
 <translation id="7641938616688887143">रेकर्ड गर्नुहोस्</translation>
+<translation id="7642106959537987271">कलर इन्भर्सन मोड</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> को सेटिङ खोल्नुहोस्</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालिक)</translation>
 <translation id="7647488630410863958">आफ्ना सूचनाहरू हेर्न यन्त्रलाई अनलक गर्नुहोस्</translation>
@@ -1233,7 +1236,6 @@
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> नाम गरेको टेम्प्लेट पहिल्यैदेखि छ</translation>
 <translation id="8052898407431791827">कपी गरेर क्लिपबोर्डमा पेस्ट गरियो</translation>
 <translation id="8054466585765276473">ब्याटरि समय हिसाब गर्दै।</translation>
-<translation id="8061464966246066292">उच्च कन्ट्रास्ट</translation>
 <translation id="8083540854303889870">पछि खरिद गर्नका लागि सेभ गरिएका वस्तु</translation>
 <translation id="8091387634532529612">स्वतः अपडेट गर्ने सुविधा</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> मा स्क्रिन casting गर्ने काम रोक्नुहोस्</translation>
@@ -1261,6 +1263,7 @@
 <translation id="8209010265547628927">रिसेट गर्नुहोस्</translation>
 <translation id="8214996719228530800">क्यानरी च्यानल</translation>
 <translation id="8219451629189078428">त्यतिन्जेल तपाईंको Chromebook खुला हुनु पर्छ र बिजुलीको स्रोतमा जोडिएको हुनु पर्छ। चार्जर वा एड्याप्टर केबल तपाईंको Chromebook र पावर सकेट दुवैतिर राम्ररी जोडिएको छ भन्ने कुरा सुनिश्चित गर्नुहोस्। आफ्नो Chromebook बन्द नगर्नुहोला।</translation>
+<translation id="8230305195727960608">कलर इन्भर्सन मोड</translation>
 <translation id="8236042855478648955">आराम गर्ने समय भयो</translation>
 <translation id="8246282815785366524">फेरि स्वागत छ, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, फोनको ब्याट्री <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@
 <translation id="851458219935658693">हालको डेस्कमा भएका विन्डोहरू देखाइयोस्, रेडियो बटन चयन गरियो</translation>
 <translation id="8517041960877371778">खुला हुँदा तपाईँको <ph name="DEVICE_TYPE" /> चार्ज नहुन सक्छ।</translation>
 <translation id="8535393432370007982">रङअनुसार क्रमबद्ध गर्ने कार्य अन्डू गर्नुहोस्</translation>
+<translation id="8541078764854166027">क्यामेरा फ्रेमिङ</translation>
 <translation id="8542053257095774575">कुनै पनि डेस्क वा टेम्प्लेट सेभ गरिएको छैन</translation>
 <translation id="8546059259582788728">क्रमबद्ध गर्ने कार्य अन्डू गरियो</translation>
 <translation id="8551588720239073785">मिति र समयसम्बन्धी सेटिङ</translation>
@@ -1386,6 +1390,7 @@
 <translation id="8982906748181120328">नजिकैका यन्त्रमा फेला पर्ने</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> प्रयोग गरिँदै</translation>
+<translation id="8991617137207906966">कलर इन्भर्सन मोड अन गरियो। उक्त मोड अफ गर्न फेरि Ctrl+Search+H थिच्नुहोस्।</translation>
 <translation id="899350903320462459">सूचनासम्बन्धी कारबाही गर्न यन्त्रलाई <ph name="LOGIN_ID" /> का रूपमा अनलक गर्नुहोस्</translation>
 <translation id="9000771174482730261">भण्डारण व्यवस्थापन गर्नुहोस्</translation>
 <translation id="9017320285115481645">Family Link को अभिभावकको पहुँचसम्बन्धी कोड प्रविष्टि गर्नुहोस्।</translation>
@@ -1434,6 +1439,7 @@
 <translation id="921989828232331238">तपाईंका अभिभावकले आजका लागि तपाईंको यन्त्र लक गर्नुभयो</translation>
 <translation id="9220525904950070496">खाता हटाउनुहोस्</translation>
 <translation id="923686485342484400">साइन आउट गर्न दुई पटक Control Q थिच्नुहोस्।</translation>
+<translation id="92580429198593979">तपाईंले कलर इन्भर्सन अन/अफ गर्ने किबोर्ड सर्टकट थिच्नुभयो। तपाईं उक्त सुविधा अन गर्न चाहनुहुन्छ?</translation>
 <translation id="925832987464884575">प्रिभ्यूहरू लुकाउनुहोस्</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> का अनुसार तपाईंले तुरुन्तै आफ्नो <ph name="DEVICE_TYPE" /> अपडेट गर्नु पर्ने हुन्छ</translation>
 <translation id="938963181863597773">मेरो क्यालेन्डरमा के छ?</translation>

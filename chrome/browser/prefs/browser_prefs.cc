@@ -91,7 +91,7 @@
 #include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
-#include "components/commerce/core/shopping_service.h"
+#include "components/commerce/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
@@ -260,6 +260,7 @@
 #include "chrome/browser/search/background/ntp_custom_background_service.h"
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
@@ -402,6 +403,7 @@
 #include "chromeos/ash/components/network/network_metadata_store.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/ash/services/auth_factor_config/auth_factor_config.h"
 #include "chromeos/ash/services/bluetooth_config/bluetooth_power_controller_impl.h"
 #include "chromeos/ash/services/bluetooth_config/device_name_manager_impl.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
@@ -1275,7 +1277,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ChromeVersionService::RegisterProfilePrefs(registry);
   chrome_browser_net::NetErrorTabHelper::RegisterProfilePrefs(registry);
   chrome_prefs::RegisterProfilePrefs(registry);
-  commerce::ShoppingService::RegisterPrefs(registry);
+  commerce::RegisterPrefs(registry);
   DocumentProvider::RegisterProfilePrefs(registry);
   enterprise_reporting::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
@@ -1448,6 +1450,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RecipesService::RegisterProfilePrefs(registry);
   UnifiedAutoplayConfig::RegisterProfilePrefs(registry);
   CartService::RegisterProfilePrefs(registry);
+  commerce::ShoppingListUiTabHelper::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1480,6 +1483,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::app_time::AppActivityRegistry::RegisterProfilePrefs(registry);
   ash::app_time::AppTimeController::RegisterProfilePrefs(registry);
   ash::assistant::prefs::RegisterProfilePrefs(registry);
+  ash::auth::AuthFactorConfig::RegisterPrefs(registry);
   ash::bluetooth::DebugLogsManager::RegisterPrefs(registry);
   ash::bluetooth_config::BluetoothPowerControllerImpl::RegisterProfilePrefs(
       registry);

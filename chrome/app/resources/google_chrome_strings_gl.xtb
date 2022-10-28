@@ -31,6 +31,7 @@
 <translation id="1587223624401073077">Google Chrome utiliza a túa cámara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, así que Chrome bloqueouno.</translation>
 <translation id="1597911401261118146">Para comprobar se os teus contrasinais están protexidos fronte a violacións da seguranza dos datos e outros problemas de seguranza, debes <ph name="BEGIN_LINK" />iniciar sesión en Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome bloqueou este ficheiro de arquivo porque é posible que conteña software malicioso</translation>
 <translation id="1619887657840448962">Para conseguir que Chrome resulte máis seguro, desactivamos a seguinte extensión que non aparece en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e que quizais se engadise sen o teu coñecemento.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Como podes xestionar os teus datos?<ph name="END_BOLD" /> Para protexer a túa privacidade, eliminamos automaticamente os teus intereses cuxa antigüidade sexa superior a 4 semanas. Algúns poderían volver incluírse na lista ao seguires navegando. Se o prefires, podes quitar os intereses que non queiras que teña en conta Chrome.</translation>
 <translation id="1628000112320670027">Obter axuda sobre Chrome</translation>
@@ -60,6 +61,7 @@
 <translation id="2094648590148273905">Condicións de Chrome OS Flex</translation>
 <translation id="2094919256425865063">Queres saír de Chrome de todas formas?</translation>
 <translation id="2106831557840787829">Chrome OS Flex é posible grazas a <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional, igual que o <ph name="BEGIN_LINK_LINUX_OSS" />contorno de programación de Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Se activas esta opción, Chrome recuperará a memoria das pestanas que non esteas a usar de maneira activa. Deste xeito libéranse os recursos do ordenador para outras tarefas e mantense a rapidez de Chrome. As pestanas inactivas aparecen baleiras e volven cargar automaticamente ao facer clic nelas. Consulta <ph name="BEGIN_LINK" />máis información<ph name="END_LINK" /> ou <ph name="BEGIN_LINK_2" />envía os teus comentarios<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Esta acción eliminará <ph name="ITEMS_COUNT" /> elementos deste dispositivo. Para recuperar os teus datos máis tarde, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Reiniciar para actualizar &amp;Chrome</translation>
 <translation id="2123055963409958220">Informa da <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para axudar a mellorar Chrome</translation>
@@ -176,6 +178,7 @@
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Que datos se usan?<ph name="END_BOLD" /> O teu historial de navegación e un rexistro dos sitios que visitases usando Chrome neste dispositivo.</translation>
 <translation id="4281844954008187215">Condicións de servizo</translation>
 <translation id="4293420128516039005">Inicia sesión para sincronizar e personalizar Chrome nos teus dispositivos</translation>
+<translation id="430327780270213103">Permitir que a extensión mostre solicitudes de acceso na barra de ferramentas de Chrome</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4334294535648607276">Descarga completa.</translation>
 <translation id="4335235004908507846">Chrome pode protexerte contra violacións da seguranza dos datos, extensións prexudiciais e moito máis</translation>
@@ -277,6 +280,7 @@ Google Chrome non pode recuperar a túa configuración.</translation>
 <translation id="6735387454586646204">Sistema Chrome OS Flex</translation>
 <translation id="6739177684496155661">Queres continuar nun perfil de Chrome novo?</translation>
 <translation id="6750954913813541382">Para corrixir erros ortográficos, Chrome enviaralle a Google o texto que escribas no navegador</translation>
+<translation id="6756581345161130259">Chrome recuperará, segundo sexa necesario, a memoria das pestanas que non esteas a usar de maneira activa. Podes cambiar esta opción en calquera momento en Configuración.</translation>
 <translation id="677276454032249905">Queres saír de Chrome de todas formas?</translation>
 <translation id="6785872064505734160">O Asistente de Google en Chrome pode completar accións por ti nos sitios web</translation>
 <translation id="683440813066116847">Regra de entrada para Google Chrome Canary para permitir tráfico mDNS.</translation>

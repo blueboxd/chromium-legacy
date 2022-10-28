@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -750,6 +750,7 @@ void PrerenderHost::SetFailureReason(FinalStatus status) {
     case FinalStatus::kFailToGetMemoryUsage:
     case FinalStatus::kDataSaverEnabled:
     case FinalStatus::kHasEffectiveUrl:
+    case FinalStatus::kActivatedBeforeStarted:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
       // We reset the attempt to ensure we don't update once we have reported it
       // as failure or accidentally use it for any other prerender attempts as

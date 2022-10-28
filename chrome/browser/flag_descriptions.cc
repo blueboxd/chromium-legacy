@@ -59,11 +59,6 @@ const char kLauncherAppSortDescription[] =
     "To evaluate an enhanced Launcher experience that enables users to reorder "
     "their apps in order to find them more easily.";
 
-const char kLeakDetectionUnauthenticated[] =
-    "Leak detection for signed out users.";
-const char kLeakDetectionUnauthenticatedDescription[] =
-    "Enables leak detection feature for signed out users.";
-
 const char kAlignWakeUpsName[] = "Align delayed wake ups at 125 Hz";
 const char kAlignWakeUpsDescription[] =
     "Run most delayed tasks with a non-zero delay (including DOM Timers) on a "
@@ -200,6 +195,11 @@ const char kForceGpuMainThreadToNormalPriorityDrDcDescription[] =
     "In that case DrDc thread continues to use DISPLAY thread priority and "
     "hence have higher thread priority than GPU main. Note that this flag will "
     "be a no-op when DrDc is disabled.";
+
+const char kTextBasedAudioDescriptionName[] = "Enable audio descriptions.";
+const char kTextBasedAudioDescriptionDescription[] =
+    "When enabled, HTML5 video elements with a 'descriptions' WebVTT track "
+    "will speak the audio descriptions aloud as the video plays.";
 
 const char kU2FPermissionPromptName[] =
     "Enable a permission prompt for the U2F Security Key API";
@@ -740,11 +740,6 @@ const char kChromeWhatsNewInMainMenuNewBadgeDescription[] =
     "menu.";
 #endif
 
-const char kDarkLightTestName[] = "Dark/light mode of system UI";
-const char kDarkLightTestDescription[] =
-    "Enables the dark/light mode of system UI, which includes shelf, launcher, "
-    "system tray etc.";
-
 extern const char kDeviceForceScheduledRebootName[] =
     "Enable DeviceScheduledReboot policy for all sessions.";
 extern const char kDeviceForceScheduledRebootDescription[] =
@@ -949,12 +944,6 @@ const char kDesktopPWAsLaunchHandlerDescription[] =
     "Enable web app manifests to declare app launch behavior. Prototype "
     "implementation of: "
     "https://github.com/WICG/sw-launch/blob/main/launch_handler.md";
-
-const char kDesktopPWAsManifestIdName[] = "Desktop PWA manifest id";
-const char kDesktopPWAsManifestIdDescription[] =
-    "Enable web app manifests to declare id. Prototype "
-    "implementation of: "
-    "https://github.com/philloooo/pwa-unique-id/blob/main/explainer.md";
 
 const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
 const char kDesktopPWAsTabStripDescription[] =
@@ -2931,6 +2920,20 @@ const char kUnifiedPasswordManagerAndroidDescription[] =
     "Warning: Highly experimental. May lead to loss of passwords and "
     "impact performance.";
 
+const char kUnifiedPasswordManagerErrorMessagesName[] =
+    "Error Messages when using Google Mobile Services for passwords";
+const char kUnifiedPasswordManagerErrorMessagesDescription[] =
+    "Enables showing error messages that offer signing in again to fix the "
+    "auth errors.";
+
+const char kUnifiedPasswordManagerAndroidReenrollmentName[] =
+    "Automatic reenrollement of users who were evicted from using Google "
+    "Mobile Services after experiencing errors.";
+const char kUnifiedPasswordManagerAndroidReenrollmentDescription[] =
+    "Requires UnifiedPasswordManagerAndroid flag enabled. Allows automatic "
+    "reenrollment into Google Mobile Services if sync and backend "
+    "communication work.";
+
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =
     "Enables access to the experimental WebGPU API. Warning: As GPU sandboxing "
@@ -2975,6 +2978,10 @@ const char kUseSearchClickForRightClickDescription[] =
     "When enabled search+click will be remapped to right click, allowing "
     "webpages and apps to consume alt+click. When disabled the legacy "
     "behavior of remapping alt+click to right click will remain unchanged.";
+
+const char kVCBackgroundBlurName[] = "Enable vc background blur";
+const char kVCBackgroundBlurDescription[] =
+    "Enables background blur feature for video conferencing on chromebooks.";
 
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =
@@ -3304,6 +3311,11 @@ const char kAndroidForceAppLanguagePromptDescription[] =
 const char kAndroidMediaPickerSupportName[] = "Android Media Picker";
 const char kAndroidMediaPickerSupportDescription[] =
     "When enabled the Android Media picker is used instead of the Chrome one.";
+
+const char kAndroidPermissionsCacheName[] = "Android Permissions Cache";
+const char kAndroidPermissionsCacheDescription[] =
+    "When enabled, android "
+    "permissions (such as camera and microphone permissions) will be cached";
 
 const char kAndroidSurfaceControlName[] = "Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
@@ -5806,6 +5818,12 @@ const char kProductivityLauncherImageSearchName[] =
 const char kProductivityLauncherImageSearchDescription[] =
     "To evaluate the viability of image search as part of Productivity "
     "Launcher Search.";
+
+const char kQuickActionShowBubbleLauncherName[] =
+    "Swipe to show bubble launcher";
+const char kQuickActionShowBubbleLauncherDescription[] =
+    "Enables a fling gesture or mouse scroll from the shelf to show the bubble "
+    "launcher.";
 
 const char kProjectorName[] = "Enable Projector";
 const char kProjectorDescription[] =

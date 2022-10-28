@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_manager_buildflags.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_manager_eviction_util.h"
 #include "components/password_manager/core/browser/password_store_built_in_backend.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -34,10 +35,23 @@ std::unique_ptr<PasswordStoreBackend> PasswordStoreBackend::Create(
   if (PasswordStoreAndroidBackendBridge::CanCreateBackend() &&
       base::FeatureList::IsEnabled(
           password_manager::features::kUnifiedPasswordManagerAndroid)) {
+    // Re-enrollment happens before the initial migration and any possible
+    // backend interactions allowing to perform proper initialization.
+    if (password_manager_upm_eviction::ShouldInvalidateEviction(prefs))
+      password_manager_upm_eviction::ReenrollCurrentUser(prefs);
+
     base::UmaHistogramBoolean(
         "PasswordManager.PasswordStore.WasEnrolledInUPMWhenBackendWasCreated",
         !prefs->GetBoolean(password_manager::prefs::
                                kUnenrolledFromGoogleMobileServicesDueToErrors));
+    base::UmaHistogramCounts100(
+        "PasswordManager.PasswordStore.TimesReenrolledInUPM",
+        prefs->GetInteger(
+            password_manager::prefs::kTimesReenrolledToGoogleMobileServices));
+    base::UmaHistogramCounts100(
+        "PasswordManager.PasswordStore.TimesAttemptedToReenrollInUPM",
+        prefs->GetInteger(password_manager::prefs::
+                              kTimesAttemptedToReenrollToGoogleMobileServices));
     return std::make_unique<PasswordStoreBackendMigrationDecorator>(
         std::make_unique<PasswordStoreBuiltInBackend>(
             CreateLoginDatabaseForProfileStorage(login_db_path)),

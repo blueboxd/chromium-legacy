@@ -2204,8 +2204,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     WebStateList* webStateList = self.browser->GetWebStateList();
     for (int index = 0; index < webStateList->count(); ++index) {
-      web::WebState* webState = webStateList->GetWebStateAt(index);
-      PagePlaceholderTabHelper::FromWebState(webState)
+      web::WebState* webStateAtIndex = webStateList->GetWebStateAt(index);
+      PagePlaceholderTabHelper::FromWebState(webStateAtIndex)
           ->CancelPlaceholderForNextNavigation();
     }
   }
@@ -2233,6 +2233,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Adds the given urls to the reading list.
 - (void)addURLsToReadingList:(NSArray<URLWithTitle*>*)URLs {
+  DCHECK(URLs.count > 0) << "URLs are missing";
+
   for (URLWithTitle* urlWithTitle in URLs) {
     [self addURLToReadingList:urlWithTitle.URL withTitle:urlWithTitle.title];
   }
@@ -3659,7 +3661,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (NTPHelper->IsActive()) {
     [self.ntpCoordinator ntpDidChangeVisibility:YES];
     self.ntpCoordinator.webState = webState;
-    self.ntpCoordinator.selectedFeed = NTPHelper->GetNextNTPFeedType();
+    [self.ntpCoordinator selectFeedType:NTPHelper->GetNextNTPFeedType()];
     self.ntpCoordinator.shouldScrollIntoFeed =
         NTPHelper->GetNextNTPScrolledToFeed();
   } else {

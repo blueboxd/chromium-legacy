@@ -124,7 +124,7 @@ void BackgroundDownloadServiceImpl::ResumeDownload(const std::string& guid) {
   NOTREACHED() << " This function is not supported on iOS.";
 }
 void BackgroundDownloadServiceImpl::CancelDownload(const std::string& guid) {
-  NOTREACHED() << " This function is not supported on iOS.";
+  cancelled_downloads_.emplace(guid);
 }
 void BackgroundDownloadServiceImpl::ChangeDownloadCriteria(
     const std::string& guid,
@@ -134,6 +134,12 @@ void BackgroundDownloadServiceImpl::ChangeDownloadCriteria(
 
 Logger* BackgroundDownloadServiceImpl::GetLogger() {
   return logger_.get();
+}
+
+void BackgroundDownloadServiceImpl::HandleEventsForBackgroundURLSession(
+    base::OnceClosure completion_handler) {
+  download_helper_->HandleEventsForBackgroundURLSession(
+      std::move(completion_handler));
 }
 
 void BackgroundDownloadServiceImpl::OnModelReady(bool success) {
@@ -309,6 +315,12 @@ void BackgroundDownloadServiceImpl::OnDownloadFinished(
     const base::FilePath& file_path,
     int64_t file_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (cancelled_downloads_.find(guid) != cancelled_downloads_.end()) {
+    cancelled_downloads_.erase(guid);
+    return;
+  }
+
   download::Client* client = clients_->GetClient(download_client);
   if (!client)
     return;
@@ -349,6 +361,10 @@ void BackgroundDownloadServiceImpl::OnDownloadUpdated(
     const std::string& guid,
     int64_t bytes_downloaded) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (cancelled_downloads_.find(guid) != cancelled_downloads_.end()) {
+    return;
+  }
+
   uint64_t bytes_count = base::saturated_cast<uint64_t>(bytes_downloaded);
   MaybeUpdateProgress(guid, bytes_count);
 

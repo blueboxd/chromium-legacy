@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
   DCHECK_EQ(loader_type_, NavigationURLLoader::LoaderType::kRegular);
   response_head->parsed_headers = network::mojom::ParsedHeaders::New();
   delegate_->OnRequestRedirected(
-      redirect_info, request_info_->isolation_info.network_isolation_key(),
+      redirect_info, request_info_->isolation_info.network_anonymization_key(),
       std::move(response_head));
 }
 
@@ -110,7 +110,7 @@ void TestNavigationURLLoader::CallOnResponseStarted(
       std::move(url_loader_client_endpoints), std::move(response_head),
       std::move(response_body), GlobalRequestID::MakeBrowserInitiated(), false,
       blink::NavigationDownloadPolicy(),
-      request_info_->isolation_info.network_isolation_key(), absl::nullopt,
+      request_info_->isolation_info.network_anonymization_key(), absl::nullopt,
       std::move(early_hints));
 }
 

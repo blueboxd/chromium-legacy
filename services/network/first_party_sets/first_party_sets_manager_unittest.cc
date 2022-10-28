@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,8 +78,8 @@ class FirstPartySetsManagerTest : public ::testing::Test {
 
  protected:
   void SetFirstPartySetsContextConfig(OverrideSets customizations) {
-    fps_context_config_ = net::FirstPartySetsContextConfig();
-    fps_context_config_.SetCustomizations(std::move(customizations));
+    fps_context_config_ =
+        net::FirstPartySetsContextConfig(std::move(customizations));
   }
 
  private:

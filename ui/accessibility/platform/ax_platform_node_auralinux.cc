@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2692,6 +2692,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_COMBO_BOX;
     case ax::mojom::Role::kComboBoxMenuButton:
       return ATK_ROLE_COMBO_BOX;
+    case ax::mojom::Role::kComboBoxSelect:
+      return ATK_ROLE_COMBO_BOX;
     case ax::mojom::Role::kComplementary:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kContentDeletion:
@@ -2936,13 +2938,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_DOCUMENT_FRAME;
     case ax::mojom::Role::kPluginObject:
       return ATK_ROLE_EMBEDDED;
-    case ax::mojom::Role::kPopUpButton: {
-      std::string html_tag =
-          GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "select")
-        return ATK_ROLE_COMBO_BOX;
+    case ax::mojom::Role::kPopUpButton:
       return ATK_ROLE_PUSH_BUTTON;
-    }
     case ax::mojom::Role::kPortal:
       return ATK_ROLE_PUSH_BUTTON;
     case ax::mojom::Role::kPre:

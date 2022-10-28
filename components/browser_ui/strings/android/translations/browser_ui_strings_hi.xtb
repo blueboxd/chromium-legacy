@@ -128,14 +128,14 @@
 <translation id="3797520601150691162">कुछ खास साइटों पर गहरे रंग वाली थीम लागू न करें</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="381841723434055211">फ़ोन नंबर</translation>
-<translation id="3826050100957962900">तीसरे पक्ष की सेवा के लिए, साइन इन करना</translation>
+<translation id="3826050100957962900">तीसरे पक्ष की सेवा के लिए साइन इन</translation>
 <translation id="3835233591525155343">आपके डिवाइस का इस्तेमाल</translation>
 <translation id="385051799172605136">वापस जाएं</translation>
 <translation id="3859306556332390985">आगे जाएं</translation>
 <translation id="3895926599014793903">ज़बरदस्ती ज़ूम करना चालू करें</translation>
 <translation id="3955193568934677022">साइटों को सुरक्षित सामग्री चलाने दें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="3967822245660637423">डाउनलोड पूरा हुआ</translation>
-<translation id="3987993985790029246">लिंक की प्रति बनाएं</translation>
+<translation id="3987993985790029246">लिंक कॉपी करें</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3992684624889376114">इस पेज के बारे में</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
@@ -182,6 +182,7 @@
 <translation id="5048398596102334565">साइटों को मोशन सेंसर ऐक्‍सेस करने दें (सुझाया गया)</translation>
 <translation id="5050380848339752099">यह साइट गुप्त मोड से बाहर के किसी ऐप्लिकेशन के साथ जानकारी शेयर करने वाली है.</translation>
 <translation id="5063480226653192405">उपयोग</translation>
+<translation id="5091013926750941408">मोबाइल साइट</translation>
 <translation id="509133520954049755">डेस्कटॉप व्यू के लिए अनुरोध करें</translation>
 <translation id="5100237604440890931">छोटा किया गया - पूरा खोलने के लिए क्लिक करें.</translation>
 <translation id="5123685120097942451">गुप्त टैब</translation>
@@ -197,7 +198,7 @@
 <translation id="5313967007315987356">साइट जोड़ें</translation>
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5335288049665977812">साइटों को JavaScript चलाने की अनुमति दें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
-<translation id="534295439873310000">NFC डिवाइस</translation>
+<translation id="534295439873310000">एनएफ़सी डिवाइस</translation>
 <translation id="5354152178998424783">इससे वे <ph name="DATASIZE" /> डेटा और कुकी मिट जाएंगे जिन्हें साइटों ने सेव किया है.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 और)}one{(+ # और)}other{(+ # और)}}</translation>
 <translation id="5403592356182871684">नाम</translation>
@@ -212,10 +213,10 @@
 <translation id="5553374991681107062">नए विकल्प</translation>
 <translation id="5556459405103347317">फिर लोड करें</translation>
 <translation id="5596627076506792578">ज़्यादा विकल्प</translation>
-<translation id="5649053991847567735">अपने आप होने वाले डाउनलोड</translation>
+<translation id="5649053991847567735">अपने-आप होने वाले डाउनलोड</translation>
 <translation id="5668404140385795438">किसी वेबसाइट के वेबपेज ज़ूम इन न करने के नियम को बदल देता है</translation>
 <translation id="5677928146339483299">ब्लॉक किया गया है</translation>
-<translation id="5689516760719285838">स्थान</translation>
+<translation id="5689516760719285838">जगह की जानकारी</translation>
 <translation id="5690795753582697420">Android की सेटिंग में कैमरा बंद है</translation>
 <translation id="5719847187258001597">इससे वे सभी डेटा और कुकी मिट जाएंगे जिन्हें <ph name="ORIGIN" /> या इसके ऐप्लिकेशन ने आपकी होम स्क्रीन पर सेव किया है.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> को ब्लॉक किया गया</translation>
@@ -260,9 +261,9 @@
 <translation id="6561560012278703671">बिना आवाज़ के मैसेज पाएं (सूचनाओं में आवाज़ को रोकता है, ताकि आपके काम में रुकावट न आए)</translation>
 <translation id="6593061639179217415">डेस्कटॉप साइट</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> जीबी</translation>
-<translation id="6612358246767739896">सुरक्षित सामग्री</translation>
+<translation id="6612358246767739896">सुरक्षित कॉन्टेंट</translation>
 <translation id="662080504995468778">इसपर रहें</translation>
-<translation id="6643016212128521049">साफ़ करें</translation>
+<translation id="6643016212128521049">मिटाएं</translation>
 <translation id="6689172468748959065">प्रोफ़ाइल फ़ोटो</translation>
 <translation id="6697925417670533197">डाउनलोड हो रहे हैं</translation>
 <translation id="6722828510648505498">पहचान करने वाली सेवा से जुड़े, साइन इन करने के अनुरोध ब्लॉक करें.</translation>
@@ -386,5 +387,5 @@
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android की सेटिंग<ph name="END_LINK" /> में जाकर, <ph name="APP_NAME" /> के लिए अनुमतियां चालू करें.</translation>
 <translation id="9162462602695099906">यह पेज सुरक्षित नहीं है</translation>
 <translation id="930525582205581608">क्या आप इस साइट की सेव की गई जानकारी मिटाना चाहते हैं?</translation>
-<translation id="967624055006145463">डेटा संग्रहित किया गया</translation>
+<translation id="967624055006145463">डेटा सेव किया गया</translation>
 </translationbundle>

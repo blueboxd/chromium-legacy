@@ -174,6 +174,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="1380591466760231819">Plegado de carta</translation>
 <translation id="138218114945450791">Celeste</translation>
 <translation id="1382194467192730611">El dispositivo USB que permite tu administrador</translation>
+<translation id="1382378825779654399">Recibirás alertas por correo electrónico si hay descuentos en algún sitio. Se guardará esta página en <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">¿No aparece tu información actual? Comunícate con el banco para actualizarla.</translation>
 <translation id="1384725838384960382">Hoja de autenticación de credenciales de pago seguro</translation>
 <translation id="1386623374109090026">Anotaciones</translation>
@@ -250,7 +251,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Software gratuito y shareware</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
-<translation id="1554003749331233619">Estás realizando un seguimiento de este producto. Se guardó esta página en <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1559447966090556585">¿Quieres recibir notificaciones?</translation>
 <translation id="1559528461873125649">El archivo o directorio no existe</translation>
@@ -298,7 +298,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="1662550410081243962">Guardar y completar formas de pago</translation>
 <translation id="1663943134801823270">Las tarjetas y direcciones provienen de Chrome. Puedes administrarlas en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1673886523110456987">Paga con <ph name="CARD_DETAIL" /> para usar la oferta</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Borde corto primero</translation>
 <translation id="168693727862418163">No se pudo validar el valor de esta política con su esquema y, por lo tanto, se ignorará.</translation>
@@ -423,6 +422,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2034971124472263449">Guardar de todos modos</translation>
 <translation id="2035400064145347639">Guías y documentales de viajes</translation>
 <translation id="2036983605131262583">Rollo alternativo</translation>
+<translation id="2040463897538655645">Almacenamiento extraíble</translation>
 <translation id="2040894699575719559">Ubicación bloqueada</translation>
 <translation id="2042213636306070719">Bandeja 7</translation>
 <translation id="204357726431741734">Accede a tu Cuenta de Google para usar las contraseñas guardadas allí</translation>
@@ -1006,7 +1006,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3633738897356909127">Botón Actualizar Chrome: presiona Intro para actualizar Chrome desde la configuración del navegador</translation>
 <translation id="3634530185120165534">Bandeja 5</translation>
 <translation id="3634567936866541746">Ingresaste tu contraseña en un sitio engañoso. Para proteger tus cuentas, Chrome te recomienda revisar las contraseñas que tengas guardadas.</translation>
-<translation id="3637033245385760976">Las notificaciones de Chrome deben estar activadas. Puedes activarlas en la <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="3637662659967048211">Guardar en la Cuenta de Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Aplicación:</translation>
@@ -1522,6 +1521,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
 <translation id="5020776957610079374">Música del mundo</translation>
+<translation id="5021557570875267742">Haz un seguimiento de los precios con Chrome</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
 <translation id="5029568752722684782">Borrar la copia</translation>
 <translation id="5030338702439866405">Proporcionada por</translation>
@@ -1978,7 +1978,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6259156558325130047">&amp;Rehacer Reorganizar</translation>
 <translation id="6263376278284652872">Favoritos de <ph name="DOMAIN" /></translation>
 <translation id="6264376385120300461">Descargar de todos modos</translation>
-<translation id="6264485186158353794">Volver a seguridad</translation>
+<translation id="6264485186158353794">Volver a un sitio seguro</translation>
 <translation id="6265794661083428563">Copia el valor de la política <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Verde azulado claro</translation>
 <translation id="6272088941196661550">Reanuda la exploración para ver actividad pertinente en tu historial de Chrome.</translation>
@@ -2243,6 +2243,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Siempre traducir <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Industria del entretenimiento</translation>
+<translation id="7003335073762455340">Estás realizando un seguimiento de este producto. Se guardó esta página en <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Usa Windows Hello para verificar las tarjetas más rápido</translation>
 <translation id="7006930604109697472">Enviar de todas formas</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2325,6 +2326,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="7234638337680728591">Precios de gasolina y combustible para vehículos</translation>
 <translation id="7237492777898608035">No volver a mostrar este mensaje en este sitio</translation>
 <translation id="7238585580608191973">Huella digital SHA-256</translation>
+<translation id="7239514174717251677">Las alertas de descuentos están activadas. Puedes desactivarlas en la <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="7240120331469437312">Nombre alternativo del sujeto del certificado</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# coincidencia}other{# coincidencias}}</translation>
@@ -2466,6 +2468,7 @@ Detalles adicionales:
 <translation id="7564049878696755256">Es posible que hayas perdido el acceso a tu cuenta de <ph name="ORG_NAME" /> o sufrido un robo de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
 <translation id="7564680668369175887">Vagonetas</translation>
 <translation id="7567204685887185387">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad podría haberse emitido de forma fraudulenta. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
+<translation id="7568616151991626879">Google Chrome está intentando completar tu contraseña en <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golf</translation>
 <translation id="7569761772822664555">Botón Administrar motores de búsqueda, presiona Intro para administrar la búsqueda de sitios y el motor de búsqueda predeterminados</translation>
 <translation id="7569952961197462199">¿Confirmas que quieres quitar la tarjeta de crédito de Chrome?</translation>
@@ -2823,7 +2826,6 @@ Detalles adicionales:
 <translation id="8559762987265718583">No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>
 <translation id="8564182942834072828">Documentos separados/copias sin intercalar</translation>
 <translation id="8564985650692024650">Chromium te recomienda que restablezcas la contraseña de <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> si la volviste a usar en otros sitios.</translation>
-<translation id="8573969211731659953">Las alertas de descuentos están activadas. Puedes desactivarlas en la <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="8576310925653847813">Sistemas de Home Theater</translation>
 <translation id="8577348305244205642">La tarjeta virtual no está disponible</translation>
 <translation id="858637041960032120">Agregar teléfono
@@ -3038,11 +3040,13 @@ Detalles adicionales:
 <translation id="9174623988242579721">Vehículos personalizados y de alto rendimiento</translation>
 <translation id="9174917557437862841">Botón para cambiar de pestaña; presiona Intro para cambiar a esta pestaña</translation>
 <translation id="9179703756951298733">Administra tus pagos y la información de las tarjetas de crédito en la configuración de Chrome</translation>
+<translation id="9179907736442194268">Recibe alertas por correo electrónico si baja el precio en algún sitio</translation>
 <translation id="9183302530794969518">Documentos de Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utiliza un protocolo no compatible.</translation>
 <translation id="9187461866967718678">Deportes extremos</translation>
 <translation id="9191834167571392248">Perforación en la esquina inferior izquierda</translation>
 <translation id="9199905725844810519">No se permite imprimir este contenido</translation>
+<translation id="9202180858541326427">Las notificaciones de Chrome deben estar activadas. Puedes activarlas en la <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="9205078245616868884">Tus datos están encriptados con tu frase de contraseña para sincronización. Debes ingresarla para iniciar la sincronización.</translation>
 <translation id="920511547311754821">¿No encuentras el código? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Error al agregar artículo</translation>

@@ -32,6 +32,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1587223624401073077">Google Chrome använder din kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chrome.</translation>
 <translation id="1597911401261118146"><ph name="BEGIN_LINK" />Logga in i Chrome<ph name="END_LINK" /> om du vill kontrollera att dina lösenord skyddas från dataintrång och andra säkerhetsproblem.</translation>
+<translation id="1599904803480101533">Den här arkivfilen blockerades av Chrome eftersom den kan dölja skadlig programvara</translation>
 <translation id="1619887657840448962">Vi har gjort Chromium säkrare genom att inaktivera följande tillägg som inte anges i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Så här kan du hantera dina uppgifter:<ph name="END_BOLD" /> För att skydda din integritet raderar vi automatiskt intressen som är äldre än fyra veckor. Medan du surfar kan ett intresse dyka upp på listan igen. Du kan också ta bort intressen som du inte vill att Chrome ska inkludera.</translation>
 <translation id="1628000112320670027">Få hjälp med Chrome</translation>
@@ -61,6 +62,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2094648590148273905">Villkor för ChromeOS Flex</translation>
 <translation id="2094919256425865063">Vill du avsluta Chrome ändå?</translation>
 <translation id="2106831557840787829">ChromeOS Flex fungerar tack vare ytterligare <ph name="BEGIN_LINK_CROS_OSS" />program med öppen källkod<ph name="END_LINK_CROS_OSS" />, liksom <ph name="BEGIN_LINK_LINUX_OSS" />utvecklingsmiljön för Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Om aktiverat återtar Chrome minne från flikar som du inte använder aktivt. Då frigörs datorns resurser för andra uppgifter så Chrome fungerar så snabbt som möjligt. Inaktiva flikar verkar tomma och läses in automatiskt när du klickar på dem. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> eller <ph name="BEGIN_LINK_2" />skicka feedback<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> tas bort från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2121284319307530122">Starta om för att uppdatera &amp;Chrome</translation>
 <translation id="2123055963409958220">Hjälp oss att förbättra Chrome genom att rapportera <ph name="BEGIN_LINK" />dina aktuella inställningar<ph name="END_LINK" /></translation>
@@ -90,7 +92,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2586406160782125153">Webbinformationen raderas från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2597976513418770460">Få saker i webbläsaren Chrome från <ph name="ACCOUNT_EMAIL" /></translation>
 <translation id="2622559029861875898">Chrome kan inte söka efter uppdateringar. Testa att kontrollera internetanslutningen.</translation>
-<translation id="2645435784669275700">Chrome OS</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2652691236519827073">Öppna länkar i en ny flik i Chrome</translation>
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google.</translation>
 <translation id="2689103672227170538">Det här tillägget har ändrat vilken sida som visas när du startar Chrome.</translation>
@@ -177,6 +179,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Vilken data används:<ph name="END_BOLD" /> Webbhistoriken, där webbplatser som du besökt i Chrome på den här enheten registreras.</translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="4293420128516039005">Genom att logga in kan du synkronisera och anpassa Chrome på alla enheter du använder</translation>
+<translation id="430327780270213103">Tillåt att tillägg visar åtkomstförfrågningar i verktygsfältet i Chrome</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-in)</translation>
 <translation id="4334294535648607276">Nedladdningen har slutförts.</translation>
 <translation id="4335235004908507846">Chrome kan skydda dig från dataintrång, olämpliga tillägg med mera</translation>
@@ -278,6 +281,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6735387454586646204">ChromeOS Flex-system</translation>
 <translation id="6739177684496155661">Vill du fortsätta i en ny Chrome-profil?</translation>
 <translation id="6750954913813541382">Text som du skriver i webbläsaren Chrome skickas till Google för att kontrollera stavningen</translation>
+<translation id="6756581345161130259">Om det behövs återtar Chrome minne från flikar som du inte använder aktivt. Du kan när som helst ändra detta i inställningarna.</translation>
 <translation id="677276454032249905">Vill du avsluta Chrome ändå?</translation>
 <translation id="6785872064505734160">Google-assistenten i Chrome kan slutföra åtgärder åt dig på webbplatser</translation>
 <translation id="683440813066116847">Regel som tillåter inkommande mDNS-trafik för Google Chrome Canary.</translation>

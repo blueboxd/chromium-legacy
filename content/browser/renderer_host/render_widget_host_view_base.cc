@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1048,6 +1048,9 @@ bool RenderWidgetHostViewBase::IsHTMLFormPopup() const {
 
 void RenderWidgetHostViewBase::OnShowWithPageVisibility(
     PageVisibilityState page_visibility) {
+  if (!host())
+    return;
+
   auto* visible_time_request_trigger = host_->GetVisibleTimeRequestTrigger();
   // The only way this should be null is if there is no RenderWidgetHostView.
   DCHECK(visible_time_request_trigger);

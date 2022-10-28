@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace content {
 
@@ -52,6 +56,12 @@ class CONTENT_EXPORT AttributionHost
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+
+  // Returns the top frame origin corresponding to the current target frame.
+  // Returns nullptr and reports a bad message if the top frame origin is not
+  // potentially trustworthy or the current target frame is not a secure
+  // context.
+  [[nodiscard]] const url::Origin* TopFrameOriginForSecureContext();
 
   // Notifies the `AttributionDataHostManager` that a navigation with an
   // associated `AttributionDataHost` failed, if necessary.

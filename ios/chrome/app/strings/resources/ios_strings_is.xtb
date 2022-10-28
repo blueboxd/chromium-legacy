@@ -23,6 +23,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="1104948393051856124">Samþykkja og halda áfram</translation>
 <translation id="110724200315609752">Skipta yfir í opinn glugga</translation>
 <translation id="1112015203684611006">Prentun tókst ekki.</translation>
+<translation id="1118569444314402022">Velkomin(n) aftur, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Búa til nýjan flipa.</translation>
 <translation id="1126809382673880764">Ver þig ekki gegn hættulegum vefsvæðum, niðurhali eða viðbótum. Þú munt áfram geta notað örugga vefskoðun, þar sem hún er í boði, í annarri þjónustu Google á borð við Gmail og leit.</translation>
 <translation id="1135212215217513471">Sækja Chrome fyrir iOS</translation>
@@ -46,6 +47,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="1272079795634619415">Stöðva</translation>
 <translation id="1275718070701477396">Valið</translation>
 <translation id="1281818060020671000">Stjórna gögnum</translation>
+<translation id="1282311502488501110">Ekki skrá inn</translation>
 <translation id="1283524564873030414">Síðastliðinn sólarhring</translation>
 <translation id="1285320974508926690">Aldrei þýða þetta vefsvæði</translation>
 <translation id="1291506870746876680">Heimildir <ph name="BEGIN_BOLD" />„<ph name="SITE_NAME" />“<ph name="END_BOLD" /> verða endurstilltar á „slökkt“ þegar þú yfirgefur vefsvæðið.</translation>
@@ -54,6 +56,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="1322735045095424339">Fyrirtækið þitt krefst huliðsstillingar</translation>
 <translation id="1323735185997015385">Eyða</translation>
 <translation id="132683371494960526">Ýttu tvisvar til að breyta yfirmöppu.</translation>
+<translation id="1335348992705722518">Stjórna stillingum...</translation>
 <translation id="1340643665687018190">Loka valmynd</translation>
 <translation id="1358214951266274152">Opna tengil sem þú afritaðir</translation>
 <translation id="1360432990279830238">Skrá út og slökkva á samstillingu?</translation>
@@ -61,6 +64,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="1377255359165588604">Samstilling er hætt að virka.</translation>
 <translation id="1377321085342047638">Kortanúmer</translation>
 <translation id="1383876407941801731">Leita</translation>
+<translation id="138618066238211776">Halda áfram sem <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">Síðustu fjórar vikur</translation>
 <translation id="1404330357948037222">Þú ert útskráð(ur)</translation>
 <translation id="1407135791313364759">Opna alla</translation>
@@ -174,9 +178,11 @@ Vefsvæði geta ekki notað fótsporin þín til að sjá vafranotkun þína á 
 <translation id="2421044535038393232">Halda áfram að breyta</translation>
 <translation id="2434405374328098816">Þú hefur þegar vistað aðgangsorð fyrir „<ph name="USERNAME" />“ á <ph name="WEBSITE" />.</translation>
 <translation id="2435457462613246316">Sýna aðgangsorð</translation>
+<translation id="2461070143328828326">Stillingar fyrir aðgangsorð</translation>
 <translation id="2469960372084740698">Viltu slökkva á öruggri vefnotkun?</translation>
 <translation id="2473876017985765807">Þú hefur þegar vistað aðgangsorð fyrir <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Ekki valið</translation>
+<translation id="2482878487686419369">Tilkynningar</translation>
 <translation id="2500374554657206846">Val um vistun aðgangsorðs</translation>
 <translation id="2523363575747517183">Þetta vefsvæði reynir ítrekað að opna annað forrit.</translation>
 <translation id="2529021024822217800">Opna allt</translation>
@@ -327,6 +333,7 @@ Skoðaðu leiðbeiningar leitarvélarinnar um að eyða leitarferlinum ef það 
 <translation id="3709582977625132201">Merkja sem ólesið</translation>
 <translation id="371230970611282515">Spáir fyrir um og varar þig við hættulegum viðburðum áður en þeir gerast.</translation>
 <translation id="37207012422556617">Vinsælar leitir</translation>
+<translation id="3726360487031500941">Skráðu þig aftur inn á reikninginn þinn <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">Opnar innslegnar vefslóðir í Google Chrome í huliðsstillingu.</translation>
 <translation id="3762232513783804601">Sérhannað fyrir iPad</translation>
 <translation id="3771033907050503522">Huliðsflipar</translation>
@@ -381,6 +388,7 @@ Skoðaðu leiðbeiningar leitarvélarinnar um að eyða leitarferlinum ef það 
 <translation id="4187450337729239226">Líma og leita</translation>
 <translation id="4223967053752765281">Fyrirtækið þitt slökkti á innskráningu. Þú getur áfram séð bókamerki, feril, aðgangsorð og aðrar stillingar í þessu tæki. Breytingar verða ekki samstilltar við reikninginn þinn.</translation>
 <translation id="4233831822770018312">Breyta heimildum</translation>
+<translation id="4236584471598725073">Vaktar verð</translation>
 <translation id="4237377247299956313">Ýttu á <ph name="BEGIN_BOLD" />Sjálfgefið vafraforrit<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Sláðu inn aðgangsorð</translation>
 <translation id="4249955472157341256">Raða eftir nýjasta</translation>
@@ -740,6 +748,7 @@ Reyndu að nota einkvæmt aðgangsorð á hverju vefsvæði.</translation>
 <translation id="6930799952781667037">Ýttu til að skipta yfir í þetta tungumál.</translation>
 <translation id="6944369514868857500">Velja annan reikning</translation>
 <translation id="6945221475159498467">Velja</translation>
+<translation id="6965382102122355670">Í lagi</translation>
 <translation id="6973630695168034713">Möppur</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Stjórnaðu Google reikningnum</translation>

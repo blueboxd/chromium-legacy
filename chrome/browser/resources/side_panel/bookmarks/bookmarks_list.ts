@@ -70,6 +70,7 @@ export class BookmarksListElement extends PolymerElement {
   private productInfos_: BookmarkProductInfo[];
   hoverVisible: boolean;
   private openFolders_: string[];
+  private shoppingListenerIds_: number[] = [];
 
   override ready() {
     super.ready();
@@ -126,7 +127,17 @@ export class BookmarksListElement extends PolymerElement {
 
     this.shoppingListApi_.getAllPriceTrackedBookmarkProductInfo().then(res => {
       this.productInfos_ = res.productInfos;
+      if (this.productInfos_.length > 0) {
+        chrome.metricsPrivate.recordUserAction(
+            'Commerce.PriceTracking.SidePanel.TrackedProductsShown');
+      }
     });
+    const callbackRouter = this.shoppingListApi_.getCallbackRouter();
+    this.shoppingListenerIds_.push(
+        callbackRouter.priceTrackedForBookmark.addListener(
+            (product: BookmarkProductInfo) =>
+                this.onBookmarkPriceTracked(product)),
+    );
   }
 
   override disconnectedCallback() {
@@ -134,6 +145,8 @@ export class BookmarksListElement extends PolymerElement {
       this.bookmarksApi_.callbackRouter[eventName]!.removeListener(callback);
     }
     this.bookmarksDragManager_.stopObserving();
+    this.shoppingListenerIds_.forEach(
+        id => this.shoppingListApi_.getCallbackRouter().removeListener(id));
   }
 
   /** BookmarksDragDelegate */
@@ -387,6 +400,8 @@ export class BookmarksListElement extends PolymerElement {
 
     getAnnouncerInstance().announce(loadTimeData.getStringF(
         'bookmarkDeleted', getBookmarkName(removedNode)));
+    this.productInfos_ =
+        this.productInfos_.filter(item => item.bookmarkId !== BigInt(id));
   }
 
   private focusBookmark_(id: string) {
@@ -408,6 +423,18 @@ export class BookmarksListElement extends PolymerElement {
     if (bookmarkElement) {
       bookmarkElement.focus();
     }
+  }
+
+  private onBookmarkPriceTracked(product: BookmarkProductInfo) {
+    // Here we only control the visibility of ShoppingListElement. The same
+    // signal will also be handled in ShoppingListElement to update shopping
+    // list.
+    if (this.productInfos_.length > 0) {
+      return;
+    }
+    this.push('productInfos_', product);
+    chrome.metricsPrivate.recordUserAction(
+        'Commerce.PriceTracking.SidePanel.TrackedProductsShown');
   }
 }
 

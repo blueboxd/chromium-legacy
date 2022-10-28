@@ -32,6 +32,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1587223624401073077">Google Chrome používa vašu kameru.</translation>
 <translation id="1587325591171447154">Súbor <ph name="FILE_NAME" /> je nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="1597911401261118146">Ak chcete skontrolovať, či sú vaše heslá chránené pred porušením ochrany údajov a inými bezpečnostnými hrozbami, <ph name="BEGIN_LINK" />prihláste sa do Chromu<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome tento súbor archívu zablokoval, pretože môže skrývať malvér</translation>
 <translation id="1619887657840448962">Z dôvodu zvýšenia bezpečnosti prehliadača Chrome sme zakázali nasledujúce rozšírenie, ktoré nie je uvedené v službe <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo byť pridané bez vášho vedomia.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Ako môžete spravovať svoje údaje:<ph name="END_BOLD" /> v rámci ochrany vášho súkromia automaticky odstraňujeme záujmy, ktoré sú staršie ako štyri týždne. Pri ďalšom prehliadaní sa v zozname môže znova zobraziť určitý záujem. Prípadne môžete odstrániť záujmy, ktoré nemá Chrome posudzovať.</translation>
 <translation id="1628000112320670027">Pomoc s Chromom</translation>
@@ -59,6 +60,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2094648590148273905">Zmluvné podmienky systému Chrome OS Flex</translation>
 <translation id="2094919256425865063">Chcete Chrome napriek tomu ukončiť?</translation>
 <translation id="2106831557840787829">Chrome OS Flex mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS" />softvéru typu open source<ph name="END_LINK_CROS_OSS" />, ako je <ph name="BEGIN_LINK_LINUX_OSS" />vývojové prostredie systému Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Keď je táto funkcia zapnutá, Chrome bude uvoľňovať pamäť z kariet, ktoré aktívne nepoužívate. Týmto sa uvoľnia zdroje počítača pre ďalšie úlohy a Chromium bude fungovať rýchlejšie. Neaktívne karty sa budú zobrazovať prázdne a po kliknutí sa automaticky znova načítajú. Môžete si prečítať <ph name="BEGIN_LINK" />ďalšie informácie<ph name="END_LINK" /> alebo <ph name="BEGIN_LINK_2" />odoslať spätnú väzbu<ph name="END_LINK_2" />.</translation>
 <translation id="2120620239521071941">Táto akcia odstráni zo zariadenia niekoľko položiek (počet: <ph name="ITEMS_COUNT" />). Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do Chromu ako používateľ <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Znova spustiť a aktualizovať Chrome</translation>
 <translation id="2123055963409958220">Nahlásiť <ph name="BEGIN_LINK" />aktuálne nastavenia<ph name="END_LINK" /> a pomôcť tak zlepšiť Chrome</translation>
@@ -88,7 +90,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2586406160782125153">Táto akcia odstráni zo zariadenia údaje prehliadania. Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do Chromu ako používateľ <ph name="USER_EMAIL" />.</translation>
 <translation id="2597976513418770460">Získajte údaje prehliadača Chrome z účtu <ph name="ACCOUNT_EMAIL" /></translation>
 <translation id="2622559029861875898">Chrome nemôže skontrolovať dostupnosť aktualizácií. Skontrolujte internetové pripojenie.</translation>
-<translation id="2645435784669275700">Chrome OS</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2652691236519827073">Otvoriť odkaz na novej &amp;karte Chromu</translation>
 <translation id="2665296953892887393">Pomôcť zlepšiť prehliadač Google Chrome odosielaním správ o zlyhaní a <ph name="UMA_LINK" /> spoločnosti Google</translation>
 <translation id="2689103672227170538">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chrome.</translation>
@@ -277,6 +279,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6735387454586646204">Systém Chrome OS Flex</translation>
 <translation id="6739177684496155661">Chcete pokračovať v novom profile Chromu?</translation>
 <translation id="6750954913813541382">Chrome odošle text zadaný v prehliadači Googlu s cieľom opraviť pravopisné chyby</translation>
+<translation id="6756581345161130259">Chrome bude podľa potreby uvoľňovať pamäť z kariet, ktoré aktívne nepoužívate. Túto možnosť môžete kedykoľvek zmeniť v nastaveniach.</translation>
 <translation id="677276454032249905">Chcete Chrome napriek tomu ukončiť?</translation>
 <translation id="6785872064505734160">Asistent Google v Chrome môže za vás dokončiť akcie na weboch</translation>
 <translation id="683440813066116847">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome verzie Canary, ktoré povoľuje prenos dát mDNS.</translation>

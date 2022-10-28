@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/auth.h"
 #include "net/base/isolation_info.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/http/http_auth.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -117,8 +117,8 @@ void MediaResourceGetterImpl::GetAuthCredentials(
 
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id_, render_frame_id_);
-  // Can't get a NetworkIsolationKey to get credentials if the RenderFrameHost
-  // has already been destroyed.
+  // Can't get a NetworkAnonymizationKey to get credentials if the
+  // RenderFrameHost has already been destroyed.
   if (!render_frame_host) {
     GetAuthCredentialsCallback(std::move(callback), absl::nullopt);
     return;
@@ -127,7 +127,9 @@ void MediaResourceGetterImpl::GetAuthCredentials(
   browser_context_->GetDefaultStoragePartition()
       ->GetNetworkContext()
       ->LookupServerBasicAuthCredentials(
-          url, render_frame_host->GetNetworkIsolationKey(),
+          url,
+          render_frame_host->GetIsolationInfoForSubresources()
+              .network_anonymization_key(),
           base::BindOnce(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }

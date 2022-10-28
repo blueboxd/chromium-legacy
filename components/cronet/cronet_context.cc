@@ -169,7 +169,7 @@ void SetQuicHint(net::URLRequestContext* context,
   net::AlternativeService alternative_service(
       net::kProtoQUIC, "", static_cast<uint16_t>(quic_hint->alternate_port));
   context->http_server_properties()->SetQuicAlternativeService(
-      quic_server, net::NetworkIsolationKey(), alternative_service,
+      quic_server, net::NetworkAnonymizationKey(), alternative_service,
       base::Time::Max(), quic::ParsedQuicVersionVector());
 }
 
@@ -484,7 +484,7 @@ void CronetContext::NetworkTasks::SetSharedURLRequestContextConfig(
     for (const auto& preloaded_header :
          context_config_->preloaded_report_to_headers) {
       context->reporting_service()->ProcessReportToHeader(
-          preloaded_header.origin, net::NetworkIsolationKey(),
+          preloaded_header.origin, net::NetworkAnonymizationKey(),
           preloaded_header.value);
     }
   }
@@ -493,8 +493,8 @@ void CronetContext::NetworkTasks::SetSharedURLRequestContextConfig(
     for (const auto& preloaded_header :
          context_config_->preloaded_nel_headers) {
       context->network_error_logging_service()->OnHeader(
-          net::NetworkIsolationKey(), preloaded_header.origin, net::IPAddress(),
-          preloaded_header.value);
+          net::NetworkAnonymizationKey(), preloaded_header.origin,
+          net::IPAddress(), preloaded_header.value);
     }
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)

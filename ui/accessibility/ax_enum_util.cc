@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,8 @@ const char* ToString(ax::mojom::Role role) {
       return "comboBoxGrouping";
     case ax::mojom::Role::kComboBoxMenuButton:
       return "comboBoxMenuButton";
+    case ax::mojom::Role::kComboBoxSelect:
+      return "comboBoxSelect";
     case ax::mojom::Role::kComment:
       return "comment";
     case ax::mojom::Role::kComplementary:

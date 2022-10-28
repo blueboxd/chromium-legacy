@@ -21,7 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/proxy_string_util.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/dns/mock_host_resolver.h"
@@ -118,7 +118,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     if (GetParam() != HTTP)
       return nullptr;
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHttpProxyHost, 80), NetworkIsolationKey(),
+        HostPortPair(kHttpProxyHost, 80), NetworkAnonymizationKey(),
         secure_dns_policy, OnHostResolutionCallback(),
         /*supported_alpns=*/base::flat_set<std::string>());
   }
@@ -129,11 +129,11 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
       return nullptr;
     return base::MakeRefCounted<SSLSocketParams>(
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kHttpsProxyHost, 443), NetworkIsolationKey(),
+            HostPortPair(kHttpsProxyHost, 443), NetworkAnonymizationKey(),
             secure_dns_policy, OnHostResolutionCallback(),
             /*supported_alpns=*/base::flat_set<std::string>()),
         nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
-        PRIVACY_MODE_DISABLED, NetworkIsolationKey());
+        PRIVACY_MODE_DISABLED, NetworkAnonymizationKey());
   }
 
   // Returns a correctly constructed HttpProxyParams for the HTTP or HTTPS
@@ -145,7 +145,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
         CreateHttpProxyParams(secure_dns_policy),
         CreateHttpsProxyParams(secure_dns_policy), false /* is_quic */,
         HostPortPair(kEndpointHost, tunnel ? 443 : 80), tunnel,
-        TRAFFIC_ANNOTATION_FOR_TESTS, NetworkIsolationKey());
+        TRAFFIC_ANNOTATION_FOR_TESTS, NetworkAnonymizationKey());
   }
 
   std::unique_ptr<HttpProxyConnectJob> CreateConnectJobForHttpRequest(
@@ -795,7 +795,7 @@ TEST_P(HttpProxyConnectJobTest, HaveAuth) {
                          : GURL(std::string("https://") + kHttpsProxyHost));
   session_->http_auth_cache()->Add(
       proxy_scheme_host_port, HttpAuth::AUTH_PROXY, "MyRealm1",
-      HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
+      HttpAuth::AUTH_SCHEME_BASIC, NetworkAnonymizationKey(),
       "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
 
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
@@ -937,15 +937,15 @@ TEST_P(HttpProxyConnectJobTest, SpdySessionKeyDisableSecureDns) {
   TestConnectJobDelegate test_delegate;
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
       base::MakeRefCounted<TransportSocketParams>(
-          HostPortPair(kHttpsProxyHost, 443), NetworkIsolationKey(),
+          HostPortPair(kHttpsProxyHost, 443), NetworkAnonymizationKey(),
           SecureDnsPolicy::kDisable, OnHostResolutionCallback(),
           /*supported_alpns=*/base::flat_set<std::string>()),
       nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
-      PRIVACY_MODE_DISABLED, NetworkIsolationKey());
+      PRIVACY_MODE_DISABLED, NetworkAnonymizationKey());
   auto http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(
       nullptr /* tcp_params */, std::move(ssl_params), false /* is_quic */,
       HostPortPair(kEndpointHost, 443),
-      /*tunnel=*/true, TRAFFIC_ANNOTATION_FOR_TESTS, NetworkIsolationKey());
+      /*tunnel=*/true, TRAFFIC_ANNOTATION_FOR_TESTS, NetworkAnonymizationKey());
 
   std::unique_ptr<ConnectJob> connect_job = CreateConnectJob(
       std::move(http_proxy_params), &test_delegate, DEFAULT_PRIORITY);
@@ -957,7 +957,7 @@ TEST_P(HttpProxyConnectJobTest, SpdySessionKeyDisableSecureDns) {
           SpdySessionKey(HostPortPair(kHttpsProxyHost, 443),
                          ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                          SpdySessionKey::IsProxySession::kTrue, SocketTag(),
-                         NetworkIsolationKey(), SecureDnsPolicy::kDisable),
+                         NetworkAnonymizationKey(), SecureDnsPolicy::kDisable),
           /* enable_ip_based_pooling = */ false,
           /* is_websocket = */ false, NetLogWithSource()));
   EXPECT_FALSE(
@@ -965,7 +965,7 @@ TEST_P(HttpProxyConnectJobTest, SpdySessionKeyDisableSecureDns) {
           SpdySessionKey(HostPortPair(kHttpsProxyHost, 443),
                          ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                          SpdySessionKey::IsProxySession::kTrue, SocketTag(),
-                         NetworkIsolationKey(), SecureDnsPolicy::kAllow),
+                         NetworkAnonymizationKey(), SecureDnsPolicy::kAllow),
           /* enable_ip_based_pooling = */ false,
           /* is_websocket = */ false, NetLogWithSource()));
 }

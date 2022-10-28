@@ -34,6 +34,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/bluetooth/chrome_bluetooth_delegate_impl_client.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_features.h"
@@ -2454,6 +2455,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (!login_profile.empty())
       command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                       login_profile);
+
+    if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
+      command_line->AppendSwitch(switches::kAshWebBrowserDisabled);
+    }
 #endif
 
     MaybeCopyDisableWebRtcEncryptionSwitch(command_line, browser_command_line,
@@ -5793,6 +5798,12 @@ content::BluetoothDelegate* ChromeContentBrowserClient::GetBluetoothDelegate() {
   return bluetooth_delegate_.get();
 }
 
+content::UsbDelegate* ChromeContentBrowserClient::GetUsbDelegate() {
+  if (!usb_delegate_)
+    usb_delegate_ = std::make_unique<ChromeUsbDelegate>();
+  return usb_delegate_.get();
+}
+
 #if !BUILDFLAG(IS_ANDROID)
 void ChromeContentBrowserClient::CreateDeviceInfoService(
     content::RenderFrameHost* render_frame_host,
@@ -5819,12 +5830,6 @@ content::HidDelegate* ChromeContentBrowserClient::GetHidDelegate() {
   if (!hid_delegate_)
     hid_delegate_ = std::make_unique<ChromeHidDelegate>();
   return hid_delegate_.get();
-}
-
-content::UsbDelegate* ChromeContentBrowserClient::GetUsbDelegate() {
-  if (!usb_delegate_)
-    usb_delegate_ = std::make_unique<ChromeUsbDelegate>();
-  return usb_delegate_.get();
 }
 
 content::DirectSocketsDelegate*
@@ -6430,8 +6435,10 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
   DCHECK(render_frame_host);
 
   // Paste requires either (1) user activation, ...
-  if (render_frame_host->HasTransientUserActivation())
+  if (WebContents::FromRenderFrameHost(render_frame_host)
+          ->HasRecentInteractiveInputEvent()) {
     return true;
+  }
 
   // (2) granted web permission, ...
   content::BrowserContext* browser_context =
@@ -6831,11 +6838,15 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
   if (error_code != net::ERR_INTERNET_DISCONNECTED)
     return nullptr;
 
-  if (!base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage)) {
+  if (!base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage))
     return nullptr;
-  }
 
-  return web_app::GetOfflinePageInfo(url, render_frame_host, browser_context);
+  content::mojom::AlternativeErrorPageOverrideInfoPtr error_page =
+      web_app::GetOfflinePageInfo(url, render_frame_host, browser_context);
+  if (error_page)
+    web_app::TrackOfflinePageVisibility(render_frame_host);
+
+  return error_page;
 }
 
 bool ChromeContentBrowserClient::OpenExternally(
@@ -6881,4 +6892,19 @@ void ChromeContentBrowserClient::OnSharedStorageWorkletHostCreated(
               WebContents::FromRenderFrameHost(rfh))) {
     observer->OnSharedStorageWorkletHostCreated(rfh);
   }
+}
+
+bool ChromeContentBrowserClient::ShouldSendOutermostOriginToRenderer(
+    const url::Origin& outermost_origin) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // We only want to send the outermost origin if it is an extension scheme.
+  // We do not send the outermost origin to every renderer to avoid leaking
+  // additional information into the renderer about the embedder. For
+  // extensions though this is required for the way content injection API
+  // works. We do not want one extension injecting content into the context
+  // of another extension.
+  return outermost_origin.scheme() == extensions::kExtensionScheme;
+#else
+  return false;
+#endif
 }

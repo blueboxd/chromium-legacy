@@ -23,6 +23,7 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="1104948393051856124">Accepter et continuer</translation>
 <translation id="110724200315609752">Passer à une autre fenêtre ouverte</translation>
 <translation id="1112015203684611006">Échec impr.</translation>
+<translation id="1118569444314402022">Bon retour parmi nous, <ph name="USER_NAME" /> !</translation>
 <translation id="1125564390852150847">Créer un onglet</translation>
 <translation id="1126809382673880764">Ce mode ne vous protège pas contre les téléchargements, les extensions et les sites Web dangereux. Le cas échéant, vous bénéficierez toujours de la protection offerte par la navigation sécurisée dans d'autres services Google, tels que Gmail et la recherche.</translation>
 <translation id="1135212215217513471">Télécharger Chrome pour iOS</translation>
@@ -46,6 +47,7 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1275718070701477396">Sélectionnée</translation>
 <translation id="1281818060020671000">Gérer les données</translation>
+<translation id="1282311502488501110">Ne pas se connecter</translation>
 <translation id="1283524564873030414">Dernières 24 heures</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291506870746876680">Les autorisations du site <ph name="BEGIN_BOLD" /><ph name="SITE_NAME" /><ph name="END_BOLD" /> seront désactivées quand vous le quitterez.</translation>
@@ -54,6 +56,7 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="1322735045095424339">Votre organisation exige d'utiliser le mode navigation privée</translation>
 <translation id="1323735185997015385">Supprimer</translation>
 <translation id="132683371494960526">Appuyez deux fois pour modifier le dossier parent.</translation>
+<translation id="1335348992705722518">Gérer les paramètres</translation>
 <translation id="1340643665687018190">Fermer le menu</translation>
 <translation id="1358214951266274152">Consulter le lien copié</translation>
 <translation id="1360432990279830238">Se déconnecter et arrêter la synchro. ?</translation>
@@ -61,6 +64,7 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="1377255359165588604">La synchronisation s'est arrêtée.</translation>
 <translation id="1377321085342047638">Numéro de carte</translation>
 <translation id="1383876407941801731">Rechercher</translation>
+<translation id="138618066238211776">Continuer en tant que <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">4 dernières semaines</translation>
 <translation id="1404330357948037222">Vous êtes déconnecté</translation>
 <translation id="1407135791313364759">Tout ouvrir</translation>
@@ -174,9 +178,11 @@ Ils ne peuvent pas non plus en utiliser pour voir votre activité de navigation 
 <translation id="2421044535038393232">Poursuivre les modifications</translation>
 <translation id="2434405374328098816">Vous avez déjà enregistré un mot de passe pour "<ph name="USERNAME" />" sur <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Afficher le mot de passe</translation>
+<translation id="2461070143328828326">Paramètres de mot de passe</translation>
 <translation id="2469960372084740698">Désactiver la navigation sécurisée ?</translation>
 <translation id="2473876017985765807">Vous avez déjà enregistré un mot de passe pour <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Non sélectionné</translation>
+<translation id="2482878487686419369">Notifications</translation>
 <translation id="2500374554657206846">Options d'enregistrement des mots de passe</translation>
 <translation id="2523363575747517183">Ce site Web a tenté à plusieurs reprises d'ouvrir une autre application.</translation>
 <translation id="2529021024822217800">Tout ouvrir</translation>
@@ -327,6 +333,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="3709582977625132201">Marquer comme non lu</translation>
 <translation id="371230970611282515">Il prédit les événements dangereux et vous en informe avant qu'ils ne surviennent.</translation>
 <translation id="37207012422556617">Recherches populaires</translation>
+<translation id="3726360487031500941">Reconnectez-vous à votre compte <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">Ouvre les URL saisies dans Google Chrome en mode navigation privée.</translation>
 <translation id="3762232513783804601">Conçu pour votre iPad</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
@@ -381,6 +388,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="4187450337729239226">Coller et rechercher</translation>
 <translation id="4223967053752765281">Votre organisation a désactivé la connexion. Vos favoris, historique, mots de passe et autres paramètres resteront accessibles sur cet appareil, mais les modifications ne seront pas synchronisées avec votre compte.</translation>
 <translation id="4233831822770018312">Modifier les autorisations</translation>
+<translation id="4236584471598725073">Suivi des prix…</translation>
 <translation id="4237377247299956313">Appuyez sur <ph name="BEGIN_BOLD" />Navigateur par défaut<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Saisir la phrase secrète</translation>
 <translation id="4249955472157341256">Trier par "Les plus récents"</translation>
@@ -740,6 +748,7 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="6930799952781667037">Appuyez pour choisir cette langue.</translation>
 <translation id="6944369514868857500">Sélectionner un autre compte</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Dossiers</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Gérer votre compte Google</translation>

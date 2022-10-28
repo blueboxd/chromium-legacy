@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">Можна також переходити між розділами екрана (наприклад, між панеллю запуску та вкладками Chrome). Щоб перейти в наступний розділ, проведіть чотирма пальцями зліва направо. Зробіть це зараз, щоб продовжити.</translation>
 <translation id="2624431853467395961">Відкрити сторінку "Докладніше"</translation>
 <translation id="2626530649491650971">інтерактивний</translation>
+<translation id="263637551280112393">Натисніть клавішу пошуку + Shift + пробіл</translation>
 <translation id="2637227747952042642">Матем.</translation>
 <translation id="2638785836053527382">Завантаження файлу <ph name="FILE_NAME" /> відновлено</translation>
 <translation id="2639750663247012216">Модифікатор ChromeVox</translation>
@@ -650,6 +651,7 @@
 <translation id="5355014376930441909">Немає наступного розділу</translation>
 <translation id="5368000168321181111">Звуковий ефект вимкнено</translation>
 <translation id="5368505757342402527">Файл <ph name="FILE_NAME" /> завантажено на <ph name="PROGRESS" />%. Залишилося приблизно <ph name="TIME" /> <ph name="UNITS" />.</translation>
+<translation id="5381388086899614489">утримувати</translation>
 <translation id="5400836586163650660">Сірий</translation>
 <translation id="5402367795255837559">Команди Брайля</translation>
 <translation id="5402791055281059602">Сповіщення в модальному вікні</translation>
@@ -1148,7 +1150,7 @@
 <translation id="89720367119469899">Escape</translation>
 <translation id="8978496506222343566">підказка</translation>
 <translation id="898089897833732740">видалити "<ph name="PHRASE" />"</translation>
-<translation id="8986362086234534611">Видалити</translation>
+<translation id="8986362086234534611">Забути</translation>
 <translation id="8989104346085848538">Щоб зупинити озвучення ChromeVox, натисніть клавішу Control.</translation>
 <translation id="8993737615451556423">Елементи керування, за допомогою яких можна пришвидшувати, сповільнювати й зупиняти озвучення</translation>
 <translation id="9014206344398081366">Навчальний посібник ChromeVox</translation>

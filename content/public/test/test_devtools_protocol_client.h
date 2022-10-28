@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,8 @@ class TestDevToolsProtocolClient : public DevToolsAgentHostClient {
   int received_responses_count() const { return received_responses_count_; }
 
   scoped_refptr<DevToolsAgentHost> agent_host_;
+
+  void SetProtocolCommandId(int id) { last_sent_id_ = id - 1; }
 
  private:
   void WaitForResponse();

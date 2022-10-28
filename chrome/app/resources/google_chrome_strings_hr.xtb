@@ -30,6 +30,7 @@
 <translation id="1587223624401073077">Google Chrome upotrebljava vašu kameru.</translation>
 <translation id="1587325591171447154">Datoteka <ph name="FILE_NAME" /> opasna je, pa ju je Chrome blokirao.</translation>
 <translation id="1597911401261118146">Da biste provjerili jesu li vaše zaporke sigurne od povrede podataka i drugih poteškoća sa sigurnošću, <ph name="BEGIN_LINK" />prijavite se na Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome je blokirao ovu arhivsku datoteku jer može skrivati zlonamjerni softver</translation>
 <translation id="1619887657840448962">Kako bismo Chrome učinili sigurnijim, onemogućili smo sljedeće proširenje koje nije navedeno na stranici <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i možda je dodano bez vašeg znanja.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Kako možete upravljati svojim podacima<ph name="END_BOLD" />: da bismo zaštitili vašu privatnost, automatski brišemo vaše interese starije od četiri tjedna. Tijekom vašeg daljnjeg pregledavanja neki se interes može ponovo pojaviti na popisu. Možete i ukloniti interese za koje ne želite da ih Chrome razmatra.</translation>
 <translation id="1628000112320670027">Potraži pomoć za upotrebu Chromea</translation>
@@ -57,6 +58,7 @@
 <translation id="2094648590148273905">Uvjeti za ChromeOS Flex</translation>
 <translation id="2094919256425865063">Želite li ipak zatvoriti Chrome?</translation>
 <translation id="2106831557840787829">ChromeOS Flex omogućuje dodatni <ph name="BEGIN_LINK_CROS_OSS" />softver otvorenog izvornog koda<ph name="END_LINK_CROS_OSS" />, isto kao i <ph name="BEGIN_LINK_LINUX_OSS" />razvojno okruženje Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Kada je to uključeno, Chrome vraća memoriju s kartica koje ne upotrebljavate aktivno. Time se resursi računala oslobađaju za druge zadatke i ubrzava se rad Chromea. Neaktivne kartice prikazuju se prazne i automatski se ponovno učitavaju kad ih kliknete. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /> ili <ph name="BEGIN_LINK_2" />pošaljite povratne informacije<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Time će se izbrisati sljedeći broj stavki s uređaja: <ph name="ITEMS_COUNT" />. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Ponovno pokretanje radi ažuriranja &amp;Chromea</translation>
 <translation id="2123055963409958220">Pomognite poboljšati Chrome tako što ćete prijaviti <ph name="BEGIN_LINK" />trenutačne postavke<ph name="END_LINK" /></translation>
@@ -271,6 +273,7 @@
 <translation id="6735387454586646204">Sustav ChromeOS Flex</translation>
 <translation id="6739177684496155661">Želite li nastaviti na novom profilu u Chromeu?</translation>
 <translation id="6750954913813541382">Chrome šalje Googleu tekst koji utipkate u preglednik radi ispravljanja pravopisnih pogrešaka</translation>
+<translation id="6756581345161130259">Chrome prema potrebi vraća memoriju s kartica koje ne upotrebljavate aktivno. To uvijek možete promijeniti u postavkama.</translation>
 <translation id="677276454032249905">Želite li ipak zatvoriti Chrome?</translation>
 <translation id="6785872064505734160">Google asistent u Chromeu može dovršiti radnje u web-lokacijama za vas</translation>
 <translation id="683440813066116847">Ulazno pravilo kako bi Google Chrome Canary dopustio mDNS promet.</translation>

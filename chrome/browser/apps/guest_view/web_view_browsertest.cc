@@ -2133,6 +2133,12 @@ class WebViewSSLErrorTest : public WebViewTest {
     // A security error within a guest should not cause an interstitial to be
     // shown in the embedder.
     ASSERT_FALSE(IsShowingInterstitial(GetFirstAppWindowWebContents()));
+
+    auto* guest = GetGuestViewManager()->GetLastGuestViewCreated();
+    ASSERT_TRUE(guest->GetGuestMainFrame()->IsErrorDocument());
+    // TODO(1338009): We intend to limit SSL errors to a plain error page
+    // instead of an interstitial.
+    ASSERT_TRUE(IsShowingInterstitial(guest->web_contents()));
   }
 
   void LoadEmptyGuest() {
@@ -2148,7 +2154,7 @@ class WebViewSSLErrorTest : public WebViewTest {
     ASSERT_TRUE(guest_main_frame->GetProcess()->IsForGuestsOnly());
   }
 
-  // Loads the `guest_url` by settings the `src` of the guest. This helper
+  // Loads the `guest_url` by setting the `src` of the guest. This helper
   // assumes the app is loaded, and assumes the app already has a guest created.
   void SetGuestURL(const GURL& guest_url, bool expect_successful_navigation) {
     auto* embedder_web_contents = GetFirstAppWindowWebContents();
@@ -2198,9 +2204,6 @@ INSTANTIATE_TEST_SUITE_P(WebViewSSLErrorTests,
 #endif
 IN_PROC_BROWSER_TEST_P(WebViewSSLErrorTest, MAYBE_ShowErrorDocForSSLError) {
   SSLTestHelper();
-  ASSERT_TRUE(GetGuestViewManager()
-                  ->GetLastGuestRenderFrameHostCreated()
-                  ->IsErrorDocument());
 }
 
 // Test makes sure that the error document is registered in the
@@ -2237,10 +2240,6 @@ IN_PROC_BROWSER_TEST_P(WebViewSSLErrorTest, MAYBE_ErrorPageRouteEvents) {
 #endif
 IN_PROC_BROWSER_TEST_P(WebViewSSLErrorTest, MAYBE_ErrorPageDetach) {
   SSLTestHelper();
-
-  auto* guest_main_frame =
-      GetGuestViewManager()->GetLastGuestRenderFrameHostCreated();
-  ASSERT_TRUE(guest_main_frame->IsErrorDocument());
 
   // Navigate to about:blank
   const GURL blank(url::kAboutBlankURL);
@@ -5816,6 +5815,49 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, ErrorPageIsolation) {
   EXPECT_NE(error_instance, second_error_instance);
   EXPECT_EQ(error_instance->GetStoragePartitionConfig(),
             second_error_instance->GetStoragePartitionConfig());
+}
+
+// Ensure that the browser doesn't crash when a subframe in a <webview> is
+// navigated to an unknown scheme.  This used to be the case due to a mismatch
+// between the error page's SiteInstance and the origin to commit as calculated
+// in NavigationRequest.  See https://crbug.com/1366450.
+IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, ErrorPageInSubframe) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Load an app with a <webview> guest that starts at a data: URL.
+  LoadAppWithGuest("web_view/simple");
+  ASSERT_TRUE(GetGuestRenderFrameHost());
+
+  scoped_refptr<content::SiteInstance> first_instance =
+      GetGuestRenderFrameHost()->GetSiteInstance();
+  EXPECT_TRUE(first_instance->IsGuest());
+
+  // Navigate <webview> to a page with an iframe.
+  const GURL first_url =
+      embedded_test_server()->GetURL("a.test", "/iframe.html");
+  {
+    content::TestFrameNavigationObserver load_observer(
+        GetGuestRenderFrameHost());
+    EXPECT_TRUE(ExecuteScript(GetGuestRenderFrameHost(),
+                              "location.href = '" + first_url.spec() + "';"));
+    load_observer.Wait();
+    EXPECT_TRUE(load_observer.last_navigation_succeeded());
+  }
+
+  // At this point, the guest's iframe should already be loaded.  Navigate
+  // it to an unknown scheme, which will result in an error. This shouldn't
+  // crash the browser.
+  content::RenderFrameHost* guest_subframe =
+      ChildFrameAt(GetGuestRenderFrameHost(), 0);
+  const GURL error_url = GURL("unknownscheme:foo");
+  {
+    content::TestFrameNavigationObserver load_observer(guest_subframe);
+    EXPECT_TRUE(ExecuteScript(guest_subframe,
+                              "location.href = '" + error_url.spec() + "';"));
+    load_observer.Wait();
+    EXPECT_FALSE(load_observer.last_navigation_succeeded());
+    EXPECT_TRUE(ChildFrameAt(GetGuestRenderFrameHost(), 0)->IsErrorDocument());
+  }
 }
 
 // Checks that a main frame navigation in a <webview> can swap

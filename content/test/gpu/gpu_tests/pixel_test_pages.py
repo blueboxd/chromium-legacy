@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1148,6 +1148,21 @@ class PixelTestPages():
             browser_args=[cba.DISABLE_DIRECT_COMPOSITION_VIDEO_OVERLAYS],
             other_args={'no_overlay': True},
             matching_algorithm=very_permissive_dc_sobel_algorithm),
+    ]
+
+  @staticmethod
+  def MediaRecorderFromCanvasPages(base_name: str) -> List[PixelTestPage]:
+    # Full cycle capture-encode-decode test for MediaRecorder capturing canvas.
+    # This test has its own basic logic for validating MediaRecorder's output,
+    # it prevents false negatives, but also makes sure that color channels
+    # are not switched and frames are not black.
+    return [
+        PixelTestPage('pixel_media_recorder_from_canvas_2d.html',
+                      base_name + '_MediaRecorderFrom2DCanvas',
+                      test_rect=[0, 0, 256, 256],
+                      browser_args=[],
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
+                      grace_period_end=date(2022, 10, 20))
     ]
 
   @staticmethod

@@ -23,6 +23,7 @@
 <translation id="1104948393051856124">בסדר, מקובל עליי</translation>
 <translation id="110724200315609752">מעבר לחלון פתוח</translation>
 <translation id="1112015203684611006">ההדפסה נכשלה.</translation>
+<translation id="1118569444314402022">שמחים שחזרת, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">יצירת כרטיסייה חדשה.</translation>
 <translation id="1126809382673880764">‏במצב הזה המערכת לא מגינה עליך מפני אתרים, הורדות ותוספים מסוכנים. גלישה בטוחה עדיין תגן עליך בשירותים אחרים של Google שבהם היא זמינה, כמו Gmail והחיפוש.</translation>
 <translation id="1135212215217513471">‏להורדת Chrome ל-iOS</translation>
@@ -46,6 +47,7 @@
 <translation id="1272079795634619415">הפסקה</translation>
 <translation id="1275718070701477396">נבחר</translation>
 <translation id="1281818060020671000">ניהול נתונים</translation>
+<translation id="1282311502488501110">אני לא רוצה להיכנס</translation>
 <translation id="1283524564873030414">מ-24 השעות האחרונות</translation>
 <translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
 <translation id="1291506870746876680">ההרשאות לאתר <ph name="BEGIN_BOLD" /><ph name="SITE_NAME" /><ph name="END_BOLD" /> יאופסו לאחר היציאה ממנו.</translation>
@@ -54,6 +56,7 @@
 <translation id="1322735045095424339">מצב אנונימי נדרש על ידי הארגון שלך</translation>
 <translation id="1323735185997015385">מחיקה</translation>
 <translation id="132683371494960526">יש להקיש פעמיים כדי לשנות את תיקיית האב.</translation>
+<translation id="1335348992705722518">ניהול ההגדרות...</translation>
 <translation id="1340643665687018190">סגירת התפריט</translation>
 <translation id="1358214951266274152">מעבר לקישור שהעתקת</translation>
 <translation id="1360432990279830238">לצאת ולהשבית את הסנכרון?</translation>
@@ -61,6 +64,7 @@
 <translation id="1377255359165588604">הסנכרון הפסיק לפעול.</translation>
 <translation id="1377321085342047638">מספר כרטיס</translation>
 <translation id="1383876407941801731">חיפוש</translation>
+<translation id="138618066238211776">המשך בתור <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">מארבעת השבועות האחרונים</translation>
 <translation id="1404330357948037222">לא נכנסת לחשבון</translation>
 <translation id="1407135791313364759">פתיחת כל הכרטיסיות</translation>
@@ -174,9 +178,11 @@
 <translation id="2421044535038393232">המשך העריכה</translation>
 <translation id="2434405374328098816">כבר שמרת סיסמה עבור המשתמש "<ph name="USERNAME" />" לאתר <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">הצגת סיסמה</translation>
+<translation id="2461070143328828326">הגדרות סיסמה</translation>
 <translation id="2469960372084740698">להשבית את 'גלישה בטוחה'?</translation>
 <translation id="2473876017985765807">כבר שמרת סיסמה לאתר <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">לא נבחר</translation>
+<translation id="2482878487686419369">התראות</translation>
 <translation id="2500374554657206846">אפשרויות לשמירת סיסמה</translation>
 <translation id="2523363575747517183">האתר הזה מנסה שוב ושוב לפתוח אפליקציה אחרת.</translation>
 <translation id="2529021024822217800">פתיחת הכול</translation>
@@ -327,6 +333,7 @@
 <translation id="3709582977625132201">סימון כפריט שלא נקרא</translation>
 <translation id="371230970611282515">המערכת חוזה אירועים מסוכנים ומזהירה אותך לגביהם לפני שהם מתרחשים.</translation>
 <translation id="37207012422556617">שאילתות חיפוש פופולריות</translation>
+<translation id="3726360487031500941">עליך להיכנס שוב לחשבון <ph name="USER_NAME" />.</translation>
 <translation id="3740397331642243698">‏פתיחת כתובות ה-URL שהוזנו ב-Google Chrome במצב אנונימי.</translation>
 <translation id="3762232513783804601">‏מותאם ל-iPad שלך</translation>
 <translation id="3771033907050503522">כרטיסיות אנונימיות</translation>
@@ -381,6 +388,7 @@
 <translation id="4187450337729239226">הדבקה וחיפוש</translation>
 <translation id="4223967053752765281">הכניסה הושבתה על ידי הארגון שלך. יש לך עדיין אפשרות לראות את הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות במכשיר הזה. שינויים שיתבצעו על ידך לא יסונכרנו בחשבון שלך.</translation>
 <translation id="4233831822770018312">עריכת ההרשאות</translation>
+<translation id="4236584471598725073">המחיר נמצא במעקב</translation>
 <translation id="4237377247299956313">מקישים על <ph name="BEGIN_BOLD" />אפליקציית הדפדפן שמוגדרת כברירת מחדל<ph name="END_BOLD" />.</translation>
 <translation id="424315890655130736">הזנת ביטוי סיסמה</translation>
 <translation id="4249955472157341256">מיון לפי 'האחרון'</translation>
@@ -740,6 +748,7 @@
 <translation id="6930799952781667037">יש להקיש כדי לעבור לשפה הזו.</translation>
 <translation id="6944369514868857500">בחירת חשבון אחר</translation>
 <translation id="6945221475159498467">בחירה</translation>
+<translation id="6965382102122355670">אישור</translation>
 <translation id="6973630695168034713">תיקיות</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">‏ניהול חשבון Google שלך</translation>

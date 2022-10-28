@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,8 @@ class CONTENT_EXPORT SetBidBindings : public Bindings {
   bool has_bid() const { return !bid_.is_null(); }
   mojom::BidderWorkletBidPtr TakeBid();
 
+  // Returns true if there was no error, and false on error. Note that a valid
+  // value that results in no bid is not considered an error.
   bool SetBid(v8::Local<v8::Value> generate_bid_result,
               std::string error_prefix,
               std::vector<std::string>& errors_out);

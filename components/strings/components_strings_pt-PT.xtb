@@ -174,6 +174,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1380591466760231819">Dobragem de carta</translation>
 <translation id="138218114945450791">Azul-claro</translation>
 <translation id="1382194467192730611">Dispositivo USB permitido pelo administrador</translation>
+<translation id="1382378825779654399">Vai obter alertas por email se o preço descer em qualquer site. Esta página vai ser guardada em <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">Não vê as suas informações atuais? Contacte o banco para as atualizar.</translation>
 <translation id="1384725838384960382">Página de autenticação das credenciais de pagamento seguro</translation>
 <translation id="1386623374109090026">Notas</translation>
@@ -250,7 +251,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Programas sem custo financeiro e shareware</translation>
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
-<translation id="1554003749331233619">Está agora a acompanhar este produto. Esta página foi guardada em <ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1559447966090556585">Pretende receber notificações?</translation>
 <translation id="1559528461873125649">Esse ficheiro ou diretório não existe</translation>
@@ -298,7 +298,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1662550410081243962">Guardar e preencher métodos de pagamento</translation>
 <translation id="1663943134801823270">Os cartões e os endereços são provenientes do Chrome. Pode geri-los nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">As páginas em <ph name="SOURCE_LANGUAGE" /> serão traduzidas para <ph name="TARGET_LANGUAGE" /> a partir de agora.</translation>
-<translation id="1673886523110456987">Pague com <ph name="CARD_DETAIL" /> para usar a oferta</translation>
 <translation id="1674504678466460478">De <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Margem estreita primeiro</translation>
 <translation id="168693727862418163">Ocorreu um erro na validação desta política em relação ao respetivo esquema e a mesma será ignorada.</translation>
@@ -423,6 +422,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2034971124472263449">Guardar mesmo assim</translation>
 <translation id="2035400064145347639">Guias e documentários de viagens</translation>
 <translation id="2036983605131262583">Rolo alternativo</translation>
+<translation id="2040463897538655645">Armazenamento amovível</translation>
 <translation id="2040894699575719559">Localização bloqueada</translation>
 <translation id="2042213636306070719">Tabuleiro 7</translation>
 <translation id="204357726431741734">Iniciar sessão para utilizar palavras-passe guardadas na sua Conta Google</translation>
@@ -727,7 +727,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2882949212241984732">Dobra simétrica dupla</translation>
 <translation id="2893773853358652045">Quarto rolo</translation>
 <translation id="2900528713135656174">Criar evento</translation>
-<translation id="2903493209154104877">Endereços</translation>
+<translation id="2903493209154104877">Moradas</translation>
 <translation id="290376772003165898">A página não está em <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Foi detetada uma alteração de rede.</translation>
 <translation id="2911973620368911614">ID do utilizador da contabilidade da tarefa</translation>
@@ -1005,7 +1005,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3633738897356909127">Botão Atualizar Chrome; prima Enter para atualizar o Chrome nas Definições do Chrome.</translation>
 <translation id="3634530185120165534">Tabuleiro 5</translation>
 <translation id="3634567936866541746">Acabou de introduzir a sua palavra-passe num site fraudulento. Para proteger as suas contas, o Chrome recomenda verificar as palavras-passe guardadas.</translation>
-<translation id="3637033245385760976">As notificações do Chrome têm de estar ativadas. Pode ativá-las nas <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="3637662659967048211">Guardar na Conta Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Aplicação:</translation>
@@ -1521,6 +1520,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
 <translation id="5019198164206649151">Armazenamento de segurança em mau estado</translation>
 <translation id="5020776957610079374">Música do mundo</translation>
+<translation id="5021557570875267742">Acompanhe os preços com o Chrome</translation>
 <translation id="5023310440958281426">Verificar as políticas do gestor</translation>
 <translation id="5029568752722684782">Limpar cópia</translation>
 <translation id="5030338702439866405">Emitido por</translation>
@@ -1704,7 +1704,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="54817484435770891">Adicionar endereço válido</translation>
 <translation id="5485973315555778056">Computador da nuvem</translation>
 <translation id="5487426985799386720">Alimentação e bebidas</translation>
-<translation id="5490432419156082418">Endereços e Mais</translation>
+<translation id="5490432419156082418">Moradas e Mais</translation>
 <translation id="5492298309214877701">Este site na intranet da empresa, da entidade ou da escola tem o mesmo URL que um Website externo.
     <ph name="LINE_BREAK" />
     Experimente contactar o gestor do sistema.</translation>
@@ -2129,7 +2129,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6687335167692595844">Tamanho do tipo de letra solicitado</translation>
 <translation id="6687696737818665306">Representação e teatro</translation>
 <translation id="6688743156324860098">Atualizar…</translation>
-<translation id="6688775486821967877">O cartão virtual não está disponível neste momento. Tente novamente mais tarde</translation>
+<translation id="6688775486821967877">O cartão virtual não está disponível neste momento. Tente mais tarde</translation>
 <translation id="6689249931105087298">Relativa com compressão do ponto preto</translation>
 <translation id="6689271823431384964">O Chrome está a disponibilizar a opção de guardar os seus cartões na sua Conta Google porque tem sessão iniciada. Pode alterar este comportamento nas definições. O nome do titular do cartão vem da sua conta.</translation>
 <translation id="6694681292321232194"><ph name="FIND_MY_PHONE_FOCUSED_FRIENDLY_MATCH_TEXT" />, prima Tab e, em seguida, Enter para encontrar o seu dispositivo na Conta Google</translation>
@@ -2242,6 +2242,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Traduzir sempre do <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Indústria de entretenimento</translation>
+<translation id="7003335073762455340">Está a acompanhar este produto. Esta página foi guardada em <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Utilizar o Windows Hello para confirmar os cartões mais rapidamente</translation>
 <translation id="7006930604109697472">Enviar mesmo assim</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2324,6 +2325,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="7234638337680728591">Preços da gasolina e combustíveis</translation>
 <translation id="7237492777898608035">Não voltar a mostrar esta mensagem para este site</translation>
 <translation id="7238585580608191973">Impressão digital SHA-256</translation>
+<translation id="7239514174717251677">Os alertas de descida do preço estão ativados. Pode alterar esta definição nas <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# correspondência}other{# correspondências}}</translation>
@@ -2464,6 +2466,7 @@ Detalhes adicionais:
 <translation id="7564049878696755256">Pode perder o acesso à sua conta do serviço <ph name="ORG_NAME" /> ou ser vítima de roubo de identidade. O Chrome recomenda a alteração da palavra-passe agora.</translation>
 <translation id="7564680668369175887">Carrinhas</translation>
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ter sido emitido de forma fraudulenta. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
+<translation id="7568616151991626879">O Google Chrome está a tentar preencher a sua palavra-passe na app <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golfe</translation>
 <translation id="7569761772822664555">Botão Gerir motores de pesquisa, prima Enter para gerir o seu motor de pesquisa e pesquisa de sites predefinidos</translation>
 <translation id="7569952961197462199">Remover o cartão de crédito do Chrome?</translation>
@@ -2789,7 +2792,7 @@ Detalhes adicionais:
 <translation id="8457125768502047971">Indefinida</translation>
 <translation id="8461694314515752532">Encriptar dados sincronizados com a sua própria frase de acesso de sincronização</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}other{# cartões de crédito}}</translation>
-<translation id="8473863474539038330">Endereços e mais</translation>
+<translation id="8473863474539038330">Moradas e mais</translation>
 <translation id="8474910779563686872">Mostrar detalhes do programador</translation>
 <translation id="8479754468255770962">Agrafo na parte inferior esquerda</translation>
 <translation id="8483780878231876732">Para utilizar cartões da sua Conta Google, inicie sessão no Chrome.</translation>
@@ -2821,7 +2824,6 @@ Detalhes adicionais:
 <translation id="8559762987265718583">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="8564182942834072828">Documentos separados/Cópias não agrupadas</translation>
 <translation id="8564985650692024650">O Chromium recomenda a reposição da palavra-passe da <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> se a tiver reutilizado noutros sites.</translation>
-<translation id="8573969211731659953">Os alertas de descida do preço estão ativados. Pode alterar esta definição nas <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="8576310925653847813">Sistemas de cinema em casa</translation>
 <translation id="8577348305244205642">Cartão virtual não disponível</translation>
 <translation id="858637041960032120">Adic. n.º telef.
@@ -3035,12 +3037,14 @@ Detalhes adicionais:
 <translation id="917450738466192189">O certificado do servidor é inválido.</translation>
 <translation id="9174623988242579721">Veículos personalizados e de alto desempenho</translation>
 <translation id="9174917557437862841">Botão de mudança de separador: prima Enter para mudar para este separador.</translation>
-<translation id="9179703756951298733">Efetue a gestão das informações de cartões de crédito e pagamentos nas definições do Chrome.</translation>
+<translation id="9179703756951298733">Faça a gestão das informações de cartões de crédito e pagamentos nas definições do Chrome.</translation>
+<translation id="9179907736442194268">Obtenha alertas de email se o preço descer em qualquer site</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utiliza um protocolo não suportado.</translation>
 <translation id="9187461866967718678">Desportos radicais</translation>
 <translation id="9191834167571392248">Perfurar na parte inferior esquerda</translation>
 <translation id="9199905725844810519">A impressão está bloqueada.</translation>
+<translation id="9202180858541326427">As notificações do Chrome têm de estar ativadas. Pode ativá-las nas <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">Os dados estão encriptados com a sua frase de acesso de sincronização. Introduza-a para iniciar a sincronização.</translation>
 <translation id="920511547311754821">Não consegue encontrar o seu código? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Falha ao adicionar o artigo.</translation>

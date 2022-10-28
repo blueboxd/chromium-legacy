@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -807,7 +807,9 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
     active_descendant = node->manager()->GetFromID(active_descendant_id);
   }
 
-  if (node->GetRole() == ax::mojom::Role::kPopUpButton) {
+  // TODO(crbug.com/1363353): This code should be removed in favor of the right
+  // computation of the active descendant in Blink.
+  if (node->GetRole() == ax::mojom::Role::kComboBoxSelect) {
     BrowserAccessibility* child = node->InternalGetFirstChild();
     if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup &&
         !child->IsInvisibleOrIgnored()) {

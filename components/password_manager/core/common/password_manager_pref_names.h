@@ -55,6 +55,17 @@ extern const char kAutoSignInEnabledGMS[];
 // mapped to `kCredentialEnableService` will be applied.
 extern const char kOfferToSavePasswordsEnabledGMS[];
 
+// Boolean that disables saving by overriding kOfferToSavePasswordsEnabledGMS.
+// If there are errors that prevent successful saves, this pref will be true and
+// users should act as if kOfferToSavePasswordsEnabledGMS was disabled. If this
+// pref is false, the value of kOfferToSavePasswordsEnabledGMS applies. This
+// pref is not synced since errors presumably affect only the local client. Its
+// value is set automatically whenever communication with GMS succeeds or fails.
+//
+// This pref doesn't have a policy mapped to it. It is temporary in nature and
+// can only be stricter than any policy applied
+extern const char kSavePasswordsSuspendedByError[];
+
 // Boolean value indicating whether the regular prefs were migrated to UPM
 // settings.
 extern const char kSettingsMigratedToUPM[];
@@ -86,6 +97,28 @@ extern const char kUnenrolledFromGoogleMobileServicesDueToErrors[];
 // caused the last unenrollment from the UPM experience. Only set if
 // |kUnenrolledFromGoogleMobileServicesDueToErrors| is true.
 extern const char kUnenrolledFromGoogleMobileServicesAfterApiErrorCode[];
+
+// Integer value indicating the version of the ignored/retriable error list
+// during the last unenrollment from the UPM experience. User will not be
+// re-enrolled if this value is set and is not less than the in the current
+// error list version.
+extern const char kUnenrolledFromGoogleMobileServicesWithErrorListVersion[];
+
+// Timestamp at which the last UPM error message was shown to the user in
+// milliseconds since UNIX epoch (used in Java).
+// This is needed to ensure that the UI is prompted only once per given
+// time interval (currently 24h).
+extern const char kUPMErrorUIShownTimestamp[];
+
+// Integer value indicating the number of times the client was reenrolled into
+// the UPM experiment after experiencing user-unresolvable errors in
+// communication with Google Mobile Services.
+extern const char kTimesReenrolledToGoogleMobileServices[];
+
+// Integer value indicating the number of times the client has attempted a
+// migration in an attempt to reenroll into the UPM experiment. Reset to zero
+// after a successful reenrollment.
+extern const char kTimesAttemptedToReenrollToGoogleMobileServices[];
 #endif
 
 #if BUILDFLAG(IS_WIN)

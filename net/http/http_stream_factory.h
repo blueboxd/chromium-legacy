@@ -72,7 +72,7 @@ class NET_EXPORT HttpStreamFactory {
 
   void ProcessAlternativeServices(
       HttpNetworkSession* session,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       const HttpResponseHeaders* headers,
       const url::SchemeHostPort& http_server);
 
@@ -118,7 +118,7 @@ class NET_EXPORT HttpStreamFactory {
       const NetLogWithSource& net_log);
 
   // Requests that enough connections for |num_streams| be opened.
-  void PreconnectStreams(int num_streams, const HttpRequestInfo& info);
+  void PreconnectStreams(int num_streams, HttpRequestInfo& info);
 
   const HostMappingRules* GetHostMappingRules() const;
 

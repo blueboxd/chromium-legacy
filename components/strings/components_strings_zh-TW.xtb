@@ -174,6 +174,7 @@
 <translation id="1380591466760231819">包二摺</translation>
 <translation id="138218114945450791">淺藍色</translation>
 <translation id="1382194467192730611">系統管理員允許使用的 USB 裝置</translation>
+<translation id="1382378825779654399">產品在任何網站上降價時都會透過電子郵件通知你。這個網頁將儲存到「<ph name="LAST_BOOKMARKS_FOLDER" />」。</translation>
 <translation id="1382912999714108023">資料與現況不符嗎？請洽詢銀行以更新這筆資料。</translation>
 <translation id="1384725838384960382">安全付款憑證驗證表</translation>
 <translation id="1386623374109090026">註解</translation>
@@ -250,7 +251,6 @@
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">免費軟體與共享軟體</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
-<translation id="1554003749331233619">你正在追蹤這項產品，這個網頁已儲存到「<ph name="LAST_BOOKMARKS_FOLDER" />」中</translation>
 <translation id="1555130319947370107">藍色</translation>
 <translation id="1559447966090556585">要接收通知嗎？</translation>
 <translation id="1559528461873125649">找不到你所指定的檔案或目錄</translation>
@@ -298,7 +298,6 @@
 <translation id="1662550410081243962">儲存及填入付款方式</translation>
 <translation id="1663943134801823270">信用卡和地址資訊皆來自 Chrome。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />頁面管理這些資訊。</translation>
 <translation id="1671391448414634642">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁翻譯成<ph name="TARGET_LANGUAGE" />。</translation>
-<translation id="1673886523110456987">使用 <ph name="CARD_DETAIL" /> 結帳即可享有優惠</translation>
 <translation id="1674504678466460478">從<ph name="SOURCE_LANGUAGE" />翻譯為<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">先從短邊開始</translation>
 <translation id="168693727862418163">這項政策的值未通過其結構定義的驗證，因此會遭到忽略。</translation>
@@ -423,6 +422,7 @@
 <translation id="2034971124472263449">繼續儲存</translation>
 <translation id="2035400064145347639">旅遊指南與遊記</translation>
 <translation id="2036983605131262583">替用卷</translation>
+<translation id="2040463897538655645">外接儲存裝置</translation>
 <translation id="2040894699575719559">禁止取得位置資訊</translation>
 <translation id="2042213636306070719">紙匣 7</translation>
 <translation id="204357726431741734">登入以使用儲存在 Google 帳戶中的密碼</translation>
@@ -1005,7 +1005,6 @@
 <translation id="3633738897356909127">「更新 Chrome」按鈕，按下 Enter 鍵即可透過 Chrome 設定來更新 Chrome</translation>
 <translation id="3634530185120165534">紙匣 5</translation>
 <translation id="3634567936866541746">你剛才在詐騙網站上輸入了密碼。為確保帳戶安全，Chrome 建議你檢查已儲存的密碼。</translation>
-<translation id="3637033245385760976">請務必開啟 Chrome 通知，你可以前往<ph name="NOTIFICATION_SETTINGS" />開啟</translation>
 <translation id="3637662659967048211">儲存至 Google 帳戶</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">應用程式：</translation>
@@ -1521,6 +1520,7 @@
 <translation id="5018422839182700155">無法開啟這個網頁</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>
 <translation id="5020776957610079374">世界音樂</translation>
+<translation id="5021557570875267742">使用 Chrome 追蹤價格</translation>
 <translation id="5023310440958281426">請查看你的管理員政策</translation>
 <translation id="5029568752722684782">清除複本</translation>
 <translation id="5030338702439866405">發行者</translation>
@@ -2242,6 +2242,7 @@
 <translation id="6993898126790112050">6x9 (信封)</translation>
 <translation id="6996312675313362352">一律翻譯<ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">娛樂業</translation>
+<translation id="7003335073762455340">你正在追蹤這項產品，這個網頁已儲存到「<ph name="LAST_BOOKMARKS_FOLDER" />」。</translation>
 <translation id="7004583254764674281">使用 Windows Hello 加快卡片驗證速度</translation>
 <translation id="7006930604109697472">仍要傳送</translation>
 <translation id="7012363358306927923">中國銀聯</translation>
@@ -2324,6 +2325,7 @@
 <translation id="7234638337680728591">汽油價格與交通工具燃油</translation>
 <translation id="7237492777898608035">不要再為這個網站顯示這則訊息</translation>
 <translation id="7238585580608191973">SHA-256 指紋</translation>
+<translation id="7239514174717251677">降價快訊功能已開啟，你可以前往<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />進行變更</translation>
 <translation id="7240120331469437312">憑證主體替代名稱</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />，<ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# 個相符結果}other{# 個相符結果}}</translation>
@@ -2465,6 +2467,7 @@
 <translation id="7564049878696755256">你可能會失去 <ph name="ORG_NAME" /> 帳戶存取權，或身分遭到冒用。Chrome 建議你立即變更密碼。</translation>
 <translation id="7564680668369175887">旅行車</translation>
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證是以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
+<translation id="7568616151991626879">Google Chrome 正嘗試在「<ph name="APP_NAME" />」中填入密碼。</translation>
 <translation id="7569490014721427265">高爾夫</translation>
 <translation id="7569761772822664555">「管理搜尋引擎」按鈕；按下 Enter 鍵即可管理預設搜尋引擎和站內搜尋</translation>
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
@@ -2822,7 +2825,6 @@
 <translation id="8559762987265718583">你裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
 <translation id="8564182942834072828">個別文件/未自動分頁的副本</translation>
 <translation id="8564985650692024650">如果你在其他網站上重複使用過你的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密碼，Chromium 會建議你重設密碼。</translation>
-<translation id="8573969211731659953">降價快訊功能已開啟，你可以前往<ph name="NOTIFICATION_SETTINGS" />進行變更</translation>
 <translation id="8576310925653847813">家庭劇院系統</translation>
 <translation id="8577348305244205642">虛擬卡片無法使用</translation>
 <translation id="858637041960032120">新增電話號碼</translation>
@@ -3036,11 +3038,13 @@
 <translation id="9174623988242579721">改裝車與性能車</translation>
 <translation id="9174917557437862841">分頁切換按鈕，按下 Enter 鍵即可切換到這個分頁</translation>
 <translation id="9179703756951298733">在 Chrome 設定中管理付款和信用卡資訊</translation>
+<translation id="9179907736442194268">產品在任何網站上降價時都會通知你</translation>
 <translation id="9183302530794969518">Google 文件</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> 使用了不支援的通訊協定。</translation>
 <translation id="9187461866967718678">極限運動</translation>
 <translation id="9191834167571392248">打孔 (左下方)</translation>
 <translation id="9199905725844810519">列印功能已遭封鎖</translation>
+<translation id="9202180858541326427">請務必開啟 Chrome 通知功能，你可以前往<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />進行變更</translation>
 <translation id="9205078245616868884">您已使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
 <translation id="920511547311754821">找不到動態密碼嗎？<ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">無法新增文章。</translation>

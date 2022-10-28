@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -463,7 +463,7 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, TrustedSignalsUrl) {
 }
 
 // Make sure all seller signals requests use the same transient
-// NetworkIsolationKey.
+// NetworkAnonymizationKey.
 TEST_F(AuctionUrlLoaderFactoryProxyTest, SellerSignalsNetworkIsolationKey) {
   is_for_seller_ = true;
   // Make 20 JSON requests, 10 with the same URL, 10 with different ones. All
@@ -475,7 +475,7 @@ TEST_F(AuctionUrlLoaderFactoryProxyTest, SellerSignalsNetworkIsolationKey) {
   }
   EXPECT_EQ(20u, trusted_url_loader_factory_.pending_requests()->size());
 
-  // Make sure all 20 requests use the same transient NetworkIsolationKey.
+  // Make sure all 20 requests use the same transient NetworkAnonymizationKey.
   for (const auto& request : *trusted_url_loader_factory_.pending_requests()) {
     ASSERT_TRUE(request.request.trusted_params);
     EXPECT_TRUE(

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "ui/display/tablet_state.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
@@ -53,6 +54,12 @@ base::Value::List PlatformScreen::GetGpuExtraInfo(
     const gfx::GpuExtraInfo& gpu_extra_info) {
   return base::Value::List();
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+display::TabletState PlatformScreen::GetTabletState() const {
+  return display::TabletState::kInClamshellMode;
+}
+#endif
 
 void PlatformScreen::SetDeviceScaleFactor(float scale) {}
 

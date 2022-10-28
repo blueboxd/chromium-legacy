@@ -62,6 +62,7 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="2583187216237139145">Toutes les données Chromium générées quand vous utilisez ce profil (comme la création de favoris, l'historique, les mots de passe etc.) peuvent être supprimées par l'administrateur du profil professionnel. <ph name="LEARN_MORE" /></translation>
 <translation id="2648074677641340862">Une erreur du système d'exploitation s'est produite pendant l'installation. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="2661879430930417727">Si vous partagez un appareil avec vos proches, ceux-ci peuvent configurer Chromium selon leurs préférences et naviguer sur le Web de façon indépendante.</translation>
+<translation id="2669853942967761236">Chromium a bloqué ce fichier d'archive, car il pourrait dissimuler un logiciel malveillant</translation>
 <translation id="268602741124540128">Bienvenue dans Chromium, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Onglet Chromium</translation>
 <translation id="2718390899429598676">Pour plus de sécurité, vos données seront chiffrées dans Chromium.</translation>
@@ -209,6 +210,7 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="6072279588547424923">L'extension <ph name="EXTENSION_NAME" /> a été ajoutée à Chromium</translation>
 <translation id="608006075545470555">Ajouter un profil professionnel à ce navigateur</translation>
 <translation id="6096348254544841612">Personnalisez et contrôlez Chromium. Une mise à jour est disponible.</translation>
+<translation id="6119438414301547735">Autoriser l'extension à afficher les demandes d'accès dans la barre d'outils Chromium</translation>
 <translation id="6120345080069858279">Chromium va enregistrer ce mot de passe dans votre compte Google. Vous n'avez pas besoin de le retenir.</translation>
 <translation id="6129621093834146363">Chromium a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
 <translation id="6134968993075716475">La navigation sécurisée étant désactivée, Chromium vous recommande de l'activer.</translation>
@@ -302,6 +304,7 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="7682601070171973634">Chromium développe de nouvelles fonctionnalités qui permettent aux sites de proposer la même expérience de navigation en utilisant moins de données</translation>
 <translation id="7686590090926151193">Chromium n'est pas votre navigateur par défaut</translation>
 <translation id="7689606757190482937">Synchroniser et personnaliser Chromium sur vos appareils</translation>
+<translation id="7714577916146996629">Lorsque ce mode est activé, Chromium récupère la mémoire des onglets que vous n'utilisez pas activement. Cela libère des ressources de votre ordinateur pour d'autres tâches, tout en maintenant la rapidité de Chromium. Les onglets inactifs apparaissent vides et s'actualisent automatiquement quand vous cliquez dessus. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> ou <ph name="BEGIN_LINK_2" />envoyer des commentaires<ph name="END_LINK_2" /></translation>
 <translation id="7745317241717453663">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
@@ -331,6 +334,7 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="8453117565092476964">L'archive du programme d'installation est corrompue ou n'est pas valide. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="8463672209299734063">Facultatif : contribuez à améliorer les fonctionnalités et les performances de Chromium OS en envoyant automatiquement des données de diagnostic et d'utilisation à Google.</translation>
 <translation id="8493179195440786826">Version de Chromium obsolète</translation>
+<translation id="8522220489792889625">Au besoin, Chromium récupère la mémoire des onglets que vous n'utilisez pas activement. Vous pouvez modifier cette option à tout moment dans les paramètres.</translation>
 <translation id="8550334526674375523">Ce profil professionnel est parfaitement séparé de votre profil personnel.</translation>
 <translation id="8558383651099478961">Ton parent a désactivé l'option "Autorisations des sites, applications et extensions" pour Chromium. Tu ne peux pas ajouter cette <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8561285221328166383">Vous devez disposer de macOS 10.13 ou d'une version ultérieure pour recevoir les futures mises à jour de Chromium. Or, c'est la version macOS 10.12 qui est installée sur cet ordinateur.</translation>

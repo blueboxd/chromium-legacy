@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">પૂર્ણ સ્ક્રીન રેકોર્ડ કરો</translation>
 <translation id="2135456203358955318">ડૉક કરેલ મૅગ્નિફાયર</translation>
 <translation id="2148716181193084225">આજે</translation>
+<translation id="2161132820593978283">કૅમેરા ફ્રેમિંગ અજમાવી જુઓ, જેથી તમે વીડિયો કૉલમાં સ્ક્રીનની મધ્યમાં રહેશો. ઝડપી સેટિંગમાં જઈને તેને ચાલુ કરો.</translation>
 <translation id="2170530631236737939">ઓવરવ્યૂમાંથી બહાર નીકળવા માટે, ત્રણ આંગળી વડે નીચેની તરફ સ્વાઇપ કરો</translation>
 <translation id="219905428774326614">લૉન્ચર, બધી ઍપ</translation>
 <translation id="2201071101391734388">તાજેતરના <ph name="TOTAL_COUNT" /> ફોટામાંથી <ph name="INDEX" /> નંબરનો ફોટો.</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">કનેક્ટ કરેલું નથી</translation>
 <translation id="2408955596600435184">તમારો PIN દાખલ કરો</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
+<translation id="2426051945783024481">કૅમેરાની ફ્રેમને ઑટોમૅટિક રીતે મધ્યમાં ગોઠવવામાં આવે છે</translation>
 <translation id="2427507373259914951">લેફ્ટ ક્લિક કરો</translation>
 <translation id="2429753432712299108">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ડિવાઇસ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">ઓરિએન્ટેશન</translation>
 <translation id="3153444934357957346">તમે એકથી વધુ સાઇન ઇનમાં માત્ર <ph name="MULTI_PROFILE_USER_LIMIT" /> સુધી એકાઉન્ટ રાખી શકો છો.</translation>
 <translation id="3154351730702813399">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
+<translation id="3157931365184549694">રિસ્ટોર કરો</translation>
 <translation id="316086887565479535">સપોર્ટ ન કરવામાં આવતી ઍપ નમૂનામાં છે</translation>
 <translation id="3161500364292033097">ડેસ્ક અને વિન્ડો બંધ કરો</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> તમારા <ph name="DEVICE_TYPE" />ને અગાઉના વર્ઝન પર લઈ જાય છે. તમારું ડિવાઇસ રીસેટ થશે અને બધો ડેટા ડિલીટ કરાશે.</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">આ પ્રમાણે સૉર્ટ કરો</translation>
 <translation id="3742055079367172538">સ્ક્રીનશૉટ લેવાયો</translation>
 <translation id="3765841986579723851">આજે ફેરફાર કરવામાં આવ્યો હતો</translation>
-<translation id="3771549900096082774">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
 <translation id="3773700760453577392">એડમિને <ph name="USER_EMAIL" /> માટે એકથી વધુ સાઇન ઇનને નામંજૂર કર્યું છે. ચાલુ રાખવા માટે બધા વપરાશકર્તાઓએ સાઇન આઉટ કરવું જરૂરી છે.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> કનેક્ટ કરી રહ્યાં છીએ</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">કૅમેરાને ઉપરના જમણા ખૂણામાં સ્નેપ કર્યો. સિસ્ટમની સપાટીને ઓવરલેપ કરે છે.</translation>
 <translation id="4316910396681052118">બધી ઍપ્લિકેશનો</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">તમે હાઇ કૉન્ટ્રાસ્ટ માટેનો કીબોર્ડ શૉર્ટકટ દબાવેલ છે. શું તમે તેને ચાલુ કરવા માગો છો?</translation>
 <translation id="4322742403972824594">Ctrl કી + Alt કી + ઉપરની ઍરો કી કીબોર્ડ શૉર્ટકટ બદલવામાં આવ્યો છે. Home કીનો ઉપયોગ કરવા માટે, <ph name="LAUNCHER_KEY_NAME" /> કી + ડાબી ઍરો કી દબાવો.</translation>
 <translation id="4333628967105022692">એકથી વધુ વપરાશકર્તાઓએ સાઇન ઇન કર્યું હોય, ત્યારે Lacros કામ કરતું નથી.</translation>
 <translation id="4338109981321384717">બૃહદદર્શક કાચ</translation>
 <translation id="4351433414020964307">Assistant લોડ થઈ રહ્યું છે…</translation>
-<translation id="4356930093361201197">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
 <translation id="4371348193907997655">કાસ્ટ સેટિંગ</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, સિગ્નલની પ્રબળતા <ph name="SIGNAL_STRENGTH" /> ટકા</translation>
 <translation id="4378551569595875038">કનેક્ટિંગ...</translation>
@@ -877,7 +877,6 @@
 <translation id="5980301590375426705">અતિથિથી બહાર નીકળો</translation>
 <translation id="598407983968395253">નમૂનાનો ઉપયોગ કરો</translation>
 <translation id="598882571027504733">અપડેટ મેળવવા માટે, તમારી Chromebookને જોડાયેલ કીબોર્ડ સાથે ફરીથી શરૂ કરો.</translation>
-<translation id="5992218262414051481">હાઇ કોન્ટ્રાસ્ટ મોડ ચાલુ કર્યો. ટૉગલ બંધ કરવા માટે ફરીથી Ctrl+Search+H ફરીથી દબાવો.</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> પેજમાંનું <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">મીરર મોડથી બહાર નીકળે છે</translation>
 <translation id="602001110135236999">ડાબે સ્ક્રોલ કરો</translation>
@@ -1043,6 +1042,7 @@
 <translation id="6960565108681981554">સક્રિય કરેલું નથી. તમારા મોબાઇલ ઑપરેટરનો સંપર્ક કરો.</translation>
 <translation id="6961121602502368900">ઑફિસની પ્રોફાઇલમાં ફોન સાઇલન્ટ રાખવાની સુવિધા ઉપલબ્ધ નથી</translation>
 <translation id="6961840794482373852">Alt કી + ઉપરની ઍરો કી કીબોર્ડ શૉર્ટકટ બદલવામાં આવ્યો છે. Page Up કીનો ઉપયોગ કરવા માટે, <ph name="LAUNCHER_KEY_NAME" /> કી + ઉપરની ઍરો કી દબાવો.</translation>
+<translation id="696267987219125751">કૅમેરા ફ્રેમિંગ બંધ છે.</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6972754398087986839">પ્રારંભ કરો</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1133,6 +1133,7 @@
 <translation id="7513922695575567867">કૅલેન્ડર, <ph name="DATE" />ની તારીખવાળું અઠવાડિયું, હાલમાં <ph name="SELECTED_DATE" /> પસંદ કરેલી છે.</translation>
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">કૅમેરા ફ્રેમિંગ ચાલુ છે.</translation>
 <translation id="7526573455193969409">નેટવર્કને મોનિટર કરવામાં આવી શકે છે</translation>
 <translation id="7536035074519304529">IP સરનામું: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux ઍપ અને છૂપી વિન્ડોને હાલમાં સપોર્ટ કરવામાં આવતો નથી. અન્ય ઍપ સાચવવામાં આવશે.</translation>
@@ -1151,10 +1152,12 @@
 <translation id="7607002721634913082">થોભાવેલું</translation>
 <translation id="7609951632080598826">કૅલેન્ડરનો વ્યૂ, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">કૅમેરા ફરી કનેક્ટ કર્યો.</translation>
+<translation id="761736749114493194">કૅમેરા ફ્રેમિંગને ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">નજીકના શેર સેટિંગ બતાવો.</translation>
 <translation id="7634648064048557203">કૅમેરાને નીચેના જમણા ખૂણામાં સ્નેપ કર્યો</translation>
 <translation id="7641938616688887143">રેકોર્ડ કરો</translation>
+<translation id="7642106959537987271">વિપરીત રંગમાં બદલવાનો મોડ</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> માટે સેટિંગ ખોલો, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (માલિક)</translation>
 <translation id="7647488630410863958">તમારી સૂચનાઓ જોવા માટે ડિવાઇસને અનલૉક કરો</translation>
@@ -1233,7 +1236,6 @@
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> નામનો નમૂનો પહેલેથી જ અસ્તિત્વમાં છે</translation>
 <translation id="8052898407431791827">ક્લિપબોર્ડ પર કૉપિ કર્યો</translation>
 <translation id="8054466585765276473">બેટરી સમયની ગણના કરે છે.</translation>
-<translation id="8061464966246066292">ઉચ્ચ કોન્ટ્રાસ્ટ</translation>
 <translation id="8083540854303889870">પછીના માટે સાચવેલી</translation>
 <translation id="8091387634532529612">ઑટોમૅટિક અપડેટ</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> પર સ્ક્રીન કાસ્ટ કરવાનું રોકો</translation>
@@ -1261,6 +1263,7 @@
 <translation id="8209010265547628927">રીસેટ કરો</translation>
 <translation id="8214996719228530800">Canary ચૅનલ</translation>
 <translation id="8219451629189078428">આ સમય દરમ્યાન, તમારું Chromebook ચાલુ રહેવું અને પાવરથી કનેક્ટ થયેલું હોવું આવશ્યક છે. ખાતરી કરો કે ચાર્જર અથવા અડૅપ્ટર કેબલ તમારા Chromebook અને પાવર આઉટલેટ, એમ બન્નેમાં યોગ્ય રીતે પ્લગ-ઇન કરવામાં આવ્યા હોય. તમારું Chromebook બંધ કરશો નહીં.</translation>
+<translation id="8230305195727960608">વિપરીત રંગમાં બદલવાનો મોડ</translation>
 <translation id="8236042855478648955">વિરામ લેવાનો સમય</translation>
 <translation id="8246282815785366524">આપનું ફરી સ્વાગત છે, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, ફોનની બૅટરી <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@
 <translation id="851458219935658693">વર્તમાન ડેસ્કમાંની બધી વિન્ડો બતાવો, રેડિયો બટન પસંદ કર્યું</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8535393432370007982">રંગ મુજબ સૉર્ટ કરવાના ક્રમનો છેલ્લો ફેરફાર રદ કરો</translation>
+<translation id="8541078764854166027">કૅમેરા ફ્રેમ</translation>
 <translation id="8542053257095774575">કોઈ ડેસ્ક કે નમૂનો સાચવેલો નથી</translation>
 <translation id="8546059259582788728">સૉર્ટ કરવાનો છેલ્લો ફેરફાર રદ કરવાનું સફળ થયું</translation>
 <translation id="8551588720239073785">તારીખ અને સમયનાં સેટિંગ</translation>
@@ -1386,6 +1390,7 @@
 <translation id="8982906748181120328">નજીકની દૃશ્યતા</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>
+<translation id="8991617137207906966">વિપરીત રંગમાં બદલવાનો મોડ ચાલુ કર્યો છે. તેને ટૉગલ કરીને બંધ કરવા માટે, ફરીથી Ctrl+Search+H દબાવો.</translation>
 <translation id="899350903320462459">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને <ph name="LOGIN_ID" /> તરીકે અનલૉક કરો</translation>
 <translation id="9000771174482730261">સ્ટોરેજ મેનેજ કરો</translation>
 <translation id="9017320285115481645">Family Linkનો માતાપિતા માટેનો ઍક્સેસ કોડ દાખલ કરો.</translation>
@@ -1434,6 +1439,7 @@
 <translation id="921989828232331238">તમારા માતાપિતાએ તમારા ડિવાઇસને આજના માટે લૉક કર્યું છે</translation>
 <translation id="9220525904950070496">એકાઉન્ટ દૂર કરો</translation>
 <translation id="923686485342484400">સાઇન આઉટ કરવા માટે બે વાર Control Shift Q દબાવો.</translation>
+<translation id="92580429198593979">તમે વિપરીત રંગમાં બદલવા માટે કીબોર્ડ શૉર્ટકટ દબાવ્યો છે. શું તમે તેને ચાલુ કરવા માગો છો?</translation>
 <translation id="925832987464884575">પ્રીવ્યૂ છુપાવો</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> માટે જરૂરી છે કે તમે તમારું <ph name="DEVICE_TYPE" /> તરત જ અપડેટ કરો</translation>
 <translation id="938963181863597773">મારા કૅલેન્ડરમાં શું છે?</translation>

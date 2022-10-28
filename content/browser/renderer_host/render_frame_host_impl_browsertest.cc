@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6559,7 +6559,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplAnonymousIframeNikBrowserTest,
         ->GetDefaultStoragePartition()
         ->GetNetworkContext()
         ->PreconnectSockets(1, fetch_url.DeprecatedGetOriginAsURL(), true,
-                            main_rfh->GetNetworkIsolationKey());
+                            main_rfh->GetIsolationInfoForSubresources()
+                                .network_anonymization_key());
 
     connection_tracker_->WaitForAcceptedConnections(1);
     EXPECT_EQ(1u, connection_tracker_->GetAcceptedSocketCount());

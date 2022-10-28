@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2504,11 +2504,11 @@ void RenderProcessHostImpl::BindPushMessaging(
 }
 
 void RenderProcessHostImpl::BindP2PSocketManager(
-    net::NetworkIsolationKey isolation_key,
+    net::NetworkAnonymizationKey anonymization_key,
     mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver,
     GlobalRenderFrameHostId render_frame_host_id) {
   p2p_socket_dispatcher_host_->BindReceiver(
-      *this, std::move(receiver), isolation_key, render_frame_host_id);
+      *this, std::move(receiver), anonymization_key, render_frame_host_id);
 }
 
 void RenderProcessHostImpl::CreateMediaLogRecordHost(

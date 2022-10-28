@@ -552,6 +552,10 @@ void VolumeToVolumeMetadata(
       volume_metadata->mount_condition =
           file_manager_private::MOUNT_CONDITION_UNSUPPORTED;
       break;
+    case ash::disks::MountCondition::kInProgress:
+      volume_metadata->mount_condition =
+          file_manager_private::MOUNT_CONDITION_IN_PROGRESS;
+      break;
   }
 
   // If the context is known, then pass it.
@@ -565,6 +569,7 @@ void VolumeToVolumeMetadata(
     case MOUNT_CONTEXT_UNKNOWN:
       break;
   }
+
   if (volume.vm_type()) {
     volume_metadata->vm_type = VmTypeToJs(*volume.vm_type());
   }
@@ -600,13 +605,11 @@ void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
   params->local_path_option = local_path_option;
   params->callback = std::move(callback);
 
-  for (size_t i = 0; i < file_urls.size(); ++i) {
-    const GURL& file_url = file_urls[i];
-    const base::FilePath path = GetLocalPathFromURL(
-        render_frame_host, profile, file_url);
+  for (const GURL& url : file_urls) {
+    base::FilePath path = GetLocalPathFromURL(render_frame_host, profile, url);
     if (!path.empty()) {
-      DVLOG(1) << "Selected: file path: " << path.value();
-      params->file_paths.push_back(path);
+      DVLOG(1) << "Selected: file path: " << path;
+      params->file_paths.push_back(std::move(path));
     }
   }
 

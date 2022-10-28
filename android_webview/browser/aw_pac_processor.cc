@@ -26,6 +26,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
 
@@ -36,7 +37,6 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-class NetworkIsolationKey;
 
 namespace android_webview {
 
@@ -102,7 +102,7 @@ class HostResolver : public proxy_resolver::ProxyHostResolver {
   std::unique_ptr<proxy_resolver::ProxyHostResolver::Request> CreateRequest(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
-      const net::NetworkIsolationKey&) override {
+      const net::NetworkAnonymizationKey&) override {
     return std::make_unique<RequestImpl>(hostname, operation, net_handle_,
                                          link_addresses_);
   }
@@ -420,8 +420,9 @@ void AwPacProcessor::MakeProxyRequestNative(
 
   if (proxy_resolver_) {
     proxy_resolver_->GetProxyForURL(
-        GURL(url), net::NetworkIsolationKey(), proxy_info, std::move(complete),
-        request, std::make_unique<Bindings>(host_resolver_.get()));
+        GURL(url), net::NetworkAnonymizationKey(), proxy_info,
+        std::move(complete), request,
+        std::make_unique<Bindings>(host_resolver_.get()));
   } else {
     std::move(complete).Run(net::ERR_FAILED);
   }

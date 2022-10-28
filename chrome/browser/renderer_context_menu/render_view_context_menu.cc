@@ -233,6 +233,10 @@
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "components/services/screen_ai/public/cpp/screen_ai_install_state.h"
+#endif
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -1041,7 +1045,12 @@ void RenderViewContextMenu::InitMenu() {
   if (base::FeatureList::IsEnabled(translate::kDesktopPartialTranslate) &&
       content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE)) {
-    AppendPartialTranslateItem();
+    ChromeTranslateClient* chrome_translate_client =
+        ChromeTranslateClient::FromWebContents(embedder_web_contents_);
+    if (chrome_translate_client &&
+        chrome_translate_client->IsTranslatableURL(params_.page_url)) {
+      AppendPartialTranslateItem();
+    }
   }
 
   // Spell check and writing direction options are not currently supported by
@@ -1066,6 +1075,7 @@ void RenderViewContextMenu::InitMenu() {
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (features::IsPdfOcrEnabled() &&
       accessibility_state_utils::IsScreenReaderEnabled() &&
+      screen_ai::ScreenAIInstallState::GetInstance()->is_component_ready() &&
       IsFrameInPdfViewer(GetRenderFrameHost())) {
     AppendPdfOcrItem();
   }
@@ -3257,21 +3267,19 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
 
 bool RenderViewContextMenu::IsRegionSearchEnabled() const {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (!GetBrowser())
+    return false;
+
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(GetProfile());
   if (!service)
     return false;
 
-#if BUILDFLAG(IS_CHROMEOS)
-  if (IsFrameInPdfViewer(GetRenderFrameHost()))
-    return false;
-#else
   if (!base::FeatureList::IsEnabled(
           lens::features::kEnableRegionSearchOnPdfViewer) &&
       IsFrameInPdfViewer(GetRenderFrameHost())) {
     return false;
   }
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
   const TemplateURL* provider = service->GetDefaultSearchProvider();
   const bool provider_supports_image_search =
@@ -3616,15 +3624,14 @@ void RenderViewContextMenu::ExecRegionSearch(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (!lens_region_search_controller_) {
     Browser* browser = GetBrowser();
+    CHECK(browser);
     WebContents* web_contents = source_web_contents_;
-#if !BUILDFLAG(IS_CHROMEOS)
     if (base::FeatureList::IsEnabled(
             lens::features::kEnableRegionSearchOnPdfViewer)) {
       // We don't use `source_web_contents_` here because it doesn't work with
       // the PDF reader.
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     }
-#endif  // !BUILDFLAG(IS_CHROMEOS)
     lens_region_search_controller_ =
         std::make_unique<lens::LensRegionSearchController>(web_contents,
                                                            browser);

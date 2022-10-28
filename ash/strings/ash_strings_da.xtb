@@ -210,11 +210,12 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2107914222138020205">Dit USB-C-kabel understøtter ikke Thunderbolt. Enhedens ydeevne kan være begrænset.</translation>
 <translation id="2108303511227308752">Tastaturgenvejen Alt+Backspace er blevet ændret. Hvis du vil bruge Delete-knappen, skal du trykke på tasten <ph name="LAUNCHER_KEY_NAME" />+Backspace.</translation>
 <translation id="211328683600082144">SLÅ MIKROFON TIL</translation>
-<translation id="2123115117533398272">Chrome OS viser forslag til nyt indhold, du kan tjekke ud. Der sendes kun statistik til forbedring af forslag, hvis du har valgt at dele dine brugsdata. <ph name="MANAGE_SETTINGS" /></translation>
+<translation id="2123115117533398272">ChromeOS viser forslag til nyt indhold, du kan tjekke ud. Der sendes kun statistik til forbedring af forslag, hvis du har valgt at dele dine brugsdata. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Nyt skrivebord</translation>
 <translation id="2132302418721800944">Optag hele skærmen</translation>
 <translation id="2135456203358955318">Fastgjort lupvindue</translation>
 <translation id="2148716181193084225">I dag</translation>
+<translation id="2161132820593978283">Prøv automatisk zoom, så du centreres på skærmen under videoopkald. Aktivér funktionen i kvikmenuen.</translation>
 <translation id="2170530631236737939">Stryg nedad med tre fingre for at lukke oversigten</translation>
 <translation id="219905428774326614">Starter. Alle apps</translation>
 <translation id="2201071101391734388">Seneste billede <ph name="INDEX" /> af <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2405664212338326887">Ikke forbundet</translation>
 <translation id="2408955596600435184">Angiv din pinkode</translation>
 <translation id="2412593942846481727">Der er en tilgængelig opdatering</translation>
+<translation id="2426051945783024481">Kameraets fokus centreres automatisk</translation>
 <translation id="2427507373259914951">Venstreklik</translation>
 <translation id="2429753432712299108">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
@@ -284,7 +286,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2620436844016719705">System</translation>
 <translation id="2621713457727696555">Beskyttet</translation>
 <translation id="263399434338050016">"Vælg alle"</translation>
-<translation id="2645435784669275700">Chrome OS</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2653019840645008922">Tag et screenshot af et vindue</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2658778018866295321">Klik og træk</translation>
@@ -373,6 +375,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3151786313568798007">Retning</translation>
 <translation id="3153444934357957346">Du kan kun have op til <ph name="MULTI_PROFILE_USER_LIMIT" /> konti i samlet login fra flere konti.</translation>
 <translation id="3154351730702813399">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
+<translation id="3157931365184549694">Gendan</translation>
 <translation id="316086887565479535">Der er apps, som ikke understøttes, i skabelonen</translation>
 <translation id="3161500364292033097">Luk skrivebord og vinduer</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> skifter til en tidligere version af din <ph name="DEVICE_TYPE" />. Din enhed nulstilles, og alle data slettes.</translation>
@@ -476,7 +479,6 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="3735740477244556633">Sortér efter</translation>
 <translation id="3742055079367172538">Screenshottet blev gemt</translation>
 <translation id="3765841986579723851">Redigeret i dag</translation>
-<translation id="3771549900096082774">Tilstanden Høj kontrast</translation>
 <translation id="3773700760453577392">En administrator har afvist samlet login fra flere konti for <ph name="USER_EMAIL" />. Alle brugere skal logge ud for at fortsætte.</translation>
 <translation id="3779139509281456663">Opretter forbindelse til <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="4312840429157639164">Kameraet er fastgjort til hjørnet øverst til højre. Dette er i strid med systemfladen.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Du trykkede på tastaturgenvejen for høj kontrast. Vil du aktivere indstillingen?</translation>
 <translation id="4322742403972824594">Tastaturgenvejen Ctrl+Alt+pil op er blevet ændret. Hvis du vil bruge Home-tasten, skal du trykke på tasten <ph name="LAUNCHER_KEY_NAME" />+venstrepil.</translation>
 <translation id="4333628967105022692">Lacros understøttes ikke, når flere brugere er logget ind.</translation>
 <translation id="4338109981321384717">Lup</translation>
 <translation id="4351433414020964307">Assistenten indlæses...</translation>
-<translation id="4356930093361201197">tilstanden Høj kontrast</translation>
 <translation id="4371348193907997655">Cast-indstillinger</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, signalstyrke på <ph name="SIGNAL_STRENGTH" /> procent.</translation>
 <translation id="4378551569595875038">Tilslutter...</translation>
@@ -877,7 +877,6 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5980301590375426705">Afslut gæst</translation>
 <translation id="598407983968395253">Brug skabelon</translation>
 <translation id="598882571027504733">Genstart din Chromebook med det tilsluttede tastatur for at hente opdateringen.</translation>
-<translation id="5992218262414051481">Tilstanden Høj kontrast er aktiveret. Tryk på Ctrl+Søg+H igen for at deaktivere tilstanden.</translation>
 <translation id="6012623610530968780">Side <ph name="SELECTED_PAGE" /> ud af <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Lukker spejltilstand</translation>
 <translation id="602001110135236999">Rul til venstre</translation>
@@ -1043,6 +1042,7 @@ Installeret for nylig</translation>
 <translation id="6960565108681981554">Ikke aktiveret. Kontakt dit mobilselskab.</translation>
 <translation id="6961121602502368900">Du kan ikke sætte din telefon på lydløs med en arbejdsprofil</translation>
 <translation id="6961840794482373852">Tastaturgenvejen Alt+pil op er blevet ændret. Hvis du vil bruge tasten Side op, skal du trykke på tasten <ph name="LAUNCHER_KEY_NAME" />+pil op.</translation>
+<translation id="696267987219125751">Automatisk zoom er deaktiveret.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Kom godt i gang</translation>
 <translation id="6979158407327259162">Google Drev</translation>
@@ -1133,6 +1133,7 @@ Installeret for nylig</translation>
 <translation id="7513922695575567867">Kalender for ugen med <ph name="DATE" /> – <ph name="SELECTED_DATE" /> er valgt.</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Automatisk zoom er aktiveret.</translation>
 <translation id="7526573455193969409">Netværket kan være overvåget</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux-apps og inkognitovinduer understøttes ikke i øjeblikket. Andre apps gemmes.</translation>
@@ -1151,10 +1152,12 @@ Installeret for nylig</translation>
 <translation id="7607002721634913082">Sat på pause</translation>
 <translation id="7609951632080598826">Kalendervisning, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Der blev oprettet forbindelse til kameraet igen.</translation>
+<translation id="761736749114493194">Slå automatisk zoom til/fra. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Vis indstillinger for Deling tæt på.</translation>
 <translation id="7634648064048557203">Kameraet er fastgjort til hjørnet nederst til højre</translation>
 <translation id="7641938616688887143">Optag</translation>
+<translation id="7642106959537987271">tilstand for ombytning af farver</translation>
 <translation id="7642647758716480637">Åbn indstillingerne for <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
 <translation id="7647488630410863958">Lås enheden op for at se dine notifikationer</translation>
@@ -1233,7 +1236,6 @@ Installeret for nylig</translation>
 <translation id="8051716679295756675">Der findes allerede en skabelon med navnet <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="8052898407431791827">Kopieret til udklipsholder</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
-<translation id="8061464966246066292">Høj kontrast</translation>
 <translation id="8083540854303889870">Gemt til senere</translation>
 <translation id="8091387634532529612">Automatiske opdateringer</translation>
 <translation id="8098591350844501178">Stop skærmcast til <ph name="RECEIVER_NAME" /></translation>
@@ -1261,6 +1263,7 @@ Installeret for nylig</translation>
 <translation id="8209010265547628927">Nulstil</translation>
 <translation id="8214996719228530800">Canary-kanal</translation>
 <translation id="8219451629189078428">Din Chromebook skal være tændt og tilsluttet strøm i dette tidsrum. Sørg for, at opladeren eller adapterkablerne er sat korrekt i, både i din Chromebook og i stikkontakten. Sluk ikke for din Chromebook.</translation>
+<translation id="8230305195727960608">Tilstand for ombytning af farver</translation>
 <translation id="8236042855478648955">Det er tid til at tage en pause</translation>
 <translation id="8246282815785366524">Velkommen tilbage, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" />, telefonbatteri <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@ Installeret for nylig</translation>
 <translation id="851458219935658693">Vis vinduer fra det aktuelle skrivebord. Alternativknappen er valgt.</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8535393432370007982">Fortryd sortering efter farve</translation>
+<translation id="8541078764854166027">Automatisk zoom</translation>
 <translation id="8542053257095774575">Der er ingen gemte skriveborde eller skabeloner</translation>
 <translation id="8546059259582788728">Sorteringen blev fortrudt</translation>
 <translation id="8551588720239073785">Indstillinger for dato og tid</translation>
@@ -1386,6 +1390,7 @@ Installeret for nylig</translation>
 <translation id="8982906748181120328">Deling tæt på</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> anvendes</translation>
+<translation id="8991617137207906966">Tilstanden for ombytning af farver er aktiveret. Tryk på Ctrl+søgetasten+H igen for at deaktivere den.</translation>
 <translation id="899350903320462459">Lås enheden op som <ph name="LOGIN_ID" /> for at udføre notifikationshandlingen</translation>
 <translation id="9000771174482730261">ADMINISTRER LAGERPLADS</translation>
 <translation id="9017320285115481645">Angiv forældreadgangskoden til Family Link.</translation>
@@ -1434,6 +1439,7 @@ Installeret for nylig</translation>
 <translation id="921989828232331238">Din forælder har låst din enhed resten af dagen</translation>
 <translation id="9220525904950070496">Fjern konto</translation>
 <translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>
+<translation id="92580429198593979">Du trykkede på tastaturgenvejen for ombytning af farver. Vil du aktivere tilstanden?</translation>
 <translation id="925832987464884575">Skjul forhåndsvisninger</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> kræver, at du opdaterer din <ph name="DEVICE_TYPE" /> med det samme</translation>
 <translation id="938963181863597773">Hvad har jeg i kalenderen?</translation>

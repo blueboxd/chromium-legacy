@@ -30,7 +30,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/base/proxy_string_util.h"
@@ -88,9 +88,10 @@ ClientSocketPool::GroupId TestGroupId(
     int port = 80,
     base::StringPiece scheme = url::kHttpScheme,
     PrivacyMode privacy_mode = PrivacyMode::PRIVACY_MODE_DISABLED,
-    NetworkIsolationKey network_isolation_key = NetworkIsolationKey()) {
+    NetworkAnonymizationKey network_anonymization_key =
+        NetworkAnonymizationKey()) {
   return ClientSocketPool::GroupId(url::SchemeHostPort(scheme, host, port),
-                                   privacy_mode, network_isolation_key,
+                                   privacy_mode, network_anonymization_key,
                                    SecureDnsPolicy::kAllow);
 }
 
@@ -552,7 +553,7 @@ class TestConnectJobFactory : public ConnectJobFactory {
       const OnHostResolutionCallback& resolution_callback,
       RequestPriority request_priority,
       SocketTag socket_tag,
-      const NetworkIsolationKey& network_isolation_key,
+      const NetworkAnonymizationKey& network_anonymization_key,
       SecureDnsPolicy secure_dns_policy,
       const CommonConnectJobParams* common_connect_job_params,
       ConnectJob::Delegate* delegate) const override {
@@ -856,9 +857,9 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
 
   const SchemefulSite kSiteA(GURL("http://a.test/"));
   const SchemefulSite kSiteB(GURL("http://b.test/"));
-  const NetworkIsolationKey kNetworkIsolationKeys[] = {
-      NetworkIsolationKey(kSiteA, kSiteA),
-      NetworkIsolationKey(kSiteB, kSiteB),
+  const NetworkAnonymizationKey kNetworkAnonymizationKeys[] = {
+      NetworkAnonymizationKey(kSiteA, kSiteA, /*is_cross_site=*/false),
+      NetworkAnonymizationKey(kSiteB, kSiteB, /*is_cross_site=*/false),
   };
 
   const SecureDnsPolicy kSecureDnsPolicys[] = {SecureDnsPolicy::kAllow,
@@ -874,8 +875,9 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
       SCOPED_TRACE(scheme);
       for (const auto& privacy_mode : kPrivacyModes) {
         SCOPED_TRACE(privacy_mode);
-        for (const auto& network_isolation_key : kNetworkIsolationKeys) {
-          SCOPED_TRACE(network_isolation_key.ToDebugString());
+        for (const auto& network_anonymization_key :
+             kNetworkAnonymizationKeys) {
+          SCOPED_TRACE(network_anonymization_key.ToDebugString());
           for (const auto& secure_dns_policy : kSecureDnsPolicys) {
             SCOPED_TRACE(static_cast<int>(secure_dns_policy));
 
@@ -884,7 +886,7 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
             ClientSocketPool::GroupId group_id(
                 url::SchemeHostPort(scheme, host_port_pair.host(),
                                     host_port_pair.port()),
-                privacy_mode, network_isolation_key, secure_dns_policy);
+                privacy_mode, network_anonymization_key, secure_dns_policy);
 
             EXPECT_FALSE(pool_->HasGroupForTesting(group_id));
 
@@ -5738,12 +5740,13 @@ class ClientSocketPoolBaseRefreshTest
 
   static ClientSocketPool::GroupId GetGroupIdInPartition() {
     // Note this GroupId will match GetGroupId() unless
-    // kPartitionConnectionsByNetworkIsolationKey is enabled.
+    // kPartitionConnectionsByNetworkAnonymizationKey is enabled.
     const SchemefulSite kSite(GURL("https://b/"));
-    const NetworkIsolationKey kNetworkIsolationKey(kSite, kSite);
+    const NetworkAnonymizationKey kNetworkAnonymizationKey(
+        kSite, kSite, /*is_cross_site=*/false);
     return TestGroupId("a", 443, url::kHttpsScheme,
                        PrivacyMode::PRIVACY_MODE_DISABLED,
-                       kNetworkIsolationKey);
+                       kNetworkAnonymizationKey);
   }
 
   void OnSSLConfigForServerChanged() {

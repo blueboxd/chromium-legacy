@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ CONTENT_EXPORT extern const char kAllowInsecureLocalhost[];
 CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
 CONTENT_EXPORT extern const char kAllowSyncXHRInPageDismissal[];
 CONTENT_EXPORT extern const char kAndroidFontsPath[];
+CONTENT_EXPORT extern const char kAshWebBrowserDisabled[];
 CONTENT_EXPORT extern const char kAttributionReportingDebugMode[];
 CONTENT_EXPORT extern const char kBrowserCrashTest[];
 CONTENT_EXPORT extern const char kBrowserStartupDialog[];

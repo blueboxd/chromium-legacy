@@ -36,6 +36,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_tab_helper.h"
+#include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/login_detection/login_detection_tab_helper.h"
 #include "chrome/browser/media/history/media_history_contents_observer.h"
 #include "chrome/browser/media/media_engagement_service.h"
@@ -48,11 +49,13 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/page_content_annotations_service_factory.h"
+#include "chrome/browser/page_info/page_info_features.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
 #include "chrome/browser/performance_hints/performance_hints_observer.h"
 #include "chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h"
+#include "chrome/browser/permissions/unused_site_permissions_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
@@ -131,6 +134,7 @@
 #include "components/performance_manager/public/features.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/unused_site_permissions_service.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
 #include "components/safe_browsing/content/browser/safe_browsing_tab_observer.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -182,8 +186,10 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
-#endif
+#include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/page_info/about_this_site_service_factory.h"
@@ -305,8 +311,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // --- Section 1: Common tab helpers ---
 #if defined(TOOLKIT_VIEWS)
-  if (base::FeatureList::IsEnabled(
-          page_info::kAboutThisSitePersistentSidePanelEntry)) {
+  if (page_info::IsPersistentSidePanelEntryFeatureEnabled()) {
     auto* optimization_guide_decider =
         OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
     auto* about_this_site_service =
@@ -528,6 +533,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (commerce::isContextualConsentEnabled()) {
     commerce_hint::CommerceHintTabHelper::CreateForWebContents(web_contents);
   }
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kRecordPermissionExpirationTimestamps)) {
+    auto* service = UnusedSitePermissionsServiceFactory::GetForProfile(profile);
+    permissions::UnusedSitePermissionsService::TabHelper::CreateForWebContents(
+        web_contents, service);
+  }
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -568,6 +579,14 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (user_notes::IsUserNotesEnabled() && !profile->IsOffTheRecord()) {
     user_notes::UserNotesTabHelper::CreateForWebContents(web_contents);
   }
+  if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
+    commerce::ShoppingListUiTabHelper::CreateForWebContents(
+        web_contents,
+        commerce::ShoppingServiceFactory::GetInstance()->GetForBrowserContext(
+            profile),
+        ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey()),
+        profile->GetPrefs());
+  }
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -576,7 +595,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
           autofill_assistant::features::kAutofillAssistantDesktop)) {
     autofill_assistant::CreateForWebContents(
         web_contents,
-        std::make_unique<autofill_assistant::CommonDependenciesChrome>(),
+        std::make_unique<autofill_assistant::CommonDependenciesChrome>(
+            web_contents->GetBrowserContext()),
         std::make_unique<autofill_assistant::PlatformDependenciesDesktop>());
   }
 #endif
@@ -591,7 +611,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel))
+  if (customize_chrome::IsSidePanelEnabled())
     CustomizeChromeTabHelper::CreateForWebContents(web_contents);
 #endif
 

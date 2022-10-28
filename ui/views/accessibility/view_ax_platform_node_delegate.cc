@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_dummy_tree_manager.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree.h"
@@ -453,12 +454,12 @@ ViewAXPlatformNodeDelegate::CreateTextPositionAt(
     initial_state.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
     auto dummy_tree = std::make_unique<ui::AXTree>(initial_state);
     dummy_tree_manager_ =
-        std::make_unique<ui::TestAXTreeManager>(std::move(dummy_tree));
+        std::make_unique<ui::AXDummyTreeManager>(std::move(dummy_tree));
   } else {
-    DCHECK(dummy_tree_manager_->GetTree());
+    DCHECK(dummy_tree_manager_->ax_tree());
     ui::AXTreeUpdate update;
     update.nodes = {GetData()};
-    const_cast<ui::AXTree*>(dummy_tree_manager_->GetTree())
+    const_cast<ui::AXTree*>(dummy_tree_manager_->ax_tree())
         ->Unserialize(update);
   }
 

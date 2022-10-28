@@ -30,6 +30,7 @@
 <translation id="1587223624401073077">Google Chrome menggunakan kamera anda.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> berbahaya, jadi Chrome telah menyekat fail itu.</translation>
 <translation id="1597911401261118146">Untuk menyemak sama ada kata laluan anda selamat daripada pelanggaran data dan isu keselamatan lain, <ph name="BEGIN_LINK" />log masuk ke Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome menyekat fail arkib ini kerana fail ini mungkin menyembunyikan perisian hasad</translation>
 <translation id="1619887657840448962">Untuk menjadikan Chrome lebih selamat, kami melumpuhkan sambungan berikut yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Cara anda boleh mengurus data anda:<ph name="END_BOLD" /> Untuk melindungi privasi anda, kami memadamkan minat anda yang disimpan melebihi 4 minggu secara automatik. Semasa anda terus menyemak imbas, minat itu mungkin muncul semula dalam senarai. Anda juga boleh mengalih keluar minat yang anda tidak mahu dipertimbangkan oleh Chrome.</translation>
 <translation id="1628000112320670027">Dapatkan bantuan berkenaan Chrome</translation>
@@ -57,6 +58,7 @@
 <translation id="2094648590148273905">Syarat Chrome OS Flex</translation>
 <translation id="2094919256425865063">Keluar daripada Chrome juga?</translation>
 <translation id="2106831557840787829">ChromeOS Flex menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" />tambahan, sebagaimana <ph name="BEGIN_LINK_LINUX_OSS" />persekitaran pembangunan Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Apabila dihidupkan, Chrome memulih guna memori daripada tab yang tidak digunakan secara aktif. Tindakan ini akan membebaskan sumber komputer anda untuk tugasan lain dan memastikan Chrome sentiasa pantas. Tab tidak aktif kelihatan kosong dan memuat semula secara automatik apabila anda mengkliknya. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> atau <ph name="BEGIN_LINK_2" />hantar maklum balas<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Tindakan ini akan memadamkan <ph name="ITEMS_COUNT" /> item daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Lancarkan Semula untuk Mengemas Kini &amp;Chrome</translation>
 <translation id="2123055963409958220">Bantu jadikan Chrome lebih baik dengan melaporkan <ph name="BEGIN_LINK" />tetapan semasa<ph name="END_LINK" /></translation>
@@ -271,6 +273,7 @@
 <translation id="6735387454586646204">Sistem Chrome OS Flex</translation>
 <translation id="6739177684496155661">Teruskan dalam profil Chrome baharu?</translation>
 <translation id="6750954913813541382">Untuk membetulkan kesalahan ejaan, Chrome akan menghantar teks yang anda taip dalam penyemak imbas kepada Google</translation>
+<translation id="6756581345161130259">Seperti yang diperlukan, Chrome menuntut semula memori daripada tab yang tidak digunakan secara aktif. Anda boleh menukar pilihan ini pada bila-bila masa dalam tetapan.</translation>
 <translation id="677276454032249905">Keluar daripada Chrome juga?</translation>
 <translation id="6785872064505734160">Google Assistant dalam Chrome boleh melengkapkan tindakan merentas laman web untuk anda</translation>
 <translation id="683440813066116847">Peraturan masuk bagi Google Chrome Canary untuk membenarkan trafik mDNS.</translation>

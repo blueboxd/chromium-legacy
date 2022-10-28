@@ -2795,6 +2795,12 @@ are declared in tools/grit/grit_rule.gni.
           </if>
       </if>
 
+      <!-- Tailored Warning in Download Bubble -->
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT"
+               desc="Subpage summary for cookie theft warning.">
+        This file contains malware that can compromise your personal or social network accounts
+      </message>
+
       <!-- Desktop omnibox PWA install icon -->
       <if expr="not is_android">
         <message name="IDS_OMNIBOX_PWA_INSTALL_ICON_LABEL" desc="String for the omnibox icon label promoting an app installation">
@@ -7129,6 +7135,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_SIDE_PANEL_RESIZE" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the side panel resize handle is focused.">
         Side Panel Resize Handle
       </message>
+      <message name="IDS_ACCNAME_SIDE_PANEL_SELECTOR" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the side panel header combobox is focused.">
+        Side Panel Selector
+      </message>
       <message name="IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE" desc="The name of the Customize Chrome feature in the side panel combo box.">
         Customize Chrome
       </message>
@@ -7152,6 +7161,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_READ_ANYTHING_COLORS_COMBOBOX_LABEL" desc="Accessibility label for the colors combobox of the Read Anything feature." translateable="false">
         Theme
+      </message>
+      <message name="IDS_READ_ANYTHING_LETTER_SPACING_COMBOBOX_LABEL" desc="Accessibility label for the letter spacing combobox of the Read Anything feature." translateable="false">
+        Letter spacing
       </message>
 
       <!-- User note strings -->
@@ -9217,6 +9229,42 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_BUTTON_COPY" desc="The button text for the image editor's copy to clipboard button.">
           Copy to Clipboard
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TITLE" desc="The text for the image editor's dedicated page title.">
+          Screenshot Image Editor
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_BUTTON_TEXT_CLEAR" desc="The text for the image editor's clear canvas button.">
+          Clear Canvas
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_ALIGN_LEFT" desc="The text for the image editor's text align-left radio button.">
+          Align left
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_ALIGN_CENTER" desc="The text for the image editor's text align-center radio button.">
+          Align center
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_ALIGN_RIGHT" desc="The text for the image editor's text align-right radio button.">
+          Align right
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_SHADOW_NONE" desc="The text for the image editor's text no shadow radio button.">
+          No shadow
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_SHADOW_SMALL" desc="The text for the image editor's text small shadow radio button.">
+          Small shadow
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_SHADOW_LARGE" desc="The text for the image editor's text large shadow radio button.">
+          Large shadow
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_DEFAULT" desc="The text for the image editor's text default font selector.">
+          Default font
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_MONOSPACE" desc="The text for the image editor's text monospace font selector.">
+          Monospace font
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_ITALIC" desc="The text for the image editor's text italic font selector.">
+          Italic font
+        </message>
+        <message name="IDS_BROWSER_SHARING_SCREENSHOT_IMAGE_EDITOR_TOOLTIP_FONT_OUTLINE" desc="The text for the image editor's text outlne font selector.">
+          Outline font
         </message>
       </if>
 

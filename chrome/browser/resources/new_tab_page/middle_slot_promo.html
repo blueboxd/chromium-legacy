@@ -16,18 +16,21 @@
     flex-direction: row;
     height: 30px;
     justify-content: center;
-    padding-inline-end: 8px;
-    padding-inline-start: 8px;
-  }
-
-  :host([middle-slot-promo-id_]) #promoAndDismissContainer {
-    padding-inline-end: 12px;
   }
 
   #promoContainer {
     align-items: center;
     display: flex;
-    overflow: hidden;
+    overflow-x: clip;
+    padding-inline-end: 8px;
+  }
+
+  :host([shown-middle-slot-promo-id_]) #promoContainer {
+    padding-inline-end: 2px;
+  }
+
+  #promoContainer > :first-child {
+    padding-inline-start: 8px;
   }
 
   a {
@@ -42,19 +45,15 @@
     outline: none;
   }
 
-  * + .image {
-    margin-inline-start: 8px;
-  }
-
   .image + * {
-    margin-inline-start: 8px;
+    padding-inline-start: 4px;
   }
 
   img {
     border-radius: 50%;
-    height: 24px;
+    height: 20px;
     pointer-events: none;
-    width: 24px;
+    width: 20px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -66,7 +65,8 @@
   #dismissPromoButton {
     --cr-icon-button-icon-size: 14px;
     --cr-icon-button-size: 20px;
-    margin-inline-start: 4px;
+    margin-inline-end: 4px;
+    margin-inline-start: 8px;
   }
 
   #promoContainer > :last-child {
@@ -77,7 +77,7 @@
 <!-- Visibility is toggled in TS -->
 <div id="promoAndDismissContainer" hidden>
   <!-- Promo parts are added by TS. -->
-  <template is="dom-if" if="[[middleSlotPromoId_]]">
+  <template is="dom-if" if="[[shownMiddleSlotPromoId_]]">
     <cr-icon-button id="dismissPromoButton"
         class="icon-clear"
         aria-label="$i18n{close}"

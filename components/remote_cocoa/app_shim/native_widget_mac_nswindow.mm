@@ -214,6 +214,7 @@ NSPoint clickedLocation;
 @synthesize bridgedNativeWidgetId = _bridgedNativeWidgetId;
 @synthesize bridge = _bridge;
 @synthesize isTooltip = _isTooltip;
+@synthesize childWindowAddedHandler = _childWindowAddedHandler;
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
                           styleMask:(NSUInteger)windowStyle
@@ -238,6 +239,7 @@ NSPoint clickedLocation;
   }
   _willUpdateRestorableState = YES;
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  [_childWindowAddedHandler dealloc];
   [super dealloc];
 }
 
@@ -247,6 +249,9 @@ NSPoint clickedLocation;
   NSInteger level = childWin.level;
   [super addChildWindow:childWin ordered:place];
   childWin.level = level;
+  if (self.childWindowAddedHandler) {
+    self.childWindowAddedHandler(childWin);
+  }
 }
 
 - (void)enforceNeverMadeVisible {

@@ -16,17 +16,17 @@ namespace blink {
 template <typename CharacterType>
 static void UpdateTokens(const CSSParserTokenRange& range,
                          const String& backing_string,
-                         Vector<CSSParserToken>& result) {
+                         CSSParserToken* result) {
   const CharacterType* current_offset =
       backing_string.GetCharacters<CharacterType>();
   for (const CSSParserToken& token : range) {
     if (token.HasStringBacking()) {
       unsigned length = token.Value().length();
       StringView string(current_offset, length);
-      result.push_back(token.CopyWithUpdatedString(string));
+      new (result++) CSSParserToken(token.CopyWithUpdatedString(string));
       current_offset += length;
     } else {
-      result.push_back(token);
+      new (result++) CSSParserToken(token);
     }
   }
   DCHECK(current_offset == backing_string.GetCharacters<CharacterType>() +
@@ -52,6 +52,16 @@ static bool IsRootFontUnitToken(CSSParserToken token) {
          token.GetUnitType() == CSSPrimitiveValue::UnitType::kRems;
 }
 
+void CSSVariableData::AppendBackingStrings(Vector<String>& output) const {
+  if (num_backing_strings_ == 1) {
+    output.push_back(backing_string_);
+  } else {
+    for (wtf_size_t i = 0; i < num_backing_strings_; ++i) {
+      output.push_back(backing_strings_[i]);
+    }
+  }
+}
+
 String CSSVariableData::Serialize() const {
   if (original_text_) {
     if (original_text_.EndsWith('\\')) {
@@ -66,8 +76,8 @@ String CSSVariableData::Serialize() const {
       StringBuilder serialized_text;
       serialized_text.Append(original_text_);
       serialized_text.Resize(serialized_text.length() - 1);
-      DCHECK(!tokens_.IsEmpty());
-      const CSSParserToken& last = tokens_.back();
+      DCHECK_NE(0u, num_tokens_);
+      const CSSParserToken& last = TokenInternalPtr()[num_tokens_ - 1];
       if (last.GetType() != kStringToken)
         serialized_text.Append(kReplacementCharacter);
 
@@ -87,12 +97,13 @@ String CSSVariableData::Serialize() const {
 }
 
 bool CSSVariableData::operator==(const CSSVariableData& other) const {
-  return Tokens() == other.Tokens();
+  return std::equal(Tokens().begin(), Tokens().end(), other.Tokens().begin(),
+                    other.Tokens().end());
 }
 
 void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
-  DCHECK_EQ(tokens_.size(), 0u);
-  DCHECK_EQ(backing_strings_.size(), 0u);
+  DCHECK_EQ(num_tokens_, 0u);
+  DCHECK_EQ(num_backing_strings_, 0u);
   StringBuilder string_builder;
   CSSParserTokenRange local_range = range;
 
@@ -102,13 +113,14 @@ void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
       string_builder.Append(token.Value());
     has_font_units_ |= IsFontUnitToken(token);
     has_root_font_units_ |= IsRootFontUnitToken(token);
+    ++num_tokens_;
   }
-  String backing_string = string_builder.ReleaseString();
-  backing_strings_.push_back(backing_string);
-  if (backing_string.Is8Bit())
-    UpdateTokens<LChar>(range, backing_string, tokens_);
+  backing_string_ = string_builder.ReleaseString();
+  num_backing_strings_ = 1;
+  if (backing_string_.Is8Bit())
+    UpdateTokens<LChar>(range, backing_string_, TokenInternalPtr());
   else
-    UpdateTokens<UChar>(range, backing_string, tokens_);
+    UpdateTokens<UChar>(range, backing_string_, TokenInternalPtr());
 }
 
 #if EXPENSIVE_DCHECKS_ARE_ON()
@@ -134,7 +146,7 @@ bool TokenValueIsBacked(const CSSParserToken& token,
 }
 
 bool TokenValueIsBacked(const CSSParserToken& token,
-                        const Vector<String>& backing_strings) {
+                        base::span<const String> backing_strings) {
   DCHECK(token.HasStringBacking());
   for (const String& backing_string : backing_strings) {
     if (TokenValueIsBacked(token, backing_string)) {
@@ -147,9 +159,16 @@ bool TokenValueIsBacked(const CSSParserToken& token,
 }  // namespace
 
 void CSSVariableData::VerifyStringBacking() const {
-  for (const CSSParserToken& token : tokens_) {
+  base::span<const String> backing_strings;
+  if (num_backing_strings_ == 1) {
+    backing_strings = base::span<const String>(&backing_string_, 1);
+  } else {
+    backing_strings =
+        base::span<const String>(backing_strings_.get(), num_backing_strings_);
+  }
+  for (const CSSParserToken& token : Tokens()) {
     DCHECK(!token.HasStringBacking() ||
-           TokenValueIsBacked(token, backing_strings_))
+           TokenValueIsBacked(token, backing_strings))
         << "Token value is not backed: " << token.Value().ToString();
   }
 }

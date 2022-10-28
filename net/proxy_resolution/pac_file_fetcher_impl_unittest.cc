@@ -263,13 +263,13 @@ TEST_F(PacFileFetcherImplTest, IsolationInfo) {
   EXPECT_EQ(u"-downloadable.pac-\n", text);
 
   // Check that the URL in kDestination is in the HostCache, with
-  // the fetcher's IsolationInfo / NetworkIsolationKey, and no others.
+  // the fetcher's IsolationInfo / NetworkAnonymizationKey, and no others.
   net::HostResolver::ResolveHostParameters params;
   params.source = net::HostResolverSource::LOCAL_ONLY;
   std::unique_ptr<net::HostResolver::ResolveHostRequest> host_request =
       context_->host_resolver()->CreateRequest(
           url::SchemeHostPort(url),
-          pac_fetcher->isolation_info().network_isolation_key(),
+          pac_fetcher->isolation_info().network_anonymization_key(),
           net::NetLogWithSource(), params);
   net::TestCompletionCallback callback2;
   result = host_request->Start(callback2.callback());
@@ -280,10 +280,10 @@ TEST_F(PacFileFetcherImplTest, IsolationInfo) {
   EXPECT_EQ(1u, context_->host_resolver()->GetHostCache()->size());
 
   // Make sure the cache is actually returning different results based on
-  // NetworkIsolationKey.
+  // NetworkAnonymizationKey.
   host_request = context_->host_resolver()->CreateRequest(
-      url::SchemeHostPort(url), NetworkIsolationKey(), net::NetLogWithSource(),
-      params);
+      url::SchemeHostPort(url), NetworkAnonymizationKey(),
+      net::NetLogWithSource(), params);
   net::TestCompletionCallback callback3;
   result = host_request->Start(callback3.callback());
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback3.GetResult(result));

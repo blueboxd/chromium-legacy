@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -162,7 +162,7 @@ TEST(JsonSchemaCompilerErrorTest, WrongTypeValueType) {
     EXPECT_FALSE(errors::ObjectType::Populate(*value, &out, &error));
     EXPECT_TRUE(EqualsUtf16("'otherType': expected dictionary, got double",
         error));
-    EXPECT_EQ(NULL, out.other_type.get());
+    EXPECT_FALSE(out.other_type.has_value());
   }
 }
 
@@ -267,7 +267,7 @@ TEST(JsonSchemaCompilerErrorTest, OptionalBinaryTypeFailure) {
     EXPECT_FALSE(errors::OptionalBinaryData::Populate(*value, &out, &error));
     EXPECT_TRUE(EqualsUtf16("'data': expected binary, got integer",
         error));
-    EXPECT_EQ(NULL, out.data.get());
+    EXPECT_FALSE(out.data.has_value());
   }
 }
 

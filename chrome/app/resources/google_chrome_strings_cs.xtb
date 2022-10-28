@@ -32,6 +32,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1587223624401073077">Google Chrome používá vaši kameru.</translation>
 <translation id="1587325591171447154">Soubor <ph name="FILE_NAME" /> je nebezpečný, proto jej Chrome zablokoval.</translation>
 <translation id="1597911401261118146">Chcete-li zkontrolovat, zda jsou hesla v bezpečí před porušením zabezpečení údajů a ostatními bezpečnostními hrozbami, <ph name="BEGIN_LINK" />přihlaste se do Chromu<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome tento soubor archivu zablokoval, protože v něm může být skryt malware</translation>
 <translation id="1619887657840448962">Aby byl prohlížeč Chrome bezpečnější, deaktivovali jsme následující rozšíření, které není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Jak můžete své údaje spravovat:<ph name="END_BOLD" /> Abychom chránili vaše soukromí, vaše zájmy starší než 4 měsíce automaticky mažeme. Jak budete pracovat s internetem, zájmy se mohou na seznamu znovu objevit. Pokud se zájmy nemají zohledňovat, můžete je z Chromu odstranit.</translation>
 <translation id="1628000112320670027">Pomoc s prohlížečem Chrome</translation>
@@ -61,6 +62,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2094648590148273905">Smluvní podmínky systému ChromeOS Flex</translation>
 <translation id="2094919256425865063">Přesto Chrome ukončit?</translation>
 <translation id="2106831557840787829">Systém ChromeOS Flex by nemohl existovat bez dalšího <ph name="BEGIN_LINK_CROS_OSS" />open source softwaru<ph name="END_LINK_CROS_OSS" />, jako je <ph name="BEGIN_LINK_LINUX_OSS" />vývojové prostředí Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Když je tato možnost zapnutá, Chrome bude využívat paměť z karet, které aktivně nepoužíváte. Uvolní se tak zdroje vašeho počítače k dalším úkolům a prohlížeč Chrome zůstane rychlý. Neaktivní karty se zobrazují prázdné a po kliknutí se automaticky znovu načtou. Můžete si přečíst <ph name="BEGIN_LINK" />další informace<ph name="END_LINK" /> nebo <ph name="BEGIN_LINK_2" />odeslat zpětnou vazbu<ph name="END_LINK_2" />.</translation>
 <translation id="2120620239521071941">Ze zařízení bude smazán následující počet položek: <ph name="ITEMS_COUNT" />. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Znovu spustit a aktualizovat &amp;Chrome</translation>
 <translation id="2123055963409958220">Pomozte s vylepšováním prohlížeče Chrome tím, že nahlásíte <ph name="BEGIN_LINK" />aktuální nastavení<ph name="END_LINK" /></translation>
@@ -279,6 +281,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6735387454586646204">Systém ChromeOS Flex</translation>
 <translation id="6739177684496155661">Pokračovat v novém profilu Chrome?</translation>
 <translation id="6750954913813541382">Text zadaný v prohlížeči odesílá Chrome kvůli opravě pravopisných chyb do Googlu</translation>
+<translation id="6756581345161130259">Chrome podle potřeby znovu využívá paměť obsazenou kartami, které aktivně nepoužíváte. Tuto volbu můžete v nastavení kdykoli změnit.</translation>
 <translation id="677276454032249905">Přesto Chrome ukončit?</translation>
 <translation id="6785872064505734160">Asistent Google v Chromu může na webech provádět různé akce za vás</translation>
 <translation id="683440813066116847">Pravidlo příchozího provozu pro aplikaci Google Chrome Canary, které povolí provoz mDNS.</translation>

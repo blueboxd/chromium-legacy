@@ -174,6 +174,7 @@
 <translation id="1380591466760231819">包芯折</translation>
 <translation id="138218114945450791">浅蓝色</translation>
 <translation id="1382194467192730611">您的管理员允许使用的 USB 设备</translation>
+<translation id="1382378825779654399">当任一网站上的商品降价时，您会收到电子邮件提醒。该网页将保存到“<ph name="LAST_BOOKMARKS_FOLDER" />”中。</translation>
 <translation id="1382912999714108023">看到的不是您的最新信息？请与银行联系以更新您的信息。</translation>
 <translation id="1384725838384960382">安全付款凭据身份验证表单</translation>
 <translation id="1386623374109090026">注释</translation>
@@ -250,7 +251,6 @@
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">免费软件与共享软件</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
-<translation id="1554003749331233619">您正在跟踪此商品。该网页保存在“<ph name="LAST_BOOKMARKS_FOLDER" />”中</translation>
 <translation id="1555130319947370107">蓝色</translation>
 <translation id="1559447966090556585">接收通知？</translation>
 <translation id="1559528461873125649">不存在此类文件或目录</translation>
@@ -298,7 +298,6 @@
 <translation id="1662550410081243962">保存并填写付款方式</translation>
 <translation id="1663943134801823270">信用卡选项和地址选项均来自 Chrome。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理这些选项。</translation>
 <translation id="1671391448414634642">从现在开始，<ph name="SOURCE_LANGUAGE" />网页一律会被翻译成<ph name="TARGET_LANGUAGE" />。</translation>
-<translation id="1673886523110456987">通过“<ph name="CARD_DETAIL" />”结帐以使用优惠</translation>
 <translation id="1674504678466460478">从<ph name="SOURCE_LANGUAGE" />到<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">短边先入</translation>
 <translation id="168693727862418163">此政策值未能根据其架构进行验证，因此会被忽略。</translation>
@@ -423,6 +422,7 @@
 <translation id="2034971124472263449">仍然保存</translation>
 <translation id="2035400064145347639">旅行指南与游记</translation>
 <translation id="2036983605131262583">备用卷</translation>
+<translation id="2040463897538655645">可拆卸式存储设备</translation>
 <translation id="2040894699575719559">无权获取位置信息</translation>
 <translation id="2042213636306070719">纸匣 7</translation>
 <translation id="204357726431741734">登录后即可使用您 Google 帐号中保存的密码</translation>
@@ -1001,7 +1001,6 @@
 <translation id="3633738897356909127">“更新 Chrome”按钮，按 Enter 键即可前往 Chrome 设置以更新 Chrome</translation>
 <translation id="3634530185120165534">纸匣 5</translation>
 <translation id="3634567936866541746">您刚刚在一个诈骗网站中输入了密码。为保护您的帐号安全，Chrome 建议检查您已保存的密码。</translation>
-<translation id="3637033245385760976">Chrome 通知必须处于开启状态。您可以在“<ph name="NOTIFICATION_SETTINGS" />”中开启此功能</translation>
 <translation id="3637662659967048211">保存到 Google 帐号</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">应用：</translation>
@@ -1517,6 +1516,7 @@
 <translation id="5018422839182700155">无法打开此网页</translation>
 <translation id="5019198164206649151">后备存储状态不佳</translation>
 <translation id="5020776957610079374">世界音乐</translation>
+<translation id="5021557570875267742">使用 Chrome 跟踪价格</translation>
 <translation id="5023310440958281426">请查看管理员制定的政策</translation>
 <translation id="5029568752722684782">清除副本</translation>
 <translation id="5030338702439866405">颁发者</translation>
@@ -2237,6 +2237,7 @@
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">始终翻译<ph name="ORIGINAL_LANGUAGE" />内容</translation>
 <translation id="6999969238895751684">娱乐业</translation>
+<translation id="7003335073762455340">您正在跟踪此商品。该网页保存在“<ph name="LAST_BOOKMARKS_FOLDER" />”中。</translation>
 <translation id="7004583254764674281">使用 Windows Hello 更快地确认银行卡</translation>
 <translation id="7006930604109697472">仍然发送</translation>
 <translation id="7012363358306927923">中国银联</translation>
@@ -2319,6 +2320,7 @@
 <translation id="7234638337680728591">油价与汽车燃料</translation>
 <translation id="7237492777898608035">不再在此网站上显示此消息</translation>
 <translation id="7238585580608191973">SHA-256 指纹</translation>
+<translation id="7239514174717251677">降价提醒功能已开启。您可在<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />中更改此设置</translation>
 <translation id="7240120331469437312">证书主题背景的备用名称</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />；<ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# 个匹配项}other{# 个匹配项}}</translation>
@@ -2460,6 +2462,7 @@
 <translation id="7564049878696755256">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chrome 建议您立即更改密码。</translation>
 <translation id="7564680668369175887">旅行车</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
+<translation id="7568616151991626879">Google Chrome 正尝试在 <ph name="APP_NAME" /> 上填充您的密码。</translation>
 <translation id="7569490014721427265">高尔夫</translation>
 <translation id="7569761772822664555">“管理搜索引擎”按钮，按 Enter 键即可管理您的默认搜索引擎和网站搜索</translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
@@ -2817,7 +2820,6 @@
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="8564182942834072828">单独的文档/非逐份打印的副本</translation>
 <translation id="8564985650692024650">如果您在其他网站上重复使用了您的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密码，Chromium 建议您重置该密码。</translation>
-<translation id="8573969211731659953">降价提醒功能已开启。您可以在“<ph name="NOTIFICATION_SETTINGS" />”中更改此设置</translation>
 <translation id="8576310925653847813">家庭影院系统</translation>
 <translation id="8577348305244205642">无法使用虚拟卡</translation>
 <translation id="858637041960032120">添加电话号码
@@ -3032,11 +3034,13 @@
 <translation id="9174623988242579721">定制车与高性能车</translation>
 <translation id="9174917557437862841">标签页切换按钮，按 Enter 键可切换到此标签页</translation>
 <translation id="9179703756951298733">在 Chrome 设置中管理您的付款和信用卡信息</translation>
+<translation id="9179907736442194268">当任一网站上的商品降价时，您会收到电子邮件提醒</translation>
 <translation id="9183302530794969518">Google 文档</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> 使用了不受支持的协议。</translation>
 <translation id="9187461866967718678">极限运动</translation>
 <translation id="9191834167571392248">打孔（左下角）</translation>
 <translation id="9199905725844810519">打印功能已被禁用</translation>
+<translation id="9202180858541326427">Chrome 通知必须处于开启状态。您可在<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />中开启此类通知</translation>
 <translation id="9205078245616868884">您的数据已使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="920511547311754821">找不到动态密码？<ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">无法添加文章。</translation>

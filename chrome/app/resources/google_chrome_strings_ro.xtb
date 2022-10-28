@@ -29,6 +29,7 @@
 <translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> este periculos, așadar Chrome l-a blocat.</translation>
 <translation id="1597911401261118146">Ca să verifici dacă parolele sunt protejate împotriva încălcării securității datelor și a altor probleme de securitate, <ph name="BEGIN_LINK" />conectează-te la Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome a blocat fișierul din arhivă deoarece poate ascunde programe malware</translation>
 <translation id="1619887657840448962">Pentru mai multă siguranță în Chrome, am dezactivat următoarea extensie care nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugată fără știrea ta.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Cum îți poți gestiona datele:<ph name="END_BOLD" /> pentru a-ți proteja confidențialitatea, ștergem automat categoriile de interese mai vechi de patru săptămâni. Pe măsură ce navighezi, o categorie de interese poate să reapară în listă. Sau poți elimina categoriile de interese pe care nu dorești ca Chrome să le ia în considerare.</translation>
 <translation id="1628000112320670027">Obține ajutor privind Chrome</translation>
@@ -56,6 +57,7 @@
 <translation id="2094648590148273905">Condițiile pentru sistemul de operare Chrome Flex</translation>
 <translation id="2094919256425865063">Ieși din Chrome oricum?</translation>
 <translation id="2106831557840787829">Sistemul de operare Chrome Flex este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar, la fel cum este și <ph name="BEGIN_LINK_LINUX_OSS" />mediul de dezvoltare Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Când opțiunea este activată, Chrome revendică memoria din filele pe care nu le folosești în mod activ. Acțiunea eliberează resursele computerului pentru alte activități și menține viteza ridicată a browserului Chrome. Filele inactive se afișează goale și se reîncarcă automat când dai clic pe ele. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> sau <ph name="BEGIN_LINK_2" />trimite feedback<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">Astfel, se vor șterge <ph name="ITEMS_COUNT" /> elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Relansează pentru a actualiza &amp;Chrome</translation>
 <translation id="2123055963409958220">Contribuie la îmbunătățirea browserului Chrome raportând <ph name="BEGIN_LINK" />setările actuale<ph name="END_LINK" /></translation>
@@ -270,6 +272,7 @@
 <translation id="6735387454586646204">Sistemul de operare Chrome Flex</translation>
 <translation id="6739177684496155661">Continui cu un profil Chrome nou?</translation>
 <translation id="6750954913813541382">Pentru a corecta erorile de scriere, Chrome trimite la Google textul pe care îl introduci în browser</translation>
+<translation id="6756581345161130259">După cum este necesar, Chrome revendică memoria din filele pe care nu le folosești în mod activ. Poți modifica oricând opțiunea din Setări.</translation>
 <translation id="677276454032249905">Ieși din Chrome oricum?</translation>
 <translation id="6785872064505734160">În Chrome, Asistentul Google poate să realizeze pentru tine acțiuni pe site-uri</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>

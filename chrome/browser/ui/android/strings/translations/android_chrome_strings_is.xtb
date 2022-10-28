@@ -454,6 +454,7 @@ Traustir lyklar bæta persónuvernd á netinu og ekki er hægt að nota þá til
 <translation id="3435465986463792564">Ertu með of marga glugga opna? Þú getur stjórnað gluggunum héðan</translation>
 <translation id="3443221991560634068">Endurhlaða þessa síðu</translation>
 <translation id="3444179773590444986">Deila ábendingu um dökkt þema fyrir vefsvæði?</translation>
+<translation id="3452832259067974318">Til að gæta persónuverndar þinnar fyllir Chrome ekki sjálfkrafa út aðgangsorðið þitt í þennan reit.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 niðurhal á áætlun}one{# niðurhal á áætlun}other{# niðurhöl á áætlun}}</translation>
 <translation id="3474624961160222204">Halda áfram sem <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Þú getur valið leitarvélina þína</translation>
@@ -679,6 +680,7 @@ Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil, sv
 <translation id="4763480195061959176">myndskeið</translation>
 <translation id="4766313118839197559">Aðgangsorð eru vistuð í Aðgangsorðastjórnun í þessu tæki</translation>
 <translation id="4766678251456904326">Bæta reikningi við tæki</translation>
+<translation id="4787736314074622408">Viltu eyða <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Hjálpar þér að ljúka verkefnum á vefnum, til dæmis að ganga frá kaupum</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Dulkóðun aðgangsorðs inniheldur ekki greiðslumáta og heimilisföng af Google Pay.
@@ -948,6 +950,7 @@ Prufuútgáfur Privacy Sandbox eru enn í þróun og eru í boði á völdum sv�
 <translation id="6192907950379606605">Fá myndlýsingar</translation>
 <translation id="6196315980958524839">Aðgangsorð eru vistuð í Google aðgangsorðastjórnun í þessu tæki.</translation>
 <translation id="620197886010707372">Opna forrit fyrir <ph name="APPNAME" /> með Google Play?</translation>
+<translation id="6202812185118613467">Skráðu þig aftur inn til að hefja samstillingu</translation>
 <translation id="6203593061661911168">Niðurhal hefst þegar Wi-Fi er tengt</translation>
 <translation id="6210748933810148297">Ekki <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Forskoðun á þessari síðu.</translation>

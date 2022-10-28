@@ -454,6 +454,7 @@ Belirli bir siteye ait veya tüm tarama geçmişinizi sildiğinizde bununla ili�
 <translation id="3435465986463792564">Çok fazla pencere mi açık? Hepsini buradan yönetebilirsiniz</translation>
 <translation id="3443221991560634068">Geçerli sayfayı yeniden yükler</translation>
 <translation id="3444179773590444986">Sitelerdeki koyu temayla ilgili geri bildirim paylaşmak ister misiniz?</translation>
+<translation id="3452832259067974318">Gizliliğinizi korumak için Chrome, bu alanda şifrenizi otomatik olarak doldurmayacaktır.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 indirme işlemi programlandı}other{# indirme işlemi programlandı}}</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> olarak devam et</translation>
 <translation id="3478363558367712427">Arama motorunuzu seçebilirsiniz</translation>
@@ -679,6 +680,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Şifreler bu cihazda Şifre Yöneticisi'ne kaydedilir</translation>
 <translation id="4766678251456904326">Hesabı cihaza ekleyin</translation>
+<translation id="4787736314074622408"><ph name="ITEM_TITLE" /> adlı dosyayı silmek istiyor musunuz?</translation>
 <translation id="4791358705705538979">Web'de çeşitli görevleri (ör. ödeme yapma) tamamlamanıza yardımcı olur</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
@@ -948,6 +950,7 @@ Privacy Sandbox denemeleri, hâlâ aktif geliştirme aşamasında olup belirli b
 <translation id="6192907950379606605">Resim açıklaması al</translation>
 <translation id="6196315980958524839">Şifreler bu cihazda Google Şifre Yöneticisi'ne kaydedilir</translation>
 <translation id="620197886010707372"><ph name="APPNAME" /> uygulaması Google Play ile açılsın mı?</translation>
+<translation id="6202812185118613467">Senkronizasyonu başlatmak için tekrar oturum açın</translation>
 <translation id="6203593061661911168">İndirme kablosuz bağlantı üzerinden başlatılacak</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> değil misiniz?</translation>
 <translation id="6211386937064921208">Sayfanın önizlemesi gösteriliyor</translation>

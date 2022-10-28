@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,7 @@ GL_EXPORT extern const base::Feature kDirectCompositionVerifyDrawOffset;
 GL_EXPORT extern const base::FeatureParam<int> kVerifyDrawOffsetX;
 GL_EXPORT extern const base::FeatureParam<int> kVerifyDrawOffsetY;
 GL_EXPORT extern const base::Feature kDirectCompositionSoftwareOverlays;
+GL_EXPORT extern const base::Feature kDirectCompositionLetterboxVideoOptimization;
 GL_EXPORT extern const base::Feature kEGLDualGpuRendering;
 GL_EXPORT extern const base::Feature kIntelVpSuperResolution;
 GL_EXPORT extern const base::Feature kDefaultANGLEOpenGL;

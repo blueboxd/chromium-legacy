@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,10 +152,20 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
-    public void didFinishNavigation(NavigationHandle navigation) {
+    public void didFinishNavigationInPrimaryMainFrame(NavigationHandle navigation) {
         handleObserverCall();
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().didFinishNavigation(navigation);
+            mObserversIterator.next().didFinishNavigationInPrimaryMainFrame(navigation);
+        }
+        finishObserverCall();
+    }
+
+    @Override
+    @CalledByNative
+    public void didFinishNavigationNoop(NavigationHandle navigation) {
+        handleObserverCall();
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().didFinishNavigationNoop(navigation);
         }
         finishObserverCall();
     }

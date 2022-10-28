@@ -215,6 +215,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2132302418721800944">Enregistrer tout l'écran</translation>
 <translation id="2135456203358955318">Loupe ancrée</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
+<translation id="2161132820593978283">Essayez le cadrage de la caméra pour être au centre de l'écran lors d'appels vidéo. Activez-le dans les Réglages rapides.</translation>
 <translation id="2170530631236737939">Balayez l'écran vers le bas avec trois doigts pour quitter l'Aperçu</translation>
 <translation id="219905428774326614">Lanceur d'applications, toutes les applications</translation>
 <translation id="2201071101391734388">Photo récente <ph name="INDEX" /> sur <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2405664212338326887">Non connecté</translation>
 <translation id="2408955596600435184">Saisissez votre code.</translation>
 <translation id="2412593942846481727">Mise à jour disponible</translation>
+<translation id="2426051945783024481">Cadre de la caméra centré automatiquement</translation>
 <translation id="2427507373259914951">Clic gauche</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="2435457462613246316">Afficher le mot de passe</translation>
@@ -373,6 +375,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="3151786313568798007">Orientation</translation>
 <translation id="3153444934357957346">Vous ne pouvez vous connecter qu'à <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes au maximum dans le cadre de la connexion multicompte.</translation>
 <translation id="3154351730702813399">L'administrateur de cet appareil peut contrôler votre activité de navigation.</translation>
+<translation id="3157931365184549694">Restaurer</translation>
 <translation id="316086887565479535">Le modèle contient des applis non compatibles</translation>
 <translation id="3161500364292033097">Fermer le bureau et les fenêtres</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> effectue un rollback de votre <ph name="DEVICE_TYPE" />. Cela entraînera la réinitialisation de votre appareil et la suppression de toutes vos données.</translation>
@@ -476,7 +479,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="3735740477244556633">Trier par</translation>
 <translation id="3742055079367172538">Capture d'écran réalisée</translation>
 <translation id="3765841986579723851">Modifié aujourd'hui</translation>
-<translation id="3771549900096082774">Mode Contraste élevé</translation>
 <translation id="3773700760453577392">Un administrateur a désactivé la connexion multicompte pour <ph name="USER_EMAIL" />. Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="3779139509281456663">Connexion à l'appareil suivant : <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4312840429157639164">Appareil photo aligné sur l'angle supérieur droit. Conflit avec la surface du système.</translation>
 <translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Vous avez appuyé sur le raccourci clavier du contraste élevé. Voulez-vous l'activer ?</translation>
 <translation id="4322742403972824594">Le raccourci clavier Ctrl+Alt+Flèche vers le haut a été modifié. Pour utiliser la touche Accueil, appuyez sur la touche du <ph name="LAUNCHER_KEY_NAME" />+Flèche vers la gauche.</translation>
 <translation id="4333628967105022692">Lacros ne peut pas fonctionner lorsque plusieurs utilisateurs sont connectés.</translation>
 <translation id="4338109981321384717">Loupe</translation>
 <translation id="4351433414020964307">Chargement de l'Assistant…</translation>
-<translation id="4356930093361201197">le mode Contraste élevé</translation>
 <translation id="4371348193907997655">Paramètres Cast</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4378551569595875038">Connexion</translation>
@@ -877,7 +877,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5980301590375426705">Fermer sess. Invité</translation>
 <translation id="598407983968395253">Utiliser le modèle</translation>
 <translation id="598882571027504733">Pour télécharger la mise à jour, redémarrez votre Chromebook avec le clavier branché.</translation>
-<translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> sur <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
 <translation id="602001110135236999">Vers la gauche</translation>
@@ -1043,6 +1042,7 @@ Nouvelle installation</translation>
 <translation id="6960565108681981554">Désactivé. Contactez votre opérateur.</translation>
 <translation id="6961121602502368900">Couper le son du téléphone n'est pas disponible dans le profil professionnel</translation>
 <translation id="6961840794482373852">Le raccourci clavier Alt+Flèche vers le haut a été modifié. Pour utiliser la touche Page précédente, appuyez sur la touche du <ph name="LAUNCHER_KEY_NAME" />+Flèche vers le haut.</translation>
+<translation id="696267987219125751">Le cadrage de la caméra est désactivé.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Démarrer</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1133,6 +1133,7 @@ Nouvelle installation</translation>
 <translation id="7513922695575567867">Agenda, semaine du <ph name="DATE" />, le <ph name="SELECTED_DATE" /> est actuellement sélectionné.</translation>
 <translation id="7514365320538308">Télécharger</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Le cadrage de la caméra est activé.</translation>
 <translation id="7526573455193969409">Il est possible que le réseau soit surveillé</translation>
 <translation id="7536035074519304529">Adresse IP : <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Les applis Linux et les fenêtres de navigation privée ne sont pas prises en charge pour le moment. Les autres applis seront enregistrées.</translation>
@@ -1151,10 +1152,12 @@ Nouvelle installation</translation>
 <translation id="7607002721634913082">Suspendu</translation>
 <translation id="7609951632080598826">Vue de l'agenda, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Appareil photo reconnecté.</translation>
+<translation id="761736749114493194">Activer/Désactiver le cadrage de la caméra. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7633755430369750696">Afficher les paramètres du Partage à proximité.</translation>
 <translation id="7634648064048557203">Appareil photo aligné sur l'angle inférieur droit</translation>
 <translation id="7641938616688887143">Enregistrer</translation>
+<translation id="7642106959537987271">mode d'inversion des couleurs</translation>
 <translation id="7642647758716480637">Ouvrir les paramètres du réseau <ph name="NETWORK_NAME" /> <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
@@ -1233,7 +1236,6 @@ Nouvelle installation</translation>
 <translation id="8051716679295756675">Le modèle "<ph name="DESK_TEMPLATE_NAME" />" existe déjà</translation>
 <translation id="8052898407431791827">Copié dans le presse-papiers</translation>
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
-<translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="8083540854303889870">Bureaux enregistrés</translation>
 <translation id="8091387634532529612">Mises à jour automatiques</translation>
 <translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
@@ -1261,6 +1263,7 @@ Nouvelle installation</translation>
 <translation id="8209010265547628927">Réinitialiser</translation>
 <translation id="8214996719228530800">Version Canary</translation>
 <translation id="8219451629189078428">Votre Chromebook doit rester allumé et branché à une source d'alimentation pendant ce temps. Vérifiez que les câbles de l'adaptateur ou du chargeur sont bien branchés sur votre Chromebook et sur la prise électrique. N'éteignez pas votre Chromebook.</translation>
+<translation id="8230305195727960608">Mode d'inversion des couleurs</translation>
 <translation id="8236042855478648955">Une pause s'impose !</translation>
 <translation id="8246282815785366524">Bon retour parmi nous, <ph name="GIVEN_NAME" /> !</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" />, batterie du téléphone à <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@ Nouvelle installation</translation>
 <translation id="851458219935658693">Afficher les fenêtres du bureau actuel, case d'option cochée</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8535393432370007982">Annuler le tri par couleur</translation>
+<translation id="8541078764854166027">Cadrage caméra</translation>
 <translation id="8542053257095774575">Aucun bureau ni modèle enregistré</translation>
 <translation id="8546059259582788728">Le tri a bien été annulé</translation>
 <translation id="8551588720239073785">Paramètres de date et d'heure</translation>
@@ -1386,6 +1390,7 @@ Nouvelle installation</translation>
 <translation id="8982906748181120328">Visibilité à proximité</translation>
 <translation id="8983038754672563810">3G+</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> en cours d'utilisation</translation>
+<translation id="8991617137207906966">Le mode d'inversion des couleurs est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="899350903320462459">Déverrouiller l'appareil en tant que <ph name="LOGIN_ID" /> pour effectuer l'action de notification</translation>
 <translation id="9000771174482730261">GÉRER L'ESPACE DE STOCKAGE</translation>
 <translation id="9017320285115481645">Saisissez le code d'accès parental Family Link.</translation>
@@ -1434,6 +1439,7 @@ Nouvelle installation</translation>
 <translation id="921989828232331238">Ton parent a verrouillé ton appareil pour la journée</translation>
 <translation id="9220525904950070496">Supprimer le compte</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
+<translation id="92580429198593979">Vous avez utilisé le raccourci clavier pour l'inversion des couleurs. Voulez-vous activer cette option ?</translation>
 <translation id="925832987464884575">Masquer les aperçus</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> exige la mise à jour immédiate de votre <ph name="DEVICE_TYPE" /></translation>
 <translation id="938963181863597773">Qu'y a-t-il dans mon agenda ?</translation>

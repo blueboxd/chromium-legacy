@@ -82,14 +82,14 @@
 <translation id="2687403674020088961">Bloquear todos os cookies (não recomendado).</translation>
 <translation id="2692299144678073135">Permitir que os sites relacionados se lembrem de si nos sites</translation>
 <translation id="2704606927547763573">Copiado</translation>
-<translation id="2713106313042589954">Desativar câmara</translation>
-<translation id="2717722538473713889">Endereços de email</translation>
+<translation id="2713106313042589954">Desligar câmara</translation>
+<translation id="2717722538473713889">Moradas de email</translation>
 <translation id="2750481671343847896">Os sites podem mostrar pedidos de início de sessão de serviços de identidade.</translation>
 <translation id="2785051990912111074">Esta opção limpa os cookies de <ph name="WEBSITE" /></translation>
 <translation id="2822354292072154809">Tem a certeza de que pretende repor todas as autorizações do site para <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Faixa anterior</translation>
-<translation id="2903493209154104877">Endereços</translation>
+<translation id="2903493209154104877">Moradas</translation>
 <translation id="2910701580606108292">Perguntar antes de permitir que os sites reproduzam conteúdos protegidos</translation>
 <translation id="2913331724188855103">Permitir que os sites guardem e leiam dados de cookies (recomendado)</translation>
 <translation id="2932883381142163287">Denunciar abuso</translation>
@@ -182,6 +182,7 @@
 <translation id="5048398596102334565">Permitir que os sites acedam aos sensores de movimentos (recomendado)</translation>
 <translation id="5050380848339752099">Este site está prestes a partilhar informações com uma app fora do Modo de navegação anónima.</translation>
 <translation id="5063480226653192405">Utilização</translation>
+<translation id="5091013926750941408">Site para dispositivos móveis</translation>
 <translation id="509133520954049755">Pedir a vista de computador</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="5123685120097942451">Separador de navegação anónima</translation>

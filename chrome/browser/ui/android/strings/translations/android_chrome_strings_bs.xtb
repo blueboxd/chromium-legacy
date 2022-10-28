@@ -317,7 +317,7 @@ Kada izbrišete historiju pregledanja, cijelu ili samo za određene web lokacije
 <translation id="2732063072010454421">Bolji doživljaj glasovnog pretraživanja</translation>
 <translation id="2760989362628427051">Uključuje tamnu temu kada je na uređaju uključena tamna tema ili Ušteda baterije</translation>
 <translation id="2762000892062317888">maloprije</translation>
-<translation id="276969039800130567">Prijavljeni ste s računom <ph name="USER_EMAIL_ADDRESS" />.</translation>
+<translation id="276969039800130567">Prijavljeni ste kao <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2776236159752647997">Više postavki koje se odnose na privatnost, sigurnost i prikupljanje podataka možete pronaći u odjeljku <ph name="BEGIN_LINK" />Googleove usluge<ph name="END_LINK" /></translation>
 <translation id="2777555524387840389">Preostalo je <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">neuspjelo</translation>
@@ -454,7 +454,7 @@ Kada izbrišete historiju pregledanja, cijelu ili samo za određene web lokacije
 <translation id="3435465986463792564">Imate mnogo prozora? Možete upravljati njima odavde</translation>
 <translation id="3443221991560634068">Ponovo učitajte trenutnu stranicu</translation>
 <translation id="3444179773590444986">Dijeliti povratne informacije o tamnoj temi za web lokacije?</translation>
-<translation id="3452832259067974318">Da bi zaštitio vašu privatnost, Chrome neće automatski popuniti zaporku u ovom polju.</translation>
+<translation id="3452832259067974318">Radi zaštite vaše privatnosti, Chrome neće automatski popunjavati vašu lozinku u ovom polju.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{Zakazano je 1 preuzimanje}one{Zakazano je # preuzimanje}few{Zakazana su # preuzimanja}other{Zakazano je # preuzimanja}}</translation>
 <translation id="3474624961160222204">Nastavi kao <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Možete odabrati svoj pretraživač</translation>
@@ -680,7 +680,7 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4763480195061959176">videozapis</translation>
 <translation id="4766313118839197559">Lozinke se pohranjuju u Upravitelju lozinki na ovom uređaju.</translation>
 <translation id="4766678251456904326">Dodajte račun na uređaj</translation>
-<translation id="4787736314074622408">Želite li izbrisati <ph name="ITEM_TITLE" />?</translation>
+<translation id="4787736314074622408">Želite li izbrisati fajl <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Pomaže vam s izvršavanjem zadataka na internetu, kao što je plaćanje</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Enkripcija šifrom ne uključuje načine plaćanja i adrese s Google Paya.
@@ -950,6 +950,7 @@ Probni periodi Okruženja zaštićene privatnosti i dalje su u fazi aktivnog raz
 <translation id="6192907950379606605">Preuzmi opise slika</translation>
 <translation id="6196315980958524839">Lozinke se pohranjuju u Googleovom Upravitelju lozinki na ovom uređaju.</translation>
 <translation id="620197886010707372">Otvoriti aplikaciju za aplikaciju <ph name="APPNAME" /> pomoću Google Playa?</translation>
+<translation id="6202812185118613467">Ponovo se prijavite da započnete sinhronizaciju</translation>
 <translation id="6203593061661911168">Preuzimanje će se pokrenuti kada bude uspostavljena WiFi veza</translation>
 <translation id="6210748933810148297">Vi niste <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Pregledanje ove stranice</translation>

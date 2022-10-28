@@ -1282,6 +1282,28 @@
             ]
         }
     ],
+    "AutofillParseAsync": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillParseAsync"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillParseMerchantPromoCodeFields": [
         {
             "platforms": [
@@ -1995,21 +2017,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "BrowserSwitcherNoneIsGreylist"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CALayerTreeOptimization": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CALayerTreeOptimization"
                     ]
                 }
             ]
@@ -5115,6 +5122,30 @@
             ]
         }
     ],
+    "IOSAutofillBranding": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillBrandingIOS"
+                    ]
+                },
+                {
+                    "name": "Enabled (Monotone)",
+                    "params": {
+                        "ios-autofill-branding-monotones": "true"
+                    },
+                    "enable_features": [
+                        "AutofillBrandingIOS"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSBackgroundRefresh": [
         {
             "platforms": [
@@ -5395,6 +5426,21 @@
                     "enable_features": [
                         "BubbleRichIPH",
                         "IPH_PasswordSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSPasswordManagerCrossOriginIframeSupport": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IOSPasswordManagerCrossOriginIframeSupport"
                     ]
                 }
             ]
@@ -5773,6 +5819,7 @@
                 "android_webview",
                 "chromeos",
                 "chromeos_lacros",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -6834,6 +6881,7 @@
         {
             "platforms": [
                 "chromeos",
+                "chromeos_lacros",
                 "linux",
                 "mac",
                 "windows"
@@ -6879,6 +6927,9 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OmniboxReportSearchboxStats"
+                    ],
+                    "disable_features": [
+                        "OmniboxReportAssistedQueryStats"
                     ]
                 }
             ]
@@ -6962,6 +7013,25 @@
                     ],
                     "disable_features": [
                         "OmniboxTriggerForPrerender2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxSiteSearchStarterPack": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxSiteSearchStarterPack"
                     ]
                 }
             ]
@@ -9593,14 +9663,14 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithSingleButtonIllustrationAndTitle",
+                    "name": "EnabledWithIllustrationAndTitle_3",
                     "enable_features": [
                         "SyncAndroidPromosWithIllustration",
-                        "SyncAndroidPromosWithSingleButton",
                         "SyncAndroidPromosWithTitle"
                     ],
                     "disable_features": [
-                        "SyncAndroidPromosWithAlternativeTitle"
+                        "SyncAndroidPromosWithAlternativeTitle",
+                        "SyncAndroidPromosWithSingleButton"
                     ]
                 }
             ]
@@ -9641,6 +9711,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SyncTrustedVaultRedoDeviceRegistration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncTrustedVaultVerifyDeviceRegistration": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_10",
+                    "enable_features": [
+                        "SyncTrustedVaultVerifyDeviceRegistration"
                     ]
                 }
             ]
@@ -11211,6 +11300,27 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-BurstyPacer": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "burst:20ms,_V1"
+                },
+                {
+                    "name": "burst:40ms,_V1"
                 }
             ]
         }

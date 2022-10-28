@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">Du kan även flytta dig från en del av skärmen till en annan. Du kan till exempel flytta dig mellan Appstartaren, hyllan och flikar i Chrome. Du kommer till nästa del genom att svepa från vänster till höger med fyra fingrar. Prova det nu för att fortsätta.</translation>
 <translation id="2624431853467395961">Öppna inlärningsläge</translation>
 <translation id="2626530649491650971">klickbart</translation>
+<translation id="263637551280112393">Tryck på Sök + Skift + blanksteg</translation>
 <translation id="2637227747952042642">Matematiskt</translation>
 <translation id="2638785836053527382">Nedladdningen återupptogs <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVox-specialtangent</translation>
@@ -650,6 +651,7 @@
 <translation id="5355014376930441909">Det finns inga fler avsnitt</translation>
 <translation id="5368000168321181111">Ljudikoner har inaktiverats</translation>
 <translation id="5368505757342402527">Nedladdningen <ph name="PROGRESS" /> % klar <ph name="FILE_NAME" />. Cirka <ph name="TIME" /> <ph name="UNITS" /> återstår.</translation>
+<translation id="5381388086899614489">klicka länge</translation>
 <translation id="5400836586163650660">Grå</translation>
 <translation id="5402367795255837559">Punktskrift</translation>
 <translation id="5402791055281059602">En modal avisering</translation>
@@ -1043,7 +1045,7 @@
 <translation id="8132248161074464367">Föregående giltiga objekt</translation>
 <translation id="8138880386467279117">Trycka</translation>
 <translation id="8146613869421949343">I nästa steg får du lära dig om Sök-tangenten. Sök-tangenten används tillsammans med andra tangenter för olika ChromeVox-kommandon. Sök-tangenten sitter precis ovanför den vänstra Skift-tangenten. Tryck på Sök-tangenten för att fortsätta.</translation>
-<translation id="8158033275290782295">markera alla</translation>
+<translation id="8158033275290782295">markera allt</translation>
 <translation id="816818801578874684">Det här är den första rubriken. Tryck på Sök + H för att fortsätta till nästa rubrik.</translation>
 <translation id="8173092779156526980">Svep åt vänster med fyra fingrar</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understreck}other{# understreck}}</translation>

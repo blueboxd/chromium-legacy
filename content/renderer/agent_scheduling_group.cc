@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -326,8 +326,9 @@ blink::WebView* AgentSchedulingGroup::CreateWebView(
   if (params->window_was_opened_by_another_window)
     web_view->SetOpenedByDOM();
 
-  GetContentClient()->renderer()->WebViewCreated(web_view,
-                                                 was_created_by_renderer);
+  GetContentClient()->renderer()->WebViewCreated(
+      web_view, was_created_by_renderer,
+      params->outermost_origin ? &params->outermost_origin.value() : nullptr);
   return web_view;
 }
 

@@ -98,8 +98,8 @@ class DedicatedWebTransportHttp3Test : public TestWithTaskEnvironment {
   DedicatedWebTransportHttp3Test() {
     quic::QuicEnableVersion(quic::ParsedQuicVersion::RFCv1());
     origin_ = url::Origin::Create(GURL{"https://example.org"});
-    isolation_key_ =
-        NetworkIsolationKey(SchemefulSite(origin_), SchemefulSite(origin_));
+    anonymization_key_ =
+        NetworkAnonymizationKey(SchemefulSite(origin_), SchemefulSite(origin_));
 
     URLRequestContextBuilder builder;
     builder.set_proxy_resolution_service(
@@ -185,13 +185,13 @@ class DedicatedWebTransportHttp3Test : public TestWithTaskEnvironment {
 
   int port_ = 0;
   url::Origin origin_;
-  NetworkIsolationKey isolation_key_;
+  NetworkAnonymizationKey anonymization_key_;
 };
 
 TEST_F(DedicatedWebTransportHttp3Test, Connect) {
   StartServer();
   client_ = std::make_unique<DedicatedWebTransportHttp3Client>(
-      GetURL("/echo"), origin_, &visitor_, isolation_key_, context_.get(),
+      GetURL("/echo"), origin_, &visitor_, anonymization_key_, context_.get(),
       WebTransportParameters());
 
   EXPECT_CALL(visitor_, OnConnected(_)).WillOnce(StopRunning());
@@ -213,7 +213,7 @@ TEST_F(DedicatedWebTransportHttp3Test, Connect) {
 TEST_F(DedicatedWebTransportHttp3Test, MAYBE_CloseTimeout) {
   StartServer();
   client_ = std::make_unique<DedicatedWebTransportHttp3Client>(
-      GetURL("/echo"), origin_, &visitor_, isolation_key_, context_.get(),
+      GetURL("/echo"), origin_, &visitor_, anonymization_key_, context_.get(),
       WebTransportParameters());
 
   EXPECT_CALL(visitor_, OnConnected(_)).WillOnce(StopRunning());
@@ -239,7 +239,7 @@ TEST_F(DedicatedWebTransportHttp3Test, MAYBE_CloseTimeout) {
 TEST_F(DedicatedWebTransportHttp3Test, CloseReason) {
   StartServer();
   client_ = std::make_unique<DedicatedWebTransportHttp3Client>(
-      GetURL("/session-close"), origin_, &visitor_, isolation_key_,
+      GetURL("/session-close"), origin_, &visitor_, anonymization_key_,
       context_.get(), WebTransportParameters());
 
   EXPECT_CALL(visitor_, OnConnected(_)).WillOnce(StopRunning());

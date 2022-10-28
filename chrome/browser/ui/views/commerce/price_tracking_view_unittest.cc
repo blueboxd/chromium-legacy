@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/commerce/price_tracking_view.h"
 
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
@@ -14,8 +15,10 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/commerce/core/mock_shopping_service.h"
 #include "components/commerce/core/test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/test/test_platform_native_widget.h"
@@ -24,7 +27,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-const char kTestURL[] = "http://www.google.com";
+const char kTestURL[] = "about:blank";
 }  // namespace
 
 class PriceTrackingViewTest : public BrowserWithTestWindowTest {
@@ -70,12 +73,17 @@ class PriceTrackingViewTest : public BrowserWithTestWindowTest {
                                   std::u16string());
 
     commerce::AddProductBookmark(bookmark_model, u"title", GURL(kTestURL), 0,
-                                 true);
+                                 false);
   }
 
   raw_ptr<PriceTrackingView> CreateViewAndShow(bool is_price_track_enabled) {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    const auto valid_product_image =
+        gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
     auto price_tracking_View = std::make_unique<PriceTrackingView>(
-        profile(), GURL(kTestURL), is_price_track_enabled);
+        profile(), GURL(kTestURL),
+        ui::ImageModel::FromImage(valid_product_image), is_price_track_enabled);
     price_tracking_View_ =
         anchor_widget_->SetContentsView(std::move(price_tracking_View));
     anchor_widget_->Show();
@@ -118,6 +126,9 @@ class PriceTrackingViewTest : public BrowserWithTestWindowTest {
     EXPECT_EQ(price_tracking_View_->body_label_->GetText(), expected_message);
   }
 
+ protected:
+  base::UserActionTester user_action_tester_;
+
  private:
   views::UniqueWidgetPtr anchor_widget_;
   raw_ptr<PriceTrackingView> price_tracking_View_;
@@ -127,52 +138,86 @@ TEST_F(PriceTrackingViewTest, InitialPriceTrackEnabled) {
   const bool enabled = true;
   CreateViewAndShow(enabled);
   VerifyToggleState(enabled);
-  VerifyBodyMessage(
-      l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE_DIALOG_DESCRIPTION));
+  VerifyBodyMessage(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_STAR_DIALOG_TRACK_PRICE_DESCRIPTION));
 }
 
 TEST_F(PriceTrackingViewTest, InitialPriceTrackDisabled) {
   const bool enabled = false;
   CreateViewAndShow(enabled);
   VerifyToggleState(enabled);
-  VerifyBodyMessage(
-      l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE_DIALOG_DESCRIPTION));
+  VerifyBodyMessage(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_STAR_DIALOG_TRACK_PRICE_DESCRIPTION));
 }
 
 TEST_F(PriceTrackingViewTest, ToggleSuccessed) {
   SetUpDependencies();
 
-  const bool initial_enabled = true;
+  const bool initial_enabled = false;
   CreateViewAndShow(initial_enabled);
   VerifyToggleState(initial_enabled);
-  VerifyBodyMessage(
-      l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE_DIALOG_DESCRIPTION));
+  VerifyBodyMessage(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_STAR_DIALOG_TRACK_PRICE_DESCRIPTION));
 
   static_cast<commerce::MockShoppingService*>(
       commerce::ShoppingServiceFactory::GetForBrowserContext(profile()))
-      ->SetUnsubscribeCallbackValue(true);
+      ->SetSubscribeCallbackValue(true);
 
   ClickToggle();
   VerifyToggleState(!initial_enabled);
-  VerifyBodyMessage(
-      l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE_DIALOG_DESCRIPTION));
+  VerifyBodyMessage(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_STAR_DIALOG_TRACK_PRICE_DESCRIPTION));
 }
 
 TEST_F(PriceTrackingViewTest, ToggleFailed) {
   SetUpDependencies();
 
-  const bool initial_enabled = true;
+  const bool initial_enabled = false;
   CreateViewAndShow(initial_enabled);
   VerifyToggleState(initial_enabled);
-  VerifyBodyMessage(
-      l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE_DIALOG_DESCRIPTION));
+  VerifyBodyMessage(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_STAR_DIALOG_TRACK_PRICE_DESCRIPTION));
 
   static_cast<commerce::MockShoppingService*>(
       commerce::ShoppingServiceFactory::GetForBrowserContext(profile()))
-      ->SetUnsubscribeCallbackValue(false);
+      ->SetSubscribeCallbackValue(false);
 
   ClickToggle();
   VerifyToggleState(initial_enabled);
   VerifyBodyMessage(l10n_util::GetStringUTF16(
       IDS_OMNIBOX_TRACK_PRICE_DIALOG_ERROR_DESCRIPTION));
+}
+
+TEST_F(PriceTrackingViewTest, ToggleRecordTracked) {
+  SetUpDependencies();
+
+  const bool initial_enabled = false;
+  CreateViewAndShow(initial_enabled);
+  EXPECT_EQ(
+      user_action_tester_.GetActionCount(
+          "Commerce.PriceTracking.BookmarkDialogPriceTrackViewTrackedPrice"),
+      0);
+  ClickToggle();
+
+  EXPECT_EQ(
+      user_action_tester_.GetActionCount(
+          "Commerce.PriceTracking.BookmarkDialogPriceTrackViewTrackedPrice"),
+      1);
+}
+
+TEST_F(PriceTrackingViewTest, ToggleRecordUntracked) {
+  SetUpDependencies();
+
+  const bool initial_enabled = true;
+  CreateViewAndShow(initial_enabled);
+  EXPECT_EQ(
+      user_action_tester_.GetActionCount(
+          "Commerce.PriceTracking.BookmarkDialogPriceTrackViewUntrackedPrice"),
+      0);
+  ClickToggle();
+
+  EXPECT_EQ(
+      user_action_tester_.GetActionCount(
+          "Commerce.PriceTracking.BookmarkDialogPriceTrackViewUntrackedPrice"),
+      1);
 }

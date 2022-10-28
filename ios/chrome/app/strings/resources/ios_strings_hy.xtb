@@ -23,6 +23,7 @@
 <translation id="1104948393051856124">Ընդունել և շարունակել</translation>
 <translation id="110724200315609752">Անցնել բացված պատուհան</translation>
 <translation id="1112015203684611006">Չհաջողվեց տպել:</translation>
+<translation id="1118569444314402022">Բարի վերադարձ, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Ստեղծել նոր ներդիր:</translation>
 <translation id="1126809382673880764">Չի պաշտպանում վտանգավոր կայքերից, ընդլայնումներից և ներբեռնումներից։ Անվտանգ դիտարկումը նախկինի պես կաշխատի Google-ի այլ ծառայություններում (եթե հասանելի է), օրինակ՝ Gmail-ում կամ Որոնման էջերում։</translation>
 <translation id="1135212215217513471">Տեղադրել iOS-ի համար Chrome-ը</translation>
@@ -46,6 +47,7 @@
 <translation id="1272079795634619415">Դադարեցնել</translation>
 <translation id="1275718070701477396">Ընտրված</translation>
 <translation id="1281818060020671000">Տվյալների կառավարում</translation>
+<translation id="1282311502488501110">Մուտք չգործել</translation>
 <translation id="1283524564873030414">Վերջին 24 ժամվա</translation>
 <translation id="1285320974508926690">Երբեք չթարգմանել այս կայքը</translation>
 <translation id="1291506870746876680">Երբ դուրս գաք <ph name="BEGIN_BOLD" />«<ph name="SITE_NAME" />»<ph name="END_BOLD" /> կայքից, դրա բոլոր թույլտվությունները կանջատվեն։</translation>
@@ -54,6 +56,7 @@
 <translation id="1322735045095424339">Կազմակերպության կանոնների համաձայն՝ դուք պետք է օգտագործեք ինկոգնիտո ռեժիմը</translation>
 <translation id="1323735185997015385">Ջնջել</translation>
 <translation id="132683371494960526">Կրկնակի հպեք՝ վերադաս պանակը փոխելու համար:</translation>
+<translation id="1335348992705722518">Կառավարել կարգավորումները…</translation>
 <translation id="1340643665687018190">Փակել ընտրացանկը</translation>
 <translation id="1358214951266274152">Անցեք ձեր պատճենաց հասցեով</translation>
 <translation id="1360432990279830238">Դուրս գրվե՞լ և անջատել համաժամացումը</translation>
@@ -61,6 +64,7 @@
 <translation id="1377255359165588604">Չհաջողվեց համաժամացնել:</translation>
 <translation id="1377321085342047638">Քարտի համարը</translation>
 <translation id="1383876407941801731">Որոնում</translation>
+<translation id="138618066238211776">Շարունակել <ph name="USER_NAME" /> հաշվով</translation>
 <translation id="1400642268715879018">Վերջին 4 շաբաթվա</translation>
 <translation id="1404330357948037222">Դուք դուրս եք եկել հաշվից</translation>
 <translation id="1407135791313364759">Բացել բոլորը</translation>
@@ -174,9 +178,11 @@
 <translation id="2421044535038393232">Շարունակել խմբագրումը</translation>
 <translation id="2434405374328098816">Դուք <ph name="WEBSITE" /> կայքում «<ph name="USERNAME" />» օգտատիրոջ համար արդեն գաղտնաբառ պահել եք։</translation>
 <translation id="2435457462613246316">Ցույց տալ գաղտնաբառը</translation>
+<translation id="2461070143328828326">Գաղտնաբառերի կարգավորումներ</translation>
 <translation id="2469960372084740698">Անջատե՞լ ապահով դիտարկումը</translation>
 <translation id="2473876017985765807">Դուք <ph name="WEBSITE" /> կայքի համար արդեն պահել եք գաղտնաբառ։</translation>
 <translation id="2476359652512522418">Ընտրված չէ</translation>
+<translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2500374554657206846">Գաղտնաբառը պահելու տարբերակներ</translation>
 <translation id="2523363575747517183">Այս կայքը բազմիցս փորձում է բացել մեկ այլ հավելված։</translation>
 <translation id="2529021024822217800">Բացել բոլորը</translation>
@@ -327,6 +333,7 @@
 <translation id="3709582977625132201">Նշել որպես չկարդացված</translation>
 <translation id="371230970611282515">Հայտնաբերում է վտանգավոր իրադարձություններն ու զգուշացնում դրանց մասին։</translation>
 <translation id="37207012422556617">Թրենդային որոնումներ</translation>
+<translation id="3726360487031500941">Նորից մուտք գործեք <ph name="USER_NAME" /> հաշիվ</translation>
 <translation id="3740397331642243698">Մուտքագրված URL-ները բացվում են Google Chrome-ի ինկոգնիտո ներդիրում։</translation>
 <translation id="3762232513783804601">Ստեղծված է հատուկ ձեր iPad-ի համար</translation>
 <translation id="3771033907050503522">Ինկոգնիտո ներդիրներ</translation>
@@ -381,6 +388,7 @@
 <translation id="4187450337729239226">Տեղադրել և որոնել</translation>
 <translation id="4223967053752765281">Ձեր կազմակերպությունն անջատել է դիտարկիչում մուտք գործելու հնարավորությունը։ Դուք նախկինի պես կարող եք տեսնել ձեր էջանիշները, պատմությունը, գաղտնաբառերն ու մյուս կարգավորումները այս սարքում։ Սակայն ձեր կատարած փոփոխությունները չեն համաժամացվի հաշվի հետ։</translation>
 <translation id="4233831822770018312">Փոփոխել թույլտվությունները</translation>
+<translation id="4236584471598725073">Գների հետագծում</translation>
 <translation id="4237377247299956313">Հպեք <ph name="BEGIN_BOLD" />Դիտարկիչի կանխադրված հավելված<ph name="END_BOLD" />։</translation>
 <translation id="424315890655130736">Մուտքագրեք անցաբառը</translation>
 <translation id="4249955472157341256">Տեսակավորել ըստ ամսաթվի</translation>
@@ -740,6 +748,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6930799952781667037">Հպեք՝ այս լեզուն փոխելու համար։</translation>
 <translation id="6944369514868857500">Ընտրել այլ հաշիվ</translation>
 <translation id="6945221475159498467">Ընտրել</translation>
+<translation id="6965382102122355670">Եղավ</translation>
 <translation id="6973630695168034713">Պանակներ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Կառավարել Google հաշիվը</translation>

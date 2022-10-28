@@ -39,7 +39,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
@@ -602,14 +602,14 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
       const X509Certificate* served_certificate_chain,
       const SignedCertificateTimestampAndStatusList&
           signed_certificate_timestamps,
-      const NetworkIsolationKey& network_isolation_key) override {
+      const NetworkAnonymizationKey& network_anonymization_key) override {
     num_failures_++;
     host_port_pair_ = host_port_pair;
     report_uri_ = report_uri;
     served_certificate_chain_ = served_certificate_chain;
     validated_certificate_chain_ = validated_certificate_chain;
     signed_certificate_timestamps_ = signed_certificate_timestamps;
-    network_isolation_key_ = network_isolation_key;
+    network_anonymization_key_ = network_anonymization_key;
   }
 
   const HostPortPair& host_port_pair() const { return host_port_pair_; }
@@ -625,8 +625,8 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
       const {
     return signed_certificate_timestamps_;
   }
-  const NetworkIsolationKey network_isolation_key() const {
-    return network_isolation_key_;
+  const NetworkAnonymizationKey network_anonymization_key() const {
+    return network_anonymization_key_;
   }
 
  private:
@@ -636,7 +636,7 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
   raw_ptr<const X509Certificate> served_certificate_chain_;
   raw_ptr<const X509Certificate> validated_certificate_chain_;
   SignedCertificateTimestampAndStatusList signed_certificate_timestamps_;
-  NetworkIsolationKey network_isolation_key_;
+  NetworkAnonymizationKey network_anonymization_key_;
 };
 
 // A mock CTVerifier that records every call to Verify but doesn't verify
@@ -3152,7 +3152,7 @@ TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
   EXPECT_EQ(kProtoHTTP11, sock_->GetNegotiatedProtocol());
 }
 
-// Tests that the session cache is not sharded by NetworkIsolationKey if the
+// Tests that the session cache is not sharded by NetworkAnonymizationKey if the
 // feature is disabled.
 TEST_P(SSLClientSocketVersionTest,
        SessionResumptionNetworkIsolationKeyDisabled) {
@@ -3185,10 +3185,11 @@ TEST_P(SSLClientSocketVersionTest,
   EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
   sock_.reset();
 
-  // Using a different NetworkIsolationKey shares session cache key because
+  // Using a different NetworkAnonymizationKey shares session cache key because
   // sharding is disabled.
   const SchemefulSite kSiteA(GURL("https://a.test"));
-  ssl_config.network_isolation_key = NetworkIsolationKey(kSiteA, kSiteA);
+  ssl_config.network_anonymization_key =
+      NetworkAnonymizationKey(kSiteA, kSiteA, /*is_cross_site=*/false);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -3197,7 +3198,8 @@ TEST_P(SSLClientSocketVersionTest,
   sock_.reset();
 
   const SchemefulSite kSiteB(GURL("https://a.test"));
-  ssl_config.network_isolation_key = NetworkIsolationKey(kSiteB, kSiteB);
+  ssl_config.network_anonymization_key =
+      NetworkAnonymizationKey(kSiteB, kSiteB, /*is_cross_site=*/false);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -3206,7 +3208,7 @@ TEST_P(SSLClientSocketVersionTest,
   sock_.reset();
 }
 
-// Tests that the session cache is sharded by NetworkIsolationKey if the
+// Tests that the session cache is sharded by NetworkAnonymizationKey if the
 // feature is enabled.
 TEST_P(SSLClientSocketVersionTest,
        SessionResumptionNetworkIsolationKeyEnabled) {
@@ -3216,8 +3218,10 @@ TEST_P(SSLClientSocketVersionTest,
 
   const SchemefulSite kSiteA(GURL("https://a.test"));
   const SchemefulSite kSiteB(GURL("https://b.test"));
-  const NetworkIsolationKey kNetworkIsolationKeyA(kSiteA, kSiteA);
-  const NetworkIsolationKey kNetworkIsolationKeyB(kSiteB, kSiteB);
+  const NetworkAnonymizationKey kNetworkAnonymizationKeyA(
+      kSiteA, kSiteA, /*is_cross_site=*/false);
+  const NetworkAnonymizationKey kNetworkAnonymizationKeyB(
+      kSiteB, kSiteB, /*is_cross_site=*/false);
 
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
@@ -3244,8 +3248,9 @@ TEST_P(SSLClientSocketVersionTest,
   EXPECT_THAT(MakeHTTPRequest(sock_.get()), IsOk());
   sock_.reset();
 
-  // Using a different NetworkIsolationKey uses a different session cache key.
-  ssl_config.network_isolation_key = kNetworkIsolationKeyA;
+  // Using a different NetworkAnonymizationKey uses a different session cache
+  // key.
+  ssl_config.network_anonymization_key = kNetworkAnonymizationKeyA;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -3262,7 +3267,7 @@ TEST_P(SSLClientSocketVersionTest,
   sock_.reset();
 
   // Repeat with another non-null key.
-  ssl_config.network_isolation_key = kNetworkIsolationKeyB;
+  ssl_config.network_anonymization_key = kNetworkAnonymizationKeyB;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -3278,7 +3283,7 @@ TEST_P(SSLClientSocketVersionTest,
   sock_.reset();
 
   // b.test does not evict a.test's session.
-  ssl_config.network_isolation_key = kNetworkIsolationKeyA;
+  ssl_config.network_anonymization_key = kNetworkAnonymizationKeyA;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -4032,13 +4037,13 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the Expect-CT opt-in.
-  NetworkIsolationKey network_isolation_key =
-      NetworkIsolationKey::CreateTransient();
+  NetworkAnonymizationKey network_anonymization_key =
+      NetworkAnonymizationKey::CreateTransient();
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::Seconds(1000);
   transport_security_state_->AddExpectCT(
       host_port_pair().host(), expiry, true /* enforce */,
-      GURL("https://example-report.test"), network_isolation_key);
+      GURL("https://example-report.test"), network_anonymization_key);
   MockExpectCTReporter reporter;
   transport_security_state_->SetExpectCTReporter(&reporter);
 
@@ -4047,7 +4052,7 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
           Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
   SSLConfig ssl_config;
-  ssl_config.network_isolation_key = network_isolation_key;
+  ssl_config.network_anonymization_key = network_anonymization_key;
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   SSLInfo ssl_info;
@@ -4064,7 +4069,7 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
             reporter.served_certificate_chain());
   EXPECT_EQ(ssl_info.cert.get(), reporter.validated_certificate_chain());
   EXPECT_EQ(0u, reporter.signed_certificate_timestamps().size());
-  EXPECT_EQ(network_isolation_key, reporter.network_isolation_key());
+  EXPECT_EQ(network_anonymization_key, reporter.network_anonymization_key());
 
   transport_security_state_->ClearReportCachesForTesting();
   EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
@@ -4084,7 +4089,7 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
             reporter.served_certificate_chain());
   EXPECT_EQ(ssl_info.cert.get(), reporter.validated_certificate_chain());
   EXPECT_EQ(0u, reporter.signed_certificate_timestamps().size());
-  EXPECT_EQ(network_isolation_key, reporter.network_isolation_key());
+  EXPECT_EQ(network_anonymization_key, reporter.network_anonymization_key());
 
   // If the connection is CT compliant, then there should be no socket error nor
   // a report.

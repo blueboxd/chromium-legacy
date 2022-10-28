@@ -370,8 +370,10 @@ constexpr size_t kMinBucketedOrder =
 constexpr size_t kMaxBucketedOrder = 20;
 constexpr size_t kNumBucketedOrders =
     (kMaxBucketedOrder - kMinBucketedOrder) + 1;
-// 4 buckets per order (for the higher orders).
-constexpr size_t kNumBucketsPerOrderBits = 2;
+// 8 buckets per order (for the higher orders).
+// Note: this is not what is used by default, but the maximum amount of buckets
+// per order. By default, only 4 are used.
+constexpr size_t kNumBucketsPerOrderBits = 3;
 constexpr size_t kNumBucketsPerOrder = 1 << kNumBucketsPerOrderBits;
 constexpr size_t kNumBuckets = kNumBucketedOrders * kNumBucketsPerOrder;
 constexpr size_t kSmallestBucket = 1 << (kMinBucketedOrder - 1);
@@ -449,6 +451,17 @@ constexpr unsigned char kQuarantinedByte = 0xEF;
 // static_cast<uint32_t>(-1) is too close to a "real" size.
 constexpr size_t kInvalidBucketSize = 1;
 
+#if defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
+// Requested size that require the hack.
+constexpr size_t kMac11MallocSizeHackRequestedSize = 32;
+// Usable size for allocations that require the hack.
+constexpr size_t kMac11MallocSizeHackUsableSize =
+#if BUILDFLAG(PA_DCHECK_IS_ON)
+    40;
+#else
+    44;
+#endif  // BUILDFLAG(PA_DCHECK_IS_ON)
+#endif  // defined(PA_ENABLE_MAC11_MALLOC_SIZE_HACK)
 }  // namespace internal
 
 // These constants are used outside PartitionAlloc itself, so we provide

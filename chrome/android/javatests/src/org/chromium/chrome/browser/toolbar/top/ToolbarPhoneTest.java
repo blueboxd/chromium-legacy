@@ -10,13 +10,17 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.view.View;
 
 import androidx.appcompat.content.res.AppCompatResources;
@@ -53,6 +57,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -76,6 +81,8 @@ public class ToolbarPhoneTest {
     private Runnable mRequestRenderRunnable;
     @Mock
     ThemeColorProvider mThemeColorProvider;
+    @Mock
+    GradientDrawable mLocationbarBackgroundDrawable;
 
     private Canvas mCanvas = new Canvas();
     private ToolbarPhone mToolbar;
@@ -209,10 +216,20 @@ public class ToolbarPhoneTest {
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
-    public void testToolbarColorSameAsSuggestionColorWhenFocus() {
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
+            "force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:modernize_visual_update_active_color_on_omnibox/true"})
+    public void
+    testToolbarColorSameAsSuggestionColorWhenFocus_activeColorOmnibox() {
         LocationBarCoordinator locationBarCoordinator =
                 (LocationBarCoordinator) mToolbar.getLocationBar();
         ColorDrawable toolbarBackgroundDrawable = mToolbar.getBackgroundDrawable();
+        mToolbar.setLocationBarBackgroundDrawableForTesting(mLocationbarBackgroundDrawable);
+        int nonFocusedRadius = mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                R.dimen.modern_toolbar_background_corner_radius);
+        int focusedRadius = mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_bg_round_corner_radius);
 
         // Focus on the Omnibox
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -220,8 +237,13 @@ public class ToolbarPhoneTest {
         });
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(toolbarBackgroundDrawable.getColor(),
-                    Matchers.is(locationBarCoordinator.getSuggestionsStandardBackgroundColor()));
+                    Matchers.is(locationBarCoordinator.getDropdownBackgroundColor(
+                            false /*isIncognito*/)));
         });
+        verify(mLocationbarBackgroundDrawable)
+                .setTint(
+                        locationBarCoordinator.getSuggestionBackgroundColor(false /*isIncognito*/));
+        verify(mLocationbarBackgroundDrawable, atLeastOnce()).setCornerRadius(focusedRadius);
 
         // Clear focus on the Omnibox
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -229,8 +251,72 @@ public class ToolbarPhoneTest {
         });
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(toolbarBackgroundDrawable.getColor(),
-                    Matchers.not(locationBarCoordinator.getSuggestionsStandardBackgroundColor()));
+                    Matchers.not(locationBarCoordinator.getDropdownBackgroundColor(
+                            false /*isIncognito*/)));
         });
+        verify(mLocationbarBackgroundDrawable, atLeastOnce()).setTint(anyInt());
+        verify(mLocationbarBackgroundDrawable, atLeastOnce()).setCornerRadius(nonFocusedRadius);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
+            "force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:modernize_visual_update_active_color_on_omnibox/false"})
+    public void
+    testToolbarColorSameAsSuggestionColorWhenFocus_noActiveColorOmnibox() {
+        LocationBarCoordinator locationBarCoordinator =
+                (LocationBarCoordinator) mToolbar.getLocationBar();
+        ColorDrawable toolbarBackgroundDrawable = mToolbar.getBackgroundDrawable();
+        mToolbar.setLocationBarBackgroundDrawableForTesting(mLocationbarBackgroundDrawable);
+
+        // Focus on the Omnibox
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBarCoordinator.getPhoneCoordinator().getViewForDrawing().requestFocus();
+        });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(toolbarBackgroundDrawable.getColor(),
+                    Matchers.is(locationBarCoordinator.getDropdownBackgroundColor(
+                            false /*isIncognito*/)));
+        });
+        verify(mLocationbarBackgroundDrawable)
+                .setTint(locationBarCoordinator.getDropdownBackgroundColor(false /*isIncognito*/));
+        verify(mLocationbarBackgroundDrawable, never()).setCornerRadius(anyInt());
+
+        // Clear focus on the Omnibox
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBarCoordinator.getPhoneCoordinator().getViewForDrawing().clearFocus();
+        });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(toolbarBackgroundDrawable.getColor(),
+                    Matchers.not(locationBarCoordinator.getDropdownBackgroundColor(
+                            false /*isIncognito*/)));
+        });
+        verify(mLocationbarBackgroundDrawable, atLeastOnce()).setTint(anyInt());
+        verify(mLocationbarBackgroundDrawable, never()).setCornerRadius(anyInt());
+    }
+
+    @Test
+    @MediumTest
+    @DisableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    public void testLocationBarCornerShouldNeverUpdatedWithoutExperiment() {
+        LocationBarCoordinator locationBarCoordinator =
+                (LocationBarCoordinator) mToolbar.getLocationBar();
+        mToolbar.setLocationBarBackgroundDrawableForTesting(mLocationbarBackgroundDrawable);
+
+        // Focus on the Omnibox
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBarCoordinator.getPhoneCoordinator().getViewForDrawing().requestFocus();
+        });
+        verify(mLocationbarBackgroundDrawable, never()).setCornerRadius(anyInt());
+
+        // Clear focus on the Omnibox
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBarCoordinator.getPhoneCoordinator().getViewForDrawing().clearFocus();
+        });
+        verify(mLocationbarBackgroundDrawable, never()).setCornerRadius(anyInt());
     }
 
     private static class TestControlsVisibilityDelegate

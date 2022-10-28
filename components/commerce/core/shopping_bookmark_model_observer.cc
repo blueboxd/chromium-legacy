@@ -13,6 +13,7 @@
 #include "components/commerce/core/price_tracking_utils.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
+#include "components/commerce/core/subscriptions/subscriptions_manager.h"
 #include "components/power_bookmarks/core/power_bookmark_utils.h"
 #include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 #include "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
@@ -21,8 +22,10 @@ namespace commerce {
 
 ShoppingBookmarkModelObserver::ShoppingBookmarkModelObserver(
     bookmarks::BookmarkModel* model,
-    ShoppingService* shopping_service)
-    : shopping_service_(shopping_service) {
+    ShoppingService* shopping_service,
+    SubscriptionsManager* subscriptions_manager)
+    : shopping_service_(shopping_service),
+      subscriptions_manager_(subscriptions_manager) {
   scoped_observation_.Observe(model);
 }
 
@@ -98,6 +101,30 @@ void ShoppingBookmarkModelObserver::BookmarkNodeRemoved(
 
   SetPriceTrackingStateForBookmark(shopping_service_, model, node, false,
                                    base::BindOnce([](bool success) {}));
+}
+
+void ShoppingBookmarkModelObserver::BookmarkMetaInfoChanged(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* node) {
+  std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
+      power_bookmarks::GetNodePowerBookmarkMeta(model, node);
+
+  // If the changed bookmark is a shopping item, we check its tracking status
+  // with local subscriptions and if inconsistent, we need to sync local
+  // subscriptions with the server. This is mainly used to keep local
+  // subscriptions up to date when users operate on multiple devices.
+  if (meta && meta->has_shopping_specifics() && subscriptions_manager_) {
+    power_bookmarks::ShoppingSpecifics* specifics =
+        meta->mutable_shopping_specifics();
+    uint64_t cluster_id = specifics->product_cluster_id();
+
+    CommerceSubscription sub(
+        SubscriptionType::kPriceTrack, IdentifierType::kProductClusterId,
+        base::NumberToString(cluster_id), ManagementType::kUserManaged);
+
+    subscriptions_manager_->VerifyIfSubscriptionExists(
+        std::move(sub), specifics->is_price_tracked());
+  }
 }
 
 }  // namespace commerce

@@ -30,6 +30,7 @@
 <translation id="1587223624401073077">Google Chrome використовує вашу камеру.</translation>
 <translation id="1587325591171447154">Файл <ph name="FILE_NAME" /> небезпечний, тому Chrome заблокував його.</translation>
 <translation id="1597911401261118146">Щоб перевірити, чи відомі порушення безпеки даних або інші проблеми не заторкнули ваші паролі, <ph name="BEGIN_LINK" />увійдіть у Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Веб-переглядач Chrome заблокував цей архівний файл, оскільки він може містити зловмисне програмне забезпечення</translation>
 <translation id="1619887657840448962">Щоб зробити Chrome безпечнішим, ми вимкнули наведене нижче розширення, установлене не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і, можливо, додане без вашого відома.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Як ви можете керувати своїми даними.<ph name="END_BOLD" /> З міркувань конфіденційності ми автоматично видаляємо ваші інтереси через 4 тижні. Якщо ви й надалі переглядатимете веб-сторінки, відповідний інтерес може знову з’явитися в списку. Щоб Chrome не враховував певні інтереси, їх можна вилучити.</translation>
 <translation id="1628000112320670027">Довідка щодо Chrome</translation>
@@ -57,6 +58,7 @@
 <translation id="2094648590148273905">Умови використання ОС Chrome Flex</translation>
 <translation id="2094919256425865063">Усе одно вийти з Chrome?</translation>
 <translation id="2106831557840787829">ОС Chrome Flex і <ph name="BEGIN_LINK_LINUX_OSS" />середовище для розробки Linux<ph name="END_LINK_LINUX_OSS" /> працюють завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="2112742052114331084">Якщо цей режим увімкнено, Chrome перестає використовувати оперативну пам’ять для вкладок, які ви активно не застосовуєте. Це звільняє ресурси комп’ютера для інших завдань і підтримує швидку роботу Chrome. Неактивні вкладки при цьому відображаються пустими й автоматично оновлюються, коли ви їх натискаєте. <ph name="BEGIN_LINK" />Дізнайтеся більше<ph name="END_LINK" /> або <ph name="BEGIN_LINK_2" />надішліть відгук<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Перезапустити, щоб оновити &amp;Chrome</translation>
 <translation id="2123055963409958220">Допоможіть покращити Chrome, надсилаючи звіти про <ph name="BEGIN_LINK" />поточні налаштування<ph name="END_LINK" /></translation>
@@ -173,6 +175,7 @@
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Які дані використовуються<ph name="END_BOLD" />. Ваша історія веб-перегляду – перелік сайтів, які ви відвідали через Chrome на цьому пристрої.</translation>
 <translation id="4281844954008187215">Умови використання</translation>
 <translation id="4293420128516039005">Увійдіть, щоб синхронізувати та персоналізувати роботу Chrome на всіх своїх пристроях</translation>
+<translation id="430327780270213103">Дозволити розширенню показувати запити на доступ на панелі інструментів Chrome</translation>
 <translation id="4328355335528187361">Версія Google Chrome для розробників (mDNS-In)</translation>
 <translation id="4334294535648607276">Завантажено.</translation>
 <translation id="4335235004908507846">Chrome захищає від порушень безпеки даних, шкідливих розширень тощо</translation>
@@ -270,6 +273,7 @@
 <translation id="6735387454586646204">Операційна система Chrome Flex</translation>
 <translation id="6739177684496155661">Продовжити в новому профілі Chrome?</translation>
 <translation id="6750954913813541382">Щоб виправляти орфографічні помилки, Chrome надсилає в Google текст, який ви вводите у веб-переглядачі</translation>
+<translation id="6756581345161130259">За потреби Chrome перестає використовувати оперативну пам’ять для вкладок, які ви активно не застосовуєте. Це можна будь-коли змінити в налаштуваннях.</translation>
 <translation id="677276454032249905">Усе одно вийти з Chrome?</translation>
 <translation id="6785872064505734160">Google Асистент може завершувати дії на різних веб-сайтах у Chrome</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>

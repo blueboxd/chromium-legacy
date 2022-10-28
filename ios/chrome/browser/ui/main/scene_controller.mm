@@ -157,7 +157,7 @@ namespace {
 // existing NTP. See http://crbug.com/1363375 for details.
 const base::Feature kForceNewTabForIntentSearch(
     "ForceNewTabForIntentSearch",
-    base::FEATURE_ENABLED_BY_DEFAULT);
+    base::FEATURE_DISABLED_BY_DEFAULT);
 
 // A rough estimate of the expected duration of a view controller transition
 // animation. It's used to temporarily disable mutally exclusive chrome
@@ -386,7 +386,7 @@ bool IsSigninForcedByPolicy() {
   return self.signinCoordinator != nil;
 }
 
-- (BOOL)tabGridVisible {
+- (BOOL)isTabGridVisible {
   return self.mainCoordinator.isTabGridActive;
 }
 
@@ -465,14 +465,18 @@ bool IsSigninForcedByPolicy() {
   if (self.startupParameters) {
     if ([self isIncognitoForced]) {
       [self.startupParameters
-          setUnexpectedMode:!self.startupParameters.launchInIncognito];
+          setUnexpectedMode:self.startupParameters.applicationMode ==
+                            ApplicationModeForTabOpening::NORMAL];
       // When only incognito mode is available.
-      [self.startupParameters setLaunchInIncognito:YES];
+      [self.startupParameters
+          setApplicationMode:ApplicationModeForTabOpening::INCOGNITO];
     } else if ([self isIncognitoDisabled]) {
       [self.startupParameters
-          setUnexpectedMode:self.startupParameters.launchInIncognito];
+          setUnexpectedMode:self.startupParameters.applicationMode ==
+                            ApplicationModeForTabOpening::INCOGNITO];
       // When incognito mode is disabled.
-      [self.startupParameters setLaunchInIncognito:NO];
+      [self.startupParameters
+          setApplicationMode:ApplicationModeForTabOpening::NORMAL];
     }
 
     [UserActivityHandler
@@ -564,7 +568,10 @@ bool IsSigninForcedByPolicy() {
   self.sceneState.startupHadExternalIntent = YES;
 
   // Perform the action in incognito when only incognito mode is available.
-  [self.startupParameters setLaunchInIncognito:[self isIncognitoForced]];
+  if ([self isIncognitoForced]) {
+    [self.startupParameters
+        setApplicationMode:ApplicationModeForTabOpening::INCOGNITO];
+  }
 
   [UserActivityHandler
       performActionForShortcutItem:shortcutItem
@@ -640,8 +647,7 @@ bool IsSigninForcedByPolicy() {
 // Assumes the Incognito interstitial coordinator is currently not instantiated.
 // Runs `completion` once the Incognito interstitial is presented.
 - (void)showIncognitoInterstitialWithUrlLoadParams:
-            (const UrlLoadParams&)urlLoadParams
-                                        completion:(ProceduralBlock)completion {
+    (const UrlLoadParams&)urlLoadParams {
   DCHECK(self.incognitoInterstitialCoordinator == nil);
   self.incognitoInterstitialCoordinator =
       [[IncognitoInterstitialCoordinator alloc]
@@ -650,7 +656,7 @@ bool IsSigninForcedByPolicy() {
   self.incognitoInterstitialCoordinator.delegate = self;
   self.incognitoInterstitialCoordinator.tabOpener = self;
   self.incognitoInterstitialCoordinator.urlLoadParams = urlLoadParams;
-  [self.incognitoInterstitialCoordinator startWithCompletion:completion];
+  [self.incognitoInterstitialCoordinator start];
 }
 
 // A sink for appState:didTransitionFromInitStage: and
@@ -871,7 +877,6 @@ bool IsSigninForcedByPolicy() {
   // id was backed up successfully.
   if (self.sceneState.appState.sessionRestorationRequired &&
       !self.sceneState.appState.startupInformation.isFirstRun) {
-    Browser* mainBrowser = self.mainInterface.browser;
     if ([CrashRestoreHelper
             isBackedUpSessionID:self.sceneState.sceneSessionID
                    browserState:mainBrowser->GetBrowserState()]) {
@@ -897,7 +902,9 @@ bool IsSigninForcedByPolicy() {
   [GeolocationLogger sharedInstance];
 
   if (IsFullscreenPromosManagerEnabled())
-    [self.sceneState addAgent:[[PromosManagerSceneAgent alloc] init]];
+    [self.sceneState
+        addAgent:[[PromosManagerSceneAgent alloc]
+                     initWithCommandDispatcher:mainCommandDispatcher]];
 }
 
 // Determines the mode (normal or incognito) the initial UI should be in.
@@ -1000,9 +1007,9 @@ bool IsSigninForcedByPolicy() {
     OpenNewTabCommand* command = [OpenNewTabCommand
         commandWithIncognito:self.currentInterface.incognito];
     command.userInitiated = NO;
-    Browser* browser = self.currentInterface.browser;
+    Browser* currentBrowser = self.currentInterface.browser;
     id<ApplicationCommands> applicationHandler = HandlerForProtocol(
-        browser->GetCommandDispatcher(), ApplicationCommands);
+        currentBrowser->GetCommandDispatcher(), ApplicationCommands);
     [applicationHandler openURLInNewTab:command];
   }
   [self maybeShowDefaultBrowserPromo:self.mainInterface.browser];
@@ -2292,8 +2299,8 @@ bool IsSigninForcedByPolicy() {
   __weak SceneController* weakSelf = self;
   void (^dismissModalsCompletion)() = ^{
     if (targetMode == ApplicationModeForTabOpening::UNDETERMINED) {
-      [weakSelf showIncognitoInterstitialWithUrlLoadParams:copyOfUrlLoadParams
-                                                completion:completion];
+      [weakSelf showIncognitoInterstitialWithUrlLoadParams:copyOfUrlLoadParams];
+      completion();
     } else {
       [weakSelf openSelectedTabInMode:targetMode
                     withUrlLoadParams:copyOfUrlLoadParams
@@ -2883,8 +2890,9 @@ bool IsSigninForcedByPolicy() {
     // bookmarks or the recent tabs view.
     [self interruptSigninCoordinatorAnimated:animated completion:completion];
   } else if (self.incognitoInterstitialCoordinator) {
-    [self.incognitoInterstitialCoordinator stopWithCompletion:completion];
+    [self.incognitoInterstitialCoordinator stop];
     self.incognitoInterstitialCoordinator = nil;
+    completion();
   } else {
     completion();
   }

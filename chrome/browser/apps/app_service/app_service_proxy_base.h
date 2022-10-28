@@ -175,7 +175,7 @@ class AppServiceProxyBase : public KeyedService,
                                    IntentPtr intent,
                                    LaunchSource launch_source,
                                    WindowInfoPtr window_info,
-                                   base::OnceCallback<void(bool)> callback);
+                                   LaunchCallback callback);
   // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
   // interface.
   virtual void LaunchAppWithIntent(
@@ -196,6 +196,13 @@ class AppServiceProxyBase : public KeyedService,
                         GURL url,
                         LaunchSource launch_source,
                         WindowInfoPtr window_info = nullptr);
+  // TODO(crbug.com/1253250): Will be replaced with LaunchAppWithUrl once the
+  // mojom LaunchAppWithUrl interface is removed.
+  void LaunchAppWithUrlForBind(const std::string& app_id,
+                               int32_t event_flags,
+                               GURL url,
+                               LaunchSource launch_source,
+                               WindowInfoPtr window_info = nullptr);
   // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
   // interface.
   void LaunchAppWithUrl(const std::string& app_id,

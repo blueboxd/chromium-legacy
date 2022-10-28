@@ -147,7 +147,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="1718835860248848330">Azken ordukoak</translation>
 <translation id="1724977129262658800">Pasahitza editatzeko, desblokeatu gailua</translation>
 <translation id="1726477445370128854">Ustez bisitatuko dituzun orriak aurrez kargatzen baditu Chrome-k, azkarrago arakatu ahalko dituzu webguneak, bai eta bilaketak bizkorrago egin ere.</translation>
-<translation id="173522743738009831">Privacy Sandbox-i buruz</translation>
+<translation id="173522743738009831">Privacy Sandbox-ari buruz</translation>
 <translation id="1736419249208073774">Arakatu</translation>
 <translation id="1749561566933687563">Sinkronizatu laster-markak</translation>
 <translation id="1750259112639922169">Fitxa taldea (<ph name="TAB_COUNT" /> fitxa)</translation>
@@ -444,7 +444,7 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="3384347053049321195">Partekatu irudia</translation>
 <translation id="3387650086002190359">Ezin izan da deskargatu <ph name="FILE_NAME" />, fitxategi-sisteman erroreak daudelako.</translation>
 <translation id="3389286852084373014">Testua luzeegia da</translation>
-<translation id="3391512812407811893">Privacy Sandbox-en probaldiak</translation>
+<translation id="3391512812407811893">Privacy Sandbox-aren probaldiak</translation>
 <translation id="3398320232533725830">Ireki laster-marken kudeatzailea</translation>
 <translation id="3407392651057365886">Orri gehiago kargatzen dira aurrez. Baliteke orriak Google-ren zerbitzarien bidez aurrez kargatzea beste webgune batzuek hala eskatzen dutenean.</translation>
 <translation id="3414952576877147120">Tamaina:</translation>
@@ -454,6 +454,7 @@ Arakatze-historia ezabatzen duzunean (osorik nahiz webgune zehatz bat), neurketa
 <translation id="3435465986463792564">Leiho gehiegi dituzu? Hemen kudea ditzakezu.</translation>
 <translation id="3443221991560634068">Kargatu berriro oraingo orria</translation>
 <translation id="3444179773590444986">Webguneetarako gai ilunari buruzko iritzia partekatu nahi duzu?</translation>
+<translation id="3452832259067974318">Zure pribatutasuna babesteko, Chrome-k ez du idatziko automatikoki pasahitza eremu honetan.</translation>
 <translation id="3469665409713263828">{FILE_COUNT,plural, =1{1 deskarga programatu}other{# deskarga programatu}}</translation>
 <translation id="3474624961160222204">Erabili <ph name="NAME" /></translation>
 <translation id="3478363558367712427">Bilatzailea aukera dezakezu</translation>
@@ -679,6 +680,7 @@ Baliteke Google-ko kontuak arakatze-historiako bestelako datu batzuk (adibidez, 
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Pasahitzak gailu honetan soilik gordetzen dira, Pasahitz-kudeatzailea zerbitzuan</translation>
 <translation id="4766678251456904326">Gehitu kontu bat gailuan</translation>
+<translation id="4787736314074622408"><ph name="ITEM_TITLE" /> ezabatu nahi duzu?</translation>
 <translation id="4791358705705538979">Lagungarria da sarean zereginak egiteko (adibidez, ordainketak)</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
 <translation id="4802417911091824046">Pasaesaldi bidezko enkriptatzeak ez ditu hartzen barne Google Pay-ko ordainketa-metodoak eta helbideak.
@@ -948,6 +950,7 @@ Privacy Sandbox-eko probaldiak garapen-prozesuan daude oraindik eta lurralde jak
 <translation id="6192907950379606605">Lortu irudi-deskribapenak</translation>
 <translation id="6196315980958524839">Pasahitzak gailu honetan gordetzen dira, Google-ren Pasahitz-kudeatzailea zerbitzuan</translation>
 <translation id="620197886010707372"><ph name="APPNAME" /> aplikazioa ireki nahi duzu Google Play-rekin?</translation>
+<translation id="6202812185118613467">Sinkronizatzen hasteko, hasi saioa berriro</translation>
 <translation id="6203593061661911168">Wifira konektatzean hasiko da deskargatzen</translation>
 <translation id="6210748933810148297">Ez al zara <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Orria aurreikusten</translation>
@@ -1086,7 +1089,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="6824899148643461612"><ph name="TAB_TITLE" /> fitxa, hautatuta</translation>
 <translation id="6828070228333235514">Utzi prezioaren jarraipena egiteari</translation>
 <translation id="6830728435402077660">Ez da segurua</translation>
-<translation id="6833996806551876956">Pribatutasunaren proben eremuaren probaldia</translation>
+<translation id="6833996806551876956">Privacy Sandbox-aren probaldia</translation>
 <translation id="6836206421467243968">Leheneratu <ph name="TITLE_OF_GROUP" /> fitxa taldea atzeko planoko fitxa talde berri gisa.</translation>
 <translation id="6846298663435243399">Kargatzen…</translation>
 <translation id="6850409657436465440">Deskargatzen ari da oraindik</translation>
@@ -1231,7 +1234,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="7638584964844754484">Pasaesaldi okerra</translation>
 <translation id="7641339528570811325">Garbitu arakatze-datuak…</translation>
 <translation id="7646772052135772216">Pasahitzen sinkronizazioa ez dabil</translation>
-<translation id="7655900163790317559">Bluetooth-a aktibatzen…</translation>
+<translation id="7655900163790317559">Bluetootha aktibatzen…</translation>
 <translation id="7656862631699126784">Aktibatu ezkutuko moduko fitxak blokeatzeko ezarpena</translation>
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="7663313374500954251"><ph name="PARENT_NAME" /> erabiltzaileak kudeatzen du arakatzailea.</translation>
@@ -1373,7 +1376,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> deskarga leheneratu dira</translation>
 <translation id="8364299278605033898">Ikusi webgune ezagunak</translation>
 <translation id="8368001212524806591">Egin prezioen jarraipena</translation>
-<translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Nola erabiltzen ditugu datu horiek?<ph name="END_BOLD" /> Chrome-k gutxi gorabehera igar ditzake zure interesak. Beranduago, bisitatzen duzun webgune batek zure interesak ikusteko eska diezaioke Chrome-ri, agertzen zaizkizun iragarkiak pertsonalizatze aldera.</translation>
+<translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Nola erabiltzen ditugu datu horiek?<ph name="END_BOLD" /> Chrome-k zure interesak estima ditzake. Beranduago, bisitatzen duzun webgune batek zure interesak ikusteko eska diezaioke Chrome-ri, agertzen zaizkizun iragarkiak pertsonalizatze aldera.</translation>
 <translation id="8387617938027387193">Egiaztatu zeu zarela</translation>
 <translation id="8393700583063109961">Bidali mezua</translation>
 <translation id="8394720698884623075">URLak Chrome-n gordetako webgune ez-seguruen zerrendan dauden ala ez egiaztatzen du.</translation>
@@ -1517,7 +1520,7 @@ Fidagarritasun-tokenek sareko pribatutasuna hobetzen dute eta ezin dira erabili 
 <translation id="9069999660519089861">Ez dago irakurri gabeko orririk</translation>
 <translation id="9070377983101773829">Aktibatu ahozko bilaketa</translation>
 <translation id="9074336505530349563">Google-k iradokitzen duen eduki pertsonalizatua jasotzeko, hasi saioa eta aktibatu sinkronizazioa</translation>
-<translation id="9074739597929991885">Bluetooth-a</translation>
+<translation id="9074739597929991885">Bluetootha</translation>
 <translation id="9081543426177426948">Bisitatzen dituzun webguneak ez dira gordetzen ezkutuko moduan</translation>
 <translation id="9086302186042011942">Sinkronizatzen</translation>
 <translation id="9086455579313502267">Ezin da atzitu sarea</translation>

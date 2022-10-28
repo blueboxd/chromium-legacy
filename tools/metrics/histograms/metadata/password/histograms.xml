@@ -1,5 +1,5 @@
 <!--
-Copyright 2020 The Chromium Authors. All rights reserved.
+Copyright 2020 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -90,6 +90,9 @@ chromium-metrics-reviews@google.com.
   <variant name="NonSyncableDataMigrationToBuiltInBackend"
       summary="migrating non-syncable data to the built-in backend when
                password sync gets disabled"/>
+  <variant name="ReenrollmentAttemptMigration"
+      summary="migrating non-syncable data to the android backend when
+               performing reenrollment possibility check"/>
 </variants>
 
 <histogram name="KeyboardAccessory.AccessoryActionImpression"
@@ -1194,12 +1197,24 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.ErrorMessageDismissalReason"
     enum="MessageDismissReason" expires_after="2023-02-01">
-  <owner>izuzic@chromium.org</owner>
-  <owner>ioanap@google.com</owner>
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
   <summary>
-    Records the reason that caused Password Error Message on Android to be
-    dismissed. It's recorded when the user dismisses the message by clicking the
-    Sign in button or when the message is autodismissed because of the timeout.
+    Records the reason that caused the Password Manager error message on Android
+    to be dismissed. It's recorded when the user dismisses the message by
+    clicking the Sign in button or when the message is autodismissed because of
+    the timeout.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ErrorMessageDisplayReason"
+    enum="PasswordStoreBackendErrorType" expires_after="2023-02-01">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records the reason that caused the Password Manager error message to be
+    displayed. It's recorded as soon as the message is created and the recorded
+    reason is the error type. Currently only used on Android.
   </summary>
 </histogram>
 
@@ -1375,6 +1390,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     The mode of migration applied to HTTP passwords migrating to HTTPS. Recorded
     on HTTPS password form load when there are no credentials saved.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.Import.DesktopInteractions"
+    enum="PasswordsImportDesktopInteractions" expires_after="2023-02-01">
+  <owner>eliaskh@chromium.org</owner>
+  <owner>natiahlyi@google.com</owner>
+  <summary>
+    Records the user actions related to passwords import flow on desktop.
+    Reported upon interactions with the password settings page.
   </summary>
 </histogram>
 
@@ -2126,6 +2151,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.PasswordStore.TimesAttemptedToReenrollInUPM"
+    units="Times" expires_after="2023-03-30">
+  <owner>kazinova@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Recorded on Android when the password store backend is created. This happens
+    on startup and once per profile, only for users in the UPM experiment. Users
+    can be unenrolled from UPM after encountering errors in communication with
+    the backend and reenrolled back if the backend communication is considered
+    reliable again. Records the number of times the user has attempted to
+    automatically reenroll in Google Mobile Services.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordStore.TimesReenrolledInUPM"
+    units="Times" expires_after="2023-03-19">
+  <owner>kazinova@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Recorded on Android when the password store backend is created. This happens
+    on startup and once per profile, only for users in the UPM experiment. Users
+    can be unenrolled from UPM after encountering errors in communication with
+    the backend and reenrolled back if the backend communication is considered
+    reliable again. Records the number of times the user was reenrolled.
+  </summary>
+</histogram>
+
 <histogram
     name="PasswordManager.PasswordStore.WasEnrolledInUPMWhenBackendWasCreated"
     enum="Boolean" expires_after="2023-01-15">
@@ -2182,6 +2234,73 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.Retry{Operation}.APIError"
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="M110">
+  <owner>maxan@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records the last error code returned by the GMS ChromeSync 1P API when
+    scheduling a retry for the {Operation} operation. This is recorded after the
+    asynchronous call comes back with an error and it is checked that operation
+    could be retried. This is only recorded for GMS API errors on Android.
+  </summary>
+  <token key="Operation">
+    <variant name=""/>
+    <variant name=".AddLoginAsync" summary="AddLogin"/>
+    <variant name=".ClearAllLocalPasswords" summary="ClearAllLocalPasswords"/>
+    <variant name=".DisableAutoSignInForOriginsAsync"
+        summary="DisableAutoSignInForOrigins"/>
+    <variant name=".FillMatchingLoginsAsync" summary="FillMatchingLogins"/>
+    <variant name=".GetAllLoginsAsync" summary="GetAllLogins"/>
+    <variant name=".GetAllLoginsForAccountAsync"
+        summary="GetAllLoginsForAccount"/>
+    <variant name=".GetAutofillableLoginsAsync"
+        summary="GetAutofillableLogins"/>
+    <variant name=".RemoveLoginAsync" summary="RemoveLogin"/>
+    <variant name=".RemoveLoginForAccount" summary="RemoveLoginForAccount"/>
+    <variant name=".RemoveLoginsByURLAndTimeAsync"
+        summary="RemoveLoginsByURLAndTime"/>
+    <variant name=".RemoveLoginsCreatedBetweenAsync"
+        summary="RemoveLoginsCreatedBetween"/>
+    <variant name=".UpdateLoginAsync" summary="UpdateLogin"/>
+  </token>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.Retry{Operation}.Attempt"
+    units="Times" expires_after="M110">
+  <owner>maxan@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records the retry attempt number when the GMS ChromeSync 1P API returned an
+    error and a retry for the {Operation} operation is about to be scheduled.
+    This is recorded after the asynchronous call comes back with an error and it
+    is checked that operation could be retried. This is only recorded for GMS
+    API errors on Android.
+  </summary>
+  <token key="Operation">
+    <variant name=""/>
+    <variant name=".AddLoginAsync" summary="AddLoginAsync"/>
+    <variant name=".ClearAllLocalPasswords" summary="ClearAllLocalPasswords"/>
+    <variant name=".DisableAutoSignInForOriginsAsync"
+        summary="DisableAutoSignInForOriginsAsync"/>
+    <variant name=".FillMatchingLoginsAsync" summary="FillMatchingLoginsAsync"/>
+    <variant name=".GetAllLoginsAsync" summary="GetAllLoginsAsync"/>
+    <variant name=".GetAllLoginsForAccountAsync"
+        summary="GetAllLoginsForAccountAsync"/>
+    <variant name=".GetAutofillableLoginsAsync"
+        summary="GetAutofillableLoginsAsync"/>
+    <variant name=".RemoveLoginAsync" summary="RemoveLoginAsync"/>
+    <variant name=".RemoveLoginForAccount" summary="RemoveLoginForAccount"/>
+    <variant name=".RemoveLoginsByURLAndTimeAsync"
+        summary="RemoveLoginsByURLAndTimeAsync"/>
+    <variant name=".RemoveLoginsCreatedBetweenAsync"
+        summary="RemoveLoginsCreatedBetweenAsync"/>
+    <variant name=".UpdateLoginAsync" summary="UpdateLoginAsync"/>
+  </token>
+</histogram>
+
+<histogram
     name="PasswordManager.PasswordStoreAndroidBackend.UptimeOnAPIError{ErrorCode}"
     units="ms" expires_after="M110">
   <owner>maxan@google.com</owner>
@@ -2199,13 +2318,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="PasswordManager.PasswordStoreAndroidBackend{Function}{UnenrollmentFromUPM}.APIError"
+    name="PasswordManager.PasswordStoreAndroidBackend{Function}.APIError"
     enum="PasswordStoreAndroidBackendAPIError" expires_after="M110">
   <owner>fhorschig@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
     The error codes returned by the GMS Core ChromeSync 1P API{Function}.
-    Recorded when the asynchronous job has returned. {UnenrollmentFromUPM}
+    Recorded when the asynchronous job has returned.
   </summary>
   <token key="Function">
     <variant name=""/>
@@ -2217,16 +2336,10 @@ chromium-metrics-reviews@google.com.
     <variant name=".RemoveLoginAsync" summary="for RemoveLoginAsync"/>
     <variant name=".UpdateLoginAsync" summary="for UpdateLoginAsync"/>
   </token>
-  <token key="UnenrollmentFromUPM">
-    <variant name=""/>
-    <variant name=".UnenrolledFromUPM"
-        summary="Recorded for clients unenrolled from UnifiedPasswordManager
-                 after experiencing an error."/>
-  </token>
 </histogram>
 
 <histogram
-    name="PasswordManager.PasswordStoreAndroidBackend{Function}{UnenrollmentFromUPM}.ConnectionResultCode"
+    name="PasswordManager.PasswordStoreAndroidBackend{Function}.ConnectionResultCode"
     enum="PasswordStoreAndroidBackendConnectionResultCode" expires_after="M110">
   <owner>maxan@google.com</owner>
   <owner>vasilii@chromium.org</owner>
@@ -2234,7 +2347,6 @@ chromium-metrics-reviews@google.com.
     The connection result status code returned by the GMS Core ChromeSync 1P
     API{Function}. Recorded when the asynchronous job has returned with error
     and only if ConnectionResult was set on the returned error.
-    {UnenrollmentFromUPM}
   </summary>
   <token key="Function">
     <variant name=""/>
@@ -2246,23 +2358,16 @@ chromium-metrics-reviews@google.com.
     <variant name=".RemoveLoginAsync" summary="for RemoveLoginAsync"/>
     <variant name=".UpdateLoginAsync" summary="for UpdateLoginAsync"/>
   </token>
-  <token key="UnenrollmentFromUPM">
-    <variant name=""/>
-    <variant name=".UnenrolledFromUPM"
-        summary="Recorded for clients unenrolled from UnifiedPasswordManager
-                 after experiencing an error."/>
-  </token>
 </histogram>
 
 <histogram
-    name="PasswordManager.PasswordStoreAndroidBackend{Function}{UnenrollmentFromUPM}.ErrorCode"
+    name="PasswordManager.PasswordStoreAndroidBackend{Function}.ErrorCode"
     enum="PasswordStoreAndroidBackendError" expires_after="M110">
   <owner>fhorschig@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
     This metric reports the error observed when {Function} the PasswordStore
     Android backend. Recorded when the asynchronous job has returned.
-    {UnenrollmentFromUPM}
   </summary>
   <token key="Function">
     <variant name=""
@@ -2276,12 +2381,6 @@ chromium-metrics-reviews@google.com.
     <variant name=".RemoveLoginAsync" summary="removing a login from"/>
     <variant name=".UpdateLoginAsync" summary="updating a login in"/>
   </token>
-  <token key="UnenrollmentFromUPM">
-    <variant name=""/>
-    <variant name=".UnenrolledFromUPM"
-        summary="Recorded for clients unenrolled from UnifiedPasswordManager
-                 after experiencing an error."/>
-  </token>
 </histogram>
 
 <histogram name="PasswordManager.PasswordStoreInitResult" enum="BooleanSuccess"
@@ -2292,6 +2391,32 @@ chromium-metrics-reviews@google.com.
     Success rate of initialization of password store. Recorded for every user
     once on the Chrome profile startup.
   </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordStoreProxyBackend.{Function}.Fallback"
+    enum="Boolean" expires_after="M110">
+  <owner>maxan@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Records true if the fallback to the build-in backend occurred during
+    {Function} execution due to error returned by the GMS Core backend. True is
+    recorded when the Android backend function returned with error and fallback
+    is about to be called. False is never recorded.
+  </summary>
+  <token key="Function">
+    <variant name="AddLoginAsync" summary="AddLoginAsync()"/>
+    <variant name="FillMatchingLoginsAsync"
+        summary="FillMatchingLoginsAsync()"/>
+    <variant name="GetAllLoginsAsync" summary="GetAllLoginsAsync()"/>
+    <variant name="GetAutofillableLoginsAsync"
+        summary="GetAutofillableLoginsAsync()"/>
+    <variant name="RemoveLoginAsync" summary="RemoveLoginAsync()"/>
+    <variant name="RemoveLoginsByURLAndTimeAsync"
+        summary="RemoveLoginsByURLAndTimeAsync()"/>
+    <variant name="RemoveLoginsCreatedBetweenAsync"
+        summary="RemoveLoginsCreatedBetweenAsync()"/>
+    <variant name="UpdateLoginAsync" summary="UpdateLoginAsync()"/>
+  </token>
 </histogram>
 
 <histogram
@@ -2441,15 +2566,14 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram
-    name="PasswordManager.PasswordStore{Backend}{Function}{UnenrollmentFromUPM}.Success"
+<histogram name="PasswordManager.PasswordStore{Backend}{Function}.Success"
     enum="BooleanSuccess" expires_after="M110">
   <owner>fhorschig@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
     Records whether {Function} the PasswordStore {Backend}. Recorded when the
     asynchronous job has returned. False is emitted if an error occurs;
-    otherwise true is emitted. {UnenrollmentFromUPM}
+    otherwise true is emitted.
   </summary>
   <token key="Backend">
     <variant name="AndroidBackend" summary="Android backend"/>
@@ -2484,12 +2608,6 @@ chromium-metrics-reviews@google.com.
                  logins filtered by creation time from"/>
     <variant name=".UpdateLoginAsync"
         summary="UpdateLoginAsync() succeeded in updating a login in"/>
-  </token>
-  <token key="UnenrollmentFromUPM">
-    <variant name=""/>
-    <variant name=".UnenrolledFromUPM"
-        summary="Recorded for clients unenrolled from UnifiedPasswordManager
-                 after experiencing an error."/>
   </token>
 </histogram>
 
@@ -3056,6 +3174,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Why was the update password UI closed on a cleared change password form?
     Recorded when the update bubble/infobar is dismissed.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.UPMUpdateSignInCredentialsSucces"
+    enum="Boolean" expires_after="2023-03-01">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Records whether the user was successfully signed in after using the sign in
+    button on the Password Manager error message. The outcome can be either
+    success or failure. It's recorded when the sign in flow that updates
+    credentials finishes. Currently only used on Android.
   </summary>
 </histogram>
 

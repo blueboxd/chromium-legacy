@@ -210,11 +210,12 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2107914222138020205">Il cavo USB-C non supporta Thunderbolt. Le prestazioni del dispositivo potrebbero essere limitate.</translation>
 <translation id="2108303511227308752">La scorciatoia da tastiera Alt + Backspace è cambiata. Per usare il tasto Canc, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Backspace.</translation>
 <translation id="211328683600082144">ATTIVA MICROFONO</translation>
-<translation id="2123115117533398272">Chrome OS mostra suggerimenti relativi a nuovi contenuti da esplorare. Invia statistiche per migliorare la qualità solo se hai scelto di condividere i dati sull'utilizzo. <ph name="MANAGE_SETTINGS" /></translation>
+<translation id="2123115117533398272">ChromeOS mostra suggerimenti relativi a nuovi contenuti da esplorare. Invia statistiche per migliorare la qualità solo se hai scelto di condividere i dati sull'utilizzo. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="2126242104232412123">Nuova scrivania</translation>
 <translation id="2132302418721800944">Registra schermo intero</translation>
 <translation id="2135456203358955318">Lente d'ingrandimento ancorata</translation>
 <translation id="2148716181193084225">Oggi</translation>
+<translation id="2161132820593978283">Prova Zoom automatico per essere al centro dello schermo durante le videochiamate. Attiva la funzionalità nelle Impostazioni rapide.</translation>
 <translation id="2170530631236737939">Scorri con tre dita verso il basso per uscire dalla modalità Panoramica</translation>
 <translation id="219905428774326614">Avvio applicazioni, tutte le app</translation>
 <translation id="2201071101391734388">Foto recente <ph name="INDEX" /> di <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2405664212338326887">Non connessa</translation>
 <translation id="2408955596600435184">Inserisci il codice PIN</translation>
 <translation id="2412593942846481727">Aggiornamento disponibile</translation>
+<translation id="2426051945783024481">Fotocamera centrata automaticamente da Zoom automatico</translation>
 <translation id="2427507373259914951">Clic con il pulsante sinistro</translation>
 <translation id="2429753432712299108">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Prima di accettare, conferma che questa passkey viene visualizzata sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Mostra password</translation>
@@ -284,7 +286,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2621713457727696555">Protetta</translation>
 <translation id="263399434338050016">"Seleziona tutto"</translation>
-<translation id="2645435784669275700">Chrome OS</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2653019840645008922">Acquisizione finestra</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2658778018866295321">Fai clic e trascina</translation>
@@ -373,6 +375,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="3151786313568798007">Orientamento</translation>
 <translation id="3153444934357957346">Puoi avere massimo <ph name="MULTI_PROFILE_USER_LIMIT" /> account per l'accesso simultaneo.</translation>
 <translation id="3154351730702813399">L'amministratore del dispositivo potrebbe monitorare l'attività di navigazione.</translation>
+<translation id="3157931365184549694">Ripristina</translation>
 <translation id="316086887565479535">App non supportate nel modello</translation>
 <translation id="3161500364292033097">Chiudi scrivania e finestre</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> sta eseguendo il rollback di <ph name="DEVICE_TYPE" />. Il dispositivo verrà reimpostato e tutti i dati verranno eliminati.</translation>
@@ -476,7 +479,6 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="3735740477244556633">Ordina per</translation>
 <translation id="3742055079367172538">Screenshot acquisito</translation>
 <translation id="3765841986579723851">Modificato oggi</translation>
-<translation id="3771549900096082774">Modalità ad alto contrasto</translation>
 <translation id="3773700760453577392">Un amministratore ha vietato l'accesso simultaneo per <ph name="USER_EMAIL" />.
  Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="3779139509281456663">Connessione di <ph name="NAME" /> in corso…</translation>
@@ -577,12 +579,10 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="4312840429157639164">Fotocamera allineata all'angolo in alto a destra. Conflitto con la piattaforma di sistema.</translation>
 <translation id="4316910396681052118">TUTTE LE APP</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Hai premuto la scorciatoia da tastiera per l'alto contrasto. Vuoi attivarlo?</translation>
 <translation id="4322742403972824594">La scorciatoia da tastiera Ctrl + Alt + Freccia su è cambiata. Per usare il tasto Home, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Freccia sinistra.</translation>
 <translation id="4333628967105022692">Lacros non è supportato quando più utenti hanno effettuato l'accesso.</translation>
 <translation id="4338109981321384717">Lente d'ingrandimento</translation>
 <translation id="4351433414020964307">L'assistente è in fase di caricamento…</translation>
-<translation id="4356930093361201197">modalità ad alto contrasto</translation>
 <translation id="4371348193907997655">Impostazioni di trasmissione</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, intensità segnale: <ph name="SIGNAL_STRENGTH" /> percento</translation>
 <translation id="4378551569595875038">Connessione...</translation>
@@ -878,7 +878,6 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="5980301590375426705">Esci come Ospite</translation>
 <translation id="598407983968395253">Utilizza modello</translation>
 <translation id="598882571027504733">Per scaricare l'aggiornamento, riavvia il Chromebook con la tastiera collegata.</translation>
-<translation id="5992218262414051481">Modalità ad alto contrasto attivata. Premi di nuovo CTRL + tasto per la ricerca + H per disattivarla.</translation>
 <translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> di <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Uscita dalla modalità di mirroring</translation>
 <translation id="602001110135236999">Scorri a sinistra</translation>
@@ -1044,6 +1043,7 @@ Nuova installazione</translation>
 <translation id="6960565108681981554">Non attiva. Contatta l'operatore.</translation>
 <translation id="6961121602502368900">La funzionalità Disattiva audio non è disponibile sul profilo di lavoro</translation>
 <translation id="6961840794482373852">La scorciatoia da tastiera Alt + Freccia su è cambiata. Per usare il tasto Pagina su, premi il tasto <ph name="LAUNCHER_KEY_NAME" /> + Freccia su.</translation>
+<translation id="696267987219125751">Zoom automatico disattivato.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Inizia</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1134,6 +1134,7 @@ Nuova installazione</translation>
 <translation id="7513922695575567867">Calendario, settimana del <ph name="DATE" />, è attualmente selezionata la data <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Scarica</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Zoom automatico attivato.</translation>
 <translation id="7526573455193969409">La rete potrebbe essere monitorata</translation>
 <translation id="7536035074519304529">Indirizzo IP: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Al momento le app Linux e le finestre di navigazione in incognito non sono supportate. Le altre app verranno salvate.</translation>
@@ -1152,10 +1153,12 @@ Nuova installazione</translation>
 <translation id="7607002721634913082">In pausa</translation>
 <translation id="7609951632080598826">Visualizzazione Calendario, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Fotocamera riconnessa.</translation>
+<translation id="761736749114493194">Attiva/disattiva Zoom automatico. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7633755430369750696">Mostra impostazioni di Condivisione nelle vicinanze.</translation>
 <translation id="7634648064048557203">Fotocamera allineata all'angolo in basso a destra</translation>
 <translation id="7641938616688887143">Registra</translation>
+<translation id="7642106959537987271">modalità inversione dei colori</translation>
 <translation id="7642647758716480637">Apri le impostazioni relative a <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
 <translation id="7647488630410863958">Sblocca il dispositivo per visualizzare le notifiche</translation>
@@ -1234,7 +1237,6 @@ Nuova installazione</translation>
 <translation id="8051716679295756675">Esiste già un modello con il nome <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="8052898407431791827">Copiato negli appunti</translation>
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
-<translation id="8061464966246066292">Contrasto elevato</translation>
 <translation id="8083540854303889870">Elementi salvati per dopo</translation>
 <translation id="8091387634532529612">Aggiornamenti automatici</translation>
 <translation id="8098591350844501178">Interrompi la trasmissione dello schermo su <ph name="RECEIVER_NAME" /></translation>
@@ -1262,6 +1264,7 @@ Nuova installazione</translation>
 <translation id="8209010265547628927">Reimposta</translation>
 <translation id="8214996719228530800">Canale Canary</translation>
 <translation id="8219451629189078428">Durante questo periodo di tempo, il Chromebook deve rimanere acceso e collegato all'alimentazione. Assicurati che il caricabatterie o i cavi dell'adattatore siano ben collegati al Chromebook e alla presa di corrente. Non spegnere il Chromebook.</translation>
+<translation id="8230305195727960608">Modalità inversione dei colori</translation>
 <translation id="8236042855478648955">È ora di fare una pausa</translation>
 <translation id="8246282815785366524">Ti diamo il bentornato <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />, batteria del telefono <ph name="BATTERY_STATUS" /></translation>
@@ -1313,6 +1316,7 @@ Nuova installazione</translation>
 <translation id="851458219935658693">Mostra finestre della scrivania corrente, pulsante di opzione selezionato</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8535393432370007982">Annulla l'ordinamento per colore</translation>
+<translation id="8541078764854166027">Zoom automat.</translation>
 <translation id="8542053257095774575">Nessuna scrivania o nessun modello salvati</translation>
 <translation id="8546059259582788728">Annullamento dell'ordinamento completato</translation>
 <translation id="8551588720239073785">Impostazioni di data e ora</translation>
@@ -1387,6 +1391,7 @@ Nuova installazione</translation>
 <translation id="8982906748181120328">Visibilità nelle vicinanze</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">In uso: <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Modalità inversione dei colori attivata. Premi nuovamente Ctrl + Tasto per la ricerca + H per disattivarla.</translation>
 <translation id="899350903320462459">Sblocca il dispositivo con l'account <ph name="LOGIN_ID" /> per eseguire l'azione di notifica</translation>
 <translation id="9000771174482730261">GESTISCI SPAZIO DI ARCHIVIAZIONE</translation>
 <translation id="9017320285115481645">Inserisci il codice accesso genitori di Family Link.</translation>
@@ -1435,6 +1440,7 @@ Nuova installazione</translation>
 <translation id="921989828232331238">Uno dei tuoi genitori ha bloccato il tuo dispositivo per tutto il giorno</translation>
 <translation id="9220525904950070496">Rimuovi account</translation>
 <translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>
+<translation id="92580429198593979">Hai premuto la scorciatoia da tastiera per l'inversione dei colori. Vuoi attivarla?</translation>
 <translation id="925832987464884575">Nascondi anteprime</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> richiede l'immediato aggiornamento di <ph name="DEVICE_TYPE" /></translation>
 <translation id="938963181863597773">Cosa è segnato sul mio calendario?</translation>

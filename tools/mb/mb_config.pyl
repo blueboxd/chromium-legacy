@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -58,6 +58,7 @@
       'android-official': 'android_official_optimize_reclient',
       'fuchsia-official': 'fuchsia_official_optimize_goma',
       'lacros-arm-archive-rel': 'chromeos_arm-generic_lacros_rel_reclient',
+      'lacros-arm64-archive-rel': 'chromeos_arm64-generic_lacros_rel_reclient',
       'lacros64-archive-rel': 'chromeos_amd64-generic_lacros_rel',
       'linux-archive-dbg': 'debug_bot_reclient',
       'linux-archive-rel': 'release_bot_reclient',
@@ -106,13 +107,6 @@
       'android-cronet-marshmallow-arm64-perf-rel': 'android_cronet_release_bot_minimal_symbols_arm64_reclient',
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86_reclient',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86_reclient',
-
-      # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
-      # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_reclient',
-
-      'android-marshmallow-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google_reclient',
-      'android-marshmallow-x86-rel-non-cq': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google_reclient',
       'android-nougat-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       # TODO(crbug/1182468) Remove android coverage bots after coverage is
       # running on CQ.
@@ -131,7 +125,6 @@
       'android-annotator-rel': 'android_release_bot_minimal_symbols_arm64_webview_google_reclient',
       'android-chrome-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-cronet-asan-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86_clang_asan_reclient',
-      'android-marshmallow-x86-fyi-rel-reviver': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google_reclient',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_bot_minimal_symbols_arm64_webview_monochrome_reclient',
       'android-pie-x86-fyi-rel-reviver': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-weblayer-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
@@ -421,8 +414,7 @@
       'ios-reclient': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
-      'ios-simulator-cronet': 'ios_cronet_xctest',
-      'ios-simulator-cronet (reclient shadow)': 'ios_cronet_xctest_reclient',
+      'ios-simulator-cronet': 'ios_cronet_xctest_reclient',
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_xctest',
       'ios-webkit-tot': 'ios_simulator_debug_static_bot_xctest',
       'ios-wpt-fyi-rel': 'ios_simulator_debug_static_bot_xctest',
@@ -631,7 +623,6 @@
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_asan_no_dsyms_no_remoting_reclient',
       'ios-device': 'ios_device_release_compile_only_reclient',
-      'ios-device (reclient shadow)': 'ios_device_release_compile_only_reclient',
       'ios-simulator': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-noncq': 'ios_simulator_debug_static_bot_xctest_reclient',
@@ -669,6 +660,7 @@
       'chromecast-linux-builder-perf': 'cast_binary_size',
       'chromeos-amd64-generic-lacros-builder-perf': 'chromeos_amd64-generic_lacros_official',
       'chromeos-arm-generic-lacros-builder-perf': 'chromeos_arm-generic_lacros_official',
+      'chromeos-arm64-generic-lacros-builder-perf': 'chromeos_arm64-generic_lacros_official',
       'linux-builder-perf': 'official_goma_linux_perf',
       'linux-builder-perf-pgo': 'official_goma_linux_perf_pgo',
       'linux-builder-perf-rel': 'official_goma_linux_perf',
@@ -991,11 +983,6 @@
       'android-deterministic-rel': 'android_without_codecs_release_trybot',
       'android-fieldtrial-rel': 'android_release_trybot_minimal_symbols_x86_fastbuild_disable_proguard_chrome_google',
       'android-inverse-fieldtrials-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google_invert_fieldtrials',
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_fastbuild_java_coverage',
-      'android-marshmallow-x86-fyi-rel-reviver': 'android_release_trybot_x86_fastbuild_webview_google',
-      'android-marshmallow-x86-rel': 'android_release_trybot_x86_fastbuild_webview_google_coverage',
-      'android-marshmallow-x86-rel-non-cq': 'android_release_trybot_x86_fastbuild_webview_google',
-      'android-marshmallow-x86-rel-reclient': 'android_release_trybot_x86_fastbuild_webview_google_coverage_reclient',
       'android-nougat-x86-rel': 'android_release_trybot_x86_fastbuild_webview_monochrome',
       'android-opus-arm-rel': 'android_release_trybot',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
@@ -1687,11 +1674,6 @@
       'chrome_google'
     ],
 
-    'android_release_bot_minimal_symbols_x86_fastbuild_webview_google_reclient': [
-      'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
-      'android_fastbuild', 'strip_debug_info', 'webview_google',
-    ],
-
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
       'strip_debug_info', 'android_fastbuild', 'webview_monochrome',
@@ -1778,23 +1760,6 @@
       'android', 'release_trybot', 'strip_debug_info', 'x64',
       'android_fastbuild', 'webview_trichrome',
       'no_secondary_abi',
-    ],
-
-    'android_release_trybot_x86_fastbuild_webview_google': [
-      'android', 'release_trybot', 'x86', 'android_fastbuild',
-      'strip_debug_info', 'webview_google',
-    ],
-
-    'android_release_trybot_x86_fastbuild_webview_google_coverage': [
-      'android', 'release_trybot', 'x86', 'android_fastbuild',
-      'strip_debug_info', 'webview_google', 'use_java_coverage',
-      'partial_code_coverage_instrumentation',
-    ],
-
-    'android_release_trybot_x86_fastbuild_webview_google_coverage_reclient': [
-      'android', 'release_trybot_reclient', 'x86', 'android_fastbuild',
-      'strip_debug_info', 'webview_google', 'use_java_coverage',
-      'partial_code_coverage_instrumentation',
     ],
 
     'android_release_trybot_x86_fastbuild_webview_google_invert_fieldtrials': [
@@ -2210,6 +2175,7 @@
 
     'chromeos_eve_include_unwind_tables_official_dchecks': [
       'chromeos_device', 'eve', 'include_unwind_tables', 'official', 'dcheck_always_on',
+      'also_build_lacros_chrome_for_architecture_amd64',
     ],
 
     'chromeos_jacuzzi_dchecks': [
@@ -2656,12 +2622,6 @@
       'android_no_proguard', 'use_java_coverage',
     ],
 
-    'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_reclient': [
-      'gpu_tests', 'android', 'release_bot_reclient', 'minimal_symbols', 'arm64',
-      'resource_allowlisting', 'static_angle', 'android_fastbuild',
-      'webview_google',
-    ],
-
     # No symbols to prevent linker file too large error on
     # android_webview_unittests target.
     'gpu_tests_android_release_bot_no_symbols_arm64_fastbuild_native_coverage_reclient': [
@@ -2681,12 +2641,6 @@
     'gpu_tests_android_release_trybot_arm64_fastbuild': [
       'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
       'android_fastbuild',
-    ],
-
-    'gpu_tests_android_release_trybot_arm64_fastbuild_java_coverage': [
-      'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
-      'strip_debug_info', 'android_fastbuild', 'webview_google',
-      'use_java_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'gpu_tests_android_release_trybot_arm64_reclient': [
@@ -3747,6 +3701,10 @@
 
     'also_build_lacros_chrome': {
       'gn_args': 'also_build_lacros_chrome=true',
+    },
+
+    'also_build_lacros_chrome_for_architecture_amd64': {
+      'gn_args': 'also_build_lacros_chrome_for_architecture="amd64"',
     },
 
     'amd64-generic': {

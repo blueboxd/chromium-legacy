@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,9 @@ import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 import {Handler as AttributionInternalsHandler, HandlerRemote as AttributionInternalsHandlerRemote, ObserverInterface, ObserverReceiver, ReportID, ReportType, SourceType, WebUIReport, WebUISource, WebUISource_Attributability, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
 import {Column, TableModel} from './table_model.js';
+
+// If kAttributionAggregatableBudgetPerSource changes, update this value
+const BUDGET_PER_SOURCE = 65536;
 
 function compareDefault<T>(a: T, b: T): number {
   if (a < b) {
@@ -199,6 +202,7 @@ class Source {
   dedupKeys: string;
   priority: bigint;
   status: string;
+  aggregatableBudgetConsumed: bigint;
 
   constructor(mojo: WebUISource) {
     this.sourceEventId = mojo.sourceEventId;
@@ -214,6 +218,7 @@ class Source {
         JSON.stringify(mojo.aggregationKeys, bigintReplacer, ' ');
     this.debugKey = mojo.debugKey ? mojo.debugKey.value.toString() : '';
     this.dedupKeys = mojo.dedupKeys.join(', ');
+    this.aggregatableBudgetConsumed = mojo.aggregatableBudgetConsumed;
     this.status = attributabilityToText(mojo.attributability);
   }
 }
@@ -239,6 +244,9 @@ class SourceTableModel extends TableModel<Source> {
       new ValueColumn<Source, bigint>('Priority', (e) => e.priority),
       new CodeColumn<Source>('Filter Data', (e) => e.filterData),
       new CodeColumn<Source>('Aggregation Keys', (e) => e.aggregationKeys),
+      new ValueColumn<Source, string>(
+          'Aggregatable Budget Consumed',
+          (e) => `${e.aggregatableBudgetConsumed} / ${BUDGET_PER_SOURCE}`),
       new ValueColumn<Source, string>('Debug Key', (e) => e.debugKey),
       new ValueColumn<Source, string>('Dedup Keys', (e) => e.dedupKeys),
     ];
@@ -329,7 +337,8 @@ class Trigger {
         }),
         bigintReplacer, ' ');
 
-    this.aggregatableValues = JSON.stringify(mojo.aggregatableValues, null, ' ');
+    this.aggregatableValues =
+        JSON.stringify(mojo.aggregatableValues, null, ' ');
 
     this.eventLevelStatus = triggerStatusToText(mojo.eventLevelStatus);
     this.aggregatableStatus = triggerStatusToText(mojo.aggregatableStatus);

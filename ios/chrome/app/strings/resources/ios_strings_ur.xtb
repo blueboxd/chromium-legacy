@@ -23,6 +23,7 @@
 <translation id="1104948393051856124">قبول کریں اور جاری رکھیں</translation>
 <translation id="110724200315609752">کھلی ہوئی ونڈو پر سوئچ کریں</translation>
 <translation id="1112015203684611006">پرنٹنگ ناکام۔</translation>
+<translation id="1118569444314402022">واپسی پر خوش آمدید، <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">نیا ٹیب بنائیں۔</translation>
 <translation id="1126809382673880764">‏خطرناک ویب سائٹس، ڈاؤن لوڈز اور ایکسٹینشنز سے آپ کی حفاظت نہیں کرتی ہے۔ آپ کو اب بھی Gmail اور تلاش جیسی Google کی دیگر سروسز میں جہاں بھی دستیاب ہوگا محفوظ براؤزنگ کا تحفظ ملے گا۔</translation>
 <translation id="1135212215217513471">‏Chrome برائے iOS حاصل کریں</translation>
@@ -46,6 +47,7 @@
 <translation id="1272079795634619415">روکیں</translation>
 <translation id="1275718070701477396">منتخب</translation>
 <translation id="1281818060020671000">ڈیٹا کا نظم کریں</translation>
+<translation id="1282311502488501110">سائن ان نہ کریں</translation>
 <translation id="1283524564873030414">گزشتہ 24 گھنٹے</translation>
 <translation id="1285320974508926690">اس سائٹ کا ترجمہ کبھی نہ کریں</translation>
 <translation id="1291506870746876680">جب آپ اس سائٹ کو چھوڑ دیتے ہیں تو <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> اجازتیں ری سیٹ ہو جائیں گی۔</translation>
@@ -54,6 +56,7 @@
 <translation id="1322735045095424339">آپ کی تنظیم پوشیدگی وضع چاہتی ہے</translation>
 <translation id="1323735185997015385">حذف کریں</translation>
 <translation id="132683371494960526">پیرینٹ فولڈر تبدیل کرنے کیلئے دو بار تھپتھپائیں۔</translation>
+<translation id="1335348992705722518">ترتیبات کا نظم کریں...</translation>
 <translation id="1340643665687018190">مینو بند کریں</translation>
 <translation id="1358214951266274152">وہ لنک ملاحظہ کریں جسے آپ نے کاپی کیا ہے</translation>
 <translation id="1360432990279830238">سائن آؤٹ کریں اور مطابقت پذیری آف کریں؟</translation>
@@ -61,6 +64,7 @@
 <translation id="1377255359165588604">مطابقت پذیری نے کام کرنا بند کر دیا ہے۔</translation>
 <translation id="1377321085342047638">کارڈ نمبر</translation>
 <translation id="1383876407941801731">تلاش کریں</translation>
+<translation id="138618066238211776">بطور <ph name="USER_NAME" /> جاری رکھیں</translation>
 <translation id="1400642268715879018">گزشتہ 4 ہفتے</translation>
 <translation id="1404330357948037222">آپ سائن آؤٹ ہیں</translation>
 <translation id="1407135791313364759">سبھی کو کھولیں</translation>
@@ -174,9 +178,11 @@
 <translation id="2421044535038393232">ترمیم جاری رکھیں</translation>
 <translation id="2434405374328098816">آپ نے <ph name="WEBSITE" /> پر "<ph name="USERNAME" />" کے لیے پہلے ہی پاس ورڈ محفوظ کر لیا ہے</translation>
 <translation id="2435457462613246316">پاس ورڈ دکھائیں</translation>
+<translation id="2461070143328828326">پاس ورڈ کی ترتیبات</translation>
 <translation id="2469960372084740698">محفوظ براؤزنگ آف کریں؟</translation>
 <translation id="2473876017985765807">آپ نے پہلے ہی <ph name="WEBSITE" /> کے لیے ایک پاس ورڈ محفوظ کیا ہے</translation>
 <translation id="2476359652512522418">انتخاب نہیں کیا گیا</translation>
+<translation id="2482878487686419369">اطلاعات</translation>
 <translation id="2500374554657206846">پاس ورڈ محفوظ کرنے کے اختیارات</translation>
 <translation id="2523363575747517183">یہ ویب سائٹ بار بار ایک اور ایپلیکیشن کھولنے کی کوشش کر رہی ہے۔</translation>
 <translation id="2529021024822217800">تمام کھولیں</translation>
@@ -327,6 +333,7 @@
 <translation id="3709582977625132201">بغیر پڑھا ہوا کے بطور نشان زد کریں</translation>
 <translation id="371230970611282515">خطرناک ایونٹس ہونے سے پہلے ان کی پیشین گوئی کرتا ہے اور آپ کو ان کے بارے میں متنبہ کرتا ہے۔</translation>
 <translation id="37207012422556617">رجحان ساز تلاشیں</translation>
+<translation id="3726360487031500941">اپنے <ph name="USER_NAME" /> اکاؤنٹ میں دوبارہ سائن ان کریں</translation>
 <translation id="3740397331642243698">‏درج کردہ URLs کو Google Chrome میں پوشیدگی میں کھولتا ہے۔</translation>
 <translation id="3762232513783804601">‏آپ کے iPad کے لیے بنایا گیا</translation>
 <translation id="3771033907050503522">پوشیدگی ٹیبز</translation>
@@ -381,6 +388,7 @@
 <translation id="4187450337729239226">پیسٹ کریں اور تلاش کریں</translation>
 <translation id="4223967053752765281">آپ کی تنظیم نے سائن ان کو آف کر دیا ہے۔ آپ ابھی بھی اپنے بک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات کو اس آلے پر دیکھ سکتے ہیں۔ اگر آپ تبدیلیاں کرتے ہیں تو وہ آپ کے اکاؤنٹ کے ساتھ مطابقت پذیر نہیں ہوں گی۔</translation>
 <translation id="4233831822770018312">اجازتوں میں ترمیم کریں</translation>
+<translation id="4236584471598725073">قیمت ٹریک کی جا رہی ہے</translation>
 <translation id="4237377247299956313"><ph name="BEGIN_BOLD" />ڈیفالٹ براؤزر ایپ<ph name="END_BOLD" /> پر تھپتھپائیں</translation>
 <translation id="424315890655130736">پاس فریز درج کریں</translation>
 <translation id="4249955472157341256">تازہ ترین کے لحاظ سے ترتیب دیں</translation>
@@ -740,6 +748,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6930799952781667037">اس زبان میں تبدیل کرنے کے لیے تھپتھپائیں۔</translation>
 <translation id="6944369514868857500">ایک دوسرا اکاؤنٹ منتخب کریں</translation>
 <translation id="6945221475159498467">منتخب کریں</translation>
+<translation id="6965382102122355670">ٹھیک ہے</translation>
 <translation id="6973630695168034713">فولڈرز</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">‏اپنے Google اکاؤنٹ کا نظم کریں</translation>

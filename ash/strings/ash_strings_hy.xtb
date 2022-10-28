@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">Տեսագրել լիաէկրան ռեժիմում</translation>
 <translation id="2135456203358955318">Ամրացված խոշորացույց</translation>
 <translation id="2148716181193084225">Այսօր</translation>
+<translation id="2161132820593978283">Տեսազանգերում փորձեք օգտագործել տեսախցիկի կադրավորումը էկրանի կենտրոնով։ Միացրեք այն Արագ կարգավորումներում։</translation>
 <translation id="2170530631236737939">Համատեսքը փակելու համար երեք մատով սահեցրեք վար</translation>
 <translation id="219905428774326614">Գործարկիչ, բոլոր հավելվածները</translation>
 <translation id="2201071101391734388">Վերջին լուսանկար <ph name="INDEX" />/<ph name="TOTAL_COUNT" />։</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">Միացված չէ</translation>
 <translation id="2408955596600435184">Մուտքագրեք ձեր PIN կոդը</translation>
 <translation id="2412593942846481727">Հասանելի է նոր տարբերակը</translation>
+<translation id="2426051945783024481">Տեսախցիկն ավտոմատ կերպով կենտրոնաբերվեց</translation>
 <translation id="2427507373259914951">Ձախ սեղմում</translation>
 <translation id="2429753432712299108">«<ph name="DEVICE_NAME" />» Bluetooth սարքը զուգավորման թույլտվություն է խնդրում: Նախքան ընդունելը հաստատեք, որ սարքի վրա ցուցադրվում է այս կոդը` <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Ցույց տալ գաղտնաբառը</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">Էկրանի դիրքը</translation>
 <translation id="3153444934357957346">Դուք կարող եք առավելագույնը <ph name="MULTI_PROFILE_USER_LIMIT" /> հաշիվ ունենալ:</translation>
 <translation id="3154351730702813399">Այս սարքի ադմինիստրատորը կարող է տեսնել ձեր այցելությունների պատմությունը:</translation>
+<translation id="3157931365184549694">Վերականգնել</translation>
 <translation id="316086887565479535">Ձևանմուշում առկա են չաջակցվող հավելվածներ</translation>
 <translation id="3161500364292033097">Փակել աշխատասեղանն ու պատուհանները</translation>
 <translation id="316356270129335934">Համաձայն կառավարչի (<ph name="MANAGER" />) պահանջի՝ ձեր <ph name="DEVICE_TYPE" /> սարքում վերականգնվում է օպերացիոն համակարգի նախորդ տարբերակը։ Սարքը կվերակայվի, և բոլոր տվյալները կջնջվեն։</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">Դասավորել ըստ</translation>
 <translation id="3742055079367172538">Սքրինշոթը ստեղծված է</translation>
 <translation id="3765841986579723851">Այսօր փոփոխել եք</translation>
-<translation id="3771549900096082774">Բարձր կոնտրաստով ռեժիմ</translation>
 <translation id="3773700760453577392">Ադմինիստրատորն արգելել է բազմակի մուտքը <ph name="USER_EMAIL" />-ի հաշվի համար: Շարունակելու համար բոլոր օգտատերերը պետք է դուրս գրվեն:</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> սարքը զուգակցվում է</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">Տեսախցիկի պատկերն ամրացված է վերևի աջ անկյունում, քանի որ ծածկում էր համակարգի միջերեսի տարրերը։</translation>
 <translation id="4316910396681052118">ԲՈԼՈՐ ՀԱՎԵԼՎԱԾՆԵՐԸ</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Դուք սեղմել եք բարձր կոնտրաստի դյուրանցման ստեղները: Ուզում եք միացնե՞լ այն:</translation>
 <translation id="4322742403972824594">«Ctrl + Alt + վեր սլաք» ստեղնային դյուրանցումը փոփոխվել է։ Home ստեղնի գործողություններն օգտագործելու համար սեղմեք «<ph name="LAUNCHER_KEY_NAME" /> + ձախ սլաք» ստեղնային դյուրանցումը։</translation>
 <translation id="4333628967105022692">Lacros-ը չի աջակցվում, երբ մեկից ավելի օգտատերեր են մուտք գործում</translation>
 <translation id="4338109981321384717">Խոշորացույց</translation>
 <translation id="4351433414020964307">Օգնականը բեռնվում է...</translation>
-<translation id="4356930093361201197">բարձր կոնտրաստի ռեժիմ</translation>
 <translation id="4371348193907997655">Հեռարձակման կարգավորումներ</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" /> տոկոս</translation>
 <translation id="4378551569595875038">Միացում…</translation>
@@ -877,7 +877,6 @@
 <translation id="5980301590375426705">Ավարտել հյուրի սեսիան</translation>
 <translation id="598407983968395253">Օգտագործել ձևանմուշը</translation>
 <translation id="598882571027504733">Թարմացումը տեղադրելու համար վերագործարկեք Chromebook-ը՝ առանց ստեղնաշարն անջատելու։</translation>
-<translation id="5992218262414051481">Բարձր կոնտրաստի ռեժիմը միացավ: Այն անջատելու համար նորից սեղմեք Ctrl+Search+H:</translation>
 <translation id="6012623610530968780">Էջ <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Ելք հայելային ռեժիմից</translation>
 <translation id="602001110135236999">Ոլորել ձախ</translation>
@@ -1043,6 +1042,7 @@
 <translation id="6960565108681981554">Ակտիվացված չէ։ Դիմեք ձեր կապի օպերատորին։</translation>
 <translation id="6961121602502368900">«Ծանուցումների անջատում հեռախոսում» գործառույթը հասանելի չէ աշխատանքային պրոֆիլում</translation>
 <translation id="6961840794482373852">«Alt + վեր սլաք» ստեղնային դյուրանցումը փոփոխվել է։ Page Up ստեղնի գործողություններն օգտագործելու համար սեղմեք «<ph name="LAUNCHER_KEY_NAME" /> + վեր սլաք» ստեղնային դյուրանցումը։</translation>
+<translation id="696267987219125751">Տեսախցիկի կադրավորումն անջատված է</translation>
 <translation id="6965382102122355670">Եղավ</translation>
 <translation id="6972754398087986839">Սկսել աշխատանքը</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1132,6 +1132,7 @@
 <translation id="7513922695575567867">Օրացույց, <ph name="DATE" /> ամսաթվի շաբաթը, այժմ ընտրված է՝ <ph name="SELECTED_DATE" />։</translation>
 <translation id="7514365320538308">Ներբեռնել</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Տեսախցիկի կադրավորումը միացված է։</translation>
 <translation id="7526573455193969409">Ցանցը կարող է վերահսկվել</translation>
 <translation id="7536035074519304529">IP հասցե՝ <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Լինուքսի հավելվածներն ու ինկոգնիտո պատուհանները ներկայումս չեն աջակցվում։ Մյուս հավելվածները կպահվեն։</translation>
@@ -1150,10 +1151,12 @@
 <translation id="7607002721634913082">Դադարեցված է</translation>
 <translation id="7609951632080598826">Օրացույցի դիտակերպ, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Տեսախցիկը նորից միացվեց։</translation>
+<translation id="761736749114493194">Միացնել/անջատել տեսախցիկի կադրավորումը։ <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Ցուցադրել «Փոխանակում մոտակա սարքերի հետ» գործառույթի կարգավորումները։</translation>
 <translation id="7634648064048557203">Տեսախցիկի պատկերն ամրացված է ներքևի աջ անկյունում</translation>
 <translation id="7641938616688887143">Տեսագրել</translation>
+<translation id="7642106959537987271">գունաշրջման ռեժիմ</translation>
 <translation id="7642647758716480637">Բացել «<ph name="NETWORK_NAME" />» ցանցի կարգավորումները, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (սեփականատեր)</translation>
 <translation id="7647488630410863958">Ծանուցումները դիտելու համար ապակողպեք սարքը</translation>
@@ -1232,7 +1235,6 @@
 <translation id="8051716679295756675">«<ph name="DESK_TEMPLATE_NAME" />» անունով ձևանմուշ արդեն գոյություն ունի</translation>
 <translation id="8052898407431791827">Պատճենվեց սեղմատախտակին</translation>
 <translation id="8054466585765276473">Մարտկոցի ժամանակի հաշվարկում:</translation>
-<translation id="8061464966246066292">Բարձր կոնտրաստ</translation>
 <translation id="8083540854303889870">Պահված է հետագայի համար</translation>
 <translation id="8091387634532529612">Ավտոմատ թարմացումներ</translation>
 <translation id="8098591350844501178">Դադարեցնել էկրանի հեռարձակումը <ph name="RECEIVER_NAME" />-ին</translation>
@@ -1260,6 +1262,7 @@
 <translation id="8209010265547628927">Վերակայել</translation>
 <translation id="8214996719228530800">Canary կապուղի</translation>
 <translation id="8219451629189078428">Այս ընթացքում Chromebook-ը պետք է միացված լինի և սնուցվի հոսանքից։ Համոզվեք, որ լիցքավորիչի և ադապտերի մալուխները պատշաճ միացված են Chromebook-ին և վարդակին։ Մի՛ անջատեք Chromebook-ը։</translation>
+<translation id="8230305195727960608">Գունաշրջման ռեժիմ</translation>
 <translation id="8236042855478648955">Ընդմիջման ժամն է</translation>
 <translation id="8246282815785366524">Բարի վերադարձ, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />, մարտկոցի լիցքը՝ <ph name="BATTERY_STATUS" /></translation>
@@ -1311,6 +1314,7 @@
 <translation id="851458219935658693">Ընթացիկ աշխատասեղանի պատուհանների ցուցադրում, ընտրված է կետակոճակը</translation>
 <translation id="8517041960877371778">Որպեսզի ձեր <ph name="DEVICE_TYPE" /> սարքը լիցքավորվի, անհրաժեշտ է անջատել այն:</translation>
 <translation id="8535393432370007982">Ըստ գույնի դասավորումը հետարկվեց</translation>
+<translation id="8541078764854166027">Կադրավորում</translation>
 <translation id="8542053257095774575">Պահված աշխատասեղաններ կամ ձևանմուշներ չկան</translation>
 <translation id="8546059259582788728">Դասավորումը հետարկվեց</translation>
 <translation id="8551588720239073785">Ամսաթվի և ժամի կարգավորումներ</translation>
@@ -1385,6 +1389,7 @@
 <translation id="8982906748181120328">Մոտակա սարքերի հասանելիություն</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Օգտագործվում է՝ <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Գունաշրջման ռեժիմը միացված է։ Նորից սեղմեք Ctrl+Search+H՝ անջատելու համար։</translation>
 <translation id="899350903320462459">Ծանուցման հետ գործողություն կատարելու համար ապակողպեք սարքը որպես <ph name="LOGIN_ID" /></translation>
 <translation id="9000771174482730261">ԿԱՌԱՎԱՐԵԼ ՏԱՐԱԾՔԸ</translation>
 <translation id="9017320285115481645">Մուտքագրեք Family Link-ի ծնողի մուտքի կոդը։</translation>
@@ -1433,6 +1438,7 @@
 <translation id="921989828232331238">Ձեր ծնողը կողպել է սարքը մեկ օրով</translation>
 <translation id="9220525904950070496">Հեռացնել հաշիվը</translation>
 <translation id="923686485342484400">Դուրս գրվելու համար երկու անգամ սեղմեք Control Shift Q:</translation>
+<translation id="92580429198593979">Դուք սեղմեցիք գունաշրջման ստեղնային դյուրանցումը։ Միացնե՞լ։</translation>
 <translation id="925832987464884575">Անջատել նախադիտումը</translation>
 <translation id="937214777182567951">Կառավարիչը (<ph name="MANAGER" />) պահանջում է, որ անհապաղ թարմացնեք <ph name="DEVICE_TYPE" /> սարքը։</translation>
 <translation id="938963181863597773">Ի՞նչ ունեմ պլանավորած։</translation>

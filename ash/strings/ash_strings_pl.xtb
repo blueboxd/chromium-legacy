@@ -215,6 +215,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2132302418721800944">Nagraj cały ekran</translation>
 <translation id="2135456203358955318">Lupa zadokowana</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
+<translation id="2161132820593978283">Spróbuj ustawić kadr, aby na obrazie z kamery podczas rozmów wideo znaleźć się pośrodku ekranu. Włącz tę funkcję w Szybkich ustawieniach.</translation>
 <translation id="2170530631236737939">Aby zamknąć Przegląd, przesuń 3 palcami w dół</translation>
 <translation id="219905428774326614">Menu ze wszystkimi aplikacjami</translation>
 <translation id="2201071101391734388">Najnowsze zdjęcie <ph name="INDEX" /> z <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2405664212338326887">Brak połączenia</translation>
 <translation id="2408955596600435184">Wpisz kod PIN</translation>
 <translation id="2412593942846481727">Dostępna aktualizacja</translation>
+<translation id="2426051945783024481">Kadr kamery jest automatycznie wyśrodkowany</translation>
 <translation id="2427507373259914951">Kliknięcie lewym przyciskiem</translation>
 <translation id="2429753432712299108">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Zanim to zaakceptujesz, sprawdź, czy na tym urządzeniu wyświetla się klucz: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
@@ -373,6 +375,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3151786313568798007">Orientacja</translation>
 <translation id="3153444934357957346">W wielokrotnym logowaniu nie możesz mieć więcej kont niż <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Administrator urządzenia może monitorować Twoją aktywność związaną z przeglądaniem.</translation>
+<translation id="3157931365184549694">Przywróć</translation>
 <translation id="316086887565479535">Nieobsługiwane aplikacje w szablonie</translation>
 <translation id="3161500364292033097">Zamknij biurko i okna</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> przywraca na urządzeniu <ph name="DEVICE_TYPE" /> wcześniejszą wersję systemu operacyjnego. Urządzenie zostanie zresetowane, a wszystkie dane – usunięte.</translation>
@@ -476,7 +479,6 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="3735740477244556633">Sortuj według</translation>
 <translation id="3742055079367172538">Wykonano zrzut ekranu</translation>
 <translation id="3765841986579723851">Edytowane dzisiaj</translation>
-<translation id="3771549900096082774">Tryb wysokiego kontrastu</translation>
 <translation id="3773700760453577392">Administrator nie zezwolił na wielokrotne logowanie użytkownika <ph name="USER_EMAIL" />. Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="3779139509281456663">Łączę z urządzeniem <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="4312840429157639164">Podgląd z kamery został przyciągnięty do prawego górnego rogu. Konflikt z obszarem systemowym.</translation>
 <translation id="4316910396681052118">WSZYSTKIE APLIKACJE</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Naciśnięto skrót klawiszowy wysokiego kontrastu. Czy chcesz go włączyć?</translation>
 <translation id="4322742403972824594">Skrót klawiszowy Ctrl + Alt + strzałka w górę został zmieniony. Aby użyć klawisza Home, naciśnij klawisz <ph name="LAUNCHER_KEY_NAME" /> + strzałka w lewo.</translation>
 <translation id="4333628967105022692">Kiedy zalogowanych jest wielu użytkowników, przeglądarka Lacros nie jest obsługiwana.</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Trwa ładowanie Asystenta…</translation>
-<translation id="4356930093361201197">Tryb wysokiego kontrastu</translation>
 <translation id="4371348193907997655">Ustawienia przesyłania</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, siła sygnału <ph name="SIGNAL_STRENGTH" /> procent</translation>
 <translation id="4378551569595875038">Łączę...</translation>
@@ -877,7 +877,6 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="5980301590375426705">Zakończ sesję gościa</translation>
 <translation id="598407983968395253">Użyj szablonu</translation>
 <translation id="598882571027504733">Aby pobrać aktualizację, uruchom Chromebooka ponownie z podłączoną klawiaturą.</translation>
-<translation id="5992218262414051481">Tryb wysokiego kontrastu został włączony. Aby go wyłączyć, naciśnij ponownie Ctrl+Search+H.</translation>
 <translation id="6012623610530968780">Strona <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Wyłączam tryb odbicia lustrzanego</translation>
 <translation id="602001110135236999">Przewiń w lewo</translation>
@@ -1042,6 +1041,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="6960565108681981554">Nie aktywowano. Skontaktuj się ze swoim operatorem.</translation>
 <translation id="6961121602502368900">Funkcja Wyciszenie telefonu jest niedostępna w profilu służbowym</translation>
 <translation id="6961840794482373852">Skrót klawiszowy Alt + strzałka w górę został zmieniony. Aby użyć klawisza Page Up, naciśnij klawisz <ph name="LAUNCHER_KEY_NAME" /> + strzałka w górę.</translation>
+<translation id="696267987219125751">Kadrowanie jest wyłączone.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
@@ -1132,6 +1132,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="7513922695575567867">Kalendarz, tydzień do <ph name="DATE" />, obecnie wybrana jest data <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Pobierz</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Kadrowanie jest włączone.</translation>
 <translation id="7526573455193969409">Sieć może być monitorowana</translation>
 <translation id="7536035074519304529">Adres IP: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Aplikacje na Linuksa ani okna incognito nie są obecnie obsługiwane. Inne aplikacje zostaną zapisane.</translation>
@@ -1150,10 +1151,12 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="7607002721634913082">Wstrzymano</translation>
 <translation id="7609951632080598826">Widok kalendarza, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Kamera została ponownie połączona.</translation>
+<translation id="761736749114493194">Przełącz kadrowanie. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Pokaż ustawienia Udostępniania w pobliżu.</translation>
 <translation id="7634648064048557203">Podgląd z kamery został przyciągnięty do prawego dolnego rogu</translation>
 <translation id="7641938616688887143">Nagraj</translation>
+<translation id="7642106959537987271">tryb odwrócenia kolorów</translation>
 <translation id="7642647758716480637">Otwórz ustawienia sieci <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (właściciel)</translation>
 <translation id="7647488630410863958">Odblokuj urządzenie, by zobaczyć swoje powiadomienia</translation>
@@ -1232,7 +1235,6 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="8051716679295756675">Szablon o nazwie <ph name="DESK_TEMPLATE_NAME" /> już istnieje</translation>
 <translation id="8052898407431791827">Skopiowano do schowka</translation>
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
-<translation id="8061464966246066292">Wysoki kontrast</translation>
 <translation id="8083540854303889870">Zapisane na później</translation>
 <translation id="8091387634532529612">Automatyczne aktualizacje</translation>
 <translation id="8098591350844501178">Zakończ przesyłanie ekranu do: <ph name="RECEIVER_NAME" /></translation>
@@ -1260,6 +1262,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="8209010265547628927">Resetuj</translation>
 <translation id="8214996719228530800">Wersja Canary</translation>
 <translation id="8219451629189078428">Chromebook musi być włączony i podłączony do zasilania. Upewnij się, że kable ładowarki lub zasilacza są prawidłowo podłączone do Chromebooka i do gniazdka. Nie wyłączaj Chromebooka.</translation>
+<translation id="8230305195727960608">Tryb odwrócenia kolorów</translation>
 <translation id="8236042855478648955">Czas na przerwę</translation>
 <translation id="8246282815785366524">Witamy z powrotem, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, bateria telefonu: <ph name="BATTERY_STATUS" /></translation>
@@ -1311,6 +1314,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="851458219935658693">Wybrano opcję Pokaż okna z bieżącego biurka</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8535393432370007982">Cofnij sortowanie według koloru</translation>
+<translation id="8541078764854166027">Kadrowanie</translation>
 <translation id="8542053257095774575">Nie ma zapisanych biurek ani szablonów</translation>
 <translation id="8546059259582788728">Sortowanie zostało cofnięte</translation>
 <translation id="8551588720239073785">Ustawienia daty i godziny</translation>
@@ -1385,6 +1389,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="8982906748181120328">Widoczność w pobliżu</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">W użyciu jest <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Tryb odwrócenia kolorów został włączony. Aby go wyłączyć, naciśnij ponownie Ctrl+Search+H.</translation>
 <translation id="899350903320462459">Odblokuj urządzenie jako <ph name="LOGIN_ID" />, by zareagować na powiadomienie</translation>
 <translation id="9000771174482730261">ZARZĄDZAJ MIEJSCEM NA DANE</translation>
 <translation id="9017320285115481645">Wpisz kod dostępu rodzica w Family Link.</translation>
@@ -1433,6 +1438,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="921989828232331238">Twój rodzic zablokował urządzenie na cały dzień</translation>
 <translation id="9220525904950070496">Usuń konto</translation>
 <translation id="923686485342484400">Naciśnij dwukrotnie Control Shift Q, by się wylogować.</translation>
+<translation id="92580429198593979">Naciśnięto skrót klawiszowy odwrócenia kolorów. Czy chcesz włączyć tę opcję?</translation>
 <translation id="925832987464884575">Ukryj podglądy</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> wymaga jak najszybszego zaktualizowania urządzenia <ph name="DEVICE_TYPE" /></translation>
 <translation id="938963181863597773">Co mam w kalendarzu?</translation>

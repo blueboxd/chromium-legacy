@@ -935,7 +935,7 @@ const base::Feature kVirtualKeyboardNewHeader{
 // If enabled, used to configure the heuristic rules for some advanced IME
 // features (e.g. auto-correct).
 const base::Feature kImeRuleConfig{"ImeRuleConfig",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable system emoji picker falling back to clipboard.
 const base::Feature kImeSystemEmojiPickerClipboard{
@@ -1365,6 +1365,10 @@ const base::Feature kQsRevamp{"QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
 // Controls whether the quick dim prototype is enabled.
 const base::Feature kQuickDim{"QuickDim", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the vc background blur is enabled.
+const base::Feature kVCBackgroundBlur{"VCBackgroundBlur",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
 const base::Feature kQuickSettingsNetworkRevamp{
@@ -1506,7 +1510,7 @@ const base::Feature kShutdownConfirmationBubble{
 
 // Enables or disables enterprise policy control for SIM PIN Lock.
 const base::Feature kSimLockPolicy{"SimLockPolicy",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{
@@ -2141,6 +2145,10 @@ bool IsStartAssistantAudioDecoderOnDemandEnabled() {
   return base::FeatureList::IsEnabled(kStartAssistantAudioDecoderOnDemand);
 }
 
+bool IsImeTrayHideVoiceButtonEnabled() {
+  return base::FeatureList::IsEnabled(kImeTrayHideVoiceButton);
+}
+
 bool IsImprovedDesksKeyboardShortcutsEnabled() {
   return base::FeatureList::IsEnabled(kImprovedDesksKeyboardShortcuts);
 }
@@ -2575,6 +2583,10 @@ bool IsUseLoginShelfWidgetEnabled() {
 
 bool IsUseStorkSmdsServerAddressEnabled() {
   return base::FeatureList::IsEnabled(kUseStorkSmdsServerAddress);
+}
+
+bool IsVCBackgroundBlurEnabled() {
+  return base::FeatureList::IsEnabled(kVCBackgroundBlur);
 }
 
 bool IsWallpaperFastRefreshEnabled() {

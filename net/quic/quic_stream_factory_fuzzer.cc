@@ -7,7 +7,9 @@
 #include <fuzzer/FuzzedDataProvider.h>
 
 #include "base/cxx17_backports.h"
-#include "net/base/network_isolation_key.h"
+#include "base/no_destructor.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
@@ -145,7 +147,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   request.Request(
       env->scheme_host_port, version, PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY,
-      SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+      SocketTag(), NetworkAnonymizationKey(), SecureDnsPolicy::kAllow,
       true /* use_dns_aliases */, false /* require_dns_https_alpn */,
       kCertVerifyFlags, GURL(kUrl), env->net_log, &net_error_details,
       /*failed_on_default_network_callback=*/CompletionOnceCallback(),

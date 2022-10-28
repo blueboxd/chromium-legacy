@@ -205,6 +205,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableWindowAboveNavbar,
     &kCCTRetainingState,
     &kCCTResourcePrefetch,
+    &kCCTShowAboutBlankUrl,
     &kCCTToolbarCustomizations,
     &kDontAutoHideBrowserControls,
     &kCacheDeprecatedSystemLocationSetting,
@@ -279,9 +280,11 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRelatedSearchesSimplifiedUx,
     &kRelatedSearchesUi,
     &kRequestDesktopSiteDefaults,
-    &kRequestDesktopSiteDefaultsSynthetic,
     &kRequestDesktopSiteDefaultsControl,
     &kRequestDesktopSiteDefaultsControlSynthetic,
+    &kRequestDesktopSiteDefaultsSynthetic,
+    &kRequestDesktopSiteOptInControlSynthetic,
+    &kRequestDesktopSiteOptInSynthetic,
     &kRequestDesktopSiteDefaultsDowngrade,
     &kSafeModeForCachedFlags,
     &kSearchEnginePromoExistingDevice,
@@ -386,6 +389,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kTouchToFillPasswordSubmission,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
+    &password_manager::features::kUnifiedPasswordManagerErrorMessages,
     &password_manager::features::kPasswordEditDialogWithDetails,
     &performance_hints::features::kContextMenuPerformanceInfo,
     &privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
@@ -581,6 +585,9 @@ const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
 
 const base::Feature kCCTRetainingState{"CCTRetainingState",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCCTShowAboutBlankUrl{"CCTShowAboutBlankUrl",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTToolbarCustomizations{"CCTToolbarCustomizations",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -811,15 +818,22 @@ const base::Feature kRelatedSearchesUi{"RelatedSearchesUi",
 const base::Feature kRequestDesktopSiteDefaults{
     "RequestDesktopSiteDefaults", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kRequestDesktopSiteDefaultsSynthetic{
-    "RequestDesktopSiteDefaults_Synthetic", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kRequestDesktopSiteDefaultsControl{
     "RequestDesktopSiteDefaultsControl", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRequestDesktopSiteDefaultsControlSynthetic{
-    "RequestDesktopSiteDefaultsControl_Synthetic",
+    "RequestDesktopSiteDefaultsControlSynthetic",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRequestDesktopSiteDefaultsSynthetic{
+    "RequestDesktopSiteDefaultsSynthetic", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRequestDesktopSiteOptInControlSynthetic{
+    "RequestDesktopSiteOptInControlSynthetic",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRequestDesktopSiteOptInSynthetic{
+    "RequestDesktopSiteOptInSynthetic", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRequestDesktopSiteDefaultsDowngrade{
     "RequestDesktopSiteDefaultsDowngrade", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -886,7 +900,7 @@ const base::Feature kDiscoverFeedMultiColumn{"DiscoverFeedMultiColumn",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabSwitcherOnReturn{"TabSwitcherOnReturn",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabToGTSAnimation{"TabToGTSAnimation",
                                        base::FEATURE_ENABLED_BY_DEFAULT};

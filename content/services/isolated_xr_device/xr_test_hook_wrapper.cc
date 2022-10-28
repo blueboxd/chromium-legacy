@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,9 +29,8 @@ PoseFrameData MojoToDevicePoseFrameData(
     device_test::mojom::PoseFrameDataPtr& pose) {
   PoseFrameData ret = {};
   ret.is_valid = !!pose->device_to_origin;
-  if (ret.is_valid) {
-    pose->device_to_origin->matrix().getColMajor(ret.device_to_origin);
-  }
+  if (ret.is_valid)
+    pose->device_to_origin->GetColMajorF(ret.device_to_origin);
 
   return ret;
 }

@@ -30,6 +30,7 @@
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
 <translation id="1597911401261118146">За да проверите дали паролите ви не са компрометирани при нарушения на сигурността на данните и други проблеми със сигурността, <ph name="BEGIN_LINK" />влезте в Chrome<ph name="END_LINK" />.</translation>
+<translation id="1599904803480101533">Chrome блокира този архивен файл, защото е възможно да крие злонамерен софтуер</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Как можете да управлявате данните си<ph name="END_BOLD" />: С цел защита на поверителността ви автоматично изтриваме интересите, които са по-стари от 4 седмици. Докато сърфирате, даден интерес може отново да се покаже в списъка. Имате възможност също да премахвате интересите, които не искате Chrome да взема предвид.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
@@ -59,6 +60,7 @@
 <translation id="2094648590148273905">Общи условия на ChromeOS Flex</translation>
 <translation id="2094919256425865063">Искате ли да затворите Chrome въпреки това?</translation>
 <translation id="2106831557840787829">ChromeOS Flex съществува благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />базираната на Linux среда на програмиране<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="2112742052114331084">Когато настройката е включена, Chrome освобождава паметта от разделите, които не използвате активно. Така ресурсите на компютъра ви са свободни за други задачи и Chrome не се забавя. Неактивните раздели са празни и се презареждат автоматично, когато кликнете върху тях. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> или <ph name="BEGIN_LINK_2" />изпратете отзиви<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> елемента ще се изтрият от това устройство. За да извлечете данните си по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2121284319307530122">Повторно стартиране за актуализиране на &amp;Chrome</translation>
 <translation id="2123055963409958220">Помогнете за подобряването на Chrome, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
@@ -175,6 +177,7 @@
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Какви данни се използват<ph name="END_BOLD" />: Вашата история на сърфиране – списък на сайтовете, които сте посетили чрез Chrome на това устройство.</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="4293420128516039005">Влезте в профила си, за да синхронизирате и персонализирате Chrome на всичките си устройства</translation>
+<translation id="430327780270213103">Разрешаване на разширението да показва заявки за достъп в лентата с инструменти на Chrome</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4334294535648607276">Изтеглянето завърши.</translation>
 <translation id="4335235004908507846">Chrome може да ви защити от нарушения на сигурността на данните, злонамерени разширения и др.</translation>
@@ -272,6 +275,7 @@
 <translation id="6735387454586646204">Система ChromeOS Flex</translation>
 <translation id="6739177684496155661">Искате ли да продължите с нов потребителски профил в Chrome?</translation>
 <translation id="6750954913813541382">С цел поправка на правописни грешки Chrome изпраща до Google текста, който въвеждате в браузъра</translation>
+<translation id="6756581345161130259">Ако е необходимо, Chrome освобождава паметта от разделите, които не използвате активно. Можете да промените това по всяко време от настройките.</translation>
 <translation id="677276454032249905">Искате ли да излезете от Chrome въпреки това?</translation>
 <translation id="6785872064505734160">Google Асистент в Chrome може да извършва действия вместо вас във всички уебсайтове</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>

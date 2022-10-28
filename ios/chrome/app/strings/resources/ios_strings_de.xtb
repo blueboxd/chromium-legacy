@@ -23,6 +23,7 @@ Du hast <ph name="DSE_NAME" /> als Suchmaschine festgelegt. Informationen zum L�
 <translation id="1104948393051856124">Akzeptieren &amp; weiter</translation>
 <translation id="110724200315609752">Zu offenem Fenster wechseln</translation>
 <translation id="1112015203684611006">Fehler beim Drucken.</translation>
+<translation id="1118569444314402022">Willkommen zurück, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Neuen Tab erstellen.</translation>
 <translation id="1126809382673880764">Du wirst nicht vor schädlichen Websites, Downloads und Erweiterungen geschützt. Sofern verfügbar, bist du in anderen Google-Diensten, wie Gmail und der Google Suche, durch Safe Browsing geschützt.</translation>
 <translation id="1135212215217513471">Chrome für iOS herunterladen</translation>
@@ -46,6 +47,7 @@ Du hast <ph name="DSE_NAME" /> als Suchmaschine festgelegt. Informationen zum L�
 <translation id="1272079795634619415">Stoppen</translation>
 <translation id="1275718070701477396">Ausgewählt</translation>
 <translation id="1281818060020671000">Daten verwalten</translation>
+<translation id="1282311502488501110">Nicht anmelden</translation>
 <translation id="1283524564873030414">Letzte 24 Stunden</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291506870746876680">Die Berechtigungen für <ph name="BEGIN_BOLD" /><ph name="SITE_NAME" /><ph name="END_BOLD" /> werden zurückgesetzt und damit deaktiviert, wenn du diese Website verlässt.</translation>
@@ -54,6 +56,7 @@ Du hast <ph name="DSE_NAME" /> als Suchmaschine festgelegt. Informationen zum L�
 <translation id="1322735045095424339">Deine Organisation verlangt, dass du den Inkognitomodus verwendest</translation>
 <translation id="1323735185997015385">Löschen</translation>
 <translation id="132683371494960526">Tippe hier doppelt, um den übergeordneten Ordner zu ändern.</translation>
+<translation id="1335348992705722518">Einstellungen verwalten…</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
 <translation id="1358214951266274152">Kopierten Link aufrufen</translation>
 <translation id="1360432990279830238">Abmelden &amp; Synchronisierung deaktivieren?</translation>
@@ -61,6 +64,7 @@ Du hast <ph name="DSE_NAME" /> als Suchmaschine festgelegt. Informationen zum L�
 <translation id="1377255359165588604">Die Synchronisierung funktioniert nicht mehr.</translation>
 <translation id="1377321085342047638">Kartennummer</translation>
 <translation id="1383876407941801731">Durchsuchen</translation>
+<translation id="138618066238211776">Als „<ph name="USER_NAME" />“ fortfahren</translation>
 <translation id="1400642268715879018">Letzte 4 Wochen</translation>
 <translation id="1404330357948037222">Du bist abgemeldet</translation>
 <translation id="1407135791313364759">Alle öffnen</translation>
@@ -174,9 +178,11 @@ Websites können Cookies nicht verwenden, um deine Browseraktivitäten auf ander
 <translation id="2421044535038393232">Weiter bearbeiten</translation>
 <translation id="2434405374328098816">Du hast für „<ph name="USERNAME" />“ schon ein Passwort bei <ph name="WEBSITE" /> gespeichert</translation>
 <translation id="2435457462613246316">Passwort anzeigen</translation>
+<translation id="2461070143328828326">Passworteinstellungen</translation>
 <translation id="2469960372084740698">Safe Browsing deaktivieren?</translation>
 <translation id="2473876017985765807">Du hast bereits ein Passwort für <ph name="WEBSITE" /> gespeichert</translation>
 <translation id="2476359652512522418">Nicht ausgewählt</translation>
+<translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2500374554657206846">Optionen zum Speichern von Passwörtern</translation>
 <translation id="2523363575747517183">Diese Website versucht wiederholt, eine andere App zu öffnen.</translation>
 <translation id="2529021024822217800">Alle öffnen</translation>
@@ -327,6 +333,7 @@ Informationen zum Löschen deines Suchverlaufs findest du in der Anleitung deine
 <translation id="3709582977625132201">Als ungelesen markieren</translation>
 <translation id="371230970611282515">Erkennt schädliche Ereignisse im Voraus und warnt dich, bevor diese eintreten.</translation>
 <translation id="37207012422556617">Trends bei Suchanfragen</translation>
+<translation id="3726360487031500941">Melde dich wieder in deinem Konto <ph name="USER_NAME" /> an</translation>
 <translation id="3740397331642243698">Öffnet die eingegebenen URLs in Google Chrome im Inkognitomodus.</translation>
 <translation id="3762232513783804601">Für dein iPad entwickelt</translation>
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
@@ -381,6 +388,7 @@ Informationen zum Löschen deines Suchverlaufs findest du in der Anleitung deine
 <translation id="4187450337729239226">Einfügen und suchen</translation>
 <translation id="4223967053752765281">Deine Organisation hat die Anmeldung deaktiviert. Du siehst weiterhin deine Lesezeichen, den Verlauf, deine Passwörter und andere Einstellungen auf diesem Gerät. Änderungen werden aber nicht mehr mit deinem Konto synchronisiert.</translation>
 <translation id="4233831822770018312">Berechtigungen bearbeiten</translation>
+<translation id="4236584471598725073">Preis wird beobachtet</translation>
 <translation id="4237377247299956313">Tippe auf <ph name="BEGIN_BOLD" />Standard-Browser-App<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Passphrase eingeben</translation>
 <translation id="4249955472157341256">Neueste zuerst</translation>
@@ -740,6 +748,7 @@ Wenn der Inkognitomodus aktiviert ist, können Websites keine Cookies verwenden,
 <translation id="6930799952781667037">Zum Ändern in diese Sprache tippen.</translation>
 <translation id="6944369514868857500">Anderes Konto auswählen</translation>
 <translation id="6945221475159498467">Auswählen</translation>
+<translation id="6965382102122355670">Ok</translation>
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Google-Konto verwalten</translation>

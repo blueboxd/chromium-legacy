@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,9 +246,14 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
              ->ShouldServiceWorkerInheritPolicyContainerFromCreator(
                  script_url_)) {
       policy_container_host_ = base::MakeRefCounted<PolicyContainerHost>(
-          // This does not parse the referrer policy, which will be
-          // updated in ServiceWorkerGlobalScope::Initialize
-          PolicyContainerPolicies(script_url_, response_head.get(), nullptr));
+          // TODO(https://crbug.com/1366920): Ensure parsed headers are
+          // available
+          response_head->parsed_headers
+              // This does not parse the referrer policy, which will be
+              // updated in ServiceWorkerGlobalScope::Initialize
+              ? PolicyContainerPolicies(script_url_, response_head.get(),
+                                        nullptr)
+              : PolicyContainerPolicies());
     }
   }
 

@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,6 +147,12 @@ base::Value::List ScreenOzone::GetGpuExtraInfo(
     const gfx::GpuExtraInfo& gpu_extra_info) {
   return platform_screen_->GetGpuExtraInfo(gpu_extra_info);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+display::TabletState ScreenOzone::GetTabletState() const {
+  return platform_screen_->GetTabletState();
+}
+#endif
 
 gfx::NativeWindow ScreenOzone::GetNativeWindowFromAcceleratedWidget(
     gfx::AcceleratedWidget widget) const {

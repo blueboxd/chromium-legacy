@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,11 @@ class CONTENT_EXPORT VideoCaptureDeviceProxyLacros
   // AllocateAndStartWithReceiver() calls from succeeding.
   absl::optional<std::string> fatal_error_message_;
 
+  // Note that because we do not run on the main thread and because we want to
+  // set a disconnect handler on the screen manager we must bind our own remote
+  // rather than using |LacrosService::GetRemote|, which returns a shared remote
+  // that is unsuitable for setting a disconnect handler on, and is also thread
+  // affine to a different thread.
   mojo::Remote<crosapi::mojom::ScreenManager> screen_manager_;
   mojo::Remote<crosapi::mojom::VideoCaptureDevice> device_;
 

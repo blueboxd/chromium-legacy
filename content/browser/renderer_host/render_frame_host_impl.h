@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2549,6 +2549,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindCacheStorageForBucket(
       const storage::BucketInfo& bucket,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
+
+  // Sends out all pending beacons held by this document and all its child
+  // documents.
+  //
+  // This method must be called when navigating away from the current document.
+  void SendAllPendingBeaconsOnNavigation();
 
  protected:
   friend class RenderFrameHostFactory;

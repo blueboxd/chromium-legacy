@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -462,6 +462,9 @@ class SourceBuilder {
   SourceBuilder& SetAggregationKeys(
       AttributionAggregationKeys aggregation_keys);
 
+  SourceBuilder& SetAggregatableBudgetConsumed(
+      int64_t aggregatable_budget_consumed);
+
   StorableSource Build() const;
 
   StoredSource BuildStored() const;
@@ -487,6 +490,7 @@ class SourceBuilder {
   StoredSource::Id source_id_{0};
   std::vector<uint64_t> dedup_keys_;
   AttributionAggregationKeys aggregation_keys_;
+  int64_t aggregatable_budget_consumed_ = 0;
 };
 
 // Returns a AttributionTrigger with default data which matches the default
@@ -767,6 +771,11 @@ MATCHER_P(DedupKeysAre, matcher, "") {
 
 MATCHER_P(AggregationKeysAre, matcher, "") {
   return ExplainMatchResult(matcher, arg.common_info().aggregation_keys(),
+                            result_listener);
+}
+
+MATCHER_P(AggregatableBudgetConsumedIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.aggregatable_budget_consumed(),
                             result_listener);
 }
 

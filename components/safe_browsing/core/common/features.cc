@@ -70,6 +70,9 @@ const base::Feature kDownloadBubble{"DownloadBubble",
 const base::Feature kDownloadBubbleV2{"DownloadBubbleV2",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDownloadTailoredWarnings{"DownloadTailoredWarnings",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -125,6 +128,10 @@ const base::Feature kTailoredSecurityIntegration{
 const base::Feature kOmitNonUserGesturesFromReferrerChain{
     "SafeBrowsingOmitNonUserGesturesFromReferrerChain",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kRealTimeUrlLookupForEnterpriseAllowlistBypass{
+    "SafeBrowsingRealTimeUrlLookupForEnterpriseAllowlistBypass",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingCsbrrWithToken{
     "SafeBrowsingCsbrrWithToken", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -189,6 +196,7 @@ constexpr struct {
     {&kDelayedWarnings, true},
     {&kDownloadBubble, true},
     {&kDownloadBubbleV2, true},
+    {&kDownloadTailoredWarnings, true},
     {&kEnhancedProtection, true},
     {&kEnhancedProtectionPhase2IOS, true},
     {&kExtensionTelemetry, true},
@@ -196,6 +204,7 @@ constexpr struct {
     {&kExtensionTelemetryPersistence, true},
     {&kFileTypePoliciesTag, true},
     {&kOmitNonUserGesturesFromReferrerChain, true},
+    {&kRealTimeUrlLookupForEnterpriseAllowlistBypass, true},
     {&kSafeBrowsingCsbrrWithToken, true},
     {&kSafeBrowsingPageLoadToken, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},

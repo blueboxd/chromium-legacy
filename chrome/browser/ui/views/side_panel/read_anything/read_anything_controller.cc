@@ -77,6 +77,20 @@ ui::ComboboxModel* ReadAnythingController::GetColorsModel() {
   return model_->GetColorsModel();
 }
 
+void ReadAnythingController::OnLetterSpacingChanged(int new_index) {
+  if (!model_->GetLetterSpacingModel()->IsValidLetterSpacingIndex(new_index))
+    return;
+
+  model_->SetSelectedLetterSpacingByIndex(new_index);
+
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kAccessibilityReadAnythingLetterSpacing, new_index);
+}
+
+ui::ComboboxModel* ReadAnythingController::GetLetterSpacingModel() {
+  return model_->GetLetterSpacingModel();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ReadAnythingPageHandler::Delegate:
 ///////////////////////////////////////////////////////////////////////////////

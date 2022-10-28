@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1902,10 +1902,9 @@ void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
   // RenderWidgetHostViewAura instance goes away etc. To avoid that we
   // destroy the LegacyRenderWidgetHostHWND instance here.
   if (legacy_render_widget_host_HWND_) {
-    legacy_render_widget_host_HWND_->Destroy();
-    // The Destroy call above will delete the LegacyRenderWidgetHostHWND
+    // The Destroy call below will delete the LegacyRenderWidgetHostHWND
     // instance.
-    legacy_render_widget_host_HWND_ = nullptr;
+    legacy_render_widget_host_HWND_.ExtractAsDangling()->Destroy();
   }
 #endif
 

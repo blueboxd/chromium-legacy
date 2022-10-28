@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">फुल स्क्रीन रेकॉर्ड करा</translation>
 <translation id="2135456203358955318">डॉक केलेले भिंग</translation>
 <translation id="2148716181193084225">आज</translation>
+<translation id="2161132820593978283">कॅमेरा फ्रेमिंग वापरून पहा, जेणेकरून व्हिडिओ कॉलवर तुम्ही स्क्रीनच्या मध्यभागी राहाल. ते क्विक सेटिंग्जमध्ये सुरू करा.</translation>
 <translation id="2170530631236737939">अवलोकन मधून बाहेर पडण्यासाठी तीन बोटांनी खाली स्वाइप करा</translation>
 <translation id="219905428774326614">लाँचर, सर्व अ‍ॅप्स</translation>
 <translation id="2201071101391734388"><ph name="TOTAL_COUNT" /> पैकी <ph name="INDEX" /> अलीकडील फोटो.</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">कनेक्ट केलेले नाही</translation>
 <translation id="2408955596600435184">तुमचा पिन प्रविष्‍ट करा</translation>
 <translation id="2412593942846481727">अपडेट उपलब्ध आहे</translation>
+<translation id="2426051945783024481">कॅमेराची फ्रेम आपोआप मध्यभागी आहे</translation>
 <translation id="2427507373259914951">लेफ्ट क्लिक करा</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शवली असल्याची पुष्टी करा: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">पासवर्ड दर्शवा</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">अभिमुखता</translation>
 <translation id="3153444934357957346">मल्टिपल साइन इन मध्ये तुमच्याकडे जास्तीत जास्त फक्त <ph name="MULTI_PROFILE_USER_LIMIT" /> खाती असू शकतात.</translation>
 <translation id="3154351730702813399">डिव्हाइस प्रशासक कदाचित आपल्या ब्राउझिंग क्रियाकलापाचे परीक्षण करू शकतो.</translation>
+<translation id="3157931365184549694">पुनर्संचयित करा</translation>
 <translation id="316086887565479535">टेंप्लेटमधील सपोर्ट करत नसलेली ॲप्स</translation>
 <translation id="3161500364292033097">डेस्‍क आणि विंडो बंद करा</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> तुमचे <ph name="DEVICE_TYPE" /> मागे घेत आहे. तुमचे डिव्हाइस रीसेट केले जाईल आणि सर्व डेटा हटवला जाईल.</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">यानुसार क्रमाने लावा</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट घेतला</translation>
 <translation id="3765841986579723851">आज संपादित केलेली</translation>
-<translation id="3771549900096082774">उच्च कॉन्ट्रास्ट मोड</translation>
 <translation id="3773700760453577392">ॲडमिनिस्ट्रेटरने <ph name="USER_EMAIL" /> साठी एकाहून अधिक साइन-इन बंद केले आहे. सुरू ठेवण्यासाठी सर्व वापरकर्त्यांनी साइन आउट करणे आवश्यक आहे.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> कनेक्ट करत आहे</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">कॅमेरा सर्वात वरच्या उजव्या कोपर्‍यात स्नॅप केला आहे. सिस्टीम सर्फेसवरील इतर ॲपवर ओव्‍हरलॅप होत आहे.</translation>
 <translation id="4316910396681052118">सर्व अ‍ॅप्स</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">तुम्ही उच्च कॉंट्रास्टसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4322742403972824594">Ctrl + Alt + Up Arrow कीबोर्ड शॉर्टकट बदलला आहे. होम की वापरण्यासाठी, <ph name="LAUNCHER_KEY_NAME" /> की + लेफ्ट अ‍ॅरो दाबा.</translation>
 <translation id="4333628967105022692">एकाहून अधिक वापरकर्त्यांनी साइन इन केले असेल तेव्हा Lacros सपोर्ट करत नाही.</translation>
 <translation id="4338109981321384717">भिंग</translation>
 <translation id="4351433414020964307">साहाय्यक लोड होत आहे...</translation>
-<translation id="4356930093361201197">हाय-काँट्रास्ट मोड</translation>
 <translation id="4371348193907997655">कास्ट करा सेटिंग्ज</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /> टक्के</translation>
 <translation id="4378551569595875038">कनेक्ट होतय...</translation>
@@ -877,7 +877,6 @@
 <translation id="5980301590375426705">अतिथी निर्गमन करा</translation>
 <translation id="598407983968395253">टेंप्लेट वापरा</translation>
 <translation id="598882571027504733">अपडेट करण्यासाठी, संलग्न केलेल्या कीबोर्डसह तुमचे Chromebook रीस्टार्ट करा.</translation>
-<translation id="5992218262414051481">उच्च तीव्रता मोड सुरू केला आहे. तो बंदवर टॉगल करण्यासाठी Ctrl+Search+H दाबा.</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> पैकी <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="6018164090099858612">मिरर मोडमधून बाहेर पडत आहे</translation>
 <translation id="602001110135236999">डावीकडे स्‍क्रोल करा</translation>
@@ -1043,6 +1042,7 @@
 <translation id="6960565108681981554">अ‍ॅक्टिव्हेट केलेले नाही. तुमच्या वाहकाशी संपर्क साधा.</translation>
 <translation id="6961121602502368900">कार्य प्रोफाइलवर सायलन्स फोन उपलब्ध नाही</translation>
 <translation id="6961840794482373852">Alt + Up Arrow कीबोर्ड शॉर्टकट बदलला आहे. पेज अप की वापरण्यासाठी, <ph name="LAUNCHER_KEY_NAME" /> की + अप अ‍ॅरो दाबा.</translation>
+<translation id="696267987219125751">कॅमेरा फ्रेमिंग बंद आहे.</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
 <translation id="6972754398087986839">सुरू करा</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -1133,6 +1133,7 @@
 <translation id="7513922695575567867">कॅलेंडर, सध्या <ph name="DATE" /> आठवड्यामधील, <ph name="SELECTED_DATE" /> निवडली आहे.</translation>
 <translation id="7514365320538308">डाउनलोड करा</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">कॅमेरा फ्रेमिंग सुरू आहे</translation>
 <translation id="7526573455193969409">नेटवर्कचे परीक्षण केले जाऊ शकते</translation>
 <translation id="7536035074519304529">IP पत्ता: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux अ‍ॅप्स आणि गुप्त विंडोना सध्या सपोर्ट नाही. इतर ॲप्स सेव्ह केली जातील.</translation>
@@ -1151,10 +1152,12 @@
 <translation id="7607002721634913082">विराम द्या</translation>
 <translation id="7609951632080598826">कॅलेंडर दृश्य, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">कॅमेरा पुन्हा कनेक्ट केला.</translation>
+<translation id="761736749114493194">कॅमेरा फ्रेमिंग टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° फॅ</translation>
 <translation id="7633755430369750696">Nearby सह शेअरिंग सेटिंग्ज दाखवा.</translation>
 <translation id="7634648064048557203">कॅमेरा सर्वात खालच्या उजव्या कोपऱ्यात स्नॅप केला आहे</translation>
 <translation id="7641938616688887143">रेकॉर्ड करा</translation>
+<translation id="7642106959537987271">कलर इन्व्हर्जन मोड</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> साठी सेटिंग्ज उघडा</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
 <translation id="7647488630410863958">आपल्या सूचना पाहण्यासाठी डिव्हाइस अनलॉक करा</translation>
@@ -1233,7 +1236,6 @@
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> नावाचे टेंप्लेट आधीपासून अस्तित्वात आहे</translation>
 <translation id="8052898407431791827">क्लिपबोर्डवर कॉपी केले</translation>
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
-<translation id="8061464966246066292">उच्च रंगभेद</translation>
 <translation id="8083540854303889870">नंतरसाठी सेव्ह केले</translation>
 <translation id="8091387634532529612">ऑटोमॅटिक अपडेट</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करणे थांबवा</translation>
@@ -1261,6 +1263,7 @@
 <translation id="8209010265547628927">रीसेट करा</translation>
 <translation id="8214996719228530800">कॅनरी चॅनल</translation>
 <translation id="8219451629189078428">या कालावधी दरम्यान Chromebook सुरू असणे आणि पॉवरशी कनेक्ट केलेले असणे आवश्यक आहे. चार्जर किंवा अडॅप्टर केबल तुमचे Chromebook आणि पॉवर आउटलेट या दोन्ही गोष्टींशी पूर्णपणे प्लग इन केल्या असल्याची खात्री करा. तुमचे Chromebook बंद करू नका.</translation>
+<translation id="8230305195727960608">कलर इन्व्हर्जन मोड</translation>
 <translation id="8236042855478648955">विश्रांतीची वेळ</translation>
 <translation id="8246282815785366524"><ph name="GIVEN_NAME" />, तुमचे पुन्हा स्वागत आहे</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, फोन बॅटरी <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@
 <translation id="851458219935658693">सध्याच्या डेस्कवरील विंडो दाखवा, रेडिओ बटण निवडले</translation>
 <translation id="8517041960877371778">तुमचे <ph name="DEVICE_TYPE" /> सुरू केले असताना कदाचित चार्ज होणार नाही.</translation>
 <translation id="8535393432370007982">रंगानुसार क्रमवारीचा क्रम पहिल्यासारखा करा</translation>
+<translation id="8541078764854166027">कॅमेरा फ्रेमिंग</translation>
 <translation id="8542053257095774575">कोणतीही सेव्ह केलेली डेस्‍क किंवा टेंप्लेट नाहीत</translation>
 <translation id="8546059259582788728">क्रमाने लावणे पहिल्यासारखे करण्यात यश आले</translation>
 <translation id="8551588720239073785">तारीख आणि वेळ सेटिंग्ज</translation>
@@ -1386,6 +1390,7 @@
 <translation id="8982906748181120328">Nearby असलेले</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> वापरत आहे</translation>
+<translation id="8991617137207906966">कलर इन्व्हर्जन मोड सुरू केला आहे. तो बंद वर टॉगल करण्यासाठी पुन्हा Ctrl+Search+H दाबा.</translation>
 <translation id="899350903320462459">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस <ph name="LOGIN_ID" /> म्हणून अनलॉक करा</translation>
 <translation id="9000771174482730261">स्टोरेज व्यवस्थापित करा</translation>
 <translation id="9017320285115481645">Family Link पालक ॲक्सेस कोड एंटर करा.</translation>
@@ -1435,6 +1440,7 @@
 <translation id="921989828232331238">तुमच्या पालकाने आज दिवसभरासाठी तुमचे डिव्हाइस लॉक केले</translation>
 <translation id="9220525904950070496">खाते काढून टाका</translation>
 <translation id="923686485342484400">साइन आउट करण्यासाठी Control Shift Q दोनदा दाबा.</translation>
+<translation id="92580429198593979">तुम्ही कलर इन्व्हर्जनसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते बंद करायचे आहे का?</translation>
 <translation id="925832987464884575">पूर्वावलोकने लपवा</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> नुसार तुम्ही तुमचे <ph name="DEVICE_TYPE" /> त्वरित अपडेट करणे आवश्यक आहे</translation>
 <translation id="938963181863597773">माझ्या कॅलेंडरमधील इव्हेंट काय आहेत?</translation>

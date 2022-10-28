@@ -163,6 +163,11 @@
     "expiry_milestone": 140
   },
   {
+    "name": "android-permissions-cache",
+    "owners": [ "peilinwang@google.com"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "android-picture-in-picture-api",
     "owners": [ "steimel", "jazzhsu", "media-dev" ],
     "expiry_milestone": 120
@@ -175,7 +180,7 @@
   {
     "name": "app-management-app-details",
     "owners": [ "ajlinker" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 112
   },
   {
     "name": "app-menu-mobile-site-option",
@@ -1220,11 +1225,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "dark-light-mode",
-    "owners": [ "minch", "tclaiborne" ],
-    "expiry_milestone": 110
-  },
-  {
     "name": "darken-websites-checkbox-in-themes-setting",
     "owners": [ "nemco@google.com", "wenyufu@google.com", "twellington" ],
     "expiry_milestone": 110
@@ -2058,11 +2058,6 @@
     "name": "enable-desktop-pwas-launch-handler",
     "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 110
-  },
-  {
-    "name": "enable-desktop-pwas-manifest-id",
-    "owners": [ "phillis@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 98
   },
   {
     "name": "enable-desktop-pwas-remove-status-bar",
@@ -3773,6 +3768,19 @@
     "expiry_milestone": 108
   },
   {
+    "name": "google-mobile-services-passwords-error-messages",
+    "owners": [
+      "ioanap",
+      "izuzic@google.com"
+    ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "google-mobile-services-passwords-reenrollment",
+    "owners": [ "kazinova@google.com", "vasilii" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "grid-tab-switcher-for-tablets",
     "owners": [ "nemco", "clank-app-team@google.com" ],
     "expiry_milestone": 114
@@ -4262,11 +4270,6 @@
     "name": "launcher-play-store-search",
     "owners": [ "amandadeacon", "tby", "wrong" ],
     "expiry_milestone": 108
-  },
-  {
-    "name": "leak-detection-unauthenticated",
-    "owners": ["rgod@google.com", "vasilii"],
-    "expiry_milestone": 102
   },
   {
     "name": "legacy-tls-interstitial",
@@ -5562,6 +5565,11 @@
     "expiry_milestone": 109
   },
   {
+    "name": "quick-gesture-show-launcher",
+    "owners": [ "anasalazar", "//ash/shelf/OWNERS" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "quick-intensive-throttling-after-loading",
     "owners": [ "jiahe.zhang@intel.com", "fdoray" ],
     "expiry_milestone": 110
@@ -6356,6 +6364,11 @@
     "expiry_milestone": 112
   },
   {
+    "name": "text-based-audio-descriptions",
+    "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "third-party-storage-partitioning",
     "owners": [ "miketaylr", "eliason" ],
     "expiry_milestone": 112
@@ -6664,6 +6677,11 @@
     "name": "variable-colrv1",
     "owners": [ "drott", "layout-dev@chromium.org" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "vc-background-blur",
+    "owners": [ "shafron", "skyostil", "charleszhao" ],
+    "expiry_milestone": 115
   },
   {
     "name": "verbose-logging-in-nacl",

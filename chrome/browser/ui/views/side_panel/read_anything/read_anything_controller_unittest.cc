@@ -30,6 +30,9 @@ class ReadAnythingControllerTest : public TestWithBrowserView {
     browser()->profile()->GetPrefs()->SetInteger(
         prefs::kAccessibilityReadAnythingColorInfo,
         (int)read_anything::mojom::Colors::kDefaultValue);
+    browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kAccessibilityReadAnythingLetterSpacing,
+        (int)read_anything::mojom::LetterSpacing::kDefaultValue);
   }
 
   void MockOnFontChoiceChanged(int index) {
@@ -42,10 +45,15 @@ class ReadAnythingControllerTest : public TestWithBrowserView {
 
   void MockOnColorsChanged(int index) { controller_->OnColorsChanged(index); }
 
+  void MockOnLetterSpacingChanged(int index) {
+    controller_->OnLetterSpacingChanged(index);
+  }
+
   void MockModelInit(std::string font_name,
                      double font_scale,
-                     read_anything::mojom::Colors colors) {
-    model_->Init(font_name, font_scale, colors);
+                     read_anything::mojom::Colors colors,
+                     read_anything::mojom::LetterSpacing letter_spacing) {
+    model_->Init(font_name, font_scale, colors, letter_spacing);
   }
 
   std::string GetPrefFontName() {
@@ -61,6 +69,11 @@ class ReadAnythingControllerTest : public TestWithBrowserView {
   int GetPrefsColors() {
     return browser()->profile()->GetPrefs()->GetInteger(
         prefs::kAccessibilityReadAnythingColorInfo);
+  }
+
+  int GetPrefsLetterSpacing() {
+    return browser()->profile()->GetPrefs()->GetInteger(
+        prefs::kAccessibilityReadAnythingLetterSpacing);
   }
 
  protected:
@@ -96,7 +109,8 @@ TEST_F(ReadAnythingControllerTest, OnFontSizeChangedHonorsMax) {
   EXPECT_NEAR(GetPrefFontScale(), 1.0, 0.01);
 
   std::string font_name;
-  MockModelInit(font_name, 4.9, read_anything::mojom::Colors::kDefaultValue);
+  MockModelInit(font_name, 4.9, read_anything::mojom::Colors::kDefaultValue,
+                read_anything::mojom::LetterSpacing::kDefaultValue);
 
   MockOnFontSizeChanged(true);
 
@@ -107,7 +121,8 @@ TEST_F(ReadAnythingControllerTest, OnFontSizeChangedHonorsMin) {
   EXPECT_NEAR(GetPrefFontScale(), 1.0, 0.01);
 
   std::string font_name;
-  MockModelInit(font_name, 0.3, read_anything::mojom::Colors::kDefaultValue);
+  MockModelInit(font_name, 0.3, read_anything::mojom::Colors::kDefaultValue,
+                read_anything::mojom::LetterSpacing::kDefaultValue);
 
   MockOnFontSizeChanged(false);
 
@@ -120,4 +135,20 @@ TEST_F(ReadAnythingControllerTest, OnColorsChangedUpdatesPref) {
   MockOnColorsChanged((int)read_anything::mojom::Colors::kYellow);
 
   EXPECT_EQ(GetPrefsColors(), 3);
+}
+
+TEST_F(ReadAnythingControllerTest, OnLetterSpacingChangedUpdatesPref) {
+  EXPECT_EQ(GetPrefsLetterSpacing(), 1);
+
+  MockOnLetterSpacingChanged((int)read_anything::mojom::LetterSpacing::kLoose);
+
+  EXPECT_EQ(GetPrefsLetterSpacing(), 2);
+}
+
+TEST_F(ReadAnythingControllerTest, OnLetterSpacingChangedInvalidInput) {
+  EXPECT_EQ(GetPrefsLetterSpacing(), 1);
+
+  MockOnLetterSpacingChanged(10);
+
+  EXPECT_EQ(GetPrefsLetterSpacing(), 1);
 }

@@ -174,6 +174,7 @@
 <translation id="1380591466760231819">レター折り</translation>
 <translation id="138218114945450791">ライトブルー</translation>
 <translation id="1382194467192730611">管理者によって許可された USB デバイス</translation>
+<translation id="1382378825779654399">値下げしたサイトがある場合、メールで通知します。このページは <ph name="LAST_BOOKMARKS_FOLDER" /> に保存されます。</translation>
 <translation id="1382912999714108023">現在の情報が表示されていない場合は、カード発行会社に連絡して更新してください。</translation>
 <translation id="1384725838384960382">保護されたお支払い認証情報の認証シート</translation>
 <translation id="1386623374109090026">アノテーション</translation>
@@ -250,7 +251,6 @@
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">フリーウェア、シェアウェア</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
-<translation id="1554003749331233619">この商品をトラッキングします。このページは <ph name="LAST_BOOKMARKS_FOLDER" /> に保存されます</translation>
 <translation id="1555130319947370107">青</translation>
 <translation id="1559447966090556585">通知を受け取りますか？</translation>
 <translation id="1559528461873125649">該当するファイルまたはディレクトリがありません</translation>
@@ -298,7 +298,6 @@
 <translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="1663943134801823270">Chrome に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="1671391448414634642">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます。</translation>
-<translation id="1673886523110456987">特典を使用するには、<ph name="CARD_DETAIL" /> で決済を行ってください</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />から<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">短辺から</translation>
 <translation id="168693727862418163">このポリシーの値は、スキーマの検証でエラーとなったため無視されます。</translation>
@@ -423,6 +422,7 @@
 <translation id="2034971124472263449">このまま保存</translation>
 <translation id="2035400064145347639">旅行ガイド、旅行記</translation>
 <translation id="2036983605131262583">代替ロール</translation>
+<translation id="2040463897538655645">リムーバブル ストレージ</translation>
 <translation id="2040894699575719559">位置情報がブロックされています</translation>
 <translation id="2042213636306070719">トレイ 7</translation>
 <translation id="204357726431741734">Google アカウントに保存したパスワードを使用するには、ログインしてください</translation>
@@ -1005,7 +1005,6 @@
 <translation id="3633738897356909127">Chrome を更新するボタンです。Enter キーを押すと Chrome の設定で Chrome を更新します</translation>
 <translation id="3634530185120165534">トレイ 5</translation>
 <translation id="3634567936866541746">偽のサイトでパスワードを入力しました。アカウントを保護するため、保存したパスワードをすぐに確認することをおすすめします。</translation>
-<translation id="3637033245385760976">Chrome の通知をオンにする必要があります。[<ph name="NOTIFICATION_SETTINGS" />] でオンにできます</translation>
 <translation id="3637662659967048211">Google アカウントに保存</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">アプリケーション:</translation>
@@ -1521,6 +1520,7 @@
 <translation id="5018422839182700155">このページを開けません</translation>
 <translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
 <translation id="5020776957610079374">ワールド ミュージック</translation>
+<translation id="5021557570875267742">Chrome で価格をトラッキング</translation>
 <translation id="5023310440958281426">管理者のポリシーを確認してください</translation>
 <translation id="5029568752722684782">コピーを消去</translation>
 <translation id="5030338702439866405">発行元</translation>
@@ -2103,7 +2103,7 @@
 <translation id="6615297766614333076">スタッカー 2</translation>
 <translation id="6624427990725312378">連絡先情報</translation>
 <translation id="6626291197371920147">有効なカード番号を追加</translation>
-<translation id="6627727261837091711">広告のカスタマイズの詳細を表示します</translation>
+<translation id="6627727261837091711">広告のパーソナライズの詳細を表示します</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 検索</translation>
 <translation id="6630043285902923878">USB デバイスを検出しています...</translation>
 <translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって、お使いの Mac 上に危険なプログラム（写真、パスワード、メッセージ、クレジット カードなどの情報を盗んだり削除したりするプログラム）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -2242,6 +2242,7 @@
 <translation id="6993898126790112050">6x9（封筒）</translation>
 <translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" />を常に翻訳</translation>
 <translation id="6999969238895751684">エンターテインメント業</translation>
+<translation id="7003335073762455340">この商品をトラッキングします。このページは <ph name="LAST_BOOKMARKS_FOLDER" /> に保存されます。</translation>
 <translation id="7004583254764674281">Windows Hello を使用してカードをすばやく確認する</translation>
 <translation id="7006930604109697472">このまま送信</translation>
 <translation id="7012363358306927923">中国銀聯</translation>
@@ -2324,6 +2325,7 @@
 <translation id="7234638337680728591">ガソリン料金、燃費</translation>
 <translation id="7237492777898608035">今後このサイトではこのメッセージを表示しない</translation>
 <translation id="7238585580608191973">SHA-256 指紋</translation>
+<translation id="7239514174717251677">値下げアラートはオンになっています。[<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />] で変更できます</translation>
 <translation id="7240120331469437312">証明書のサブジェクトの代替名</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />、<ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{一致: # 件}other{一致: # 件}}</translation>
@@ -2340,6 +2342,7 @@
 <translation id="7285654172857511148"><ph name="CHANGE_GOOGLE_PASSWORD_FOCUSED_FRIENDLY_MATCH_TEXT" /> です。Tab キー、Enter キーの順に押すと、Google アカウントのパスワードを変更します</translation>
 <translation id="7292031607255951991">受取人の氏名</translation>
 <translation id="7298195798382681320">推奨</translation>
+<translation id="7299471494012161875">接続されたディスプレイ周辺機器</translation>
 <translation id="7300012071106347854">コバルトブルー</translation>
 <translation id="7304030187361489308">高め</translation>
 <translation id="7304562222803846232">Google アカウントのプライバシー設定を管理</translation>
@@ -2464,6 +2467,7 @@
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> アカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。今すぐパスワードを変更することをおすすめします。</translation>
 <translation id="7564680668369175887">ステーション ワゴン</translation>
 <translation id="7567204685887185387">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は不正に発行されたものである可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
+<translation id="7568616151991626879">Google Chrome が <ph name="APP_NAME" /> でパスワードを入力しようとしています。</translation>
 <translation id="7569490014721427265">ゴルフ</translation>
 <translation id="7569761772822664555">[検索エンジンの管理] ボタンです。Enter キーを押すと、デフォルトの検索エンジンとサイト内検索を管理できます</translation>
 <translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
@@ -2821,7 +2825,6 @@
 <translation id="8559762987265718583">デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
 <translation id="8564182942834072828">個別のドキュメント（丁合いなし）</translation>
 <translation id="8564985650692024650"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> パスワードを他のサイトで再使用した場合、Chromium ではパスワードの再設定を促すメッセージが表示されます。</translation>
-<translation id="8573969211731659953">値下げアラートはオンになっています。[<ph name="NOTIFICATION_SETTINGS" />] で変更できます</translation>
 <translation id="8576310925653847813">ホームシアター システム</translation>
 <translation id="8577348305244205642">仮想カードを使用できません</translation>
 <translation id="858637041960032120">電話番号を追加
@@ -3036,11 +3039,13 @@
 <translation id="9174623988242579721">カスタムカー、高性能車</translation>
 <translation id="9174917557437862841">タブの切り替えボタンです。Enter キーを押すとこのタブに切り替わります</translation>
 <translation id="9179703756951298733">Chrome の設定でお支払いとクレジット カード情報を管理します</translation>
+<translation id="9179907736442194268">値下げしたサイトがある場合、メールで通知します</translation>
 <translation id="9183302530794969518">Google ドキュメント</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> ではサポートされていないプロトコルが使用されています。</translation>
 <translation id="9187461866967718678">エクストリーム スポーツ</translation>
 <translation id="9191834167571392248">パンチ（左下）</translation>
 <translation id="9199905725844810519">印刷はブロックされています</translation>
+<translation id="9202180858541326427">Chrome の通知をオンにする必要があります。[<ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />] でオンにできます</translation>
 <translation id="9205078245616868884">データは同期パスフレーズで暗号化されます。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="920511547311754821">コードが表示されない場合は、<ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">記事を追加できませんでした。</translation>

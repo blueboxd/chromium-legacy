@@ -78,6 +78,7 @@
 <translation id="1722487484194605434">מתבצע כיווץ של <ph name="NUMBER_OF_ITEMS" /> פריטים…</translation>
 <translation id="1722687688096767818">בתהליך הוספת פרופיל…</translation>
 <translation id="1726100011689679555">שרתי שמות</translation>
+<translation id="1726600877401297672"><ph name="NUMBER_OF_ITEMS" /> פריטים הועברו לאשפה</translation>
 <translation id="1729953886957086472">גרמנית (גרמניה)</translation>
 <translation id="1730235522912993863">‏סינית Cangjie</translation>
 <translation id="1731889557567069540">הועתקו <ph name="NUMBER_OF_ITEMS" /> פריטים.</translation>
@@ -206,6 +207,7 @@
 <translation id="2888807692577297075">‏אין פריטים התואמים ל-&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2894654529758326923">מידע</translation>
 <translation id="2902734494705624966">ארה"ב - מורחבת</translation>
+<translation id="2906052776158021882"><ph name="NUMBER_OF_ITEMS" /> פריטים מועברים לאשפה</translation>
 <translation id="290843123675549676">מראטית</translation>
 <translation id="2923240520113693977">אסטונית</translation>
 <translation id="2938685643439809023">מונגולית</translation>
@@ -269,6 +271,7 @@
 <translation id="3414856743105198592">פרמוט המדיה הנשלפת יגרום למחיקת כל הנתונים. האם ברצונך להמשיך?</translation>
 <translation id="3437801641691368414">שעת יצירה</translation>
 <translation id="343907260260897561">מצלמת פיתוח מיידי</translation>
+<translation id="3452106565701029351">ביטול ההצמדה מ'קבצים מהירים'</translation>
 <translation id="3455931012307786678">אסטונית</translation>
 <translation id="3475447146579922140">‏גיליון אלקטרוני של Google</translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
@@ -421,6 +424,7 @@
 <translation id="4784330909746505604">‏מצגת PowerPoint</translation>
 <translation id="4788401404269709922">‎<ph name="NUMBER_OF_KB" /> KB</translation>
 <translation id="4789067489790477934">‏מתן הרשאת גישה ל-Parallels Desktop לקבצים ב-Google Drive. השינויים יסתנכרנו עם המכשירים האחרים שלך.</translation>
+<translation id="4790766916287588578">‏הינדי עם מקלדת InScript</translation>
 <translation id="4801956050125744859">שמירת שתיהן</translation>
 <translation id="4804827417948292437">אבוקדו</translation>
 <translation id="4823651846660089135">המכשיר מוגדר לקריאה בלבד</translation>
@@ -457,6 +461,7 @@
 <translation id="5068919226082848014">פיצה</translation>
 <translation id="5081517858322016911">קבצים בנפח כולל של <ph name="TOTAL_FILE_SIZE" /> יימחקו</translation>
 <translation id="508423945471810158">מתבצעת העברה של <ph name="NUMBER_OF_ITEMS" /> פריטים אל <ph name="FOLDER_NAME" /></translation>
+<translation id="5092200349368278146">הקובץ <ph name="FILE_NAME" /> הועבר לאשפה</translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
 <translation id="5098629044894065541">עברית</translation>
 <translation id="5102922915594634436">ניהול תיקיות מסונכרנות</translation>
@@ -561,6 +566,7 @@
 <translation id="5845721951356578987">אחות</translation>
 <translation id="5861477046012235702">גיימר</translation>
 <translation id="5864471791310927901">‏חיפוש DHCP נכשל</translation>
+<translation id="5887342613489958822">הקובץ <ph name="FILE_NAME" /> מועבר לאשפה</translation>
 <translation id="5896749729057314184">רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, לא פעילה, חוזק האות <ph name="SIGNAL_STRENGTH" />%, פרטים</translation>
 <translation id="5911887972742538906">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
 <translation id="5912396950572065471">פורמט</translation>
@@ -663,12 +669,14 @@
 <translation id="6874758081814639712">אדם מתרגל טאי צ'י</translation>
 <translation id="6876155724392614295">אופניים</translation>
 <translation id="6878261347041253038">מקלדת דוונגארי (פונטית)</translation>
+<translation id="6881853403185175088">Office</translation>
 <translation id="6885780034956018177">שבלול</translation>
 <translation id="6896758677409633944">העתקה</translation>
 <translation id="6898028766943174120">תיקיות משנה נוספות…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
 <translation id="6930242544192836755">משך החיבור</translation>
+<translation id="6931302001003657424">הצמדה ל'קבצים מהירים'</translation>
 <translation id="6935521024859866267">פרפר הפוך</translation>
 <translation id="6943836128787782965">‏פעולת get של HTTP נכשלה</translation>
 <translation id="6949408524333579394">תעתיק סרבית</translation>

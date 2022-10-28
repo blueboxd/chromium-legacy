@@ -8,34 +8,40 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/android/signin/signin_bridge.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/messages/android/message_dispatcher_bridge.h"
-#include "components/signin/public/base/signin_metrics.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PasswordManagerErrorMessageDelegate::PasswordManagerErrorMessageDelegate(
-    std::unique_ptr<PasswordManagerSignInHelperBridge> bridge_)
-    : sign_in_bridge_(std::move(bridge_)) {}
+    std::unique_ptr<PasswordManagerErrorMessageHelperBridge> bridge_)
+    : helper_bridge_(std::move(bridge_)) {}
 
 PasswordManagerErrorMessageDelegate::~PasswordManagerErrorMessageDelegate() =
     default;
 
-void PasswordManagerErrorMessageDelegate::DisplayPasswordManagerErrorMessage(
+void PasswordManagerErrorMessageDelegate::MaybeDisplayErrorMessage(
     content::WebContents* web_contents,
-    bool save_password) {
+    password_manager::ErrorMessageFlowType flow_type,
+    password_manager::PasswordStoreBackendErrorType error_type,
+    base::OnceCallback<void()> dismissal_callback) {
   DCHECK(web_contents);
 
-  // Dismiss previous message if it is displayed.
-  DismissPasswordManagerErrorMessage(messages::DismissReason::UNKNOWN);
+  if (!helper_bridge_->ShouldShowErrorUI())
+    return;
 
-  CreateMessage(web_contents, save_password);
+  DCHECK(!message_);
+
+  CreateMessage(web_contents, flow_type);
+  RecordErrorTypeMetrics(error_type);
   messages::MessageDispatcherBridge::Get()->EnqueueMessage(
       message_.get(), web_contents, messages::MessageScopeType::WEB_CONTENTS,
       messages::MessagePriority::kUrgent);
+  helper_bridge_->SaveErrorUIShownTimestamp();
+  dismissal_callback_ = std::move(dismissal_callback);
 }
 
 void PasswordManagerErrorMessageDelegate::DismissPasswordManagerErrorMessage(
@@ -43,12 +49,13 @@ void PasswordManagerErrorMessageDelegate::DismissPasswordManagerErrorMessage(
   if (message_ != nullptr) {
     messages::MessageDispatcherBridge::Get()->DismissMessage(message_.get(),
                                                              dismiss_reason);
+    std::move(dismissal_callback_).Run();
   }
 }
 
 void PasswordManagerErrorMessageDelegate::CreateMessage(
     content::WebContents* web_contents,
-    bool save_password) {
+    password_manager::ErrorMessageFlowType flow_type) {
   messages::MessageIdentifier message_id =
       messages::MessageIdentifier::PASSWORD_MANAGER_ERROR;
   // Binding with base::Unretained(this) is safe here because
@@ -67,8 +74,10 @@ void PasswordManagerErrorMessageDelegate::CreateMessage(
           &PasswordManagerErrorMessageDelegate::HandleMessageDismissed,
           base::Unretained(this)));
 
-  int title_message_id = save_password ? IDS_SIGN_IN_TO_SAVE_PASSWORDS
-                                       : IDS_SIGN_IN_TO_USE_PASSWORDS;
+  int title_message_id =
+      flow_type == password_manager::ErrorMessageFlowType::kSaveFlow
+          ? IDS_SIGN_IN_TO_SAVE_PASSWORDS
+          : IDS_SIGN_IN_TO_USE_PASSWORDS;
   message_->SetTitle(l10n_util::GetStringUTF16(title_message_id));
 
   std::u16string description =
@@ -91,8 +100,7 @@ void PasswordManagerErrorMessageDelegate::HandleMessageDismissed(
 
 void PasswordManagerErrorMessageDelegate::HandleSignInButtonClicked(
     content::WebContents* web_contents) {
-  sign_in_bridge_->startUpdateAccountCredentialsFlow(
-      base::android::AttachCurrentThread(), web_contents);
+  helper_bridge_->StartUpdateAccountCredentialsFlow(web_contents);
   DismissPasswordManagerErrorMessage(messages::DismissReason::PRIMARY_ACTION);
 }
 
@@ -100,4 +108,10 @@ void PasswordManagerErrorMessageDelegate::RecordDismissalReasonMetrics(
     messages::DismissReason dismiss_reason) {
   base::UmaHistogramEnumeration("PasswordManager.ErrorMessageDismissalReason",
                                 dismiss_reason, messages::DismissReason::COUNT);
+}
+
+void PasswordManagerErrorMessageDelegate::RecordErrorTypeMetrics(
+    password_manager::PasswordStoreBackendErrorType error_type) {
+  base::UmaHistogramEnumeration("PasswordManager.ErrorMessageDisplayReason",
+                                error_type);
 }

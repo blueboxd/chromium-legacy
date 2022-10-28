@@ -51,9 +51,9 @@ const char* const kUMAShowDefaultPromoFromAppsHistogram =
                      fromSourceApplication:sourceApplication];
 
   if (IsIncognitoModeDisabled(prefService)) {
-    params.launchInIncognito = NO;
+    params.applicationMode = ApplicationModeForTabOpening::NORMAL;
   } else if (IsIncognitoModeForced(prefService)) {
-    params.launchInIncognito = YES;
+    params.applicationMode = ApplicationModeForTabOpening::INCOGNITO;
   }
 
   MobileSessionCallerApp callerApp = [params callerApp];
@@ -87,18 +87,18 @@ const char* const kUMAShowDefaultPromoFromAppsHistogram =
       // +[UserAcrtivityHandler
       // handleStartupParametersWithTabOpener:startupInformation:browserState:]
 
-      GURL URL;
+      GURL gurl;
       GURL virtualURL;
       if ([params completeURL].SchemeIsFile()) {
         // External URL will be loaded by WebState, which expects `completeURL`.
         // Omnibox however suppose to display `externalURL`, which is used as
         // virtual URL.
-        URL = [params completeURL];
+        gurl = [params completeURL];
         virtualURL = [params externalURL];
       } else {
-        URL = [params externalURL];
+        gurl = [params externalURL];
       }
-      UrlLoadParams urlLoadParams = UrlLoadParams::InNewTab(URL, virtualURL);
+      UrlLoadParams urlLoadParams = UrlLoadParams::InNewTab(gurl, virtualURL);
 
       ApplicationModeForTabOpening targetMode = params.applicationMode;
       // If the call is coming from the app, it should be opened in the current
@@ -106,7 +106,7 @@ const char* const kUMAShowDefaultPromoFromAppsHistogram =
       if (callerApp == CALLER_APP_GOOGLE_CHROME)
         targetMode = ApplicationModeForTabOpening::CURRENT;
 
-      if (![params launchInIncognito] &&
+      if (params.applicationMode != ApplicationModeForTabOpening::INCOGNITO &&
           [tabOpener URLIsOpenedInRegularMode:urlLoadParams.web_params.url]) {
         // Record metric.
       }

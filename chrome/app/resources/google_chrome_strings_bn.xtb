@@ -30,6 +30,7 @@
 <translation id="1587223624401073077">Google Chrome আপনার ক্যামেরা ব্যবহার করছে৷</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> বিপজ্জনক, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="1597911401261118146">আপনার পাসওয়ার্ড ডেটার নিরাপত্তা লঙ্ঘন এবং অন্যান্য নিরাপত্তা সংক্রান্ত সমস্যা থেকে সুরক্ষিত কিনা তা চেক করতে <ph name="BEGIN_LINK" />Chrome-এ সাইন-ইন করুন<ph name="END_LINK" />।</translation>
+<translation id="1599904803480101533">Chrome আর্কাইভ করা এই ফাইল ব্লক করেছে কারণ এতে ম্যালওয়্যার থাকতে পারে</translation>
 <translation id="1619887657840448962">Chrome-কে আরও নিরাপদ করতে, আমরা নিচের এক্সটেনশনটি বন্ধ করেছি যা <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-এ তালিকাবদ্ধ করা হয়নি এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছিল৷</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />আপনি কীভাবে ডেটা ম্যানেজ করতে পারেন:<ph name="END_BOLD" /> আপনার গোপনীয়তা রক্ষা করতে, আমরা ৪ সপ্তাহের বেশি পুরনো আপনার আগ্রহগুলি অটোমেটিক মুছে ফেলি। আপনি ব্রাউজিং চালিয়ে যাওয়ার সাথে সাথে তালিকায় আবার আগ্রহগুলি দেখা যেতে পারে। অথবা, আপনি যে আগ্রহগুলি Chrome বিবেচনা করুক বলে চান না সেগুলি সরিয়ে দিতে পারেন।</translation>
 <translation id="1628000112320670027">Chrome বিষয়ে সাহায্য পান</translation>
@@ -59,6 +60,7 @@
 <translation id="2094648590148273905">ChromeOS Flex-এর শর্তাবলী</translation>
 <translation id="2094919256425865063">তা স্বত্তেও Chrome বন্ধ করবেন?</translation>
 <translation id="2106831557840787829"><ph name="BEGIN_LINK_LINUX_OSS" />Linux ডেভেলপমেন্ট এনভায়রনমেন্ট<ph name="END_LINK_LINUX_OSS" />-এর ক্ষেত্রে যেমন করা হয়েছে, তেমনভাবে অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" />-এর মাধ্যমে ChromeOS Flex তৈরি করা সম্ভব হয়েছে।</translation>
+<translation id="2112742052114331084">চালু থাকলে, আপনি সক্রিয়ভাবে ব্যবহার করছেন না এমন ট্যাব থেকে Chrome মেমরি পুনরুদ্ধার করে। এর ফলে আপনার কম্পিউটারের রিসোর্স অন্যান্য কাজের জন্য খালি থাকে এবং Chrome দ্রুত কাজ করতে পারে। অ্যাক্টিভ না থাকা ট্যাব খালি দেখায় ও আপনি এগুলিতে ক্লিক করলে অটোমেটিক আবার লোড হয়। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /> বা <ph name="BEGIN_LINK_2" />মতামত পাঠান<ph name="END_LINK_2" /></translation>
 <translation id="2120620239521071941">এটি এই ডিভাইস থেকে <ph name="ITEMS_COUNT" />টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome-এ <ph name="USER_EMAIL" /> হিসেবে সাইন-ইন করুন।</translation>
 <translation id="2121284319307530122">&amp;Chrome আপডেট করতে আবার লঞ্চ করুন</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />বর্তমান সেটিংস<ph name="END_LINK" />-এর রিপোর্ট করে Chrome-কে আরও ভাল করে তুলতে সাহায্য করুন</translation>
@@ -275,6 +277,7 @@
 <translation id="6735387454586646204">ChromeOS Flex সিস্টেম</translation>
 <translation id="6739177684496155661">নতুন Chrome প্রোফাইলে কাজ চালিয়ে যেতে চান?</translation>
 <translation id="6750954913813541382">বানান ভুল ঠিক করতে, আপনি ব্রাউজারে যে টেক্সট লেখেন Chrome সেটি Google-এ পাঠায়</translation>
+<translation id="6756581345161130259">প্রয়োজন অনুযায়ী, আপনি সক্রিয়ভাবে ব্যবহার করছেন না এমন ট্যাবগুলি থেকে Chrome মেমরি পুনরুদ্ধার করে। আপনি সেটিংস থেকে এটি যেকোনও সময় পরিবর্তন করতে পারেন।</translation>
 <translation id="677276454032249905">তা স্বত্তেও Chrome বন্ধ করতে চান?</translation>
 <translation id="6785872064505734160">Chrome-এ Google Assistant আপনার হয়ে সমস্ত ওয়েবসাইটে বিভিন্ন অ্যাকশন সম্পূর্ণ করতে পারে</translation>
 <translation id="683440813066116847">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome Canary এর জন্য ইনবাউন্ড নিয়ম।</translation>

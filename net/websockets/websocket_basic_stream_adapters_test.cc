@@ -73,7 +73,7 @@ class WebSocketClientSocketHandleAdapterTest : public TestWithTaskEnvironment {
     int rv = connection->Init(
         ClientSocketPool::GroupId(
             url::SchemeHostPort(url::kHttpsScheme, "www.example.org", 443),
-            PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+            PrivacyMode::PRIVACY_MODE_DISABLED, NetworkAnonymizationKey(),
             SecureDnsPolicy::kAllow),
         socks_params, TRAFFIC_ANNOTATION_FOR_TESTS /* proxy_annotation_tag */,
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -289,7 +289,7 @@ class WebSocketSpdyStreamAdapterTest : public TestWithTaskEnvironment {
              PRIVACY_MODE_DISABLED,
              SpdySessionKey::IsProxySession::kFalse,
              SocketTag(),
-             NetworkIsolationKey(),
+             NetworkAnonymizationKey(),
              SecureDnsPolicy::kAllow),
         session_(SpdySessionDependencies::SpdyCreateSession(&session_deps_)),
         ssl_(SYNCHRONOUS, OK) {}

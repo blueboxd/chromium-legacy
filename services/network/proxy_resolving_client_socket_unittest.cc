@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,7 +91,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ProxyResolvingClientSocketTest,
                          ::testing::Bool());
 
-// Checks the correct NetworkIsolationKey is used for host resolution in the
+// Checks the correct NetworkAnonymizationKey is used for host resolution in the
 // case no proxy is in use.
 TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyDirect) {
   // This deliberately uses a different origin than the one being connected to.
@@ -100,7 +100,9 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyDirect) {
   net::NetworkIsolationKey kNetworkIsolationKey(
       kNetworkIsolationKeyOrigin /* top_frame_origin */,
       kNetworkIsolationKeyOrigin /* frame_origin */);
-
+  net::NetworkAnonymizationKey kNetworkAnonymizationKey =
+      net::NetworkAnonymizationKey::CreateFromNetworkIsolationKey(
+          kNetworkIsolationKey);
   auto url_request_context = CreateBuilder("DIRECT")->Build();
 
   const GURL kDestination("https://dest.test/");
@@ -113,7 +115,7 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyDirect) {
       url_request_context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, kNetworkIsolationKey, use_tls_);
+          kDestination, kNetworkAnonymizationKey, use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_THAT(callback.GetResult(status), net::test::IsOk());
@@ -126,7 +128,7 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyDirect) {
   params.source = net::HostResolverSource::LOCAL_ONLY;
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request1 =
       url_request_context->host_resolver()->CreateRequest(
-          kDestinationHostPortPair, kNetworkIsolationKey,
+          kDestinationHostPortPair, kNetworkAnonymizationKey,
           net::NetLogWithSource(), params);
   net::TestCompletionCallback callback2;
   int result = request1->Start(callback2.callback());
@@ -134,14 +136,15 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyDirect) {
 
   // Check that the hostname is not in the DNS cache for other possible NIKs.
   const url::Origin kDestinationOrigin = url::Origin::Create(kDestination);
-  const net::NetworkIsolationKey kOtherNiks[] = {
-      net::NetworkIsolationKey(),
-      net::NetworkIsolationKey(kDestinationOrigin /* top_frame_origin */,
-                               kDestinationOrigin /* frame_origin */)};
-  for (const auto& other_nik : kOtherNiks) {
+  const net::NetworkAnonymizationKey kOtherNaks[] = {
+      net::NetworkAnonymizationKey(),
+      net::NetworkAnonymizationKey(
+          net::SchemefulSite(kDestinationOrigin) /* top_frame_origin */,
+          net::SchemefulSite(kDestinationOrigin) /* frame_origin */)};
+  for (const auto& other_nak : kOtherNaks) {
     std::unique_ptr<net::HostResolver::ResolveHostRequest> request2 =
         url_request_context->host_resolver()->CreateRequest(
-            kDestinationHostPortPair, other_nik, net::NetLogWithSource(),
+            kDestinationHostPortPair, other_nak, net::NetLogWithSource(),
             params);
     net::TestCompletionCallback callback3;
     result = request2->Start(callback3.callback());
@@ -149,13 +152,13 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyDirect) {
   }
 }
 
-// Checks the correct NetworkIsolationKey is used for host resolution in the
-// case an H2 proxy is in use. In the non-H2 proxy case, the NetworkIsolationKey
-// makes little difference, but in the H2 case, it affects which requests use
-// the same session. Unlike other tests, this test creates a
-// ProxyResolvingClientSocket instead of using the factory class, because it
-// uses SpdySessionDependencies to create a NetworkSession configured to test
-// H2.
+// Checks the correct NetworkAnonymizationKey is used for host resolution in the
+// case an H2 proxy is in use. In the non-H2 proxy case, the
+// NetworkAnonymizationKey makes little difference, but in the H2 case, it
+// affects which requests use the same session. Unlike other tests, this test
+// creates a ProxyResolvingClientSocket instead of using the factory class,
+// because it uses SpdySessionDependencies to create a NetworkSession configured
+// to test H2.
 TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyWithH2Proxy) {
   // Don't bother running this test in the SSL case - it's complicated enough
   // without it, and testing HTTPS on top of H2 provides minimal value, since
@@ -173,7 +176,12 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyWithH2Proxy) {
       net::NetworkIsolationKey::CreateTransient();
   net::NetworkIsolationKey kNetworkIsolationKey2 =
       net::NetworkIsolationKey::CreateTransient();
-
+  net::NetworkAnonymizationKey kNetworkAnonymizationKey1 =
+      net::NetworkAnonymizationKey::CreateFromNetworkIsolationKey(
+          kNetworkIsolationKey1);
+  net::NetworkAnonymizationKey kNetworkAnonymizationKey2 =
+      net::NetworkAnonymizationKey::CreateFromNetworkIsolationKey(
+          kNetworkIsolationKey2);
   const GURL kDestination1("https://dest1.test/");
   const GURL kDestination2("https://dest2.test/");
   const GURL kDestination3("https://dest3.test/");
@@ -241,7 +249,7 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyWithH2Proxy) {
       http_network_session->CreateCommonConnectJobParams();
   ProxyResolvingClientSocket socket1(
       http_network_session.get(), &common_connect_job_params, kDestination1,
-      kNetworkIsolationKey1, false /* use_tls */, &connect_job_factory);
+      kNetworkAnonymizationKey1, false /* use_tls */, &connect_job_factory);
   net::TestCompletionCallback callback1;
   int result = socket1.Connect(callback1.callback());
   EXPECT_THAT(callback1.GetResult(result), net::test::IsOk());
@@ -250,7 +258,7 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyWithH2Proxy) {
   // H2 session.
   ProxyResolvingClientSocket socket2(
       http_network_session.get(), &common_connect_job_params, kDestination2,
-      kNetworkIsolationKey2, false /* use_tls */, &connect_job_factory);
+      kNetworkAnonymizationKey2, false /* use_tls */, &connect_job_factory);
   net::TestCompletionCallback callback2;
   result = socket2.Connect(callback2.callback());
   EXPECT_THAT(callback2.GetResult(result), net::test::IsOk());
@@ -261,7 +269,7 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyWithH2Proxy) {
   // first H2 session.
   ProxyResolvingClientSocket socket3(
       http_network_session.get(), &common_connect_job_params, kDestination3,
-      kNetworkIsolationKey1, false /* use_tls */, &connect_job_factory);
+      kNetworkAnonymizationKey1, false /* use_tls */, &connect_job_factory);
   net::TestCompletionCallback callback3;
   result = socket3.Connect(callback3.callback());
   EXPECT_THAT(callback3.GetResult(result), net::test::IsOk());
@@ -302,7 +310,7 @@ TEST_P(ProxyResolvingClientSocketTest, SocketLimitNotApply) {
   for (int i = 0; i < kNumSockets; ++i) {
     std::unique_ptr<ProxyResolvingClientSocket> socket =
         proxy_resolving_socket_factory.CreateSocket(
-            kDestination, net::NetworkIsolationKey(), use_tls_);
+            kDestination, net::NetworkAnonymizationKey(), use_tls_);
     net::TestCompletionCallback callback;
     int status = socket->Connect(callback.callback());
     EXPECT_THAT(callback.GetResult(status), net::test::IsOk());
@@ -339,7 +347,7 @@ TEST_P(ProxyResolvingClientSocketTest, ConnectError) {
         context.get());
     std::unique_ptr<ProxyResolvingClientSocket> socket =
         proxy_resolving_socket_factory.CreateSocket(
-            kDestination, net::NetworkIsolationKey(), use_tls_);
+            kDestination, net::NetworkAnonymizationKey(), use_tls_);
     net::TestCompletionCallback callback;
     int status = socket->Connect(callback.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, status);
@@ -388,7 +396,7 @@ TEST_P(ProxyResolvingClientSocketTest, ConnectToProxy) {
         context.get());
     std::unique_ptr<ProxyResolvingClientSocket> socket =
         proxy_resolving_socket_factory.CreateSocket(
-            kDestination, net::NetworkIsolationKey(), use_tls_);
+            kDestination, net::NetworkAnonymizationKey(), use_tls_);
     net::TestCompletionCallback callback;
     int status = socket->Connect(callback.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, status);
@@ -423,7 +431,7 @@ TEST_P(ProxyResolvingClientSocketTest, SocketDestroyedBeforeConnectComplete) {
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, status);
@@ -489,7 +497,7 @@ TEST_P(ProxyResolvingClientSocketTest, ReadWriteErrors) {
         context.get());
     std::unique_ptr<ProxyResolvingClientSocket> socket =
         proxy_resolving_socket_factory.CreateSocket(
-            kDestination, net::NetworkIsolationKey(), use_tls_);
+            kDestination, net::NetworkAnonymizationKey(), use_tls_);
     net::TestCompletionCallback callback;
     int status = socket->Connect(callback.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, status);
@@ -555,7 +563,7 @@ TEST_P(ProxyResolvingClientSocketTest, ReportsBadProxies) {
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, status);
@@ -593,7 +601,7 @@ TEST_P(ProxyResolvingClientSocketTest, ResetSocketAfterTunnelAuth) {
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_THAT(callback.GetResult(status),
@@ -656,21 +664,21 @@ TEST_P(ProxyResolvingClientSocketTest, MultiroundAuth) {
 
   auth_cache->Add(url::SchemeHostPort(GURL("http://bad:99")),
                   net::HttpAuth::AUTH_PROXY, "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
-                  "Basic realm=\"test_realm\"",
+                  net::HttpAuth::AUTH_SCHEME_BASIC,
+                  net::NetworkAnonymizationKey(), "Basic realm=\"test_realm\"",
                   net::AuthCredentials(u"user", u"password"), std::string());
 
   auth_cache->Add(url::SchemeHostPort(GURL("http://bad:99")),
                   net::HttpAuth::AUTH_PROXY, "test_realm2",
-                  net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
-                  "Basic realm=\"test_realm2\"",
+                  net::HttpAuth::AUTH_SCHEME_BASIC,
+                  net::NetworkAnonymizationKey(), "Basic realm=\"test_realm2\"",
                   net::AuthCredentials(u"user2", u"password2"), std::string());
 
   ProxyResolvingClientSocketFactory proxy_resolving_socket_factory(
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_THAT(callback.GetResult(status), net::test::IsOk());
@@ -719,15 +727,15 @@ TEST_P(ProxyResolvingClientSocketTest, ReusesHTTPAuthCache_Lookup) {
   // origin + realm + scheme lookup.
   auth_cache->Add(url::SchemeHostPort(GURL("http://bad:99")),
                   net::HttpAuth::AUTH_PROXY, "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
-                  "Basic realm=\"test_realm\"",
+                  net::HttpAuth::AUTH_SCHEME_BASIC,
+                  net::NetworkAnonymizationKey(), "Basic realm=\"test_realm\"",
                   net::AuthCredentials(u"user", u"password"), std::string());
 
   ProxyResolvingClientSocketFactory proxy_resolving_socket_factory(
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_THAT(callback.GetResult(status), net::test::IsOk());
@@ -753,8 +761,8 @@ TEST_P(ProxyResolvingClientSocketTest, FactoryUsesLatestHTTPAuthCache) {
   // origin + realm + scheme lookup.
   auth_cache->Add(url::SchemeHostPort(GURL("http://bad:99")),
                   net::HttpAuth::AUTH_PROXY, "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
-                  "Basic realm=\"test_realm\"",
+                  net::HttpAuth::AUTH_SCHEME_BASIC,
+                  net::NetworkAnonymizationKey(), "Basic realm=\"test_realm\"",
                   net::AuthCredentials(u"user", u"password"), std::string());
 
   const GURL kDestination("https://example.com:443");
@@ -785,7 +793,7 @@ TEST_P(ProxyResolvingClientSocketTest, FactoryUsesLatestHTTPAuthCache) {
 
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_THAT(callback.GetResult(status), net::test::IsOk());
@@ -817,15 +825,15 @@ TEST_P(ProxyResolvingClientSocketTest, ReusesHTTPAuthCache_Preemptive) {
 
   auth_cache->Add(url::SchemeHostPort(GURL("http://bad:99")),
                   net::HttpAuth::AUTH_PROXY, "test_realm",
-                  net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
-                  "Basic realm=\"test_realm\"",
+                  net::HttpAuth::AUTH_SCHEME_BASIC,
+                  net::NetworkAnonymizationKey(), "Basic realm=\"test_realm\"",
                   net::AuthCredentials(u"user", u"password"), "/");
 
   ProxyResolvingClientSocketFactory proxy_resolving_socket_factory(
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
 
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
@@ -856,7 +864,7 @@ TEST_P(ProxyResolvingClientSocketTest, ReusesHTTPAuthCache_NoCredentials) {
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
 
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
@@ -889,7 +897,7 @@ TEST_P(ProxyResolvingClientSocketTest, URLSanitized) {
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          url, net::NetworkIsolationKey(), use_tls_);
+          url, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, status);
@@ -934,7 +942,7 @@ TEST_P(ProxyResolvingClientSocketTest,
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          url, net::NetworkIsolationKey(), use_tls_);
+          url, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   EXPECT_EQ(net::ERR_IO_PENDING, socket->Connect(callback.callback()));
   socket.reset();
@@ -969,7 +977,7 @@ TEST_P(ProxyResolvingClientSocketTest, NoSupportedProxies) {
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   status = callback.GetResult(status);
@@ -1061,7 +1069,7 @@ TEST_P(ReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
       context.get());
   std::unique_ptr<ProxyResolvingClientSocket> socket =
       proxy_resolving_socket_factory.CreateSocket(
-          kDestination, net::NetworkIsolationKey(), use_tls_);
+          kDestination, net::NetworkAnonymizationKey(), use_tls_);
   net::TestCompletionCallback callback;
   int status = socket->Connect(callback.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, status);

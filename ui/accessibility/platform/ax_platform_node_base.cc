@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -355,7 +355,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetActiveDescendant() const {
         delegate_->GetFromNodeID(active_descendant_id));
   }
 
-  if (GetRole() == ax::mojom::Role::kPopUpButton) {
+  if (GetRole() == ax::mojom::Role::kComboBoxSelect) {
     AXPlatformNodeBase* child = GetFirstChild();
     if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup &&
         !child->IsInvisibleOrIgnored()) {

@@ -238,6 +238,7 @@
 <translation id="2619344480613750862">Também é possível mudar de seção na tela. Por exemplo, você pode alternar entre o acesso rápido, a estante e as guias do Chrome. Para acessar a próxima seção, deslize da esquerda para a direita com quatro dedos. Tente agora para continuar.</translation>
 <translation id="2624431853467395961">Abre o modo de aprendizado</translation>
 <translation id="2626530649491650971">clicável</translation>
+<translation id="263637551280112393">Pressione Pesquisar + Shift + barra de espaço</translation>
 <translation id="2637227747952042642">Math</translation>
 <translation id="2638785836053527382">Download de <ph name="FILE_NAME" /> retomado</translation>
 <translation id="2639750663247012216">Teclas modificadoras do ChromeVox</translation>
@@ -650,6 +651,7 @@
 <translation id="5355014376930441909">Nenhuma seção a seguir</translation>
 <translation id="5368000168321181111">Earcons desativados</translation>
 <translation id="5368505757342402527">Download de <ph name="FILE_NAME" /> <ph name="PROGRESS" />% completo. Tempo restante: cerca de <ph name="TIME" /> <ph name="UNITS" />.</translation>
+<translation id="5381388086899614489">clique longo</translation>
 <translation id="5400836586163650660">Cinza</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Um alerta em uma janela modal</translation>
@@ -1043,7 +1045,7 @@
 <translation id="8132248161074464367">Item inválido anterior</translation>
 <translation id="8138880386467279117">Tocar</translation>
 <translation id="8146613869421949343">A seguir, você aprenderá sobre a tecla de pesquisa. Ela é usada em combinação com outras teclas para acionar comandos do ChromeVox. Ela fica imediatamente acima da tecla Shift esquerda. Para continuar, pressione a tecla de pesquisa.</translation>
-<translation id="8158033275290782295">selecionar todos</translation>
+<translation id="8158033275290782295">selecionar tudo</translation>
 <translation id="816818801578874684">Este é o primeiro cabeçalho. Pressione a tecla de pesquisa + H para ir até o próximo cabeçalho.</translation>
 <translation id="8173092779156526980">Deslize para a esquerda usando quatro dedos</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{sublinhado}one{# sublinhados}other{# sublinhados}}</translation>
@@ -1164,7 +1166,7 @@
 <translation id="9077305471618729969">Verde-mar-claro</translation>
 <translation id="9080299285199342830">Ir para o final</translation>
 <translation id="9089864840575085222">Percorrer eco de digitação</translation>
-<translation id="9099429023611373837">cortar</translation>
+<translation id="9099429023611373837">recortar</translation>
 <translation id="9108370397979208512">matemática</translation>
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{porcentagem}one{# indicadores de porcentagem}other{# indicadores de porcentagem}}</translation>

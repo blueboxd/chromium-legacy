@@ -215,6 +215,7 @@
 <translation id="2132302418721800944">Записване на целия екран</translation>
 <translation id="2135456203358955318">Лупа в прикрепен режим</translation>
 <translation id="2148716181193084225">днес</translation>
+<translation id="2161132820593978283">Изпробвайте функцията за центриране на камерата, така че да сте в средата на екрана по време на видеообаждания. Включете функцията от бързите настройки.</translation>
 <translation id="2170530631236737939">Прекарайте три пръста надолу, за да затворите общия преглед</translation>
 <translation id="219905428774326614">Стартов панел, всички приложения</translation>
 <translation id="2201071101391734388">Скорошна снимка <ph name="INDEX" /> от <ph name="TOTAL_COUNT" />.</translation>
@@ -253,6 +254,7 @@
 <translation id="2405664212338326887">Няма връзка</translation>
 <translation id="2408955596600435184">Въведете своя ПИН</translation>
 <translation id="2412593942846481727">Налице е актуализация</translation>
+<translation id="2426051945783024481">Рамката на камерата бе центрирана автоматично</translation>
 <translation id="2427507373259914951">Кликване с левия бутон</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
@@ -373,6 +375,7 @@
 <translation id="3151786313568798007">Ориентация</translation>
 <translation id="3153444934357957346">Можете да използвате най-много <ph name="MULTI_PROFILE_USER_LIMIT" /> профила с функцията за централизиран вход.</translation>
 <translation id="3154351730702813399">Администраторът на устройството може да наблюдава активността ви при сърфиране.</translation>
+<translation id="3157931365184549694">Възстановяване</translation>
 <translation id="316086887565479535">Шаблонът съдържа неподдържани приложения</translation>
 <translation id="3161500364292033097">Затваряне на работния кът и прозорците</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> връща устройството ви <ph name="DEVICE_TYPE" /> към по-стара версия. То ще бъде нулирано и всички данни ще бъдат изтрити.</translation>
@@ -476,7 +479,6 @@
 <translation id="3735740477244556633">Сортиране по</translation>
 <translation id="3742055079367172538">Направена бе екранна снимка</translation>
 <translation id="3765841986579723851">Редактирано днес</translation>
-<translation id="3771549900096082774">Режим на висок контраст</translation>
 <translation id="3773700760453577392">Администратор е деактивирал централизирания вход за <ph name="USER_EMAIL" />. За да се продължи, всички потребители трябва да излязат от профилите си.</translation>
 <translation id="3779139509281456663">Установява се връзка с(ъс) <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
@@ -576,12 +578,10 @@
 <translation id="4312840429157639164">Картината от камерата е прилепена към горния десен ъгъл. Възникна конфликт с интерфейса на системата.</translation>
 <translation id="4316910396681052118">ВСИЧКИ ПРИЛОЖЕНИЯ</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
 <translation id="4322742403972824594">Клавишната комбинация Ctrl + Alt + стрелка нагоре се промени. За да използвате клавиша Home, натиснете клавиша „<ph name="LAUNCHER_KEY_NAME" />“ + стрелката наляво.</translation>
 <translation id="4333628967105022692">Lacros не се поддържа, когато няколко потребители са влезли в профилите си.</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Асистент се зарежда...</translation>
-<translation id="4356930093361201197">режим на висок контраст</translation>
 <translation id="4371348193907997655">Настройки за предаване</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, сила на сигнала <ph name="SIGNAL_STRENGTH" /> процент(а)</translation>
 <translation id="4378551569595875038">Свързване...</translation>
@@ -877,7 +877,6 @@
 <translation id="5980301590375426705">Изход като гост</translation>
 <translation id="598407983968395253">Използване на шаблон</translation>
 <translation id="598882571027504733">За да инсталирате актуализацията, рестартирайте своя Chromebook, докато клавиатурата е прикачена.</translation>
-<translation id="5992218262414051481">Режимът на висок контраст е активиран. За да го изключите, натиснете отново Ctrl + клавиш „Търсене“ + H.</translation>
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> от <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6018164090099858612">Излиза се от огледалния режим</translation>
 <translation id="602001110135236999">Превъртане наляво</translation>
@@ -1043,6 +1042,7 @@
 <translation id="6960565108681981554">Не е активирана. Свържете се с оператора си.</translation>
 <translation id="6961121602502368900">Функцията за заглушаване на телефона не е налице в служебни потребителски профили</translation>
 <translation id="6961840794482373852">Клавишната комбинация Alt + стрелка нагоре се промени. За да използвате клавиша Page Up, натиснете клавиша „<ph name="LAUNCHER_KEY_NAME" />“ + стрелката нагоре.</translation>
+<translation id="696267987219125751">Функцията за центриране на камерата е изключена.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6979158407327259162">Google Диск</translation>
@@ -1133,6 +1133,7 @@
 <translation id="7513922695575567867">Календар, седмицата на <ph name="DATE" />, понастоящем е избрана датата <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7519206258459640379">Функцията за центриране на камерата е включена.</translation>
 <translation id="7526573455193969409">Мрежата може да е под наблюдение</translation>
 <translation id="7536035074519304529">IP адрес: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Понастоящем не се поддържат приложения за Linux и прозорци в режим „инкогнито“. Другите приложения ще бъдат запазени.</translation>
@@ -1151,10 +1152,12 @@
 <translation id="7607002721634913082">На пауза</translation>
 <translation id="7609951632080598826">Изглед на календара – <ph name="TIME" />, <ph name="DATE" /></translation>
 <translation id="7611213136657090146">Връзката с камерата е възстановена.</translation>
+<translation id="761736749114493194">Превключване на функцията за центриране на камерата. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7633755430369750696">Показване на настройките на „Споделяне наблизо“.</translation>
 <translation id="7634648064048557203">Картината от камерата е прилепена към долния десен ъгъл</translation>
 <translation id="7641938616688887143">Записване</translation>
+<translation id="7642106959537987271">режим на инвертиране на цветовете</translation>
 <translation id="7642647758716480637">Отваряне на настройките за <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (собственик)</translation>
 <translation id="7647488630410863958">Отключете устройството, за да прегледате известията си</translation>
@@ -1233,7 +1236,6 @@
 <translation id="8051716679295756675">Вече съществува шаблон с името „<ph name="DESK_TEMPLATE_NAME" />“</translation>
 <translation id="8052898407431791827">Копирано в буферната памет</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
-<translation id="8061464966246066292">Висок контраст</translation>
 <translation id="8083540854303889870">Запазено за по-късно</translation>
 <translation id="8091387634532529612">Автоматични актуализации</translation>
 <translation id="8098591350844501178">Спиране на предаването на екрана към „<ph name="RECEIVER_NAME" />“</translation>
@@ -1246,7 +1248,7 @@
 <translation id="813913629614996137">Подготвя се за работа...</translation>
 <translation id="8142441511840089262">Двукратно кликване</translation>
 <translation id="8142699993796781067">Частна мрежа</translation>
-<translation id="8144760705599030999">Запазете <ph name="NAME" /> в(ъв) <ph name="EMAIL" /> за по-бързо сдвояване с другите ви устройства</translation>
+<translation id="8144760705599030999">Запазване на <ph name="NAME" /> в(ъв) <ph name="EMAIL" /> за по-бързо сдвояване с другите ви устройства</translation>
 <translation id="8152092012181020186">Натиснете Ctrl + W за затваряне.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автоматично довършване</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Тази настройка се управлява от администратора ви.</translation>
@@ -1261,6 +1263,7 @@
 <translation id="8209010265547628927">Нулиране</translation>
 <translation id="8214996719228530800">Канал Canary</translation>
 <translation id="8219451629189078428">През това време вашият Chromebook трябва да остане включен и свързан със захранването. Уверете се, че зарядното устройство или кабелите на адаптера са включени добре във вашия Chromebook и в електрическия контакт. Не изключвайте Chromebook.</translation>
+<translation id="8230305195727960608">Режим на инвертиране на цветовете</translation>
 <translation id="8236042855478648955">Време е за почивка</translation>
 <translation id="8246282815785366524">Добре дошли отново, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />, батерия на телефона <ph name="BATTERY_STATUS" /></translation>
@@ -1312,6 +1315,7 @@
 <translation id="851458219935658693">Показват се прозорците от текущия работен кът, активиран е бутон за избор</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8535393432370007982">Отмяна на сортирането по цвят</translation>
+<translation id="8541078764854166027">Центриране</translation>
 <translation id="8542053257095774575">Няма запазени работни кътове или шаблони</translation>
 <translation id="8546059259582788728">Отмяната на сортирането е успешна</translation>
 <translation id="8551588720239073785">Настройки за дата и час</translation>
@@ -1386,6 +1390,7 @@
 <translation id="8982906748181120328">Видимост наблизо</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">Използвате <ph name="IME_NAME" /></translation>
+<translation id="8991617137207906966">Режимът на инвертиране на цветовете е активиран. За да го изключите, натиснете отново Ctrl + клавиша „търсене“ + H.</translation>
 <translation id="899350903320462459">Отключете устройството като <ph name="LOGIN_ID" />, за да се изпълни действието от известието</translation>
 <translation id="9000771174482730261">УПРАВЛЕНИЕ НА ХРАНИЛИЩЕТО</translation>
 <translation id="9017320285115481645">Въведете кода за достъп на родител от Family Link.</translation>
@@ -1434,6 +1439,7 @@
 <translation id="921989828232331238">Родителят ви заключи устройството ви за деня</translation>
 <translation id="9220525904950070496">Премахване на профила</translation>
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>
+<translation id="92580429198593979">Използвахте клавишната комбинация за инвертиране на цветовете. Искате ли да включите функцията?</translation>
 <translation id="925832987464884575">Скриване на визуализациите</translation>
 <translation id="937214777182567951"><ph name="MANAGER" /> изисква незабавно да актуализирате устройството си <ph name="DEVICE_TYPE" /></translation>
 <translation id="938963181863597773">„What's on my calendar?“ („Какво има в календара ми?“)</translation>

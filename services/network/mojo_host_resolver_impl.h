@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 
 namespace net {
 class HostResolver;
-class NetworkIsolationKey;
+class NetworkAnonymizationKey;
 }  // namespace net
 
 namespace network {
@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MojoHostResolverImpl {
 
   void Resolve(
       const std::string& hostname,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::NetworkAnonymizationKey& network_anonymization_key,
       bool is_ex,
       mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
           client);

@@ -399,22 +399,26 @@ void SidePanelCoordinator::PopulateSidePanel(
   // the currently hosted SidePanelEntry.
   DCHECK(content_wrapper->children().size() <= 1);
 
+  content_wrapper->SetVisible(true);
   GetContentView()->SetVisible(true);
   if (current_entry_ && content_wrapper->children().size()) {
     auto current_entry_view =
         content_wrapper->RemoveChildViewT(content_wrapper->children().front());
     current_entry_->CacheView(std::move(current_entry_view));
   }
-  content_wrapper->AddChildView(content_view.has_value()
-                                    ? std::move(content_view.value())
-                                    : entry->GetContent());
+  auto* content = content_wrapper->AddChildView(
+      content_view.has_value() ? std::move(content_view.value())
+                               : entry->GetContent());
   if (auto* contextual_registry = GetActiveContextualRegistry())
     contextual_registry->ResetActiveEntry();
   auto* previous_entry = current_entry_.get();
   current_entry_ = entry->GetWeakPtr();
   entry->OnEntryShown();
-  if (previous_entry)
+  if (previous_entry) {
     previous_entry->OnEntryHidden();
+  } else {
+    content->RequestFocus();
+  }
 }
 
 void SidePanelCoordinator::ClearCachedEntryViews() {
@@ -521,9 +525,8 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
                           base::Unretained(this)));
   combobox->SetSelectedIndex(combobox_model_->GetIndexForKey(
       (GetLastActiveEntryKey().value_or(SidePanelEntry::Key(kDefaultEntry)))));
-  // TODO(corising): Replace this with something appropriate.
   combobox->SetAccessibleName(
-      combobox_model_->GetItemAt(combobox->GetSelectedIndex().value()));
+      l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_PANEL_SELECTOR));
   combobox->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::LayoutOrientation::kHorizontal,

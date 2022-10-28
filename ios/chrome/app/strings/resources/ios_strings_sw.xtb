@@ -23,6 +23,7 @@ Mtambo wako wa kutafuta ni <ph name="DSE_NAME" />. Angalia maagizo ya mtambo huo
 <translation id="1104948393051856124">Kubali na Uendelee</translation>
 <translation id="110724200315609752">Nenda kwenye Dirisha Lililofunguka</translation>
 <translation id="1112015203684611006">Imeshindwa kuchapisha.</translation>
+<translation id="1118569444314402022">Karibu tena, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Unda kichupo kipya</translation>
 <translation id="1126809382673880764">Haikulindi dhidi ya tovuti, viendelezi na faili hatari zinazopakuliwa. Bado utapata ulinzi wa kipengele cha Kuvinjari Salama, kinapopatikana, katika huduma nyingine za Google kama vile Gmail na Tafuta na Google.</translation>
 <translation id="1135212215217513471">Pata Chrome inayotumika kwenye iOS</translation>
@@ -46,6 +47,7 @@ Mtambo wako wa kutafuta ni <ph name="DSE_NAME" />. Angalia maagizo ya mtambo huo
 <translation id="1272079795634619415">Simamisha</translation>
 <translation id="1275718070701477396">Umeichagua</translation>
 <translation id="1281818060020671000">Dhibiti Data</translation>
+<translation id="1282311502488501110">Usiingie Katika Akaunti</translation>
 <translation id="1283524564873030414">Saa 24 Zilizopita</translation>
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
 <translation id="1291506870746876680">Ruhusa za <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> zitazimwa utakapoondoka kwenye tovuti hii.</translation>
@@ -54,6 +56,7 @@ Mtambo wako wa kutafuta ni <ph name="DSE_NAME" />. Angalia maagizo ya mtambo huo
 <translation id="1322735045095424339">Shirika lako linahitaji utumie hali Fiche</translation>
 <translation id="1323735185997015385">Futa</translation>
 <translation id="132683371494960526">Gusa mara mbili ili ubadilishe folda kuu.</translation>
+<translation id="1335348992705722518">Dhibiti Mipangilio...</translation>
 <translation id="1340643665687018190">Funga Menyu</translation>
 <translation id="1358214951266274152">Fungua Kiungo Ulichonakili</translation>
 <translation id="1360432990279830238">Utaondoka na uzime usawazishaji?</translation>
@@ -61,6 +64,7 @@ Mtambo wako wa kutafuta ni <ph name="DSE_NAME" />. Angalia maagizo ya mtambo huo
 <translation id="1377255359165588604">Usawazishaji umeacha kufanya kazi.</translation>
 <translation id="1377321085342047638">Nambari ya Kadi</translation>
 <translation id="1383876407941801731">Tafuta</translation>
+<translation id="138618066238211776">Endelea ukitumia <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">Wiki 4 zilizopita</translation>
 <translation id="1404330357948037222">Umeondoka Katika Akaunti</translation>
 <translation id="1407135791313364759">Fungua zote</translation>
@@ -174,9 +178,11 @@ Tovuti haziwezi kutumia vidakuzi kuona shughuli zako za kuvinjari kwenye tovuti 
 <translation id="2421044535038393232">Endelea Kubadilisha</translation>
 <translation id="2434405374328098816">Tayari umehifadhi nenosiri la "<ph name="USERNAME" />" unalotumia katika <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Onyesha nenosiri</translation>
+<translation id="2461070143328828326">Mipangilio ya Nenosiri</translation>
 <translation id="2469960372084740698">Ungependa Kuzima Kipengele cha Kuvinjari Salama?</translation>
 <translation id="2473876017985765807">Tayari umehifadhi nenosiri unalotumia katika <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Hakijachaguliwa</translation>
+<translation id="2482878487686419369">Arifa</translation>
 <translation id="2500374554657206846">Chaguo za Kuhifadhi Nenosiri</translation>
 <translation id="2523363575747517183">Tovuti hii inajaribu kufungua programu nyingine mara kwa mara.</translation>
 <translation id="2529021024822217800">Fungua Zote</translation>
@@ -327,6 +333,7 @@ Angalia maagizo ya mtambo wako wa kutafuta, ikiwa yapo, kuhusu jinsi ya kufuta h
 <translation id="3709582977625132201">Tia Alama Kuwa Hujasoma</translation>
 <translation id="371230970611282515">Hutabiri na kukuonya kuhusu matukio hatari yanapotendeka.</translation>
 <translation id="37207012422556617">Hoja za Utafutaji zinazovuma</translation>
+<translation id="3726360487031500941">Ingia tena katika akaunti yako ya <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">Hufungua URL zilizowekwa kwenye Google Chrome katika Hali Fiche.</translation>
 <translation id="3762232513783804601">Imeundwa kwa ajili ya iPad Yako</translation>
 <translation id="3771033907050503522">Vichupo Fiche</translation>
@@ -381,6 +388,7 @@ Angalia maagizo ya mtambo wako wa kutafuta, ikiwa yapo, kuhusu jinsi ya kufuta h
 <translation id="4187450337729239226">Bandika na Utafute</translation>
 <translation id="4223967053752765281">Shirika lako limezima kipengele cha uingiaji katika akaunti. Bado unaweza kuona alamisho, historia, manenosiri na mipangilio mingine kwenye kifaa hiki. Iwapo utafanya mabadiliko, hayatasawazishwa kwenye akaunti yako.</translation>
 <translation id="4233831822770018312">Badilisha ruhusa</translation>
+<translation id="4236584471598725073">Kufuatilia Bei</translation>
 <translation id="4237377247299956313">Gusa <ph name="BEGIN_BOLD" />Programu ya Kivinjari Chaguomsingi<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Weka Kauli ya Siri</translation>
 <translation id="4249955472157341256">Panga kulingana na zilizoingia hivi karibuni</translation>
@@ -740,6 +748,7 @@ Katika hali fiche, tovuti haziwezi kutumia vidakuzi kuona shughuli zako za kuvin
 <translation id="6930799952781667037">Gusa ili utumie lugha hii.</translation>
 <translation id="6944369514868857500">Chagua Akaunti Nyingine</translation>
 <translation id="6945221475159498467">Chagua</translation>
+<translation id="6965382102122355670">Sawa</translation>
 <translation id="6973630695168034713">Folda</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
 <translation id="6988572888918530647">Dhibiti Akaunti Yako ya Google</translation>

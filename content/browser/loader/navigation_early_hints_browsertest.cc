@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -695,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, COEP_Block) {
 }
 
 // Test that network isolation key is set correctly for Early Hints preload.
-IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, NetworkIsolationKey) {
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, NetworkAnonymizationKey) {
   const GURL kHintedScriptUrl =
       net::QuicSimpleTestServer::GetFileURL(kHintedScriptPath);
 

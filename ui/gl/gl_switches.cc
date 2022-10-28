@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,6 +231,11 @@ const base::FeatureParam<int> kVerifyDrawOffsetX{
 
 const base::FeatureParam<int> kVerifyDrawOffsetY{
     &kDirectCompositionVerifyDrawOffset, "verify_draw_offset_y", 0};
+
+// Adjust the letterbox video size and position to the center of the screen so
+// that DWM power optimization can be turned on.
+const base::Feature kDirectCompositionLetterboxVideoOptimization{
+    "DirectCompositionLetterboxVideoOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow dual GPU rendering through EGL where supported, i.e., allow a WebGL
 // or WebGPU context to be on the high performance GPU if preferred and Chrome

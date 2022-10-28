@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -653,6 +653,10 @@ void Widget::StackAbove(gfx::NativeView native_view) {
 
 void Widget::StackAtTop() {
   native_widget_->StackAtTop();
+}
+
+bool Widget::IsStackedAbove(gfx::NativeView native_view) {
+  return native_widget_->IsStackedAbove(native_view);
 }
 
 void Widget::SetShape(std::unique_ptr<ShapeRects> shape) {

@@ -23,6 +23,7 @@ Motori yt i kërkimit është <ph name="DSE_NAME" />. Shiko udhëzimet e motorit
 <translation id="1104948393051856124">Prano dhe vazhdo</translation>
 <translation id="110724200315609752">Kalo te dritarja e hapur</translation>
 <translation id="1112015203684611006">Printimi dështoi.</translation>
+<translation id="1118569444314402022">Mirë se u ktheve, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Krijo një skedë të re</translation>
 <translation id="1126809382673880764">Nuk të mbron kundër faqeve të internetit, shkarkimeve dhe shtesave të rrezikshme. Do të vazhdosh të marrësh mbrojtje për "Shfletimin e sigurt", aty ku ofrohet, në shërbimet e tjera të Google, si Gmail dhe "Kërko".</translation>
 <translation id="1135212215217513471">Merr Chrome për iOS</translation>
@@ -46,6 +47,7 @@ Motori yt i kërkimit është <ph name="DSE_NAME" />. Shiko udhëzimet e motorit
 <translation id="1272079795634619415">Ndalo</translation>
 <translation id="1275718070701477396">Përzgjedhur</translation>
 <translation id="1281818060020671000">Menaxho të dhënat</translation>
+<translation id="1282311502488501110">Mos u identifiko</translation>
 <translation id="1283524564873030414">24 orët e fundit</translation>
 <translation id="1285320974508926690">Asnjëherë mos e përkthe këtë sajt</translation>
 <translation id="1291506870746876680">Lejet e <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> do të rivendosen në joaktive kur të largohesh nga ky sajt.</translation>
@@ -54,6 +56,7 @@ Motori yt i kërkimit është <ph name="DSE_NAME" />. Shiko udhëzimet e motorit
 <translation id="1322735045095424339">Organizata jote kërkon modalitetin "e fshehtë"</translation>
 <translation id="1323735185997015385">Fshi</translation>
 <translation id="132683371494960526">Trokit dy herë për të ndryshuar dosjen mëmë.</translation>
+<translation id="1335348992705722518">Menaxho "Cilësimet"...</translation>
 <translation id="1340643665687018190">Mbylle menynë</translation>
 <translation id="1358214951266274152">Vizito lidhjen që kopjove</translation>
 <translation id="1360432990279830238">Do të dalësh dhe çaktivizosh sinkronizimin?</translation>
@@ -61,6 +64,7 @@ Motori yt i kërkimit është <ph name="DSE_NAME" />. Shiko udhëzimet e motorit
 <translation id="1377255359165588604">"Sinkronizimi" ka ndaluar së funksionuari.</translation>
 <translation id="1377321085342047638">Numri i kartës</translation>
 <translation id="1383876407941801731">Kërko</translation>
+<translation id="138618066238211776">Vazhdo si <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">4 javët e fundit</translation>
 <translation id="1404330357948037222">Ke dalë</translation>
 <translation id="1407135791313364759">Hapi të gjitha</translation>
@@ -174,9 +178,11 @@ Sajtet nuk mund t'i përdorin kukit për të parë aktivitetin tënd të shfleti
 <translation id="2421044535038393232">Vazhdo modifikimin</translation>
 <translation id="2434405374328098816">Ke ruajtur tashmë një fjalëkalim për "<ph name="USERNAME" />" në <ph name="WEBSITE" />.</translation>
 <translation id="2435457462613246316">Shfaq fjalëkalimin</translation>
+<translation id="2461070143328828326">Cilësimet e fjalëkalimeve</translation>
 <translation id="2469960372084740698">Të çaktivizohet "Shfletimi i sigurt"?</translation>
 <translation id="2473876017985765807">Ke ruajtur tashmë një fjalëkalim për <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Nuk është zgjedhur</translation>
+<translation id="2482878487686419369">Njoftimet</translation>
 <translation id="2500374554657206846">Opsionet për të ruajtur fjalëkalimin</translation>
 <translation id="2523363575747517183">Ky sajt uebi po përpiqet vazhdimisht të hapë një aplikacion tjetër.</translation>
 <translation id="2529021024822217800">Hapi të gjithë</translation>
@@ -327,6 +333,7 @@ Shiko udhëzimet e motorit të kërkimit për fshirjen e historikut të kërkimi
 <translation id="3709582977625132201">Shëno si të palexuar</translation>
 <translation id="371230970611282515">Parashikon dhe të paralajmëron rreth ngjarjeve të rrezikshme përpara se ato të ndodhin.</translation>
 <translation id="37207012422556617">Kërkimet në tendencë</translation>
+<translation id="3726360487031500941">Identifikohu përsëri në llogarinë tënde <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">Hap URL-të e futura në Google Chrome në modalitetin "i fshehtë".</translation>
 <translation id="3762232513783804601">Krijuar për iPad tënd</translation>
 <translation id="3771033907050503522">Skedat "e fshehura"</translation>
@@ -381,6 +388,7 @@ Shiko udhëzimet e motorit të kërkimit për fshirjen e historikut të kërkimi
 <translation id="4187450337729239226">Ngjit dhe kërko</translation>
 <translation id="4223967053752765281">Organizata jote ka e çaktivizuar identifikimin. Mund të shikosh ende faqeshënuesit, historikun, fjalëkalimet dhe cilësime të tjera në këtë pajisje. Nëse bën ndryshime, ato nuk do të sinkronizohen me llogarinë tënde.</translation>
 <translation id="4233831822770018312">Modifiko lejet</translation>
+<translation id="4236584471598725073">Çmimi po monitorohet</translation>
 <translation id="4237377247299956313">Trokit <ph name="BEGIN_BOLD" />Aplikacionin e parazgjedhur të shfletuesit<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Fut frazën e kalimit</translation>
 <translation id="4249955472157341256">Rendit sipas "Më të fundit"</translation>
@@ -740,6 +748,7 @@ Në modalitetin "e fshehtë", sajtet nuk mund t'i përdorin kukit për të parë
 <translation id="6930799952781667037">Trokit për ta ndryshuar në këtë gjuhë.</translation>
 <translation id="6944369514868857500">Zgjidh llogari tjetër</translation>
 <translation id="6945221475159498467">Përzgjidhe</translation>
+<translation id="6965382102122355670">Në rregull</translation>
 <translation id="6973630695168034713">Dosjet</translation>
 <translation id="6979158407327259162">Disku i Google</translation>
 <translation id="6988572888918530647">Menaxho "Llogarinë tënde të Google"</translation>

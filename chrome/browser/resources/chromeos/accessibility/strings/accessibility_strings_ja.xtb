@@ -140,6 +140,7 @@
 <translation id="1834891354138622109">列</translation>
 <translation id="1846771122725914429">Bluetooth 点字ディスプレイ</translation>
 <translation id="1852018405765032699">ChromeVox メニューを開いたり閉じたりするには、4 本の指で画面をタップします。メニューではコマンドやショートカットに関する便利な情報を確認できます。メニューを開いたら、1 本の指でスワイプしてアイテム間を移動し、アイテムをダブルタップして有効にできます。次に進むには、4 本の指で画面をタップしてください。</translation>
+<translation id="1864430479908918647">検索+Space キーを押す</translation>
 <translation id="1865601187525349519">テキスト終了</translation>
 <translation id="1876229593313240038">ドキュメント</translation>
 <translation id="1902396333223336119">セル</translation>
@@ -237,6 +238,7 @@
 <translation id="2619344480613750862">画面上のセクション間を移動することもできます。たとえば、ランチャー、シェルフ、Chrome のタブの間を移動できます。次のセクションに移動するには、4 本の指で左から右にスワイプします。実際にやってみて、次へ進みましょう。</translation>
 <translation id="2624431853467395961">学習モードを開く</translation>
 <translation id="2626530649491650971">クリック可能</translation>
+<translation id="263637551280112393">検索+Shift+Space キーを押す</translation>
 <translation id="2637227747952042642">数式</translation>
 <translation id="2638785836053527382"><ph name="FILE_NAME" /> のダウンロードを再開しました</translation>
 <translation id="2639750663247012216">ChromeVox 修飾キー</translation>
@@ -649,6 +651,7 @@
 <translation id="5355014376930441909">次のセクションはありません</translation>
 <translation id="5368000168321181111">イアコン オフ</translation>
 <translation id="5368505757342402527"><ph name="FILE_NAME" /> のダウンロードが <ph name="PROGRESS" />% 終了しました。完了まであと約 <ph name="TIME" /> <ph name="UNITS" />です。</translation>
+<translation id="5381388086899614489">押し続ける</translation>
 <translation id="5400836586163650660">グレー</translation>
 <translation id="5402367795255837559">点字</translation>
 <translation id="5402791055281059602">モーダル アラート</translation>
@@ -777,6 +780,7 @@
 <translation id="6236061028292614533">次の見出し</translation>
 <translation id="6254901459154107917">次の編集可能テキスト領域</translation>
 <translation id="6259464875943891919"><ph name="TYPE" />の外に出ました。</translation>
+<translation id="6280088282605782512">ダブルタップ</translation>
 <translation id="6282062888058716985">ナビ</translation>
 <translation id="6295699829709583154">必須キー: 検索</translation>
 <translation id="6305702903308659374">ChromeVox の読み上げ中も通常の音量で再生する</translation>
@@ -980,6 +984,7 @@
 <translation id="7731785449856576010">次のメディア ウィジェットはありません</translation>
 <translation id="7735498529470878067">タッチガイドを使うと、画面上に何があるかをすばやく把握できます。</translation>
 <translation id="773906353055481349">検索+Ctrl+Alt キーを押しながら矢印キーを押して、セル間を移動します</translation>
+<translation id="7746976083433980639"><ph name="LABEL" />には、<ph name="ACTION" /></translation>
 <translation id="7763537600611320912"><ph name="FILE_NAME" /> のダウンロードを開始しました</translation>
 <translation id="7768784765476638775">選択して読み上げ</translation>
 <translation id="7776293189010177726">ChromeVox メニューを開きます</translation>

@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -379,7 +379,7 @@ class WebTransport::Stream final {
 WebTransport::WebTransport(
     const GURL& url,
     const url::Origin& origin,
-    const net::NetworkIsolationKey& key,
+    const net::NetworkAnonymizationKey& key,
     const std::vector<mojom::WebTransportCertificateFingerprintPtr>&
         fingerprints,
     NetworkContext* context,

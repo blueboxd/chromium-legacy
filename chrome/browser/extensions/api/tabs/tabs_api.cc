@@ -30,6 +30,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -152,13 +153,13 @@ class ApiParameterExtractor {
   ~ApiParameterExtractor() {}
 
   bool populate_tabs() {
-    if (params_->query_options.get() && params_->query_options->populate)
+    if (params_->query_options && params_->query_options->populate)
       return *params_->query_options->populate;
     return false;
   }
 
   WindowController::TypeFilter type_filters() {
-    if (params_->query_options.get() && params_->query_options->window_types)
+    if (params_->query_options && params_->query_options->window_types)
       return WindowController::GetFilterFromWindowTypes(
           *params_->query_options->window_types);
     return WindowController::kNoWindowFilter;
@@ -571,16 +572,18 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 
   DCHECK(extension() || source_context_type() == Feature::WEBUI_CONTEXT ||
          source_context_type() == Feature::WEBUI_UNTRUSTED_CONTEXT);
-  windows::Create::Params::CreateData* create_data = params->create_data.get();
+  absl::optional<windows::Create::Params::CreateData>& create_data =
+      params->create_data;
 
   // Look for optional url.
   if (create_data && create_data->url) {
     std::vector<std::string> url_strings;
     // First, get all the URLs the client wants to open.
-    if (create_data->url->as_string)
-      url_strings.push_back(*create_data->url->as_string);
-    else if (create_data->url->as_strings)
-      url_strings.swap(*create_data->url->as_strings);
+    if (create_data->url->as_string) {
+      url_strings.push_back(std::move(*create_data->url->as_string));
+    } else if (create_data->url->as_strings) {
+      url_strings = std::move(*create_data->url->as_strings);
+    }
 
     // Second, resolve, validate and convert them to GURLs.
     for (auto i = url_strings.begin(); i != url_strings.end(); ++i) {
@@ -635,7 +638,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
       return RespondNow(Error(tabs_constants::kNotAllowedForDevToolsError));
   }
 
-  if (!IsValidStateForWindowsCreateFunction(create_data))
+  if (!IsValidStateForWindowsCreateFunction(base::OptionalToPtr(create_data)))
     return RespondNow(Error(tabs_constants::kInvalidWindowStateError));
 
   Browser::Type window_type = Browser::TYPE_NORMAL;
@@ -1062,7 +1065,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
   bool loading_status_set = params->query_info.status != tabs::TAB_STATUS_NONE;
 
   URLPatternSet url_patterns;
-  if (params->query_info.url.get()) {
+  if (params->query_info.url) {
     std::vector<std::string> url_pattern_strings;
     if (params->query_info.url->as_string)
       url_pattern_strings.push_back(*params->query_info.url->as_string);
@@ -1762,8 +1765,7 @@ ExtensionFunction::ResponseAction TabsReloadFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool bypass_cache = false;
-  if (params->reload_properties.get() &&
-      params->reload_properties->bypass_cache) {
+  if (params->reload_properties && params->reload_properties->bypass_cache) {
     bypass_cache = *params->reload_properties->bypass_cache;
   }
 
@@ -1909,7 +1911,7 @@ ExtensionFunction::ResponseAction TabsGroupFunction::Run() {
   Browser* target_browser = nullptr;
   tab_groups::TabGroupId group = tab_groups::TabGroupId::CreateEmpty();
   if (params->options.group_id) {
-    if (params->options.create_properties.get())
+    if (params->options.create_properties)
       return RespondNow(Error(tabs_constants::kGroupParamsError));
 
     group_id = *params->options.group_id;
@@ -1920,7 +1922,7 @@ ExtensionFunction::ResponseAction TabsGroupFunction::Run() {
     }
   } else {
     int window_id = extension_misc::kCurrentWindowId;
-    if (params->options.create_properties.get() &&
+    if (params->options.create_properties &&
         params->options.create_properties->window_id) {
       window_id = *params->options.create_properties->window_id;
     }

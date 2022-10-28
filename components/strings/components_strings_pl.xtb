@@ -174,6 +174,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="1380591466760231819">Składanie typu C</translation>
 <translation id="138218114945450791">Jasnoniebieski</translation>
 <translation id="1382194467192730611">Urządzenie USB dozwolone przez administratora</translation>
+<translation id="1382378825779654399">Otrzymasz alert e-mail, jeśli produkt stanieje w dowolnej witrynie. Ta strona zostanie zapisana w folderze <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="1382912999714108023">Nie widzisz aktualnych informacji? Skontaktuj się z bankiem, aby je zaktualizować.</translation>
 <translation id="1384725838384960382">Arkusz uwierzytelniania danych logowania na potrzeby bezpiecznych płatności</translation>
 <translation id="1386623374109090026">Adnotacje</translation>
@@ -250,7 +251,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Oprogramowanie freeware i shareware</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
-<translation id="1554003749331233619">Obserwujesz teraz ten produkt. Ta strona jest zapisana w folderze <ph name="LAST_BOOKMARKS_FOLDER" /></translation>
 <translation id="1555130319947370107">Niebieski</translation>
 <translation id="1559447966090556585">Wyświetlać powiadomienia?</translation>
 <translation id="1559528461873125649">Brak takiego pliku lub katalogu</translation>
@@ -298,7 +298,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="1662550410081243962">Zapisuj i automatycznie uzupełniaj informacje o formach płatności</translation>
 <translation id="1663943134801823270">Karty i adresy pochodzą z Chrome. Możesz nimi zarządzać w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Od teraz strony, których językiem jest <ph name="SOURCE_LANGUAGE" />, będą tłumaczone na <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1673886523110456987">Aby skorzystać z oferty, zapłać kartą <ph name="CARD_DETAIL" /></translation>
 <translation id="1674504678466460478">Z: <ph name="SOURCE_LANGUAGE" /> na: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Najpierw krótsza krawędź</translation>
 <translation id="168693727862418163">Nie udało się zweryfikować tej wartości zasady względem jej schematu. Będzie ona ignorowana.</translation>
@@ -423,6 +422,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2034971124472263449">Zapisz mimo to</translation>
 <translation id="2035400064145347639">Przewodniki turystyczne i materiały podróżnicze</translation>
 <translation id="2036983605131262583">Rolka alternatywna</translation>
+<translation id="2040463897538655645">Pamięć wymienna</translation>
 <translation id="2040894699575719559">Lokalizacja zablokowana</translation>
 <translation id="2042213636306070719">Taca 7</translation>
 <translation id="204357726431741734">Zaloguj się, by używać haseł zapisanych na Twoim koncie Google</translation>
@@ -917,7 +917,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="3399952811970034796">Adres dostawy</translation>
 <translation id="3402261774528610252">Do połączenia z tą stroną użyto protokołu TLS 1.0 lub 1.1. Obie te wersje zostały wycofane, a w przyszłości zostaną wyłączone. Po ich wyłączeniu użytkownicy nie będą mogli otwierać tej strony. Serwer powinien korzystać z protokołu TLS w wersji 1.2 lub nowszej.</translation>
 <translation id="3405664148539009465">Dostosuj czcionki</translation>
-<translation id="3407789382767355356">logowanie się w przypadku innych firm</translation>
+<translation id="3407789382767355356">logowanie przez usługę zewnętrzną</translation>
 <translation id="3409896703495473338">Zarządzaj ustawieniami zabezpieczeń</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
 <translation id="3422248202833853650">Zamknij inne programy, by zwolnić pamięć.</translation>
@@ -1005,7 +1005,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="3633738897356909127">Przycisk aktualizacji Chrome. Naciśnij Enter, by zaktualizować przeglądarkę Chrome z poziomu jej ustawień.</translation>
 <translation id="3634530185120165534">Taca 5</translation>
 <translation id="3634567936866541746">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Dla bezpieczeństwa Twoich kont Chrome zaleca sprawdzenie zapisanych haseł.</translation>
-<translation id="3637033245385760976">Powiadomienia w Chrome muszą być włączone. Aby je włączyć, otwórz <ph name="NOTIFICATION_SETTINGS" /></translation>
 <translation id="3637662659967048211">Zapisz na koncie Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Aplikacja:</translation>
@@ -1082,7 +1081,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="3816482573645936981">Wartość (zastąpiona)</translation>
 <translation id="3823402221513322552">Przeglądarką zarządza <ph name="BROWSER_DOMAIN" />, a Twoim profilem – <ph name="PROFILE_DOMAIN" /></translation>
 <translation id="382518646247711829">Jeśli używasz serwera proxy...</translation>
-<translation id="3826050100957962900">Logowanie się w przypadku innych firm</translation>
+<translation id="3826050100957962900">Logowanie przez usługę zewnętrzną</translation>
 <translation id="3827112369919217609">Bezwzględna</translation>
 <translation id="3827666161959873541">Kino familijne</translation>
 <translation id="3828924085048779000">Puste hasło jest niedozwolone.</translation>
@@ -1521,6 +1520,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5018422839182700155">Nie można otworzyć tej strony</translation>
 <translation id="5019198164206649151">Nieprawidłowy stan magazynu wspomagającego</translation>
 <translation id="5020776957610079374">Muzyka świata</translation>
+<translation id="5021557570875267742">Monitorowanie cen w Chrome</translation>
 <translation id="5023310440958281426">Sprawdź zasady administratora</translation>
 <translation id="5029568752722684782">Usuń kopię</translation>
 <translation id="5030338702439866405">Wystawiony przez</translation>
@@ -2242,6 +2242,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6993898126790112050">6x9 (koperta)</translation>
 <translation id="6996312675313362352">Zawsze tłumacz z tego języka: <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Branża rozrywkowa</translation>
+<translation id="7003335073762455340">Obserwujesz ten produkt. Ta strona jest zapisana w folderze <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Używaj Windows Hello, by szybciej potwierdzać karty</translation>
 <translation id="7006930604109697472">Wyślij mimo wszystko</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2324,6 +2325,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="7234638337680728591">Ceny paliw i paliwa samochodowe</translation>
 <translation id="7237492777898608035">Nie pokazuj więcej tej wiadomości w przypadku tej strony</translation>
 <translation id="7238585580608191973">Odcisk cyfrowy SHA-256</translation>
+<translation id="7239514174717251677">Alerty o obniżkach cen są włączone. Aby to zmienić, otwórz <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">Alternatywna nazwa podmiotu certyfikatu</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# dopasowanie}few{# dopasowania}many{# dopasowań}other{# dopasowania}}</translation>
@@ -2339,7 +2341,7 @@ Dodatkowe informacje:
 <translation id="7277998515889183784">Makijaż i kosmetyki</translation>
 <translation id="7285654172857511148"><ph name="CHANGE_GOOGLE_PASSWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />; naciśnij Tab, a potem Enter, aby zmienić swoje hasło do konta Google</translation>
 <translation id="7292031607255951991">Nazwa odbiorcy</translation>
-<translation id="7298195798382681320">Zalecane</translation>
+<translation id="7298195798382681320">Zalecana</translation>
 <translation id="7299471494012161875">Pokaż podłączone urządzenia peryferyjne</translation>
 <translation id="7300012071106347854">Niebieski kobalt</translation>
 <translation id="7304030187361489308">Wysoki</translation>
@@ -2448,7 +2450,7 @@ Dodatkowe informacje:
 <translation id="7526934274050461096">Twoje połączenie z tą stroną nie jest prywatne</translation>
 <translation id="7529884293139707752">Edukacja domowa</translation>
 <translation id="7535087603100972091">Wartość</translation>
-<translation id="7537536606612762813">Obowiązkowe</translation>
+<translation id="7537536606612762813">Obowiązkowa</translation>
 <translation id="7538364083937897561">A2 (koperta)</translation>
 <translation id="7542403920425041731">Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie.</translation>
 <translation id="7542995811387359312">Automatyczne wypełnianie danych karty kredytowej jest wyłączone, ponieważ ten formularz nie korzysta z bezpiecznego połączenia.</translation>
@@ -2465,6 +2467,7 @@ Dodatkowe informacje:
 <translation id="7564049878696755256">Możesz stracić dostęp do swojego konta <ph name="ORG_NAME" /> lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="7564680668369175887">Samochody kombi</translation>
 <translation id="7567204685887185387">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać wydany w celu oszustwa. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
+<translation id="7568616151991626879">Google Chrome próbuje uzupełnić hasło na <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golf</translation>
 <translation id="7569761772822664555">Przycisk Zarządzaj wyszukiwarkami; aby ustawić domyślną wyszukiwarkę i wyszukiwanie w witrynie, naciśnij Enter</translation>
 <translation id="7569952961197462199">Usunąć tę kartę kredytową z Chrome?</translation>
@@ -2822,7 +2825,6 @@ Dodatkowe informacje:
 <translation id="8559762987265718583">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na urządzeniu są nieprawidłowe.</translation>
 <translation id="8564182942834072828">Oddzielne dokumenty / Kopie niesortowane</translation>
 <translation id="8564985650692024650">Chromium zaleca zresetowanie hasła, którego używasz w: <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, jeśli zostało użyte na innej stronie.</translation>
-<translation id="8573969211731659953">Alerty o obniżkach cen są włączone. Aby to zmienić, otwórz <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="8576310925653847813">Systemy kina domowego</translation>
 <translation id="8577348305244205642">Karta wirtualna jest niedostępna</translation>
 <translation id="858637041960032120">Dodaj numer telefonu</translation>
@@ -3036,11 +3038,13 @@ Dodatkowe informacje:
 <translation id="9174623988242579721">Pojazdy nietypowe i specjalne</translation>
 <translation id="9174917557437862841">Przycisk przełączania kart, naciśnij Enter, by przełączyć na tę kartę</translation>
 <translation id="9179703756951298733">Zarządzaj płatnościami i kartami kredytowymi w ustawieniach Chrome</translation>
+<translation id="9179907736442194268">Otrzymuj alerty e-mail, jeśli produkt stanieje w dowolnej witrynie</translation>
 <translation id="9183302530794969518">Dokumenty Google</translation>
 <translation id="9183425211371246419">Serwer <ph name="HOST_NAME" /> używa nieobsługiwanego protokołu.</translation>
 <translation id="9187461866967718678">Sporty ekstremalne</translation>
 <translation id="9191834167571392248">Otwór w lewym dolnym rogu</translation>
 <translation id="9199905725844810519">Drukowanie jest zablokowane</translation>
+<translation id="9202180858541326427">Powiadomienia w Chrome muszą być włączone. Aby je włączyć, otwórz <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">Twoje dane są szyfrowane z użyciem hasła synchronizacji. Wpisz je, by rozpocząć synchronizację.</translation>
 <translation id="920511547311754821">Nie możesz znaleźć kodu? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Nie udało się dodać artykułu.</translation>

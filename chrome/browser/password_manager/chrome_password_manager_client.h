@@ -32,6 +32,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/password_manager/core/browser/password_store_backend_error.h"
 #include "components/prefs/pref_member.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -46,6 +47,8 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/password_manager/android/generated_password_saved_message_delegate.h"
+#include "chrome/browser/password_manager/android/password_manager_error_message_delegate.h"
+#include "chrome/browser/password_manager/android/password_manager_error_message_helper_bridge_impl.h"
 #include "chrome/browser/password_manager/android/save_update_password_message_delegate.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 
@@ -131,6 +134,10 @@ class ChromePasswordManagerClient
       const url::Origin& origin,
       CredentialsCallback callback) override;
 #if BUILDFLAG(IS_ANDROID)
+  void ShowPasswordManagerErrorMessage(
+      password_manager::ErrorMessageFlowType flow_type,
+      password_manager::PasswordStoreBackendErrorType error_type) override;
+
   void ShowTouchToFill(
       password_manager::PasswordManagerDriver* driver,
       autofill::mojom::SubmissionReadinessState submission_readiness) override;
@@ -142,8 +149,8 @@ class ChromePasswordManagerClient
 
   bool IsAutofillAssistantUIVisible() const override;
   // Returns a pointer to the BiometricAuthenticator which is created on demand.
-  // This is currently only implemented for Android and Mac, on all other
-  // platforms this will always be null.
+  // This is currently only implemented for Android, Mac and Windows. On all
+  // other platforms this will always be null.
   scoped_refptr<device_reauth::BiometricAuthenticator>
   GetBiometricAuthenticator() override;
   void GeneratePassword(
@@ -377,6 +384,10 @@ class ChromePasswordManagerClient
       content::RenderFrameHost* frame_host,
       const gfx::RectF& bounds_in_frame_coordinates);
 
+#if BUILDFLAG(IS_ANDROID)
+  void ResetErrorMessageDelegate();
+#endif
+
   const raw_ptr<Profile> profile_;
 
   password_manager::PasswordManager password_manager_;
@@ -397,6 +408,9 @@ class ChromePasswordManagerClient
   // event is triggered. It is sent to password reuse detection manager and
   // reset when ime finish composing text event is triggered.
   std::u16string last_composing_text_;
+
+  std::unique_ptr<PasswordManagerErrorMessageDelegate>
+      password_manager_error_message_delegate_;
 
   SaveUpdatePasswordMessageDelegate save_update_password_message_delegate_;
   GeneratedPasswordSavedMessageDelegate

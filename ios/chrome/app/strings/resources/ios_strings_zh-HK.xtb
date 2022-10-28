@@ -23,6 +23,7 @@
 <translation id="1104948393051856124">接受並繼續</translation>
 <translation id="110724200315609752">切換至已開啟的視窗</translation>
 <translation id="1112015203684611006">無法列印。</translation>
+<translation id="1118569444314402022"><ph name="USER_NAME" />，歡迎回來</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
 <translation id="1126809382673880764">無法防範危險網站、下載檔案和擴充程式。您仍可在其他 Google 服務 (例如 Gmail 和搜尋) 中使用「安全瀏覽」功能 (如有)。</translation>
 <translation id="1135212215217513471">下載 Chrome iOS 版</translation>
@@ -46,6 +47,7 @@
 <translation id="1272079795634619415">停止</translation>
 <translation id="1275718070701477396">已選取</translation>
 <translation id="1281818060020671000">管理資料</translation>
+<translation id="1282311502488501110">不登入</translation>
 <translation id="1283524564873030414">過去 24 小時</translation>
 <translation id="1285320974508926690">永不翻譯此網站</translation>
 <translation id="1291506870746876680"><ph name="BEGIN_BOLD" />「<ph name="SITE_NAME" />」<ph name="END_BOLD" />的權限會在您離開此網站後重設為停用。</translation>
@@ -54,6 +56,7 @@
 <translation id="1322735045095424339">您的機構要求使用無痕模式</translation>
 <translation id="1323735185997015385">刪除</translation>
 <translation id="132683371494960526">扲兩下就可以更改上層資料夾。</translation>
+<translation id="1335348992705722518">管理設定…</translation>
 <translation id="1340643665687018190">關閉選單</translation>
 <translation id="1358214951266274152">前往您複製的連結</translation>
 <translation id="1360432990279830238">要登出並停用同步功能嗎？</translation>
@@ -61,6 +64,7 @@
 <translation id="1377255359165588604">同步處理功能已停止運作。</translation>
 <translation id="1377321085342047638">卡號</translation>
 <translation id="1383876407941801731">搜尋</translation>
+<translation id="138618066238211776">以<ph name="USER_NAME" />的身分繼續</translation>
 <translation id="1400642268715879018">過去 4 週</translation>
 <translation id="1404330357948037222">您已登出</translation>
 <translation id="1407135791313364759">全部開啟</translation>
@@ -174,9 +178,11 @@
 <translation id="2421044535038393232">繼續編輯</translation>
 <translation id="2434405374328098816">您已儲存「<ph name="USERNAME" />」在 <ph name="WEBSITE" /> 使用的密碼</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
+<translation id="2461070143328828326">密碼設定</translation>
 <translation id="2469960372084740698">要關閉安全瀏覽功能嗎？</translation>
 <translation id="2473876017985765807">您已儲存 <ph name="WEBSITE" /> 的密碼</translation>
 <translation id="2476359652512522418">無揀</translation>
+<translation id="2482878487686419369">通知</translation>
 <translation id="2500374554657206846">儲存密碼選項</translation>
 <translation id="2523363575747517183">這個網站嘗試重覆開啟另一個應用程式。</translation>
 <translation id="2529021024822217800">全部開啟</translation>
@@ -327,6 +333,7 @@
 <translation id="3709582977625132201">標示為未讀取</translation>
 <translation id="371230970611282515">在危險事件發生前進行預測並發出警告。</translation>
 <translation id="37207012422556617">熱門搜尋</translation>
+<translation id="3726360487031500941">請重新登入您的帳戶 <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">在 Google Chrome 中以無痕模式開啟已輸入的網址。</translation>
 <translation id="3762232513783804601">專為 iPad 而設</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
@@ -381,6 +388,7 @@
 <translation id="4187450337729239226">貼上同埋搜尋</translation>
 <translation id="4223967053752765281">您的機構已關閉登入功能。您仍可在此裝置上查看自己的書籤、記錄、密碼和其他設定，但作出的變更將不會同步到您的帳戶。</translation>
 <translation id="4233831822770018312">編輯權限</translation>
+<translation id="4236584471598725073">正在追蹤價格</translation>
 <translation id="4237377247299956313">輕按 [預設瀏覽器應用程式]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">輸入密碼短語</translation>
 <translation id="4249955472157341256">按最新項目排序</translation>
@@ -738,6 +746,7 @@
 <translation id="6930799952781667037">輕按即可變更為此語言。</translation>
 <translation id="6944369514868857500">選擇其他帳戶</translation>
 <translation id="6945221475159498467">選取</translation>
+<translation id="6965382102122355670">確定</translation>
 <translation id="6973630695168034713">資料夾</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6988572888918530647">管理您的 Google 帳戶</translation>

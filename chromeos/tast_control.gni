@@ -114,6 +114,10 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1309492
   "arc.DragDrop.chrome_to_android",
 
+  # https://crbug.com/1364035
+  "arc.Optin",
+  "arc.OptinNetworkError",
+
   # https://crbug.com/1312121
   "policy.DefaultJavaScriptSetting",
   "policy.CookiesBlockedForUrls",
@@ -208,8 +212,21 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1362184
   "dlp.DataLeakPreventionRulesListClipboardHistory.ash",
+  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
   "dlp.DataLeakPreventionRulesListClipboardOmni",
   "dlp.DataLeakPreventionRulesListPrinting.ash_allowed",
+  "dlp.DataLeakPreventionRulesListPrinting.ash_blocked",
+  "dlp.DataLeakPreventionRulesListPrivacyScreen",
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_allowed",
+  "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
+
+  # https://crbug.com/1368586
+  "u2fd.WebauthnUsingPassword.tpm1",
+  "u2fd.WebauthnUsingPassword.tpm1_lacros",
+  "u2fd.WebauthnUsingPassword.gsc",
+  "u2fd.WebauthnUsingPassword.gsc_lacros",
 ]
 
 # To create filters to be used on specific builders add them like this:

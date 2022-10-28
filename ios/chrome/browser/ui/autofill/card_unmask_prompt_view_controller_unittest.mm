@@ -129,6 +129,7 @@ class CardUnmaskPromptViewControllerTest
         [controller().tableViewModel headerForSectionIndex:0]);
   }
 
+  // Helper method that fetches an item from the tableViewModel.
   id GetItem(int item, int section) {
     auto* indexPath = [NSIndexPath indexPathForItem:item inSection:section];
     auto* model = controller().tableViewModel;
@@ -136,6 +137,22 @@ class CardUnmaskPromptViewControllerTest
     return [model hasItemAtIndexPath:indexPath]
                ? [model itemAtIndexPath:indexPath]
                : nil;
+  }
+
+  // Helper method that fetches a cell from the tableView's datasource.
+  id GetCell(int item, int section) {
+    auto* cvc_controller = controller();
+    auto* cvc_index_path = [NSIndexPath indexPathForItem:item
+                                               inSection:section];
+
+    return
+        [cvc_controller.tableView.dataSource tableView:cvc_controller.tableView
+                                 cellForRowAtIndexPath:cvc_index_path];
+  }
+
+  // Fetches the CVC input cell from the tableView's datasource.
+  TableViewTextEditCell* GetCVCInputCell() {
+    return GetCell(/*item=*/0, /*section*/ 1);
   }
 
   // Fetches the model for the CVC input cell from the tableViewModel.
@@ -429,4 +446,39 @@ TEST_F(CardUnmaskPromptViewControllerTest,
   [prompt_controller onErrorAlertDismissedAndShouldCloseOnDismiss:NO];
 
   CheckUpdateExpirationDateForm();
+}
+
+// Verifies that the icon in the CVC input cell is hidden from Voice Over.
+TEST_F(CardUnmaskPromptViewControllerTest,
+       TestCVCCellIconIsHiddenFromVoiceOver) {
+  auto* CVC_cell = GetCVCInputCell();
+  ASSERT_TRUE(CVC_cell);
+  EXPECT_FALSE(CVC_cell.identifyingIconButton.isAccessibilityElement);
+}
+
+// Verifies that the textField in the CVC input cell does not accept more than 4
+// digits.
+TEST_F(CardUnmaskPromptViewControllerTest,
+       TestCVCTextFieldRejectsTooLongCVCValues) {
+  auto* CVC_field = GetCVCInputCell().textField;
+  ASSERT_TRUE(CVC_field);
+  ASSERT_EQ(CVC_field.text.length, 0LU);
+
+  auto* delegate = CVC_field.delegate;
+  NSRange start_range = NSMakeRange(0, 0);
+
+  NSString* short_CVC = @"1";
+  EXPECT_TRUE([delegate textField:CVC_field
+      shouldChangeCharactersInRange:start_range
+                  replacementString:short_CVC]);
+
+  NSString* valid_CVC = @"123";
+  EXPECT_TRUE([delegate textField:CVC_field
+      shouldChangeCharactersInRange:start_range
+                  replacementString:valid_CVC]);
+
+  NSString* too_long_CVC = @"12345";
+  EXPECT_FALSE([delegate textField:CVC_field
+      shouldChangeCharactersInRange:start_range
+                  replacementString:too_long_CVC]);
 }

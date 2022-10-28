@@ -14,11 +14,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/commerce/core/bookmark_update_manager.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/metrics/metrics_utils.h"
+#include "components/commerce/core/metrics/scheduled_metrics_manager.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/merchant_trust.pb.h"
@@ -36,7 +39,6 @@
 #include "components/power_bookmarks/core/power_bookmark_utils.h"
 #include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 #include "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/session_proto_db/session_proto_storage.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -99,7 +101,8 @@ ShoppingService::ShoppingService(
         new AccountChecker(pref_service, identity_manager, url_loader_factory));
   }
 
-  if (identity_manager && account_checker_ && subscription_proto_db) {
+  if (IsProductInfoApiEnabled() && identity_manager && account_checker_ &&
+      subscription_proto_db) {
     subscriptions_manager_ = std::make_unique<SubscriptionsManager>(
         identity_manager, url_loader_factory, subscription_proto_db,
         account_checker_.get());
@@ -107,7 +110,8 @@ ShoppingService::ShoppingService(
 
   if (bookmark_model) {
     shopping_bookmark_observer_ =
-        std::make_unique<ShoppingBookmarkModelObserver>(bookmark_model, this);
+        std::make_unique<ShoppingBookmarkModelObserver>(
+            bookmark_model, this, subscriptions_manager_.get());
   }
 
   if (power_bookmark_service_ && IsProductInfoApiEnabled()) {
@@ -115,17 +119,16 @@ ShoppingService::ShoppingService(
         std::make_unique<ShoppingPowerBookmarkDataProvider>(
             power_bookmark_service_, this);
   }
-}
 
-void ShoppingService::RegisterPrefs(PrefRegistrySimple* registry) {
-  // This pref value is queried from server. Set initial value as true so our
-  // features can be correctly set up while waiting for the server response.
-  registry->RegisterBooleanPref(commerce::kWebAndAppActivityEnabledForShopping,
-                                true);
+  bookmark_update_manager_ = std::make_unique<BookmarkUpdateManager>(
+      this, bookmark_model_, pref_service_);
 
-  registry->RegisterBooleanPref(
-      commerce::kPriceEmailNotificationsEnabled, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // In testing, the objects required for metrics may be null.
+  if (pref_service_ && bookmark_model_) {
+    scheduled_metrics_manager_ =
+        std::make_unique<metrics::ScheduledMetricsManager>(pref_service_,
+                                                           bookmark_model_);
+  }
 }
 
 void ShoppingService::WebWrapperCreated(WebWrapper* web) {}
@@ -649,6 +652,16 @@ void ShoppingService::Unsubscribe(
   CHECK(subscriptions_manager_);
   subscriptions_manager_->Unsubscribe(std::move(subscriptions),
                                       std::move(callback));
+}
+
+void ShoppingService::FetchPriceEmailPref() {
+  if (account_checker_) {
+    account_checker_->FetchPriceEmailPref();
+  }
+}
+
+void ShoppingService::ScheduleSavedProductUpdate() {
+  bookmark_update_manager_->ScheduleUpdate();
 }
 
 base::WeakPtr<ShoppingService> ShoppingService::AsWeakPtr() {

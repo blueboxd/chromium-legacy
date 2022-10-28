@@ -174,6 +174,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="1380591466760231819">Vēstules locījums</translation>
 <translation id="138218114945450791">Gaiši zila</translation>
 <translation id="1382194467192730611">USB ierīce, ko atļauj jūsu administrators</translation>
+<translation id="1382378825779654399">Jūs saņemsiet e-pasta brīdinājumus, ja kādā vietnē tiks konstatēts cenas kritums. Šī lapa tiks saglabāta mapē “<ph name="LAST_BOOKMARKS_FOLDER" />”.</translation>
 <translation id="1382912999714108023">Vai netiek rādīta jūsu pašreizējā informācija? Sazinieties ar banku, lai to atjauninātu.</translation>
 <translation id="1384725838384960382">Drošu maksājumu akreditācijas datu autentifikācijas lapa</translation>
 <translation id="1386623374109090026">Komentāri</translation>
@@ -250,7 +251,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1551884710160394169">Bezmaksas programmatūra un izplatāmprogrammatūra</translation>
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
-<translation id="1554003749331233619">Jūs tagad izsekojat šo produktu. Šī lapa ir saglabāta sarakstā “<ph name="LAST_BOOKMARKS_FOLDER" />”.</translation>
 <translation id="1555130319947370107">Zila</translation>
 <translation id="1559447966090556585">Vai drīkst saņemt paziņojumus?</translation>
 <translation id="1559528461873125649">Nav tāda faila vai direktorija</translation>
@@ -298,7 +298,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="1662550410081243962">Saglabāt un aizpildīt maksājuma veidus</translation>
 <translation id="1663943134801823270">Kartes un adreses tiek iegūtas no Chrome. Varat pārvaldīt tās <ph name="BEGIN_LINK" />iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Turpmāk lapas, kas būs šādā valodā: <ph name="SOURCE_LANGUAGE" />, tiks tulkotas šādā valodā: <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1673886523110456987">Norēķinieties ar karti <ph name="CARD_DETAIL" />, lai izmantotu piedāvājumu.</translation>
 <translation id="1674504678466460478">No <ph name="SOURCE_LANGUAGE" /> uz <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Vispirms īsākā mala</translation>
 <translation id="168693727862418163">Šo politikas vērtību neizdevās apstiprināt, izmantojot tās shēmu, un tā tiks ignorēta.</translation>
@@ -423,6 +422,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2034971124472263449">Tik un tā saglabāt</translation>
 <translation id="2035400064145347639">Ceļojumu gidi un ceļojumu žurnāli</translation>
 <translation id="2036983605131262583">Alternatīvs rullis</translation>
+<translation id="2040463897538655645">Noņemama atmiņas ierīce</translation>
 <translation id="2040894699575719559">Atrašanās vieta ir bloķēta</translation>
 <translation id="2042213636306070719">7. paplāte</translation>
 <translation id="204357726431741734">Pierakstieties, lai izmantotu savā Google kontā saglabātās paroles.</translation>
@@ -1004,7 +1004,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3633738897356909127">Poga “Atjaunināt Chrome”. Lai Chrome iestatījumos atjauninātu pārlūkprogrammu Chrome, nospiediet ievadīšanas taustiņu.</translation>
 <translation id="3634530185120165534">5. paplāte</translation>
 <translation id="3634567936866541746">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chrome ieteikums jūsu kontu aizsardzībai: pārbaudiet saglabātās paroles.</translation>
-<translation id="3637033245385760976">Jābūt ieslēgtiem Chrome paziņojumiem. Varat tos ieslēgt šeit: <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="3637662659967048211">Saglabāšana Google kontā</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Lietojumprogramma:</translation>
@@ -1520,6 +1519,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5018422839182700155">Nevar atvērt šo lapu</translation>
 <translation id="5019198164206649151">Dublējumu krātuve nav labā stāvoklī.</translation>
 <translation id="5020776957610079374">Pasaules mūzika</translation>
+<translation id="5021557570875267742">Cenu izsekošana, izmantojot pārlūku Chrome</translation>
 <translation id="5023310440958281426">Administratora politiku pārbaude</translation>
 <translation id="5029568752722684782">Dzēst kopiju</translation>
 <translation id="5030338702439866405">Izsniedzis</translation>
@@ -2241,6 +2241,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6993898126790112050">6x9 (aploksne)</translation>
 <translation id="6996312675313362352">Vienmēr tulkot šo valodu: <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Izklaides nozare</translation>
+<translation id="7003335073762455340">Jūs izsekojat šo produktu. Šī lapa ir saglabāta mapē “<ph name="LAST_BOOKMARKS_FOLDER" />”.</translation>
 <translation id="7004583254764674281">Izmantot Windows Hello, lai ātrāk apstiprinātu kartes</translation>
 <translation id="7006930604109697472">Tomēr sūtīt</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2323,6 +2324,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="7234638337680728591">Transportlīdzekļu degviela un tās cenas</translation>
 <translation id="7237492777898608035">Vairs nerādīt šo ziņojumu šajā vietnē</translation>
 <translation id="7238585580608191973">SHA-256 pirkstu nospiedums</translation>
+<translation id="7239514174717251677">Paziņojumi par cenu kritumu ir ieslēgti. Varat mainīt šo iestatījumu šeit: <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="7240120331469437312">Sertifikāta subjekta cits nosaukums</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# atbilstība}zero{# atbilstību}one{# atbilstība}other{# atbilstības}}</translation>
@@ -2464,6 +2466,7 @@ Papildu informācija:
 <translation id="7564049878696755256">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="7564680668369175887">Universāļi</translation>
 <translation id="7567204685887185387">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts, iespējams, ir izveidots krāpnieciski. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
+<translation id="7568616151991626879">Pārlūkā Google Chrome tiek mēģināts ievadīt jūsu paroli vietnē <ph name="APP_NAME" />.</translation>
 <translation id="7569490014721427265">Golfs</translation>
 <translation id="7569761772822664555">Meklētājprogrammu pārvaldības poga. Lai pārvaldītu noklusējuma meklētājprogrammu un meklēšanu vietnēs, nospiediet taustiņu Enter.</translation>
 <translation id="7569952961197462199">Vai noņemt kredītkarti no pārlūka Chrome?</translation>
@@ -2821,7 +2824,6 @@ Papildu informācija:
 <translation id="8559762987265718583">Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu ierīces datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizs.</translation>
 <translation id="8564182942834072828">Atsevišķi dokumenti/nesakārtotu lapu kopijas</translation>
 <translation id="8564985650692024650">Chromium iesaka atiestatīt jūsu <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> paroli, ja izmantojāt to citās vietnēs.</translation>
-<translation id="8573969211731659953">Paziņojumi par cenu kritumu ir ieslēgti. Varat mainīt šo iestatījumu šeit: <ph name="NOTIFICATION_SETTINGS" />.</translation>
 <translation id="8576310925653847813">Mājas kinozāles sistēmas</translation>
 <translation id="8577348305244205642">Virtuālā karte nav pieejama</translation>
 <translation id="858637041960032120">Piev. tālr. nr.
@@ -3036,11 +3038,13 @@ Papildu informācija:
 <translation id="9174623988242579721">Pielāgotas un sacīkšu automašīnas</translation>
 <translation id="9174917557437862841">Ciļņu pārslēgšanas poga. Nospiediet ievadīšanas taustiņu, lai pārslēgtu šo cilni.</translation>
 <translation id="9179703756951298733">Pārvaldiet savu maksājumu un kredītkaršu informāciju Chrome iestatījumos.</translation>
+<translation id="9179907736442194268">Saņemiet e-pasta brīdinājumus, ja kādā vietnē tiek konstatēts cenas kritums.</translation>
 <translation id="9183302530794969518">Google dokumenti</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> izmanto neatbalstītu protokolu.</translation>
 <translation id="9187461866967718678">Ekstrēmie sporta veidi</translation>
 <translation id="9191834167571392248">Caurums apakšējā kreisajā malā</translation>
 <translation id="9199905725844810519">Drukāšana ir bloķēta</translation>
+<translation id="9202180858541326427">Jābūt ieslēgtiem Chrome paziņojumiem. Varat tos ieslēgt šeit: <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="9205078245616868884">Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
 <translation id="920511547311754821">Vai nevarat atrast kodu? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Rakstu neizdevās pievienot.</translation>

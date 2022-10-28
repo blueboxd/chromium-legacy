@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,9 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   std::string GetCurrentWorkspace() override;
   base::Value::List GetGpuExtraInfo(
       const gfx::GpuExtraInfo& gpu_extra_info) override;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  display::TabletState GetTabletState() const override;
+#endif
 
   // Returns the NativeWindow associated with the AcceleratedWidget.
   virtual gfx::NativeWindow GetNativeWindowFromAcceleratedWidget(

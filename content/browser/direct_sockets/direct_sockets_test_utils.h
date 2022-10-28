@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class MockHostResolver : public network::mojom::HostResolver {
   MockHostResolver& operator=(const MockHostResolver&) = delete;
 
   void ResolveHost(network::mojom::HostResolverHostPtr host,
-                   const ::net::NetworkIsolationKey& network_isolation_key,
+                   const ::net::NetworkAnonymizationKey& network_isolation_key,
                    network::mojom::ResolveHostParametersPtr optional_parameters,
                    ::mojo::PendingRemote<network::mojom::ResolveHostClient>
                        pending_response_client) override;

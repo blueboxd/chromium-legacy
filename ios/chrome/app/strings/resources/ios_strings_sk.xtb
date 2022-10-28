@@ -23,6 +23,7 @@ Používate vyhľadávač <ph name="DSE_NAME" />. Prečítajte si jeho pokyny, a
 <translation id="1104948393051856124">Prijať a pokračovať</translation>
 <translation id="110724200315609752">Prepnúť na otvorené okno</translation>
 <translation id="1112015203684611006">Tlač zlyhala.</translation>
+<translation id="1118569444314402022">Vitajte späť, <ph name="USER_NAME" /></translation>
 <translation id="1125564390852150847">Vytvoriť novú kartu.</translation>
 <translation id="1126809382673880764">Nechráni vás pred nebezpečnými webmi, stiahnutými súbormi ani rozšíreniami. Ochrana Bezpečného prehliadania vám bude poskytovaná v náležitých prípadoch v ďalších službách Googlu, ako sú napríklad Gmail alebo Vyhľadávanie.</translation>
 <translation id="1135212215217513471">Získať Chrome pre iOS</translation>
@@ -46,6 +47,7 @@ Používate vyhľadávač <ph name="DSE_NAME" />. Prečítajte si jeho pokyny, a
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1275718070701477396">Riadok bol vybratý</translation>
 <translation id="1281818060020671000">Správa údajov</translation>
+<translation id="1282311502488501110">Neprihlasovať sa</translation>
 <translation id="1283524564873030414">Posledných 24 hodín</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="1291506870746876680">Keď web <ph name="BEGIN_BOLD" /><ph name="SITE_NAME" /><ph name="END_BOLD" /> opustíte, povolenia preň sa resetujú na možnosť Vypnuté.</translation>
@@ -54,6 +56,7 @@ Používate vyhľadávač <ph name="DSE_NAME" />. Prečítajte si jeho pokyny, a
 <translation id="1322735045095424339">Vaša organizácia vyžaduje režim inkognito</translation>
 <translation id="1323735185997015385">Odstrániť</translation>
 <translation id="132683371494960526">Dvojitým klepnutím zmeníte nadradený priečinok.</translation>
+<translation id="1335348992705722518">Spravovať Nastavenia…</translation>
 <translation id="1340643665687018190">Zavrieť ponuku</translation>
 <translation id="1358214951266274152">Navštíviť skopírovaný odkaz</translation>
 <translation id="1360432990279830238">Odhlásiť sa a vypnúť synchronizáciu?</translation>
@@ -61,6 +64,7 @@ Používate vyhľadávač <ph name="DSE_NAME" />. Prečítajte si jeho pokyny, a
 <translation id="1377255359165588604">Synchronizácia prestala fungovať.</translation>
 <translation id="1377321085342047638">Číslo karty</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
+<translation id="138618066238211776">Pokračovať ako <ph name="USER_NAME" /></translation>
 <translation id="1400642268715879018">Posledné 4 týždne</translation>
 <translation id="1404330357948037222">Odhlásili ste sa</translation>
 <translation id="1407135791313364759">Otvoriť všetko</translation>
@@ -174,9 +178,11 @@ Weby si nemôžu na základe súborov cookie zobraziť vašu históriu prehliada
 <translation id="2421044535038393232">Ďalej upravovať</translation>
 <translation id="2434405374328098816">Heslo pre používateľské meno <ph name="USERNAME" /> ste už uložili na <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Zobraziť heslo</translation>
+<translation id="2461070143328828326">Nastavenia hesla</translation>
 <translation id="2469960372084740698">Chcete vypnúť Bezpečné prehliadanie?</translation>
 <translation id="2473876017985765807">Už ste si uložili heslo pre web <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Nevybrané</translation>
+<translation id="2482878487686419369">Upozornenia</translation>
 <translation id="2500374554657206846">Možnosti uloženia hesla</translation>
 <translation id="2523363575747517183">Tento web sa opakovane pokúša otvoriť ďalšiu aplikáciu.</translation>
 <translation id="2529021024822217800">Otvoriť všetky</translation>
@@ -327,6 +333,7 @@ Prečítajte si pokyny vyhľadávača, ako odstrániť históriu vyhľadávania 
 <translation id="3709582977625132201">Označiť ako neprečítané</translation>
 <translation id="371230970611282515">Predpovedá nebezpečné udalosti a upozorní vás, než k nim dôjde.</translation>
 <translation id="37207012422556617">Populárne vyhľadávania</translation>
+<translation id="3726360487031500941">Znova sa prihláste do účtu <ph name="USER_NAME" /></translation>
 <translation id="3740397331642243698">Otvorí zadané webové adresy v prehliadači Google Chrome v režime inkognito.</translation>
 <translation id="3762232513783804601">Vytvorené pre váš iPad</translation>
 <translation id="3771033907050503522">Karty inkognito</translation>
@@ -381,6 +388,7 @@ Prečítajte si pokyny vyhľadávača, ako odstrániť históriu vyhľadávania 
 <translation id="4187450337729239226">Prilepiť a hľadať</translation>
 <translation id="4223967053752765281">Vaša organizácia vypla prihlasovanie. Naďalej uvidíte všetky svoje záložky, históriu, heslá a ďalšie nastavenia v tomto zariadení. Ak vykonáte zmeny, nebudú synchronizované do vášho účtu.</translation>
 <translation id="4233831822770018312">Úprava povolení</translation>
+<translation id="4236584471598725073">Cena sa sleduje</translation>
 <translation id="4237377247299956313">Klepnite na položku <ph name="BEGIN_BOLD" />Predvolená aplikácia prehliadača<ph name="END_BOLD" /></translation>
 <translation id="424315890655130736">Zadajte prístupovú frázu</translation>
 <translation id="4249955472157341256">Zoradiť od najnovších</translation>
@@ -740,6 +748,7 @@ Weby v režime inkognito nemôžu pomocou súborov cookie zobraziť vašu aktiv
 <translation id="6930799952781667037">Klepnutím prepnete na tento jazyk.</translation>
 <translation id="6944369514868857500">Vybrať iný účet</translation>
 <translation id="6945221475159498467">Vybrať</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Priečinky</translation>
 <translation id="6979158407327259162">Disk Google</translation>
 <translation id="6988572888918530647">Spravovať účet Google</translation>

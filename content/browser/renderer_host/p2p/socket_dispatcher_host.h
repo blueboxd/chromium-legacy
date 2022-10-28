@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/network_anonymization_key.h"
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "services/network/public/mojom/p2p_trusted.mojom.h"
 
@@ -46,7 +46,7 @@ class P2PSocketDispatcherHost
   void BindReceiver(
       RenderProcessHostImpl& process,
       mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver,
-      net::NetworkIsolationKey isolation_key,
+      net::NetworkAnonymizationKey anonymization_key,
       const GlobalRenderFrameHostId& render_frame_host_id);
 
   base::WeakPtr<P2PSocketDispatcherHost> GetWeakPtr();

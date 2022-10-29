@@ -8,8 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -21,9 +19,7 @@ class GLSurface;
 }  // namespace gl
 
 namespace gpu {
-class MailboxManager;
 class SharedContextState;
-class SharedImageRepresentationFactory;
 
 namespace gles2 {
 class FeatureInfo;
@@ -35,9 +31,6 @@ namespace viz {
 class SkiaOutputDeviceGL final : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceGL(
-      gpu::MailboxManager* mailbox_manager,
-      gpu::SharedImageRepresentationFactory*
-          shared_image_representation_factory,
       gpu::SharedContextState* context_state,
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
@@ -90,28 +83,12 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
 
   void CreateSkSurface();
 
-  // Mailboxes of overlays scheduled in the current frame.
-  base::flat_set<gpu::Mailbox> scheduled_overlay_mailboxes_;
-
-  // Holds references to overlay textures so they aren't destroyed while in use.
-  base::flat_map<gpu::Mailbox, OverlayData> overlays_;
-
-  const raw_ptr<gpu::MailboxManager> mailbox_manager_;
-
-  const raw_ptr<gpu::SharedImageRepresentationFactory>
-      shared_image_representation_factory_;
-
   const raw_ptr<gpu::SharedContextState> context_state_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   const bool supports_async_swap_;
 
   uint64_t backbuffer_estimated_size_ = 0;
 
-  gfx::Size size_;
-  SkColorType color_type_;
-  gfx::ColorSpace color_space_;
-  GrGLFramebufferInfo framebuffer_info_ = {};
-  int sample_count_ = 1;
   sk_sp<SkSurface> sk_surface_;
 
   base::WeakPtrFactory<SkiaOutputDeviceGL> weak_ptr_factory_{this};

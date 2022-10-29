@@ -14,16 +14,17 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
-#import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/util_swift.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_sender.h"
 #import "ios/web/public/web_state.h"
@@ -33,7 +34,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface KeyCommandsProvider () <KeyCommandActions>
+@interface KeyCommandsProvider ()
 
 // The current browser object.
 @property(nonatomic, assign) Browser* browser;
@@ -223,7 +224,9 @@
 }
 
 - (void)keyCommand_openNewWindow {
-  // TODO(crbug.com/1378943): Implement this action.
+  [_dispatcher openNewWindowWithActivity:ActivityToLoadURL(
+                                             WindowActivityKeyCommandOrigin,
+                                             GURL(kChromeUINewTabURL))];
 }
 
 - (void)keyCommand_reopenLastClosedTab {
@@ -406,6 +409,10 @@
 
 - (void)keyCommand_addToReadingList {
   // TODO(crbug.com/1378944): Implement this action.
+}
+
+- (void)keyCommand_showReadingList {
+  [_browserCoordinatorCommandsHandler showReadingList];
 }
 
 - (void)keyCommand_goToTabGrid {

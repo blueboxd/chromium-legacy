@@ -8,39 +8,25 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/debug/alias.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/viz/common/gpu/context_lost_reason.h"
-#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
-#include "gpu/command_buffer/service/skia_utils.h"
-#include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "skia/ext/legacy_display_globals.h"
+#include "third_party/skia/include/core/SkColorType.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "components/viz/service/display/dc_layer_overlay.h"
-#include "ui/gl/dc_renderer_layer_params.h"
-#endif
 
 namespace viz {
 
@@ -59,41 +45,7 @@ NOINLINE void CheckForLoopFailures() {
 
 }  // namespace
 
-// Holds reference needed to keep overlay textures alive.
-// TODO(kylechar): We can probably merge OverlayData in with
-// SkiaOutputSurfaceImplOnGpu overlay data.
-class SkiaOutputDeviceGL::OverlayData {
- public:
-  explicit OverlayData(
-      std::unique_ptr<gpu::OverlayImageRepresentation> representation)
-      : representation_(std::move(representation)) {}
-
-  ~OverlayData() = default;
-  OverlayData(OverlayData&& other) = default;
-  OverlayData& operator=(OverlayData&& other) {
-    // `access_` must be overwritten before `representation_`.
-    access_ = std::move(other.access_);
-    representation_ = std::move(other.representation_);
-    return *this;
-  }
-
-  gpu::OverlayImageRepresentation::ScopedReadAccess* BeginOverlayAccess() {
-    DCHECK(representation_);
-    access_ = representation_->BeginScopedReadAccess(/*needs_gl_image=*/true);
-    DCHECK(access_);
-    return access_.get();
-  }
-
-  void EndOverlayAccess() { access_.reset(); }
-
- private:
-  std::unique_ptr<gpu::OverlayImageRepresentation> representation_;
-  std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess> access_;
-};
-
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
-    gpu::MailboxManager* mailbox_manager,
-    gpu::SharedImageRepresentationFactory* shared_image_representation_factory,
     gpu::SharedContextState* context_state,
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
@@ -102,24 +54,12 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     : SkiaOutputDevice(context_state->gr_context(),
                        memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
-      mailbox_manager_(mailbox_manager),
-      shared_image_representation_factory_(shared_image_representation_factory),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)),
       supports_async_swap_(gl_surface_->SupportsAsyncSwap()) {
   capabilities_.uses_default_gl_framebuffer = true;
   capabilities_.output_surface_origin = gl_surface_->GetOrigin();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
-#if BUILDFLAG(IS_WIN)
-  if (gl_surface_->SupportsDCLayers()) {
-    // DWM handles preserving the contents of the backbuffer in Present1, so we
-    // don't need to have SkiaOutputSurface handle it.
-    capabilities_.preserve_buffer_content = false;
-    capabilities_.number_of_buffers =
-        gl::DirectCompositionRootSurfaceBufferCount();
-    capabilities_.supports_delegated_ink = gl_surface_->SupportsDelegatedInk();
-  }
-#endif  // BUILDFLAG(IS_WIN)
   if (feature_info->workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces) {
     capabilities_.supports_post_sub_buffer = false;
@@ -381,20 +321,6 @@ void SkiaOutputDeviceGL::DoFinishSwapBuffers(const gfx::Size& size,
                                              OutputSurfaceFrame frame,
                                              gfx::SwapCompletionResult result) {
   DCHECK(result.release_fence.is_null());
-
-  // Remove entries from |overlays_| for textures that weren't scheduled as an
-  // overlay this frame.
-  if (!overlays_.empty()) {
-    base::EraseIf(overlays_, [this](auto& entry) {
-      const gpu::Mailbox& mailbox = entry.first;
-      return !scheduled_overlay_mailboxes_.contains(mailbox);
-    });
-    scheduled_overlay_mailboxes_.clear();
-    // End access for the remaining overlays that were scheduled this frame.
-    for (auto& kv : overlays_)
-      kv.second.EndOverlayAccess();
-  }
-
   FinishSwapBuffers(std::move(result), size, std::move(frame));
 }
 
@@ -412,56 +338,7 @@ void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {
 
 void SkiaOutputDeviceGL::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays) {
-#if BUILDFLAG(IS_WIN)
-  for (auto& dc_layer : overlays) {
-    auto params = std::make_unique<ui::DCRendererLayerParams>();
-    // Get GLImages for DC layer textures.
-    bool success = true;
-    for (size_t i = 0; i < DCLayerOverlay::kNumResources; ++i) {
-      const gpu::Mailbox& mailbox = dc_layer.mailbox[i];
-      if (i > 0 && mailbox.IsZero())
-        break;
-
-      auto* read_access = BeginOverlayAccess(mailbox);
-      if (!read_access) {
-        success = false;
-        break;
-      }
-
-      if (auto dcomp_surface_proxy = read_access->GetDCOMPSurfaceProxy()) {
-        params->dcomp_surface_proxy = std::move(dcomp_surface_proxy);
-      } else if (auto* image = read_access->gl_image()) {
-        image->SetColorSpace(dc_layer.color_space);
-        params->images[i] = std::move(image);
-      } else {
-        success = false;
-        break;
-      }
-
-      scheduled_overlay_mailboxes_.insert(mailbox);
-    }
-
-    if (!success) {
-      DLOG(ERROR) << "Failed to get GLImage for DC layer.";
-      continue;
-    }
-
-    params->z_order = dc_layer.z_order;
-    params->content_rect = dc_layer.content_rect;
-    params->quad_rect = dc_layer.quad_rect;
-    DCHECK(dc_layer.transform.IsFlat());
-    params->transform = dc_layer.transform;
-    params->clip_rect = dc_layer.clip_rect;
-    params->protected_video_type = dc_layer.protected_video_type;
-    params->hdr_metadata = dc_layer.hdr_metadata;
-    params->is_video_fullscreen_letterboxing =
-        dc_layer.is_video_fullscreen_letterboxing;
-
-    // Schedule DC layer overlay to be presented at next SwapBuffers().
-    if (!gl_surface_->ScheduleDCLayer(std::move(params)))
-      DLOG(ERROR) << "ScheduleDCLayer failed";
-  }
-#endif  // BUILDFLAG(IS_WIN)
+  NOTREACHED();
 }
 
 void SkiaOutputDeviceGL::EnsureBackbuffer() {
@@ -479,19 +356,5 @@ SkSurface* SkiaOutputDeviceGL::BeginPaint(
 }
 
 void SkiaOutputDeviceGL::EndPaint() {}
-
-gpu::OverlayImageRepresentation::ScopedReadAccess*
-SkiaOutputDeviceGL::BeginOverlayAccess(const gpu::Mailbox& mailbox) {
-  auto it = overlays_.find(mailbox);
-  if (it != overlays_.end())
-    return it->second.BeginOverlayAccess();
-
-  auto overlay = shared_image_representation_factory_->ProduceOverlay(mailbox);
-  if (!overlay)
-    return nullptr;
-
-  std::tie(it, std::ignore) = overlays_.emplace(mailbox, std::move(overlay));
-  return it->second.BeginOverlayAccess();
-}
 
 }  // namespace viz

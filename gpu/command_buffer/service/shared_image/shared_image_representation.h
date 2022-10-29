@@ -34,6 +34,8 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
+
 extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 #endif
 
@@ -351,6 +353,15 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
   std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      AllowUnclearedAccess allow_uncleared,
+      bool use_sk_surface = true);
+
+  std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess(
+      int final_msaa_count,
+      const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       AllowUnclearedAccess allow_uncleared,
@@ -373,23 +384,30 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
  protected:
   friend class WrappedSkiaCompoundImageRepresentation;
 
-  // Begin the write access. The implementations should insert semaphores into
-  // begin_semaphores vector which client will wait on before writing the
-  // backing. The ownership of begin_semaphores is not passed to client.
-  // The implementations can also optionally insert semaphores into
-  // end_semaphores. If using end_semaphores, the client must submit them with
-  // drawing operations which use the backing. The ownership of end_semaphores
-  // are not passed to client. And client must submit the end_semaphores before
-  // calling EndWriteAccess().
+  // Begin the write access.
+  //
+  // update_rect is a hint to the backend about the portion of the image that
+  // will be drawn to. Callers shouldn't draw outside of this area, but aren't
+  // required to overwrite every pixel inside it.
+  //
+  // The implementations should insert semaphores into begin_semaphores vector
+  // which client will wait on before writing the backing. The ownership of
+  // begin_semaphores is not passed to client. The implementations can also
+  // optionally insert semaphores into end_semaphores. If using end_semaphores,
+  // the client must submit them with drawing operations which use the backing.
+  // The ownership of end_semaphores are not passed to client. And client must
+  // submit the end_semaphores before calling EndWriteAccess().
+  //
   // The backing can assign end_state, and the caller must reset backing's state
   // to the end_state before calling EndWriteAccess().
   // Returns an empty vector on failure.
   virtual std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state);
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) = 0;
   virtual std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
@@ -410,7 +428,7 @@ class GPU_GLES2_EXPORT SkiaImageRepresentation
   virtual std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state);
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) = 0;
   virtual void EndReadAccess() = 0;
 };
 
@@ -480,6 +498,13 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
     AHardwareBuffer* GetAHardwareBuffer() {
       return representation()->GetAHardwareBuffer();
     }
+    // Deprecated. All code should use GetAHardwareBuffer() above, this function
+    // will be deleted when GLSurfaceEGLSurface control will be able to deliver
+    // fences via EndAccess.
+    std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+    GetAHardwareBufferFenceSync() {
+      return representation()->GetAHardwareBufferFenceSync();
+    }
 #elif defined(USE_OZONE)
     scoped_refptr<gfx::NativePixmap> GetNativePixmap() {
       return representation()->GetNativePixmap();
@@ -532,6 +557,8 @@ class GPU_GLES2_EXPORT OverlayImageRepresentation
 
 #if BUILDFLAG(IS_ANDROID)
   virtual AHardwareBuffer* GetAHardwareBuffer();
+  virtual std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBufferFenceSync();
 #elif defined(USE_OZONE)
   scoped_refptr<gfx::NativePixmap> GetNativePixmap();
 #elif BUILDFLAG(IS_WIN)

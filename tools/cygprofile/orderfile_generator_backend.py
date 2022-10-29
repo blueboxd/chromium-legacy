@@ -1080,7 +1080,7 @@ def CreateArgumentParser():
   parser.add_argument('--use-remoteexec',
                       action='store_true',
                       help='Enable remoteexec.',
-                      default=Faulse)
+                      default=False)
   parser.add_argument('--adb-path', help='Path to the adb binary.')
 
   parser.add_argument('--public',

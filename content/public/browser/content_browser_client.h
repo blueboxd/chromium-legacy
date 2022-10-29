@@ -205,8 +205,6 @@ class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
 class DirectSocketsDelegate;
-class DocumentOverlayWindow;
-class DocumentPictureInPictureWindowController;
 class FeatureObserverClient;
 class FontAccessDelegate;
 class HidDelegate;
@@ -263,11 +261,11 @@ class TtsControllerDelegate;
 // the observer interfaces.)
 class CONTENT_EXPORT ContentBrowserClient {
  public:
-  // Callback used with IsClipboardPasteContentAllowed() method.
-  using ClipboardPasteContentAllowed =
-      base::StrongAlias<class ClipboardPasteContentAllowedTag, bool>;
+  // Callback used with IsClipboardPasteContentAllowed() method.  If the paste
+  // is not allowed, nullopt is passed to the callback.  Otherwise, the data
+  // that should be pasted is passed in.
   using IsClipboardPasteContentAllowedCallback =
-      base::OnceCallback<void(ClipboardPasteContentAllowed)>;
+      base::OnceCallback<void(const absl::optional<std::string>& data)>;
 
   virtual ~ContentBrowserClient() = default;
 
@@ -1964,18 +1962,15 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* initiator_document,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory);
 
-  // Creates an OverlayWindow to be used for video or document
-  // Picture-in-Picture respectively. This window will house the content shown
-  // when in Picture-in-Picture mode. This will return a new OverlayWindow.
+  // Creates an OverlayWindow to be used for video or Picture-in-Picture.
+  // This window will house the content shown when in Picture-in-Picture mode.
+  // This will return a new OverlayWindow.
   //
   // May return nullptr if embedder does not support this functionality. The
   // default implementation provides nullptr OverlayWindow.
   virtual std::unique_ptr<VideoOverlayWindow>
   CreateWindowForVideoPictureInPicture(
       VideoPictureInPictureWindowController* controller);
-  virtual std::unique_ptr<DocumentOverlayWindow>
-  CreateWindowForDocumentPictureInPicture(
-      DocumentPictureInPictureWindowController* controller);
 
   // Registers the watcher to observe updates in RendererPreferences.
   virtual void RegisterRendererPreferenceWatcher(
@@ -2171,7 +2166,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // shown, the UX should be associated with the specific WebContents.
   //
   // The callback is called, possibly asynchronously, with a status indicating
-  // whether the operation is allowed or not.
+  // whether the operation is allowed or not.  If the operation is allowed,
+  // the callback is passed the data the can be pasted.
   virtual void IsClipboardPasteContentAllowed(
       content::WebContents* web_contents,
       const GURL& url,

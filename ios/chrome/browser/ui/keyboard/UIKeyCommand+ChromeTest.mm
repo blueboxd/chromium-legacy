@@ -40,7 +40,15 @@ void Verify(UIKeyCommand* command,
   EXPECT_NSEQ(command.discoverabilityTitle, command.title);
 }
 
-// Tests that UIKeyCommand-s are correctly created.
+// Returns a UIKeyCommand with the given input, no modifiers, and a no-op
+// action.
+UIKeyCommand* KeyCommand(NSString* input) {
+  return [UIKeyCommand keyCommandWithInput:input
+                             modifierFlags:0
+                                    action:@selector(self)];
+}
+
+// Checks that UIKeyCommand-s are correctly created.
 TEST_F(UIKeyCommandChromeTest, Factories) {
   Verify(UIKeyCommand.cr_openNewTab, @"⌘T", @"keyCommand_openNewTab",
          IDS_IOS_TOOLS_MENU_NEW_TAB);
@@ -49,14 +57,17 @@ TEST_F(UIKeyCommandChromeTest, Factories) {
   Verify(UIKeyCommand.cr_openNewIncognitoTab, @"⇧⌘N",
          @"keyCommand_openNewIncognitoTab",
          IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB);
+  Verify(UIKeyCommand.cr_openNewWindow, @"⌥⌘N", @"keyCommand_openNewWindow",
+         IDS_IOS_KEYBOARD_NEW_WINDOW);
   Verify(UIKeyCommand.cr_reopenLastClosedTab, @"⇧⌘T",
          @"keyCommand_reopenLastClosedTab", IDS_IOS_KEYBOARD_REOPEN_CLOSED_TAB);
   Verify(UIKeyCommand.cr_openFindInPage, @"⌘F", @"keyCommand_openFindInPage",
          IDS_IOS_TOOLS_MENU_FIND_IN_PAGE);
   Verify(UIKeyCommand.cr_findNextStringInPage, @"⌘G",
-         @"keyCommand_findNextStringInPage");
+         @"keyCommand_findNextStringInPage", IDS_IOS_KEYBOARD_FIND_NEXT);
   Verify(UIKeyCommand.cr_findPreviousStringInPage, @"⇧⌘G",
-         @"keyCommand_findPreviousStringInPage");
+         @"keyCommand_findPreviousStringInPage",
+         IDS_IOS_KEYBOARD_FIND_PREVIOUS);
   Verify(UIKeyCommand.cr_focusOmnibox, @"⌘L", @"keyCommand_focusOmnibox",
          IDS_IOS_KEYBOARD_OPEN_LOCATION);
   Verify(UIKeyCommand.cr_closeTab, @"⌘W", @"keyCommand_closeTab",
@@ -89,14 +100,18 @@ TEST_F(UIKeyCommandChromeTest, Factories) {
          @"keyCommand_startVoiceSearch",
          IDS_IOS_VOICE_SEARCH_KEYBOARD_DISCOVERY_TITLE);
   Verify(UIKeyCommand.cr_close, @"⎋", @"keyCommand_close");
-  Verify(UIKeyCommand.cr_showSettings, @"⌘,", @"keyCommand_showSettings");
-  Verify(UIKeyCommand.cr_stop, @"⌘.", @"keyCommand_stop");
-  Verify(UIKeyCommand.cr_showHelp, @"⌥⌘?", @"keyCommand_showHelp");
-  Verify(UIKeyCommand.cr_showDownloadsFolder, @"⇧⌘J",
+  Verify(UIKeyCommand.cr_showSettings, @"⌘,", @"keyCommand_showSettings",
+         IDS_IOS_KEYBOARD_SHOW_SETTINGS);
+  Verify(UIKeyCommand.cr_stop, @"⌘.", @"keyCommand_stop",
+         IDS_IOS_KEYBOARD_STOP);
+  Verify(UIKeyCommand.cr_showHelp, @"⌥⌘?", @"keyCommand_showHelp",
+         IDS_IOS_KEYBOARD_SHOW_HELP);
+  Verify(UIKeyCommand.cr_showDownloadsFolder, @"⌥⌘L",
+         @"keyCommand_showDownloadsFolder", IDS_IOS_KEYBOARD_SHOW_DOWNLOADS);
+  Verify(UIKeyCommand.cr_showDownloadsFolder_2, @"⇧⌘J",
          @"keyCommand_showDownloadsFolder");
-  Verify(UIKeyCommand.cr_showDownloadsFolder_2, @"⌥⌘L",
-         @"keyCommand_showDownloadsFolder");
-  Verify(UIKeyCommand.cr_showTab0, @"⌘1", @"keyCommand_showTab0");
+  Verify(UIKeyCommand.cr_showTab0, @"⌘1", @"keyCommand_showTab0",
+         IDS_IOS_KEYBOARD_FIRST_TAB);
   Verify(UIKeyCommand.cr_showTab1, @"⌘2", @"keyCommand_showTab1");
   Verify(UIKeyCommand.cr_showTab2, @"⌘3", @"keyCommand_showTab2");
   Verify(UIKeyCommand.cr_showTab3, @"⌘4", @"keyCommand_showTab3");
@@ -104,12 +119,15 @@ TEST_F(UIKeyCommandChromeTest, Factories) {
   Verify(UIKeyCommand.cr_showTab5, @"⌘6", @"keyCommand_showTab5");
   Verify(UIKeyCommand.cr_showTab6, @"⌘7", @"keyCommand_showTab6");
   Verify(UIKeyCommand.cr_showTab7, @"⌘8", @"keyCommand_showTab7");
-  Verify(UIKeyCommand.cr_showLastTab, @"⌘9", @"keyCommand_showLastTab");
+  Verify(UIKeyCommand.cr_showLastTab, @"⌘9", @"keyCommand_showLastTab",
+         IDS_IOS_KEYBOARD_LAST_TAB);
   Verify(UIKeyCommand.cr_reportAnIssue, @"⇧⌘I", @"keyCommand_reportAnIssue",
          IDS_IOS_KEYBOARD_REPORT_AN_ISSUE);
   Verify(UIKeyCommand.cr_reportAnIssue_2, @"⌥⇧⌘I", @"keyCommand_reportAnIssue");
   Verify(UIKeyCommand.cr_addToReadingList, @"⇧⌘D",
          @"keyCommand_addToReadingList", IDS_IOS_KEYBOARD_ADD_TO_READING_LIST);
+  Verify(UIKeyCommand.cr_showReadingList, @"⌥⌘R", @"keyCommand_showReadingList",
+         IDS_IOS_KEYBOARD_SHOW_READING_LIST);
   Verify(UIKeyCommand.cr_goToTabGrid, @"⇧⌘\\", @"keyCommand_goToTabGrid",
          IDS_IOS_KEYBOARD_GO_TO_TAB_GRID);
   Verify(UIKeyCommand.cr_clearBrowsingData, @"⇧⌘⌫",
@@ -134,6 +152,34 @@ TEST_F(UIKeyCommandChromeTest, Factories) {
     Verify(UIKeyCommand.cr_goBack_2, @"⌘→", @"keyCommand_goBack");
     Verify(UIKeyCommand.cr_goForward_2, @"⌘←", @"keyCommand_goForward");
   }
+}
+
+// Checks that modifiers in the symbolic description are correct (correct symbol
+// and correct order).
+TEST_F(UIKeyCommandChromeTest, SymbolicDescription_Modifiers) {
+  UIKeyCommand* fullModifiers = [UIKeyCommand
+      keyCommandWithInput:@"a"
+            modifierFlags:UIKeyModifierNumericPad | UIKeyModifierControl |
+                          UIKeyModifierAlternate | UIKeyModifierShift |
+                          UIKeyModifierAlphaShift | UIKeyModifierCommand
+                   action:@selector(self)];
+
+  EXPECT_NSEQ(@"Num lock ⌃⌥⇧⇪⌘A", fullModifiers.cr_symbolicDescription);
+}
+
+// Checks that inputs in the symbolic description are correct (correct
+// capitalization and symbolization).
+TEST_F(UIKeyCommandChromeTest, SymbolicDescription_Inputs) {
+  EXPECT_NSEQ(@"A", KeyCommand(@"a").cr_symbolicDescription);
+  EXPECT_NSEQ(@"⌫", KeyCommand(@"\b").cr_symbolicDescription);
+  EXPECT_NSEQ(@"↵", KeyCommand(@"\r").cr_symbolicDescription);
+  EXPECT_NSEQ(@"⇥", KeyCommand(@"\t").cr_symbolicDescription);
+  EXPECT_NSEQ(@"↑", KeyCommand(@"UIKeyInputUpArrow").cr_symbolicDescription);
+  EXPECT_NSEQ(@"↓", KeyCommand(@"UIKeyInputDownArrow").cr_symbolicDescription);
+  EXPECT_NSEQ(@"←", KeyCommand(@"UIKeyInputLeftArrow").cr_symbolicDescription);
+  EXPECT_NSEQ(@"→", KeyCommand(@"UIKeyInputRightArrow").cr_symbolicDescription);
+  EXPECT_NSEQ(@"⎋", KeyCommand(@"UIKeyInputEscape").cr_symbolicDescription);
+  EXPECT_NSEQ(@"␣", KeyCommand(@" ").cr_symbolicDescription);
 }
 
 }  // namespace

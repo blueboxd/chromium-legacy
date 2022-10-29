@@ -57,7 +57,6 @@
               "external/wpt/web-animations/crashtests",
               "external/wpt/web-animations/timing-model/animations",
               "fast/events/pointerevents/pinch",
-              "lifecycle",
               "http/tests/devtools/isolated-code-cache",
               "http/tests/devtools/tracing",
               "http/tests/worklet",
@@ -438,7 +437,8 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/direct-sockets",
     	      "wpt_internal/direct-sockets"],
-    "args": ["--isolated-app-origins=https://web-platform.test"]
+    "args": ["--enable-features=IsolatedWebApps",
+             "--isolated-app-origins=https://web-platform.test"]
   },
   {
     "prefix": "display-compositor-pixel-dump",
@@ -1043,6 +1043,16 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/devtools/network/resource-priority.js"],
     "args": ["--enable-features=LowPriorityScriptLoading"]
+  },
+  {
+    "prefix": "lcp-multiple-updates-per-element",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/largest-contentful-paint/update-on-style-change.tentative.html"
+    ],
+    "args": [
+      "--enable-features=LCPMultipleUpdatesPerElement"
+    ]
   },
   {
     "prefix": "initially-invisible-images-lcp",

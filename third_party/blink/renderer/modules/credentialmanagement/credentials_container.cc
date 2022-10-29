@@ -98,9 +98,6 @@ using mojom::blink::GetAssertionAuthenticatorResponsePtr;
 using mojom::blink::RequestTokenStatus;
 using payments::mojom::blink::PaymentCredentialStorageStatus;
 
-constexpr char kCryptotokenOrigin[] =
-    "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
-
 // RequiredOriginType enumerates the requirements on the environment to perform
 // an operation.
 enum class RequiredOriginType {
@@ -1085,13 +1082,8 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
   }
 
   if (options->hasPublicKey()) {
-    auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-    if (!cryptotoken_origin->IsSameOriginWith(context->GetSecurityOrigin())) {
-      // Cryptotoken requests are recorded as kU2FCryptotokenSign from within
-      // the extension.
-      UseCounter::Count(context,
-                        WebFeature::kCredentialManagerGetPublicKeyCredential);
-    }
+    UseCounter::Count(context,
+                      WebFeature::kCredentialManagerGetPublicKeyCredential);
 
 #if BUILDFLAG(IS_ANDROID)
     if (options->publicKey()->hasExtensions() &&
@@ -1154,13 +1146,6 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
               "when creating a credential"));
           return promise;
         }
-      }
-      if (options->publicKey()->extensions()->hasGoogleLegacyAppidSupport()) {
-        resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kNotSupportedError,
-            "The 'googleLegacyAppidSupport' extension is only valid when "
-            "creating a credential"));
-        return promise;
       }
       if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(context) &&
           options->publicKey()->extensions()->hasPayment()) {
@@ -1492,14 +1477,8 @@ ScriptPromise CredentialsContainer::create(
     return promise;
   }
   DCHECK(options->hasPublicKey());
-  auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-  if (!cryptotoken_origin->IsSameOriginWith(
-          resolver->GetExecutionContext()->GetSecurityOrigin())) {
-    // Cryptotoken requests are recorded as kU2FCryptotokenRegister from
-    // within the extension.
-    UseCounter::Count(resolver->GetExecutionContext(),
-                      WebFeature::kCredentialManagerCreatePublicKeyCredential);
-  }
+  UseCounter::Count(resolver->GetExecutionContext(),
+                    WebFeature::kCredentialManagerCreatePublicKeyCredential);
 
   if (!IsArrayBufferOrViewBelowSizeLimit(options->publicKey()->challenge())) {
     resolver->Reject(DOMException::Create(
@@ -1578,20 +1557,6 @@ ScriptPromise CredentialsContainer::create(
             "The 'largeBlob' extension's 'write' parameter is only valid "
             "when requesting an assertion"));
         return promise;
-      }
-    }
-    if (options->publicKey()->extensions()->hasGoogleLegacyAppidSupport()) {
-      const auto& rp_id =
-          options->publicKey()->rp()->id()
-              ? options->publicKey()->rp()->id()
-              : resolver->GetExecutionContext()->GetSecurityOrigin()->Domain();
-      if (rp_id != "google.com") {
-        resolver->DomWindow()->AddConsoleMessage(
-            MakeGarbageCollected<ConsoleMessage>(
-                mojom::blink::ConsoleMessageSource::kJavaScript,
-                mojom::blink::ConsoleMessageLevel::kWarning,
-                "The 'googleLegacyAppidSupport' extension is ignored for "
-                "requests with an 'rp.id' not equal to 'google.com'"));
       }
     }
     if (options->publicKey()->extensions()->hasPayment() &&

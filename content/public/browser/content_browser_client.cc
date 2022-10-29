@@ -1109,12 +1109,6 @@ ContentBrowserClient::CreateWindowForVideoPictureInPicture(
   return nullptr;
 }
 
-std::unique_ptr<DocumentOverlayWindow>
-ContentBrowserClient::CreateWindowForDocumentPictureInPicture(
-    DocumentPictureInPictureWindowController* controller) {
-  return nullptr;
-}
-
 void ContentBrowserClient::RegisterRendererPreferenceWatcher(
     BrowserContext* browser_context,
     mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
@@ -1267,7 +1261,7 @@ void ContentBrowserClient::IsClipboardPasteContentAllowed(
     const ui::ClipboardFormatType& data_type,
     const std::string& data,
     IsClipboardPasteContentAllowedCallback callback) {
-  std::move(callback).Run(ClipboardPasteContentAllowed(true));
+  std::move(callback).Run(data);
 }
 
 bool ContentBrowserClient::IsClipboardCopyAllowed(

@@ -1229,12 +1229,12 @@ const FeatureEntry::FeatureVariation
          std::size(kSidePanelJourneysOpensFromOmniboxParams), nullptr},
 };
 const FeatureEntry::FeatureParam kJourneysJaccardSimilarityParams[] = {
-    {"collections_blocklist", "/collection/software"},
+    {"collections_blocklist", "/collection/it_glossary,/collection/software"},
     {"exclude_entities_that_have_no_collections", "true"},
     {"use_content_clustering_cosine_similarity", "false"},
 };
 const FeatureEntry::FeatureParam kJourneysCosineSimilarityParams[] = {
-    {"collections_blocklist", "/collection/software"},
+    {"collections_blocklist", "/collection/it_glosssary,/collection/software"},
     {"exclude_entities_that_have_no_collections", "true"},
     {"use_content_clustering_cosine_similarity", "true"},
 };
@@ -3562,21 +3562,9 @@ const FeatureEntry::FeatureVariation
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kTabSelectionEditorV2_share_enabled[] = {
     {"enable_share", "true"}};
-const FeatureEntry::FeatureParam kTabSelectionEditorV2_longpress_enabled[] = {
-    {"enable_longpress_entry", "true"}};
-const FeatureEntry::FeatureParam
-    kTabSelectionEditorV2_longpress_and_share_enabled[] = {
-        {"enable_share", "true"},
-        {"enable_longpress_entry", "true"},
-};
 const FeatureEntry::FeatureVariation kTabSelectionEditorV2Variations[] = {
     {"- with share", kTabSelectionEditorV2_share_enabled,
      std::size(kTabSelectionEditorV2_share_enabled), nullptr},
-    {"- with longpress", kTabSelectionEditorV2_longpress_enabled,
-     std::size(kTabSelectionEditorV2_longpress_enabled), nullptr},
-    {"- with share and longpress",
-     kTabSelectionEditorV2_longpress_and_share_enabled,
-     std::size(kTabSelectionEditorV2_longpress_and_share_enabled), nullptr},
 };
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -5529,6 +5517,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxHeaderPaddingUpdateDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxHeaderPaddingUpdate)},
 
+    {"omnibox-match-toolbar-and-status-bar-color",
+     flag_descriptions::kOmniboxMatchToolbarAndStatusBarColorName,
+     flag_descriptions::kOmniboxMatchToolbarAndStatusBarColorDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxMatchToolbarAndStatusBarColor)},
+
     {"omnibox-modernize-visual-update",
      flag_descriptions::kOmniboxModernizeVisualUpdateName,
      flag_descriptions::kOmniboxModernizeVisualUpdateDescription, kOsAndroid,
@@ -6640,6 +6634,10 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kCCTResizableForThirdParties,
          kCCTResizableThirdPartiesDefaultPolicyVariations,
          "CCTResizableThirdPartiesDefaultPolicy")},
+    {"cct-retaining-state-in-memory",
+     flag_descriptions::kCCTRetainingStateInMemoryName,
+     flag_descriptions::kCCTRetainingStateInMemoryDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTRetainingStateInMemory)},
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -8941,15 +8939,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kAppDiscoveryForOobe)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"u2f-security-key-api", flag_descriptions::kU2FSecurityKeyAPIName,
-     flag_descriptions::kU2FSecurityKeyAPIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(extensions_features::kU2FSecurityKeyAPI)},
-    {"load-cryptotoken-extension",
-     flag_descriptions::kLoadCryptoTokenExtensionName,
-     flag_descriptions ::kLoadCryptoTokenExtensionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(extensions_features::kLoadCryptoTokenExtension)},
-#endif  // ENABLE_EXTENSIONS
     {"force-major-version-to-minor",
      flag_descriptions::kForceMajorVersionInMinorPositionInUserAgentName,
      flag_descriptions::kForceMajorVersionInMinorPositionInUserAgentDescription,
@@ -8964,9 +8953,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableOfferNotificationForPromoCodes)},
 
-    {"u2f-permission-prompt", flag_descriptions::kU2FPermissionPromptName,
-     flag_descriptions::kU2FPermissionPromptDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(device::kU2fPermissionPrompt)},
     {"upcoming-sharing-features",
      flag_descriptions::kUpcomingSharingFeaturesName,
      flag_descriptions::kUpcomingSharingFeaturesDescription, kOsAll,
@@ -9617,6 +9603,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRequestDesktopSiteExceptionsDowngradeDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(browser_ui::kRequestDesktopSiteExceptionsDowngrade)},
+#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID)
+    {"request-desktop-site-zoom",
+     flag_descriptions::kRequestDesktopSiteZoomName,
+     flag_descriptions::kRequestDesktopSiteZoomDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kRequestDesktopSiteZoom)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)

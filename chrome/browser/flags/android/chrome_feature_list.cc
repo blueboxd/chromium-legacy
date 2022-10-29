@@ -19,6 +19,7 @@
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flags/android/chrome_session_state.h"
 #include "chrome/browser/flags/jni_headers/ChromeFeatureList_jni.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/share/share_features.h"
@@ -205,6 +206,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
     &kCCTRetainingState,
+    &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
     &kCCTShowAboutBlankUrl,
     &kCCTToolbarCustomizations,
@@ -284,6 +286,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteOptInControlSynthetic,
     &kRequestDesktopSiteOptInSynthetic,
     &kRequestDesktopSiteDefaultsDowngrade,
+    &kRequestDesktopSiteZoom,
     &kSafeModeForCachedFlags,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoExistingDeviceV2,
@@ -350,6 +353,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &language::kForceAppLanguagePrompt,
     &language::kTranslateAssistContent,
     &language::kTranslateIntent,
+    &media_router::kCafMRPDeferredDiscovery,
     &messages::kMessagesForAndroidChromeSurvey,
     &messages::kMessagesForAndroidInfrastructure,
     &messages::kMessagesForAndroidReaderMode,
@@ -368,6 +372,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kMostVisitedTilesTitleWrapAround,
     &omnibox::kOmniboxAssistantVoiceSearch,
     &omnibox::kOmniboxHeaderPaddingUpdate,
+    &omnibox::kOmniboxMatchToolbarAndStatusBarColor,
     &omnibox::kOmniboxRemoveExcessiveRecycledViewClearCalls,
     &omnibox::kOmniboxRemoveSuggestionHeaderCapitalization,
     &omnibox::kOmniboxRemoveSuggestionHeaderChevron,
@@ -622,6 +627,10 @@ BASE_FEATURE(kCCTResourcePrefetch,
 
 BASE_FEATURE(kCCTRetainingState,
              "CCTRetainingState",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTRetainingStateInMemory,
+             "CCTRetainingStateInMemory",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTShowAboutBlankUrl,
@@ -932,6 +941,10 @@ BASE_FEATURE(kRequestDesktopSiteOptInSynthetic,
 
 BASE_FEATURE(kRequestDesktopSiteDefaultsDowngrade,
              "RequestDesktopSiteDefaultsDowngrade",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteZoom,
+             "RequestDesktopSiteZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeModeForCachedFlags,

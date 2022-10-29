@@ -71,6 +71,7 @@ class TestSkiaImageRepresentation : public SkiaImageRepresentation {
   std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
+      const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
@@ -160,6 +161,12 @@ class TestOverlayImageRepresentation : public OverlayImageRepresentation {
     return gl_image_.get();
   }
 
+#if BUILDFLAG(IS_ANDROID)
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBufferFenceSync() override {
+    return nullptr;
+  }
+#endif
  private:
   scoped_refptr<gl::GLImage> gl_image_;
 };

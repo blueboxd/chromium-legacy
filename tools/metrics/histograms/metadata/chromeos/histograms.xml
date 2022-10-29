@@ -1302,7 +1302,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Lacros.OSChannel" enum="ChromeOSChannel"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
   <owner>erikchen@chromium.org</owner>
   <owner>lacros-team@google.com</owner>
   <summary>
@@ -1313,7 +1313,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Lacros.StartTime" units="ms"
-    expires_after="2022-10-01">
+    expires_after="2023-10-01">
   <owner>erikchen@chromium.org</owner>
   <owner>lacros-team@google.com</owner>
   <summary>
@@ -2102,16 +2102,6 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     This value represents the type of a USB Type-C peripheral (the Partner)
     which is connected to a device. It is recorded every time a new peripheral
     is connected.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.TypeC.UsbDeviceSpeed" enum="UsbDeviceSpeedMetric"
-    expires_after="2023-04-16">
-  <owner>wonchung@google.com</owner>
-  <owner>chromeos-usb@google.com</owner>
-  <summary>
-    This value represents the speed (USB standard) of USB device connected. It
-    is recorded every time a new USB device is connected.
   </summary>
 </histogram>
 

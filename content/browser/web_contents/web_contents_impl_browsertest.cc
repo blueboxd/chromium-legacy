@@ -2895,10 +2895,14 @@ class WebContentsImplBrowserTestReduceAcceptLanguageOn
             ->browser_context()
             ->GetReduceAcceptLanguageControllerDelegate();
 
-    delegate->PersistReducedLanguage(url::Origin::Create(url), persist_lang);
+    url::Origin origin = url::Origin::Create(url);
+    delegate->PersistReducedLanguage(origin, persist_lang);
     const absl::optional<std::string>& language =
-        delegate->GetReducedLanguage(url::Origin::Create(url));
+        delegate->GetReducedLanguage(origin);
     EXPECT_EQ(expect_lang, language);
+
+    delegate->ClearReducedLanguage(origin);
+    EXPECT_FALSE(delegate->GetReducedLanguage(origin).has_value());
   }
 
  private:
@@ -5115,10 +5119,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       GURL("https://google.com"), ui::ClipboardFormatType::PlainTextType(),
       "random pasted text",
       base::BindLambdaForTesting(
-          [&web_contents](
-              content::ContentBrowserClient::ClipboardPasteContentAllowed
-                  allowed) {
-            EXPECT_TRUE(allowed);
+          [&web_contents](const absl::optional<std::string>& data) {
+            EXPECT_TRUE(data);
             EXPECT_TRUE(web_contents->ShouldIgnoreUnresponsiveRenderer());
           }));
   EXPECT_FALSE(web_contents->ShouldIgnoreUnresponsiveRenderer());

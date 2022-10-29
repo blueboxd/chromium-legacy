@@ -433,11 +433,6 @@ extern const char kLogBreadcrumbsDescription[];
 extern const char kMediaPermissionsControlName[];
 extern const char kMediaPermissionsControlDescription[];
 
-// Title and description for the flag that controls sending metrickit crash
-// reports.
-extern const char kMetrickitCrashReportName[];
-extern const char kMetrickitCrashReportDescription[];
-
 // Title and description for the flag that controls sending metrickit non-crash
 // reports.
 extern const char kMetrickitNonCrashReportName[];
@@ -477,6 +472,10 @@ extern const char kNewOverflowMenuAlternateIPHDescription[];
 // TODO(crbug.com/1262536): Remove this when fixed.
 extern const char kNTPViewHierarchyRepairName[];
 extern const char kNTPViewHierarchyRepairDescription[];
+
+// Title and description for dynamic spacing in Omnibox Carousel.
+extern const char kOmniboxCarouselDynamicSpacingName[];
+extern const char kOmniboxCarouselDynamicSpacingDescription[];
 
 // Title and description for fuzzy URL suggestions feature.
 extern const char kOmniboxFuzzyUrlSuggestionsName[];

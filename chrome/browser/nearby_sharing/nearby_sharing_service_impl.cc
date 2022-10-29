@@ -12,21 +12,18 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/files/file.h"
-#include "base/files/file_path.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/checked_math.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/nearby_sharing/certificates/common.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
@@ -45,6 +42,7 @@
 #include "chrome/browser/nearby_sharing/nearby_share_feature_status.h"
 #include "chrome/browser/nearby_sharing/nearby_share_metrics_logger.h"
 #include "chrome/browser/nearby_sharing/paired_key_verification_runner.h"
+#include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/nearby_sharing/wifi_network_configuration/wifi_network_configuration_handler.h"
@@ -237,17 +235,6 @@ int64_t GeneratePayloadId() {
   int64_t payload_id = 0;
   crypto::RandBytes(&payload_id, sizeof(payload_id));
   return payload_id;
-}
-
-// FuseBox (go/fuse-box) makes virtual file systems (e.g. ARC ContentProvider)
-// visible on the Linux native file system through a FUSE (Filesystem in
-// USErspace) abstraction layer.
-bool IsFuseBoxFilePath(const base::FilePath& file_path) {
-  if (file_path.empty()) {
-    return false;
-  }
-  return base::StartsWith(file_path.value(),
-                          file_manager::util::kFuseBoxMediaPath);
 }
 
 // Wraps a call to OnTransferUpdate() to filter any updates after receiving a
@@ -863,7 +850,7 @@ void NearbySharingServiceImpl::Reject(
 void NearbySharingServiceImpl::Cancel(
     const ShareTarget& share_target,
     StatusCodesCallback status_codes_callback) {
-  NS_LOG(INFO) << __func__ << ": User canceled transfer";
+  NS_LOG(INFO) << __func__ << ": User cancelled transfer";
   locally_cancelled_share_target_ids_.insert(share_target.id);
   DoCancel(share_target, std::move(status_codes_callback),
            /*is_initiator_of_cancellation=*/true);
@@ -1736,7 +1723,7 @@ void NearbySharingServiceImpl::InvalidateSurfaceState() {
           << __func__
           << ": Scheduling process shutdown if not needed in 15 seconds";
       // NOTE: Using base::Unretained is safe because if shutdown_pending_timer_
-      // goes out of scope the timer will be canceled.
+      // goes out of scope the timer will be cancelled.
       process_shutdown_pending_timer_.Start(
           FROM_HERE, kProcessShutdownPendingTimerDelay,
           base::BindOnce(&NearbySharingServiceImpl::OnProcessShutdownTimerFired,
@@ -2783,15 +2770,11 @@ void NearbySharingServiceImpl::CreatePayloads(
     file_paths.push_back(*attachment.file_path());
   }
 
-  // If the first attachment file has a fusebox path, it is expected that all
-  // file attachments from the same volume will be using fusebox (e.g. MTP).
-  const bool is_fusebox_path =
-      file_paths.size() ? IsFuseBoxFilePath(file_paths[0]) : false;
   file_handler_.OpenFiles(
       std::move(file_paths),
       base::BindOnce(&NearbySharingServiceImpl::OnOpenFiles,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target),
-                     std::move(callback), is_fusebox_path));
+                     std::move(callback)));
 }
 
 void NearbySharingServiceImpl::OnCreatePayloads(
@@ -2833,15 +2816,12 @@ void NearbySharingServiceImpl::OnCreatePayloads(
 void NearbySharingServiceImpl::OnOpenFiles(
     ShareTarget share_target,
     base::OnceCallback<void(ShareTarget, bool)> callback,
-    bool is_fusebox_file_path,
     std::vector<NearbyFileHandler::FileInfo> files) {
   OutgoingShareTargetInfo* info = GetOutgoingShareTargetInfo(share_target);
-  bool files_open_success =
+  const bool files_open_success =
       (files.size() == share_target.file_attachments.size());
-  if (is_fusebox_file_path) {
-    base::UmaHistogramBoolean("Nearby.Share.Payload.FuseBox.Open.Success",
-                              files_open_success);
-  }
+  RecordNearbySharePayloadFileOperationMetrics(
+      profile_, share_target, PayloadFileOperation::kOpen, files_open_success);
   if (!info || !files_open_success) {
     std::move(callback).Run(std::move(share_target), /*success=*/false);
     return;
@@ -3872,6 +3852,18 @@ void NearbySharingServiceImpl::OnPayloadTransferUpdate(
   // cancellation.
   if (TransferMetadata::IsFinalStatus(metadata.status()) &&
       metadata.status() != TransferMetadata::Status::kCancelled) {
+    if (share_target.has_attachments() &&
+        share_target.file_attachments.size()) {
+      // For file payloads, the |PayloadTracker| callback for updates is
+      // |OnTransferUpdate| which will set status |kComplete| and progress at
+      // 100% if payload reading is successful.
+      const bool files_read_success =
+          ((metadata.status() == TransferMetadata::Status::kComplete) &&
+           metadata.progress() == 100.0);
+      RecordNearbySharePayloadFileOperationMetrics(profile_, share_target,
+                                                   PayloadFileOperation::kRead,
+                                                   files_read_success);
+    }
     Disconnect(share_target, metadata);
   }
 }
@@ -3981,18 +3973,18 @@ bool NearbySharingServiceImpl::OnIncomingPayloadsComplete(
     sharing::nearby::WifiCredentials credentials_proto;
     if (!credentials_proto.ParseFromArray(bytes.data(), bytes.size())) {
       NS_LOG(WARNING) << __func__
-                      << ": Failed to parse Wi-Fi credentials proto";
+                      << ": Failed to parse Wi-Fi credentials proto.";
       return false;
     }
 
     if (credentials_proto.password().empty()) {
-      NS_LOG(WARNING) << __func__ << ": No Wi-Fi password found";
+      NS_LOG(WARNING) << __func__ << ": No Wi-Fi password found.";
       return false;
     }
 
     if (credentials_proto.has_hidden_ssid() &&
         credentials_proto.hidden_ssid()) {
-      NS_LOG(WARNING) << __func__ << ": Network is hidden";
+      NS_LOG(WARNING) << __func__ << ": Network is hidden.";
       return false;
     }
 
@@ -4011,7 +4003,9 @@ void NearbySharingServiceImpl::RemoveIncomingPayloads(
   if (!share_target.is_incoming)
     return;
 
-  NS_LOG(INFO) << __func__ << ": Cleaning up payloads due to transfer failure";
+  NS_LOG(INFO)
+      << __func__
+      << ": Cleaning up payloads due to transfer cancelled or failure.";
 
   nearby_connections_manager_->ClearIncomingPayloads();
   std::vector<base::FilePath> files_for_deletion;

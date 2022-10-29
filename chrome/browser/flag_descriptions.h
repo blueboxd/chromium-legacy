@@ -144,15 +144,6 @@ extern const char kWebFilterInterstitialRefreshName[];
 extern const char kWebFilterInterstitialRefreshDescription[];
 #endif  // ENABLE_SUPERVISED_USERS
 
-extern const char kU2FPermissionPromptName[];
-extern const char kU2FPermissionPromptDescription[];
-
-extern const char kU2FSecurityKeyAPIName[];
-extern const char kU2FSecurityKeyAPIDescription[];
-
-extern const char kLoadCryptoTokenExtensionName[];
-extern const char kLoadCryptoTokenExtensionDescription[];
-
 extern const char kUpcomingSharingFeaturesName[];
 extern const char kUpcomingSharingFeaturesDescription[];
 
@@ -1115,6 +1106,9 @@ extern const char
 extern const char kOmniboxModernizeVisualUpdateName[];
 extern const char kOmniboxModernizeVisualUpdateDescription[];
 
+extern const char kOmniboxMatchToolbarAndStatusBarColorName[];
+extern const char kOmniboxMatchToolbarAndStatusBarColorDescription[];
+
 extern const char kOmniboxMostVisitedTilesName[];
 extern const char kOmniboxMostVisitedTilesDescription[];
 
@@ -1985,6 +1979,9 @@ extern const char kCCTResizableForFirstPartiesDescription[];
 extern const char kCCTResizableForThirdPartiesName[];
 extern const char kCCTResizableForThirdPartiesDescription[];
 
+extern const char kCCTRetainingStateInMemoryName[];
+extern const char kCCTRetainingStateInMemoryDescription[];
+
 extern const char kCCTRealTimeEngagementSignalsName[];
 extern const char kCCTRealTimeEngagementSignalsDescription[];
 
@@ -2275,6 +2272,9 @@ extern const char kRequestDesktopSiteExceptionsDowngradeDescription[];
 
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
+
+extern const char kRequestDesktopSiteZoomName[];
+extern const char kRequestDesktopSiteZoomDescription[];
 
 extern const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[];
 extern const char

@@ -208,15 +208,6 @@ const char kTextBasedAudioDescriptionDescription[] =
     "When enabled, HTML5 video elements with a 'descriptions' WebVTT track "
     "will speak the audio descriptions aloud as the video plays.";
 
-const char kU2FPermissionPromptName[] =
-    "Enable a permission prompt for the U2F Security Key API";
-const char kU2FPermissionPromptDescription[] =
-    "Show a permission prompt when making requests to the legacy U2F Security "
-    "Key API (CryptoToken). The U2F Security "
-    "Key API has been deprecated and will be removed soon. For more "
-    "information, refer to the deprecation announcement at "
-    "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
-
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 const char kWebFilterInterstitialRefreshName[] =
     "Web filter interstitial refresh.";
@@ -224,21 +215,6 @@ const char kWebFilterInterstitialRefreshDescription[] =
     "Enable web filter interstitial refresh for Family Link users on Chrome "
     "OS.";
 #endif  // ENABLE_SUPERVISED_USERS
-
-const char kU2FSecurityKeyAPIName[] = "Enable the U2F Security Key API";
-const char kU2FSecurityKeyAPIDescription[] =
-    "Enable the legacy U2F Security Key API (CryptoToken). The U2F Security "
-    "Key API has been deprecated and will be removed soon. For more "
-    "information, refer to the deprecation announcement at "
-    "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
-
-const char kLoadCryptoTokenExtensionName[] =
-    "Load the CryptoToken component extension ";
-const char kLoadCryptoTokenExtensionDescription[] =
-    "Enable this flag to temporarily work around issues with `chrome.runtime` "
-    "being undefined as a side effect of U2F API removal. This workaround "
-    "will go away with Chrome 107. Websites should not depend on "
-    "`chrome.runtime` or `chrome.app` being defined unconditionally.";
 
 const char kUpcomingSharingFeaturesName[] = "Enable upcoming sharing features.";
 const char kUpcomingSharingFeaturesDescription[] =
@@ -929,7 +905,7 @@ const char kDesktopPWAsLaunchHandlerName[] = "Desktop PWA launch handler";
 const char kDesktopPWAsLaunchHandlerDescription[] =
     "Enable web app manifests to declare app launch behavior. Prototype "
     "implementation of: "
-    "https://github.com/WICG/sw-launch/blob/main/launch_handler.md";
+    "https://github.com/WICG/web-app-launch/blob/main/launch_handler.md";
 
 const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
 const char kDesktopPWAsTabStripDescription[] =
@@ -1972,6 +1948,12 @@ const char kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsName[] =
 const char
     kOmniboxHistoryQuickProviderSpecificityScoreCountUniqueHostsDescription[] =
         "When enabled, HQP doesn't demote same-host suggestions.";
+
+const char kOmniboxMatchToolbarAndStatusBarColorName[] =
+    "Omnibox Omnibox Match Toolbar And Status Bar Color";
+const char kOmniboxMatchToolbarAndStatusBarColorDescription[] =
+    "When enabled, the color of the toolbar and the status bar will be "
+    "synchronized.";
 
 const char kOmniboxModernizeVisualUpdateName[] =
     "Omnibox Modernize Visual Update";
@@ -3507,6 +3489,10 @@ const char kCCTResizableAlwaysShowNavBarButtonsName[] =
 const char kCCTResizableAlwaysShowNavBarButtonsDescription[] =
     "The navigation bar buttons will remain visible while a Partial Chrome "
     "Custom Tab is being resized.";
+const char kCCTRetainingStateInMemoryName[] =
+    "Enable restoring of previous Custom Tab session";
+const char kCCTRetainingStateInMemoryDescription[] =
+    "Enables ability to fully restore a recently engaged with Custom Tab.";
 const char kCCTRealTimeEngagementSignalsName[] =
     "Enable CCT real-time engagement signals.";
 const char kCCTRealTimeEngagementSignalsDescription[] =
@@ -3990,6 +3976,11 @@ const char kRequestDesktopSiteForTabletsDescription[] =
     "Requests a desktop site, if the screen size is large enough on Android."
     " On tablets with small screens a mobile site will be requested by "
     "default.";
+
+const char kRequestDesktopSiteZoomName[] =
+    "Default zoom for request desktop site on Android.";
+const char kRequestDesktopSiteZoomDescription[] =
+    "Apply default page zoom on the desktop version of websites.";
 
 const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[] =
     "Revoke site-level notification permission on Android";

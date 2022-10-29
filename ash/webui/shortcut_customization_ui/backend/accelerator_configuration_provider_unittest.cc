@@ -35,13 +35,19 @@ bool CompareAccelerators(const ash::AcceleratorData& expected_data,
   ash::AcceleratorInfo expected_info(
       actual_info.type, expected_accel,
       ash::KeycodeToKeyString(expected_data.keycode),
+      /*has_key_event=*/true,
       /*locked=*/true);
 
   const bool type_equals = expected_info.type == actual_info.type;
   const bool accelerator_equals =
       expected_info.accelerator == actual_info.accelerator;
   const bool locked_equals = expected_info.locked == actual_info.locked;
-  return type_equals && accelerator_equals && locked_equals;
+  const bool key_display_equals =
+      expected_info.key_display == actual_info.key_display;
+  const bool has_key_event_equals =
+      expected_info.has_key_event == actual_info.has_key_event;
+  return type_equals && accelerator_equals && locked_equals &&
+         key_display_equals && has_key_event_equals;
 }
 
 void ExpectAllAcceleratorsEqual(
@@ -72,7 +78,8 @@ void ExpectMojomAcceleratorsEqual(
   for (const auto& iter : actual_config[source]) {
     for (const auto& mojo_info : iter.second) {
       AcceleratorInfo accelerator(mojo_info->type, mojo_info->accelerator,
-                                  mojo_info->key_display, mojo_info->locked);
+                                  mojo_info->key_display,
+                                  mojo_info->has_key_event, mojo_info->locked);
       actual_infos.push_back(std::move(accelerator));
     }
   }
@@ -102,9 +109,9 @@ class AcceleratorConfigurationProviderTest : public AshTestBase {
   void TearDown() override { AshTestBase::TearDown(); }
 
  protected:
-  std::vector<AcceleratorInfo> GetAshAccelerators() {
+  std::vector<AcceleratorInfo> GetAshAcceleratorInfos() {
     const std::map<AcceleratorActionId, std::vector<AcceleratorInfo>>&
-        ash_accel_map = provider_->ash_accelerator_mapping_;
+        ash_accel_map = provider_->id_to_accelerator_info_;
     std::vector<AcceleratorInfo> accelerators;
     for (const auto& iter : ash_accel_map) {
       for (const auto& accel : iter.second) {
@@ -168,7 +175,7 @@ TEST_F(AcceleratorConfigurationProviderTest, AshAcceleratorsUpdated) {
   };
   Shell::Get()->ash_accelerator_configuration()->Initialize(test_data);
   base::RunLoop().RunUntilIdle();
-  ExpectAllAcceleratorsEqual(test_data, GetAshAccelerators());
+  ExpectAllAcceleratorsEqual(test_data, GetAshAcceleratorInfos());
 
   // Initialize with a new set of accelerators.
   const AcceleratorData updated_test_data[] = {
@@ -181,7 +188,7 @@ TEST_F(AcceleratorConfigurationProviderTest, AshAcceleratorsUpdated) {
   };
   Shell::Get()->ash_accelerator_configuration()->Initialize(updated_test_data);
   base::RunLoop().RunUntilIdle();
-  ExpectAllAcceleratorsEqual(updated_test_data, GetAshAccelerators());
+  ExpectAllAcceleratorsEqual(updated_test_data, GetAshAcceleratorInfos());
 }
 
 TEST_F(AcceleratorConfigurationProviderTest, GetAcceleratorConfigAsh) {
@@ -195,7 +202,7 @@ TEST_F(AcceleratorConfigurationProviderTest, GetAcceleratorConfigAsh) {
   };
   Shell::Get()->ash_accelerator_configuration()->Initialize(test_data);
   base::RunLoop().RunUntilIdle();
-  ExpectAllAcceleratorsEqual(test_data, GetAshAccelerators());
+  ExpectAllAcceleratorsEqual(test_data, GetAshAcceleratorInfos());
 
   GetAshConfigAndExpectEquals(test_data);
   base::RunLoop().RunUntilIdle();

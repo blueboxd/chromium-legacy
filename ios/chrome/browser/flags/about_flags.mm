@@ -702,9 +702,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillUseMobileLabelDisambiguation,
          kAutofillUseMobileLabelDisambiguationVariations,
          "AutofillUseMobileLabelDisambiguation")},
-    {"metrickit-crash-reports", flag_descriptions::kMetrickitCrashReportName,
-     flag_descriptions::kMetrickitCrashReportDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kMetrickitCrashReport)},
     {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
      flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(breadcrumbs::kLogBreadcrumbs)},
@@ -1316,6 +1313,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kFollowingFeedDefaultSortType,
                                     kFollowingFeedDefaultSortTypeVariations,
                                     "FollowingFeedDefaultSortType")},
+    {"omnibox-carousel-dynamic-spacing",
+     flag_descriptions::kOmniboxCarouselDynamicSpacingName,
+     flag_descriptions::kOmniboxCarouselDynamicSpacingDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxCarouselDynamicSpacing)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

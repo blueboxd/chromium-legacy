@@ -134,6 +134,10 @@ BASE_FEATURE(kMbiCompositorTaskRunnerPerAgentSchedulingGroup,
              "MbiCompositorTaskRunnerPerAgentSchedulingGroup",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Feature to experiment with different values for: "prioritize main thread
+// compositing tasks if we haven't done a main frame in this many milliseconds."
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kPrioritizeCompositingAfterDelayTrials);
+
 // Interval between Javascript timer wake ups when the "ThrottleForegroundTimers"
 // feature is enabled.
 PLATFORM_EXPORT base::TimeDelta GetForegroundTimersThrottledWakeUpInterval();
@@ -173,7 +177,7 @@ BASE_FEATURE(kRejectedPromisesPerWindowAgent,
 
 BASE_FEATURE(kMicrotaskQueuePerWindowAgent,
              "BlinkSchedulerMicroTaskQueuePerWindowAgent",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMicrotaskQueuePerPaintWorklet,
              "BlinkSchedulerMicroTaskQueuePerPaintWorklet",

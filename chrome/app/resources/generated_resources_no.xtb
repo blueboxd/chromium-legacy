@@ -955,7 +955,6 @@ Tillatelser du allerede har gitt apper, kan gjelde for denne kontoen. Du kan sty
 <translation id="1852799913675865625">Det oppstod en feil under forsøket på å lese filen: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1854049213067042715">Fortsett der du slapp. Du kan angi at apper alltid skal gjenopprettes ved oppstart, eller slå av gjenoppretting, i innstillingene.</translation>
 <translation id="1854180393107901205">Stopp castingen</translation>
-<translation id="1855079636134697549">Kameraet er slått på</translation>
 <translation id="1856715684130786728">Legg til plassering</translation>
 <translation id="1858585891038687145">Stol på dette sertifikatet for identifisering av programvareprodusenter.</translation>
 <translation id="1861262398884155592">Denne mappen er tom</translation>
@@ -1629,7 +1628,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2453860139492968684">Fullfør</translation>
 <translation id="2454206500483040640">Partisjonert</translation>
 <translation id="2454247629720664989">Søkeord</translation>
-<translation id="2454264884354864965">Kameraet er av</translation>
 <translation id="2454524890947537054">Vil du godkjenne nettforespørselen?</translation>
 <translation id="245650153866130664">For å oppdatere saker automatisk, merk av for «Husk passordet». Passordet blir kun lagret på din egen enhet.</translation>
 <translation id="2456827790665612305">Slutt å følge nettstedet</translation>
@@ -1955,7 +1953,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2749756011735116528">Logg på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749836841884031656">SIM-kort</translation>
 <translation id="2749881179542288782">Kontroller·grammatikk·og·staving</translation>
-<translation id="2753677631968972007">Styr nettstedstillatelser manuelt.</translation>
 <translation id="2754226775788136540">Ser etter Rask sammenkobling-enheter som er lagret i <ph name="PRIMARY_EMAIL" /></translation>
 <translation id="2754825024506485820">Finn appene du trenger – fra produktivitet til underholdning – i Google Play-butikken. Du kan installere apper når som helst.</translation>
 <translation id="2755349111255270002">Tilbakestill <ph name="DEVICE_TYPE" /></translation>
@@ -3990,7 +3987,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4675828034887792601">Opprett snarveier for å søke på nettsteder, og administrer søkemotoren din</translation>
 <translation id="4676595058027112862">Telefonstyring – finn ut mer</translation>
 <translation id="4677772697204437347">GPU-minne</translation>
-<translation id="467823995058589466">Kameraet er slått av</translation>
 <translation id="4680105648806843642">Lyden er kuttet på denne siden</translation>
 <translation id="4680112532510845139">Slipp et bilde her</translation>
 <translation id="4681453295291708042">Slå av nærdeling</translation>
@@ -4000,7 +3996,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4683629100208651599">Gjør om til små bokstaver</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" /> % (standard)</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
-<translation id="4684471265911890182"><ph name="APP_NAME" /> prøver å bruke kameraet. Slå av personvernbryteren for kamera for å gi tilgang.</translation>
 <translation id="4687613760714619596">Ukjent enhet (<ph name="DEVICE_ID" />)</translation>
 <translation id="4688036121858134881">Lokal logg-ID: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
 <translation id="4688176403504673761"><ph name="MANAGER" /> stiller denne enheten inn på en tidligere versjon (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -5153,6 +5148,7 @@ Bruk Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="5799508265798272974">Virtuell Linux-maskin: <ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">Målfilen har blitt komprimert eller fjernet siden siste nedlasting</translation>
 <translation id="5800351251499368110">Lukk søket i sidepanelet. Søket er åpent i sidepanelet.</translation>
+<translation id="5801051031414037185">Konfigurer telefonen</translation>
 <translation id="5801568494490449797">Innstillinger</translation>
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5805268472388605531">Trykk og hold på tastaturtastene for å se aksenttegn og spesialtegn</translation>
@@ -5444,6 +5440,7 @@ Bruk Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="6072442788591997866"><ph name="APP_NAME" /> er ikke tillatt på denne enheten. Kontakt administratoren din. Feilkode: <ph name="ERROR_CODE" />.</translation>
 <translation id="6073451960410192870">Stopp opptaket</translation>
 <translation id="6073903501322152803">Legg til tilgjengelighetsfunksjoner</translation>
+<translation id="6075075631258766703">Bekreft telefonen</translation>
 <translation id="6075731018162044558">Beklager. Systemet kunne ikke hente noe langvarig API-tilgangstoken for denne enheten.</translation>
 <translation id="6075907793831890935">utveksle data med enheten <ph name="HOSTNAME" />.</translation>
 <translation id="6076175485108489240">Bruk posisjon. Tillat at apper og tjenester med posisjonstillatelse bruker posisjonen til enheten din. Google kan samle inn posisjonsdata med jevne mellomrom og bruke disse dataene til å forbedre posisjonsnøyaktigheten og posisjonsbaserte tjenester på en anonym måte. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
@@ -8016,7 +8013,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8481187309597259238">Bekreft USB-tillatelse</translation>
 <translation id="8481980314595922412">Prøvefunksjoner er påslått</translation>
 <translation id="8486666913807228950">Årsak: Fant den inverterte regelen <ph name="REVERT_RULE" /> på «Tving åpning i»-listen.</translation>
-<translation id="848666842773560761">En app prøver å bruke kameraet. Slå av personvernbryteren for kamera for å gi tilgang.</translation>
 <translation id="8487678622945914333">Zoom inn</translation>
 <translation id="8487699605742506766">Wifi-sone</translation>
 <translation id="8489156414266187072">Personlige forslag vises kun på kontoen din</translation>

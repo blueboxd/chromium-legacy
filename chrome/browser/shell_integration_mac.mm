@@ -93,7 +93,8 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
   return return_code == noErr;
 }
 
-DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
+DefaultWebClientSetPermission
+GetPlatformSpecificDefaultWebClientSetPermission() {
   return SET_DEFAULT_UNATTENDED;
 }
 

@@ -34,6 +34,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -654,9 +655,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::VideoOverlayWindow>
   CreateWindowForVideoPictureInPicture(
       content::VideoPictureInPictureWindowController* controller) override;
-  std::unique_ptr<content::DocumentOverlayWindow>
-  CreateWindowForDocumentPictureInPicture(
-      content::DocumentPictureInPictureWindowController* controller) override;
   void RegisterRendererPreferenceWatcher(
       content::BrowserContext* browser_context,
       mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher)

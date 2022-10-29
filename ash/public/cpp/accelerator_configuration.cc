@@ -14,6 +14,19 @@ AcceleratorConfiguration::AcceleratorConfiguration(
 
 AcceleratorConfiguration::~AcceleratorConfiguration() = default;
 
+AcceleratorInfo::AcceleratorInfo(ash::mojom::AcceleratorType type,
+                                 ui::Accelerator accelerator,
+                                 const std::u16string& key_display,
+                                 bool has_key_event,
+                                 bool locked)
+    : type(type),
+      accelerator(accelerator),
+      key_display(key_display),
+      has_key_event(has_key_event),
+      locked(locked) {}
+AcceleratorInfo::AcceleratorInfo(const AcceleratorInfo& other) = default;
+AcceleratorInfo::~AcceleratorInfo() = default;
+
 void AcceleratorConfiguration::AddAcceleratorsUpdatedCallback(
     AcceleratorsUpdatedCallback callback) {
   callbacks_.push_back(callback);
@@ -34,8 +47,7 @@ void AcceleratorConfiguration::RemoveAcceleratorsUpdatedCallback(
 }
 
 void AcceleratorConfiguration::UpdateAccelerators(
-    const std::map<AcceleratorActionId, std::vector<AcceleratorInfo>>&
-        accelerators) {
+    const ActionIdToAcceleratorsMap& accelerators) {
   // Update local cache everything an observable event is fired.
   accelerator_mapping_cache_ = accelerators;
 

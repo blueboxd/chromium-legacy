@@ -243,6 +243,7 @@ public abstract class ChromeFeatureList {
     public static final String BIOMETRIC_TOUCH_TO_FILL = "BiometricTouchToFill";
     public static final String CACHE_DEPRECATED_SYSTEM_LOCATION_SETTING =
             "CacheDeprecatedSystemLocationSetting";
+    public static final String CAF_MRP_DEFERRED_DISCOVERY = "CafMRPDeferredDiscovery";
     public static final String CAPTIVE_PORTAL_CERTIFICATE_LIST = "CaptivePortalCertificateList";
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
     public static final String CCT_BRAND_TRANSPARENCY = "CCTBrandTransparency";
@@ -265,6 +266,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_RETAINING_STATE = "CCTRetainingState";
+    public static final String CCT_RETAINING_STATE_IN_MEMORY = "CCTRetainingStateInMemory";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
     public static final String CCT_SHOW_ABOUT_BLANK_URL = "CCTShowAboutBlankUrl";
@@ -436,6 +438,8 @@ public abstract class ChromeFeatureList {
             "AndroidAuxiliarySearch";
     public static final String OMNIBOX_ASSISTANT_VOICE_SEARCH = "OmniboxAssistantVoiceSearch";
     public static final String OMNIBOX_HEADER_PADDING_UPDATE = "OmniboxHeaderPaddingUpdate";
+    public static final String OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR =
+            "OmniboxMatchToolbarAndStatusBarColor";
     public static final String OMNIBOX_MODERNIZE_VISUAL_UPDATE = "OmniboxModernizeVisualUpdate";
     public static final String OMNIBOX_MOST_VISITED_TILES_FADING_ON_TABLET =
             "OmniboxMostVisitedTilesFadingOnTablet";
@@ -520,6 +524,7 @@ public abstract class ChromeFeatureList {
     public static final String REQUEST_DESKTOP_SITE_OPT_IN_CONTROL_SYNTHETIC =
             "RequestDesktopSiteOptInControlSynthetic";
     public static final String REQUEST_DESKTOP_SITE_FOR_TABLETS = "RequestDesktopSiteForTablets";
+    public static final String REQUEST_DESKTOP_SITE_ZOOM = "RequestDesktopSiteZoom";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
     public static final String SCREENSHOTS_FOR_ANDROID_V2 = "ScreenshotsForAndroidV2";
@@ -700,6 +705,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sNewWindowAppMenu = new CachedFlag(NEW_WINDOW_APP_MENU, true);
     public static final CachedFlag sOmahaMinSdkVersionAndroid =
             new CachedFlag(OMAHA_MIN_SDK_VERSION_ANDROID, false);
+    public static final CachedFlag sOmniboxMatchToolbarAndStatusBarColor =
+            new CachedFlag(OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR, false);
     public static final CachedFlag sOmniboxModernizeVisualUpdate =
             new CachedFlag(OMNIBOX_MODERNIZE_VISUAL_UPDATE, false);
     public static final CachedFlag sOmniboxRemoveExcessiveRecycledViewClearCalls =

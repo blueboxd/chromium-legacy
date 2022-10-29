@@ -2,28 +2,33 @@
 
 # ![Logo](chrome/app/theme/chromium/product_logo_64.png) Chromium-legacy
 
-Chromium-legacy is the latest Chromium (almost equivalent to Chrome Canary without Google branding) patched & built for legacy Mac OS X series currently not supported officially:
+Chromium-legacy is the up-to-date browser[^chromium] for legacy Mac OS X series no longer officially supported:
+
+[^chromium]: Chromium, the open-source project on which Google Chrome is based.
 
 - Mac OS X 10.7 / Lion
 - OS X 10.8 / Mountain Lion
 - OS X 10.9 / Mavericks
 - OS X 10.10 / Yosemite
+- OS X 10.11 / El Capitan
+- macOS 10.12 / Sierra
 
-**NB: Not for officially supported environments (10.11+).**
+**NB: Not for officially supported macOS (10.13+).**
 
 ## features
 
-Equivalent to the [same version of the original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see [limitations](#limitations)).  
+Equivalent to the [same version of the original Chromium](https://chromestatus.com/features) except for limitations by old OSes (see [limitations](#limitations)).   
 Some features (i.e. [DRM](../../wiki/DRM)) need an extra setup to use.
 
 ## system requirements
 
-- Mac OS X 10.7 or later
-  - requires latest build
-    - 10.7.5 (11G63)
-    - 10.8.5 (12F2560)
-    - 10.9.5 (13F1911)
-    - 10.10.5 (14F2511)
+The latest build of Mac OS X 10.7 or later:
+- 10.7.5 (11G63)
+- 10.8.5 (12F2560)
+- 10.9.5 (13F1911)
+- 10.10.5 (14F2511)
+- 10.11.6 (15G22010)
+- 10.12.6 (16G2136)
 
 ## builds
 

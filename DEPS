@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3f4ceacbe73026dc6f5661e68a510237621010a6',
+  'skia_revision': 'bd3d6a6ffaff333431c9279cda520f097b61ff91',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -319,7 +319,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'e8d4f9f4d7030e619f0aa1baa38eddc5344bdea8',
+  'swiftshader_revision': 'cd9da0fefcefa6fc6d5ba7a2d29d173fef87801e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -422,7 +422,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2048d4f6efa4598bc38e64a2574ee65a50563312',
+  'dawn_revision': 'd1910af8bfacab9f1b431c877dbdcc38458fb3ba',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -817,7 +817,7 @@ deps = {
 
   'src/clank': {
     'url': 'https://chrome-internal.googlesource.com/clank/internal/apps.git' + '@' +
-    '635a72a1ece727166fa9e8f6117d4bd33e57e47d',
+    '13cfb3555a0f6ccbbc1f412c3137ee2e12d2e93c',
     'condition': 'checkout_android and checkout_src_internal and not checkout_clank_via_src_internal',
   },
 
@@ -1847,7 +1847,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'd1b65aa5a88f6efd900604dfcda840154e9f16e2',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '7fc3ca08bc41fc2f17f294f26655efaf15228bcd',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'e113fd4de43cad41296384876a20b5937c117438',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + 'e02fbb040e253d9e0449ad2085e32575394f88d8',
@@ -1920,7 +1920,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fe34ffeb7b63790b08a51559c080dfa015438c0f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0e6771911b4905354e70199ed093abf503780463',
     'condition': 'checkout_src_internal',
   },
 

@@ -362,7 +362,6 @@ bool GetMemoryBytes(size_t* private_bytes,
 bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
                                  mojom::RawOSMemDump* dump) {
 
-<<<<<<< HEAD
   if(__builtin_available(macOS 10.9,*)) {
     task_vm_info info;
     

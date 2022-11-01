@@ -116,6 +116,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
     &features::kAsyncSensorCalls,
+    &features::kBackForwardCache,
     &features::kHttpsOnlyMode,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
@@ -254,7 +255,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kInstanceSwitcher,
     &kInstantStart,
     &kIsVoiceSearchEnabledCache,
-    &kKitKatSupported,
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
     &kNewInstanceFromDraggedLink,
@@ -286,7 +286,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteOptInControlSynthetic,
     &kRequestDesktopSiteOptInSynthetic,
     &kRequestDesktopSiteDefaultsDowngrade,
-    &kRequestDesktopSiteZoom,
     &kSafeModeForCachedFlags,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoExistingDeviceV2,
@@ -803,10 +802,6 @@ BASE_FEATURE(kIsVoiceSearchEnabledCache,
              "IsVoiceSearchEnabledCache",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kKitKatSupported,
-             "KitKatSupported",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSearchEnginePromoExistingDevice,
              "SearchEnginePromo.ExistingDevice",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -941,10 +936,6 @@ BASE_FEATURE(kRequestDesktopSiteOptInSynthetic,
 
 BASE_FEATURE(kRequestDesktopSiteDefaultsDowngrade,
              "RequestDesktopSiteDefaultsDowngrade",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kRequestDesktopSiteZoom,
-             "RequestDesktopSiteZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeModeForCachedFlags,

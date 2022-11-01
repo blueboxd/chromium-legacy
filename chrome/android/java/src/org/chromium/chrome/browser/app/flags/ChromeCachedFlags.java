@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.app.flags;
 import android.text.TextUtils;
 
 import org.chromium.build.BuildConfig;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -88,6 +89,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons);
                 add(ChromeFeatureList.sCctResizableForFirstParties);
                 add(ChromeFeatureList.sCctResizableForThirdParties);
+                add(ChromeFeatureList.sCctRetainableStateInMemory);
                 add(ChromeFeatureList.sCctToolbarCustomizations);
                 add(ChromeFeatureList.sCloseTabSuggestions);
                 add(ChromeFeatureList.sCommandLineOnNonRooted);
@@ -205,6 +207,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_FOLIO);
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_DETACHED);
                         add(VersionNumberGetter.MIN_SDK_VERSION);
+                        add(ChromeActivity.CONTENT_VIS_DELAY_MS);
                     }
                 };
         tryToCatchMissingParameters(fieldTrialsToCache);

@@ -20246,6 +20246,7 @@
         "policies": {},
         "prefs": {
           "settings.input.hindi_inscript_layout_enabled": {
+            "location": "local_state",
             "default_value": false
           }
         }
@@ -20256,6 +20257,7 @@
         },
         "prefs": {
           "settings.input.hindi_inscript_layout_enabled": {
+            "location": "local_state",
             "value": false
           }
         }
@@ -20266,6 +20268,7 @@
         },
         "prefs": {
           "settings.input.hindi_inscript_layout_enabled": {
+            "location": "local_state",
             "value": true
           }
         }
@@ -20318,6 +20321,42 @@
             "location": "user_profile",
             "value": 1,
             "check_for_recommended": true
+          }
+        }
+      }
+    ]
+  },
+  "AccessControlAllowMethodsInCORSPreflightSpecConformant": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "android",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "access_control_allow_methods_in_cors_preflight_spec_conformant": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": { "AccessControlAllowMethodsInCORSPreflightSpecConformant": true },
+        "prefs": {
+          "access_control_allow_methods_in_cors_preflight_spec_conformant": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "AccessControlAllowMethodsInCORSPreflightSpecConformant": false },
+        "prefs": {
+          "access_control_allow_methods_in_cors_preflight_spec_conformant": {
+            "value": false
           }
         }
       }

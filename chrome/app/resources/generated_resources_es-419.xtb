@@ -2414,6 +2414,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3197453258332670132">Para ver información relacionada sobre la selección de texto, haz clic con el botón derecho en ella o mantenla presionada.</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3200061262156232574">En tu carrito de compras</translation>
+<translation id="3201237270673604992">De la Z a la A</translation>
 <translation id="3201422919974259695">Los dispositivos USB disponibles aparecerán aquí.</translation>
 <translation id="3202131003361292969">Ruta</translation>
 <translation id="3202173864863109533">El audio de esta pestaña está silenciado.</translation>
@@ -2949,6 +2950,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3712897371525859903">Gu&amp;ardar página como...</translation>
 <translation id="371300529209814631">Atrás/adelante</translation>
 <translation id="3713047097299026954">Esta llave de seguridad no tiene almacenados datos de acceso</translation>
+<translation id="3713091615825314967">Las actualizaciones automáticas están activadas.</translation>
 <translation id="3714195043138862580">Se estableció el estado de desaprovisionamiento para este dispositivo de demostración.</translation>
 <translation id="3719826155360621982">Página principal</translation>
 <translation id="372062398998492895">CUPS</translation>
@@ -3666,6 +3668,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4396956294839002702">{COUNT,plural, =0{&amp;Abrir todo}=1{&amp;Abrir favorito}other{&amp;Abrir todo ({COUNT})}}</translation>
 <translation id="4397372003838952832">No es necesario que recuerdes esta contraseña. Se guardará en <ph name="GOOGLE_PASSWORD_MANAGER" /> para <ph name="EMAIL" />.</translation>
+<translation id="4397844455100743910">Obtén más información sobre las solicitudes de acceso.</translation>
 <translation id="439817266247065935">El dispositivo no se apagó correctamente. Reinicia Linux para usar las apps de este sistema operativo.</translation>
 <translation id="4400367121200150367">Aquí aparecerán los sitios que nunca guardan las contraseñas</translation>
 <translation id="4400632832271803360">Mantén presionada la tecla de Launcher para cambiar el comportamiento de las teclas en la fila superior</translation>
@@ -3737,6 +3740,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4460014764210899310">Desagrupar</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4465236939126352372">Límite de tiempo establecido para <ph name="APP_NAME" />: <ph name="TIME" /></translation>
+<translation id="4465649939134800363">Opciones de orden</translation>
 <translation id="4466839823729730432">Accede a tus recuerdos</translation>
 <translation id="4469324811108161144">Las notas pueden ahorrar hasta <ph name="CHARACTER_LIMIT" /> caracteres.</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> puede editar archivos en <ph name="FOLDERNAME" /></translation>
@@ -4032,6 +4036,7 @@ Usa Ctrl + Alt + Disminuir brillo para alejarte.</translation>
 <translation id="4733793249294335256">Ubicación</translation>
 <translation id="473546211690256853">Esta cuenta está administrada por <ph name="DOMAIN" />.</translation>
 <translation id="4735506354605317060">Marcar con círculo el puntero</translation>
+<translation id="4735793370946506039">Obtén más información sobre la Navegación segura mejorada.</translation>
 <translation id="4735803855089279419">El sistema no pudo determinar los identificadores de dispositivo para este dispositivo.</translation>
 <translation id="4736292055110123391">Sincroniza tus favoritos, contraseñas, historial y mucho más en todos tus dispositivos</translation>
 <translation id="473775607612524610">Actualizar</translation>
@@ -4060,6 +4065,7 @@ Usa Ctrl + Alt + Disminuir brillo para alejarte.</translation>
 <translation id="4765524037138975789">{MONTHS,plural, =1{Este dispositivo se guardará por 1 mes y no necesitarás un código la próxima vez que te conectes. Esto lo estableció el administrador.}other{Este dispositivo se guardará por {MONTHS} meses y no necesitarás un código la próxima vez que te conectes. Esto lo estableció el administrador.}}</translation>
 <translation id="4765582662863429759">Permite que Mensajes Android transfiera mensajes de texto del teléfono a tu Chromebook</translation>
 <translation id="4766598565665644999">Todas las extensiones pueden leer y modificar <ph name="HOST" /></translation>
+<translation id="4767427586072640478">Obtén más información sobre las extensiones inhabilitadas.</translation>
 <translation id="4768332406694066911">Tienes certificados de esas organizaciones que te identifican</translation>
 <translation id="4770119228883592393">Se solicitó un permiso; para responder, presiona ⌘ + Opción + flecha hacia abajo</translation>
 <translation id="4773112038801431077">Actualiza Linux</translation>
@@ -5137,6 +5143,7 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="5799508265798272974">Máquina virtual de Linux: <ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">El archivo de destino se truncó o eliminó desde la última descarga.</translation>
 <translation id="5800351251499368110">Cierra la búsqueda en el panel lateral. La búsqueda está abierta en el panel lateral.</translation>
+<translation id="5801051031414037185">Configurar el teléfono</translation>
 <translation id="5801568494490449797">Preferencias</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805268472388605531">Mantén presionadas las teclas para ver acentos y caracteres especiales</translation>
@@ -5428,6 +5435,7 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="6072442788591997866">No se permite usar <ph name="APP_NAME" /> en este dispositivo. Comunícate con el administrador. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="6073451960410192870">Detener grabación</translation>
 <translation id="6073903501322152803">Agregar funciones de accesibilidad</translation>
+<translation id="6075075631258766703">Verificar el teléfono</translation>
 <translation id="6075731018162044558">El sistema no pudo obtener un token de acceso a la API a largo plazo para este dispositivo.</translation>
 <translation id="6075907793831890935">Intercambiar datos con el dispositivo <ph name="HOSTNAME" /></translation>
 <translation id="6076175485108489240">Usa la ubicación. Permite que las apps y los servicios con permiso de ubicación usen la ubicación de tu dispositivo. Es posible que Google recopile datos de ubicación anónimos periódicamente y los use para mejorar la precisión de la ubicación y los servicios basados en esta. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
@@ -6248,6 +6256,7 @@ Tienes # contraseñas hackeadas más. El Administrador de contraseñas de Go
 <translation id="6843264316370513305">Depuración de la red</translation>
 <translation id="6843423766595476978">Ok Google ya está configurado</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
+<translation id="6845231585063669905">De la A a la Z</translation>
 <translation id="6846178040388691741">"<ph name="EXTENSION_NAME" />" quiere imprimir <ph name="FILE_NAME" /> con <ph name="PRINTER_NAME" />.</translation>
 <translation id="6847125920277401289">Libera espacio para continuar</translation>
 <translation id="6848388270925200958">En este momento, tienes algunas tarjetas que solo se pueden usar en este dispositivo</translation>
@@ -6529,7 +6538,6 @@ Tienes # contraseñas hackeadas más. El Administrador de contraseñas de Go
 <translation id="7098936390718461001">{NUM_APPS,plural, =1{Quitar app}other{Quitar apps}}</translation>
 <translation id="7099337801055912064">No se pueden cargar archivos PPD grandes. El tamaño máximo es 250 kB.</translation>
 <translation id="7099739618316136113">{COUNT,plural, =0{No tienes contraseñas hackeadas}=1{{COUNT} contraseña hackeada}other{{COUNT} contraseñas hackeadas}}</translation>
-<translation id="7102687220333134671">Las actualizaciones automáticas están activadas</translation>
 <translation id="7102832101143475489">Se agotó el tiempo de espera de la solicitud</translation>
 <translation id="710640343305609397">Abrir la configuración de red</translation>
 <translation id="7107609441453408294">Reproducir el mismo audio en todas las bocinas</translation>
@@ -7402,6 +7410,7 @@ Presiona un interruptor o tecla que ya esté asignado para quitar la asignación
 <translation id="7939073735115504773">Haz clic en el ícono de esta extensión para leer y modificar <ph name="HOST" /></translation>
 <translation id="7939328347457537652">Administrar certificados de dispositivos</translation>
 <translation id="7939412583708276221">Continuar de todos modos</translation>
+<translation id="7940265372707990269">Ordenar por <ph name="SORT_TYPE" /></translation>
 <translation id="7941179291434537290">Disponibilidad de la conexión mediante dispositivo móvil:</translation>
 <translation id="7942349550061667556">Rojo</translation>
 <translation id="7943368935008348579">Descargar archivos PDF</translation>

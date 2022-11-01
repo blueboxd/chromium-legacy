@@ -10,7 +10,7 @@
 #include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/theme_selection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
 #include "components/prefs/pref_service.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -90,6 +90,10 @@ void ThemeSelectionScreen::HideImpl() {}
 void ThemeSelectionScreen::OnUserAction(const base::Value::List& args) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   const std::string& action_id = args[0].GetString();
+
+  // Set the nudge shown count to 0 once the user goes through the Dark / Light
+  // setup to avoiding triggering Dark / Light nudge after OOBE.
+  profile->GetPrefs()->SetInteger(prefs::kDarkLightModeNudgeLeftToShowCount, 0);
 
   if (action_id == kUserActionSelect) {
     const SelectedTheme selected_theme =

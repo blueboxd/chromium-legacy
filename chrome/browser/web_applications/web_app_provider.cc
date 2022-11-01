@@ -280,8 +280,7 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
         protocol_handler_manager.get());
 
     std::unique_ptr<UrlHandlerManager> url_handler_manager;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     url_handler_manager = std::make_unique<UrlHandlerManagerImpl>(profile);
 #endif
 
@@ -290,7 +289,7 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
         std::move(protocol_handler_manager), std::move(url_handler_manager));
   }
 
-  command_manager_ = std::make_unique<WebAppCommandManager>(profile);
+  command_manager_ = std::make_unique<WebAppCommandManager>(profile, this);
   command_scheduler_ = std::make_unique<WebAppCommandScheduler>(this);
 
   registrar_ = std::move(registrar);
@@ -332,7 +331,6 @@ void WebAppProvider::ConnectSubsystems() {
   os_integration_manager_->SetSubsystems(sync_bridge_.get(), registrar_.get(),
                                          ui_manager_.get(),
                                          icon_manager_.get());
-  command_manager_->SetSubsystems(install_manager_.get());
   connected_ = true;
 }
 

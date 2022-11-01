@@ -161,6 +161,12 @@ class ChromeFileSystemAccessPermissionContext
 
   HostContentSettingsMap* content_settings() { return content_settings_.get(); }
 
+  // Dictionary key for the FILE_SYSTEM_ACCESS_CHOOSER_DATA setting.
+  // This key is defined in this header file because it is used both in
+  // the chrome_file_system_access_permission_context and the
+  // site_settings_helper, which displays File System Access permissions on the
+  // chrome://settings/content/filesystem UI.
+  static constexpr char kPermissionPathKey[] = "path";
   // This long after the handle has last been used, revoke the persisted
   // permission.
   static constexpr base::TimeDelta
@@ -190,7 +196,14 @@ class ChromeFileSystemAccessPermissionContext
   class PermissionGrantImpl;
   void PermissionGrantDestroyed(PermissionGrantImpl* grant);
 
-  void DidConfirmSensitiveDirectoryAccess(
+  // Checks whether the file or directory at `path` corresponds to a directory
+  // Chrome considers sensitive (i.e. system files). Calls `callback` with
+  // whether the path is on the blocklist.
+  void CheckPathAgainstBlocklist(PathType path_type,
+                                 const base::FilePath& path,
+                                 HandleType handle_type,
+                                 base::OnceCallback<void(bool)> callback);
+  void DidCheckPathAgainstBlocklist(
       const url::Origin& origin,
       const base::FilePath& path,
       HandleType handle_type,

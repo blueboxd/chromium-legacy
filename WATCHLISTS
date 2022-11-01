@@ -791,7 +791,6 @@
       'filepath': 'ash/login/|'\
                   'chrome/browser/ash/login/|'\
                   'chrome/browser/ui/webui/ash/login/|'\
-                  'chrome/browser/ui/webui/chromeos/login/|'\
                   'chrome/browser/resources/chromeos/login/|'\
                   'ui/login/',
     },
@@ -2781,7 +2780,8 @@
                        'shihken@microsoft.com'],
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
-    'media_gpu_cros': ['media-cros-reviews@chromium.org'],
+    'media_gpu_cros': ['chromeos-gfx-video@google.com',
+                       'media-cros-reviews@chromium.org'],
     'media_gpu_vaapi': ['vaapi-reviews@chromium.org'],
     'media_gpu_win': ['media-win-reviews@chromium.org'],
     'media_mojo': ['xhwang+watch@chromium.org'],

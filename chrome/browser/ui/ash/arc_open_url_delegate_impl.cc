@@ -48,12 +48,10 @@
 #include "components/arc/intent_helper/custom_tab.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -357,13 +355,8 @@ void ArcOpenUrlDelegateImpl::OpenWebAppFromArc(const GURL& url) {
         }
       });
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    proxy->LaunchAppWithUrl(*app_id, event_flags, url,
-                            apps::LaunchSource::kFromArc);
-  } else {
-    proxy->LaunchAppWithUrl(*app_id, event_flags, url,
-                            apps::mojom::LaunchSource::kFromArc);
-  }
+  proxy->LaunchAppWithUrl(*app_id, event_flags, url,
+                          apps::LaunchSource::kFromArc);
 
   ash::ApkWebAppService* apk_web_app_service =
       ash::ApkWebAppService::Get(profile);
@@ -505,13 +498,7 @@ void ArcOpenUrlDelegateImpl::OpenAppWithIntent(
   int event_flags = apps::GetEventFlags(disposition,
                                         /*prefer_container=*/false);
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    proxy->LaunchAppWithIntent(app_id, event_flags, std::move(intent),
-                               apps::LaunchSource::kFromArc, nullptr,
-                               base::DoNothing());
-  } else {
-    proxy->LaunchAppWithIntent(
-        app_id, event_flags, apps::ConvertIntentToMojomIntent(intent),
-        apps::mojom::LaunchSource::kFromArc, nullptr, {});
-  }
+  proxy->LaunchAppWithIntent(app_id, event_flags, std::move(intent),
+                             apps::LaunchSource::kFromArc, nullptr,
+                             base::DoNothing());
 }

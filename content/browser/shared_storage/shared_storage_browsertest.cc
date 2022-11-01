@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
 #include <map>
 #include <string>
 #include <tuple>
@@ -2537,7 +2538,11 @@ class SharedStorageFencedFrameInteractionBrowserTest
       sharedStorage.run('remaining-budget-operation', {data: {}});
     )"));
 
-    console_observer.Wait();
+    bool observed = console_observer.Wait();
+    EXPECT_TRUE(observed);
+    if (!observed) {
+      return nan("");
+    }
 
     EXPECT_EQ(1u, console_observer.messages().size());
     std::string console_message =
@@ -3802,6 +3807,40 @@ class SharedStoragePrivateAggregationDisabledBrowserTest
 
 IN_PROC_BROWSER_TEST_F(SharedStoragePrivateAggregationDisabledBrowserTest,
                        PrivateAggregationNotDefined) {
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            https_server()->GetURL("a.test", kSimplePagePath)));
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+
+  GURL out_script_url;
+  ExecuteScriptInWorklet(shell(), R"(
+      privateAggregation.sendHistogramReport({bucket: 1n, value: 2});
+    )",
+                         &out_script_url);
+
+  ASSERT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("ReferenceError: privateAggregation is not defined",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+  EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kError,
+            console_observer.messages()[0].log_level);
+}
+
+class SharedStoragePrivateAggregationDisabledForSharedStorageOnlyBrowserTest
+    : public SharedStorageBrowserTest {
+ public:
+  SharedStoragePrivateAggregationDisabledForSharedStorageOnlyBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        content::kPrivateAggregationApi,
+        {{"enabled_in_shared_storage", "false"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    SharedStoragePrivateAggregationDisabledForSharedStorageOnlyBrowserTest,
+    PrivateAggregationNotDefined) {
   EXPECT_TRUE(NavigateToURL(shell(),
                             https_server()->GetURL("a.test", kSimplePagePath)));
 

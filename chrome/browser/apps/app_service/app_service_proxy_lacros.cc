@@ -175,16 +175,6 @@ void AppServiceProxyLacros::LaunchAppWithFiles(
   ProxyLaunch(std::move(params));
 }
 
-void AppServiceProxyLacros::LaunchAppWithFiles(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::FilePathsPtr file_paths) {
-  LaunchAppWithFiles(app_id, event_flags,
-                     ConvertMojomLaunchSourceToLaunchSource(launch_source),
-                     ConvertMojomFilePathsToFilePaths(std::move(file_paths)));
-}
-
 void AppServiceProxyLacros::LaunchAppWithIntent(
     const std::string& app_id,
     int32_t event_flags,
@@ -218,41 +208,6 @@ void AppServiceProxyLacros::LaunchAppWithIntent(
   std::move(callback).Run(true);
 }
 
-void AppServiceProxyLacros::LaunchAppWithIntent(
-    const std::string& app_id,
-    int32_t event_flags,
-    apps::mojom::IntentPtr intent,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info,
-    apps::mojom::Publisher::LaunchAppWithIntentCallback callback) {
-  CHECK(intent);
-
-  if (!remote_crosapi_app_service_proxy_) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  if (crosapi_app_service_proxy_version_ <
-      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
-              kLaunchMinVersion}) {
-    LOG(WARNING) << "Ash AppServiceProxy version "
-                 << crosapi_app_service_proxy_version_
-                 << " does not support Launch().";
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  auto params = CreateCrosapiLaunchParamsWithEventFlags(
-      this, app_id, event_flags,
-      ConvertMojomLaunchSourceToLaunchSource(launch_source),
-      window_info ? window_info->display_id : display::kInvalidDisplayId);
-  params->intent =
-      apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
-
-  ProxyLaunch(std::move(params));
-  std::move(callback).Run(/*success=*/true);
-}
-
 void AppServiceProxyLacros::LaunchAppWithUrl(const std::string& app_id,
                                              int32_t event_flags,
                                              GURL url,
@@ -262,27 +217,6 @@ void AppServiceProxyLacros::LaunchAppWithUrl(const std::string& app_id,
       app_id, event_flags,
       std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
       launch_source, std::move(window_info), base::DoNothing());
-}
-
-void AppServiceProxyLacros::LaunchAppWithUrlForBind(const std::string& app_id,
-                                                    int32_t event_flags,
-                                                    GURL url,
-                                                    LaunchSource launch_source,
-                                                    WindowInfoPtr window_info) {
-  LaunchAppWithIntent(
-      app_id, event_flags,
-      std::make_unique<apps::Intent>(apps_util::kIntentActionView, url),
-      launch_source, std::move(window_info), base::DoNothing());
-}
-
-void AppServiceProxyLacros::LaunchAppWithUrl(
-    const std::string& app_id,
-    int32_t event_flags,
-    GURL url,
-    apps::mojom::LaunchSource launch_source,
-    apps::mojom::WindowInfoPtr window_info) {
-  LaunchAppWithIntent(app_id, event_flags, apps_util::CreateIntentFromUrl(url),
-                      launch_source, std::move(window_info), {});
 }
 
 void AppServiceProxyLacros::LaunchAppWithParams(AppLaunchParams&& params,

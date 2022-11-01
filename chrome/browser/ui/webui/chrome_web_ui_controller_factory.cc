@@ -995,32 +995,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     }
     return &NewWebUI<ash::cloud_upload::CloudUploadUI>;
   }
-  if (url.host_piece() == chrome::kChromeUIAccountManagerErrorHost)
-    return &NewWebUI<ash::AccountManagerErrorUI>;
-  if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)
-    return &NewWebUI<ash::AccountMigrationWelcomeUI>;
-  if (url.host_piece() == chrome::kChromeUIParentAccessHost)
-    return &NewWebUI<ash::ParentAccessUI>;
   if (url.host_piece() == chrome::kChromeUIAudioHost &&
       base::FeatureList::IsEnabled(chromeos::features::kAudioUrl)) {
     return &NewWebUI<ash::AudioUI>;
   }
-  if (url.host_piece() == chrome::kChromeUIBluetoothPairingHost)
-    return &NewWebUI<ash::BluetoothPairingDialogUI>;
-  if (url.host_piece() == chrome::kChromeUICertificateManagerHost)
-    return &NewWebUI<ash::CertificateManagerDialogUI>;
   if (url.host_piece() == ash::kChromeUIConnectivityDiagnosticsHost)
     return &NewWebUI<ash::ConnectivityDiagnosticsUI>;
   if (url.host_piece() == ash::kChromeUIGuestOSInstallerHost)
     return &NewWebUI<ash::GuestOSInstallerUI>;
-  if (url.host_piece() == chrome::kChromeUICrostiniInstallerHost)
-    return &NewWebUI<ash::CrostiniInstallerUI>;
-  if (url.host_piece() == chrome::kChromeUICrostiniUpgraderHost)
-    return &NewWebUI<ash::CrostiniUpgraderUI>;
-  if (url.host_piece() == chrome::kChromeUICryptohomeHost)
-    return &NewWebUI<ash::CryptohomeUI>;
-  if (url.host_piece() == chrome::kChromeUIDriveInternalsHost)
-    return &NewWebUI<ash::DriveInternalsUI>;
   if (url.host_piece() == ash::kChromeUIFilesInternalsHost)
     return &NewWebUI<ash::FilesInternalsUI>;
   if (url.host_piece() == chrome::kChromeUILauncherInternalsHost)
@@ -1039,8 +1021,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ash::MultideviceInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIMultiDeviceSetupHost)
     return &NewWebUI<ash::multidevice_setup::MultiDeviceSetupDialogUI>;
-  if (url.host_piece() == chrome::kChromeUINetworkHost)
-    return &NewWebUI<ash::NetworkUI>;
   if (url.host_piece() == chrome::kChromeUIOobeHost) {
     if (ash::ProfileHelper::IsSigninProfile(profile)) {
       return &NewWebUI<chromeos::OobeUI>;

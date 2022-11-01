@@ -34,6 +34,7 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//sandbox/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//third_party/webrtc/webrtc.gni")
@@ -2256,6 +2257,7 @@ static_library("browser") {
     "//components/reporting/encryption:verification",
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
+    "//components/reporting/proto:status_proto",
     "//components/reporting/resources:resource_interface",
     "//components/reporting/storage:storage_configuration",
     "//components/reporting/storage:storage_module",
@@ -2265,7 +2267,6 @@ static_library("browser") {
     "//components/reporting/util:backoff_settings",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",
-    "//components/reporting/util:status_proto",
     "//components/reporting/util:task_runner_context",
     "//components/reputation/core",
     "//components/reputation/core:proto",
@@ -5124,6 +5125,8 @@ static_library("browser") {
       "support_tool/ash/network_routes_data_collector.h",
       "support_tool/ash/shill_data_collector.cc",
       "support_tool/ash/shill_data_collector.h",
+      "support_tool/ash/system_logs_data_collector.cc",
+      "support_tool/ash/system_logs_data_collector.h",
       "support_tool/ash/system_state_data_collector.cc",
       "support_tool/ash/system_state_data_collector.h",
       "support_tool/ash/ui_hierarchy_data_collector.cc",
@@ -5170,9 +5173,6 @@ static_library("browser") {
       "//ash/constants",
       "//ash/public/cpp",
       "//ash/public/cpp/external_arc",
-      "//ash/services/device_sync/public/cpp:prefs",
-      "//ash/services/device_sync/public/cpp:prefs",
-      "//ash/services/device_sync/public/mojom",
       "//ash/webui/camera_app_ui",
       "//ash/webui/camera_app_ui:mojo_bindings",
       "//ash/webui/color_internals",
@@ -5302,6 +5302,9 @@ static_library("browser") {
       "//chromeos/ash/services/cellular_setup",
       "//chromeos/ash/services/cros_healthd/public/cpp",
       "//chromeos/ash/services/cros_healthd/public/mojom",
+      "//chromeos/ash/services/device_sync/public/cpp:prefs",
+      "//chromeos/ash/services/device_sync/public/cpp:prefs",
+      "//chromeos/ash/services/device_sync/public/mojom",
       "//chromeos/ash/services/hotspot_config/public/mojom",
       "//chromeos/ash/services/multidevice_setup",
       "//chromeos/ash/services/multidevice_setup/public/cpp",
@@ -8264,11 +8267,11 @@ static_library("test_support") {
     "//components/reporting/client:test_support",
     "//components/reporting/proto:record_constants",
     "//components/reporting/proto:record_proto",
+    "//components/reporting/proto:status_proto",
     "//components/reporting/storage:storage_module",
     "//components/reporting/storage_selector",
     "//components/reporting/util:status",
     "//components/reporting/util:status_macros",
-    "//components/reporting/util:status_proto",
     "//components/reporting/util:task_runner_context",
     "//components/reputation/core",
     "//components/reputation/core:proto",
@@ -8588,5 +8591,16 @@ if (is_android) {
 if (is_chromeos_lacros) {
   proto_library("dlp_policy_event_proto") {
     sources = [ "chromeos/policy/dlp/dlp_policy_event.proto" ]
+  }
+}
+
+if (is_chromeos_ash) {
+  fuzzer_test("nearby_sharing_instantmessaging_stream_parser_fuzzer") {
+    sources = [ "nearby_sharing/instantmessaging/stream_parser_fuzzer.cc" ]
+    deps = [
+      ":browser",
+      "//base",
+      "//third_party/protobuf:protobuf_lite",
+    ]
   }
 }

@@ -16,6 +16,7 @@
 
 config("xnnpack_config") {
   include_dirs = [
+    "//third_party/pthreadpool/src/include",
     "src/deps/clog/include",
     "src/include",
     "src/src",
@@ -697,6 +698,7 @@ source_set("subgraph") {
     "src/src/subgraph/prelu.c",
     "src/src/subgraph/sigmoid.c",
     "src/src/subgraph/softmax.c",
+    "src/src/subgraph/space-to-depth-2d.c",
     "src/src/subgraph/square-root.c",
     "src/src/subgraph/square.c",
     "src/src/subgraph/squared-difference.c",

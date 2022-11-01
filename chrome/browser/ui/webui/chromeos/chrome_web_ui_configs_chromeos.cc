@@ -11,8 +11,18 @@
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
+#include "chrome/browser/ui/webui/ash/account_manager/account_manager_error_ui.h"
+#include "chrome/browser/ui/webui/ash/account_manager/account_migration_welcome_ui.h"
 #include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
+#include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
+#include "chrome/browser/ui/webui/ash/certificate_manager_dialog_ui.h"
+#include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
+#include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_ui.h"
+#include "chrome/browser/ui/webui/ash/cryptohome_ui.h"
+#include "chrome/browser/ui/webui/ash/drive_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/network_ui.h"
 #include "chrome/browser/ui/webui/ash/notification_tester/notification_tester_ui.h"
+#include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
 #if !defined(OFFICIAL_BUILD)
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
 #endif  // !defined(OFFICIAL_BUILD)
@@ -45,9 +55,19 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(
       MakeComponentConfig<ash::CameraAppUIConfig, ash::CameraAppUI,
                           ChromeCameraAppUIDelegate>());
-  map.AddWebUIConfig(std::make_unique<ash::ShortcutCustomizationAppUIConfig>());
-  map.AddWebUIConfig(std::make_unique<ash::NotificationTesterUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::AccountManagerErrorUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::AccountMigrationWelcomeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::AddSupervisionUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::BluetoothPairingDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::CertificateManagerDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::CrostiniInstallerUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::CrostiniUpgraderUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::CryptohomeUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::DriveInternalsUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::NetworkUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::NotificationTesterUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::ParentAccessUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::ShortcutCustomizationAppUIConfig>());
 #if !defined(OFFICIAL_BUILD)
   map.AddWebUIConfig(std::make_unique<ash::SampleSystemWebAppUIConfig>());
 #endif  // !defined(OFFICIAL_BUILD)

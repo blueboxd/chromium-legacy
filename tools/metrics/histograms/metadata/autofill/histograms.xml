@@ -992,9 +992,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardInfoBar{AutofillCreditCardInfoBarSaveType}"
-    enum="AutofillCreditCardInfoBar" expires_after="2022-12-12">
-  <owner>battre@chromium.org</owner>
+    enum="AutofillCreditCardInfoBar" expires_after="2023-09-30">
   <owner>jsaul@google.com</owner>
+  <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
     The relative frequency with which users accept, deny, or ignore the Autofill
@@ -1009,6 +1009,9 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Autofill.CreditCardMessage.DialogPrompt{SaveSituation}{DialogInteraction}"
     enum="AutofillCreditCardMessageDialogPrompt" expires_after="M110">
+  <obsolete>
+    Deprecated 10/2022. Will not launch save card Message UI.
+  </obsolete>
   <owner>lazzzis@google.com</owner>
   <owner>jsaul@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -1034,6 +1037,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.CreditCardMessage.{SaveDestination}{SaveSituation}"
     enum="AutofillCreditCardMessage" expires_after="M110">
+  <obsolete>
+    Deprecated 10/2022. Will not launch save card Message UI.
+  </obsolete>
   <owner>lazzzis@google.com</owner>
   <owner>jsaul@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -1063,8 +1069,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.CreditCardSaveFlowResult.{SaveDestination}{SaveSituation}"
-    enum="AutofillCreditCardSaveFlowResult" expires_after="M110">
-  <owner>lazzzis@google.com</owner>
+    enum="AutofillCreditCardSaveFlowResult" expires_after="2023-09-30">
   <owner>jsaul@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1088,7 +1093,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardsDeletedForDisuse" units="units"
-    expires_after="2022-12-12">
+    expires_after="2023-09-30">
   <owner>battre@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -2840,7 +2845,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="2023-02-26">
+    enum="AutofillProfileImportDecision" expires_after="2023-04-30">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2887,7 +2892,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.ProfileImport.NewProfileWithComplementedCountryDecision"
-    enum="AutofillProfileImportDecision" expires_after="2023-02-26">
+    enum="AutofillProfileImportDecision" expires_after="2023-04-30">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -2939,7 +2944,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.ProfileImportType"
-    enum="AutofillProfileImportType" expires_after="2023-02-26">
+    enum="AutofillProfileImportType" expires_after="2023-04-30">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2962,7 +2967,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.ProfileImport.SilentUpdatesWithRemovedPhoneNumberProfileImportType"
-    enum="AutofillSilentUpdatesProfileImportType" expires_after="2023-02-26">
+    enum="AutofillSilentUpdatesProfileImportType" expires_after="2023-04-30">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -3019,7 +3024,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="2023-02-26">
+    enum="AutofillProfileImportDecision" expires_after="2023-04-30">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -3371,7 +3376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ServerCardLinkClicked" enum="AutofillSyncState"
-    expires_after="2022-12-12">
+    expires_after="2023-09-30">
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>

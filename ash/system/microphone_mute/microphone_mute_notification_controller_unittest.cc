@@ -96,9 +96,15 @@ class MicrophoneMuteNotificationControllerTest : public AshTestBase {
     ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(muted);
   }
 
-  void MuteMicrophone() { CrasAudioHandler::Get()->SetInputMute(true); }
+  void MuteMicrophone() {
+    CrasAudioHandler::Get()->SetInputMute(
+        true, CrasAudioHandler::InputMuteChangeMethod::kOther);
+  }
 
-  void UnMuteMicrophone() { CrasAudioHandler::Get()->SetInputMute(false); }
+  void UnMuteMicrophone() {
+    CrasAudioHandler::Get()->SetInputMute(
+        false, CrasAudioHandler::InputMuteChangeMethod::kOther);
+  }
 
   void SetNumberOfActiveInputStreams(int number_of_active_input_streams) {
     FakeCrasAudioClient::Get()->SetActiveInputStreamsWithPermission(
@@ -159,11 +165,13 @@ TEST_F(MicrophoneMuteNotificationControllerTest, LaunchAppUsingMicrophone) {
   EXPECT_FALSE(GetNotification());
 
   // Launch an app that's using the mic. The microphone mute notification should
-  // show as a popup
+  // show as a popup.
   LaunchApp(u"junior");
   SetNumberOfActiveInputStreams(1);
   EXPECT_TRUE(GetNotification());
   EXPECT_TRUE(GetPopupNotification());
+  // Notification should not be pinned.
+  EXPECT_FALSE(GetNotification()->rich_notification_data().pinned);
 
   // Unmute again, notification goes down.
   UnMuteMicrophone();

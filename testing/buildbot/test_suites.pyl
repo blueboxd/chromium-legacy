@@ -320,7 +320,7 @@
       'bf_cache_chrome_public_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_test_apk.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_chrome_public_test_apk.filter'
         ],
         'swarming': {
           'shards': 20,
@@ -343,7 +343,7 @@
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_content_shell_test_apk.filter'
         ],
         'swarming': {
           'shards': 5,
@@ -3283,6 +3283,9 @@
           '--use-weston',
           '--weston-use-gl',
         ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
       },
     },
 
@@ -3304,6 +3307,9 @@
           '--no-xvfb',
           '--use-weston',
           '--weston-use-gl',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
         ],
       },
     },
@@ -3875,6 +3881,30 @@
         'mixins': [
           'has_native_resultdb_integration',
         ],
+      },
+    },
+
+    'lacros_cq_tast_tests_eve': {
+      'lacros_cq_tast_tests_eve': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'experiment_percentage': 5,
+      },
+    },
+
+    'lacros_cq_tast_tests_jacuzzi': {
+      'lacros_cq_tast_tests_jacuzzi': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'experiment_percentage': 5,
       },
     },
 
@@ -5392,6 +5422,31 @@
       },
     },
 
+    'wpt_web_tests_highdpi': {
+      'wpt_tests_suite_highdpi': {
+        'args': [
+          '--child-processes=8',
+          '--no-restart-on-new-group',
+          '--log-wptreport',
+          '--xvfb',
+          '--flag-specific',
+          'highdpi',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 15,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
     'wpt_web_tests_identity': {
       'wpt_tests_suite': {
         'args': [
@@ -6373,6 +6428,11 @@
       'chrome_sizes',
       'win_specific_isolated_scripts',
     ],
+
+    'wpt_web_tests_content_shell_multiple_flags': [
+      'wpt_web_tests_content_shell',
+      'wpt_web_tests_highdpi',
+    ],
   },
 
   ##############################################################################
@@ -6576,7 +6636,7 @@
         ],
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization', 'record_failed_tests'],
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_X_16_1',
           'SIM_IPHONE_8_16_1',
@@ -6586,7 +6646,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization', 'record_failed_tests'],
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_8_16_1',
           'SIM_IPHONE_X_16_1',
@@ -6759,7 +6819,7 @@
         ],
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization', 'record_failed_tests'],
+        'mixins': ['xcode_parallelization'],
         'variants': [
           # Latest beta iOS version Sims
           'SIM_IPHONE_7_14_5',
@@ -6768,7 +6828,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization', 'record_failed_tests'],
+        'mixins': ['xcode_parallelization'],
         'variants': [
           # Latest beta iOS version Sims
           'SIM_IPHONE_X_14_5',
@@ -6870,7 +6930,7 @@
         ]
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization', 'record_failed_tests'],
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_6S_14_5',
           'SIM_IPHONE_7_14_5',
@@ -6879,7 +6939,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization', 'record_failed_tests'],
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_6S_PLUS_14_5',
           'SIM_IPHONE_6S_14_5',
@@ -6994,6 +7054,19 @@
       },
     },
 
+    'lacros_device_arm_tests_rel': {
+      'lacros_all_tast_tests': {
+        'variants': [
+          'LACROS_JACUZZI',
+        ]
+      },
+      'lacros_cq_tast_tests_jacuzzi': {
+        'variants': [
+          'LACROS_JACUZZI',
+        ]
+      },
+    },
+
     'lacros_device_or_vm_tast_tests': {
       'lacros_all_tast_tests': {
         'variants': [
@@ -7011,6 +7084,11 @@
       'lacros_all_tast_tests': {
         'variants': [
           'LACROS_AMD64_GENERIC',
+          'LACROS_EVE',
+        ]
+      },
+      'lacros_cq_tast_tests_eve': {
+        'variants': [
           'LACROS_EVE',
         ]
       },

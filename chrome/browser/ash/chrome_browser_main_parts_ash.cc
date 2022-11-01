@@ -57,6 +57,7 @@
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/audio/audio_survey_handler.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/camera/camera_general_survey_handler.h"
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -78,6 +79,7 @@
 #include "chrome/browser/ash/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/ash/dbus/mojo_connection_service_provider.h"
 #include "chrome/browser/ash/dbus/printers_service_provider.h"
+#include "chrome/browser/ash/dbus/profiler_status_service_provider.h"
 #include "chrome/browser/ash/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/ash/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/ash/dbus/smb_fs_service_provider.h"
@@ -408,6 +410,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<PrintersServiceProvider>()));
 
+    profiler_status_service_ = CrosDBusService::Create(
+        system_bus, ProfilerStatusServiceProvider::kServiceName,
+        dbus::ObjectPath(ProfilerStatusServiceProvider::kServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<ProfilerStatusServiceProvider>()));
+
     vm_applications_service_ = CrosDBusService::Create(
         system_bus, vm_tools::apps::kVmApplicationsServiceName,
         dbus::ObjectPath(vm_tools::apps::kVmApplicationsServicePath),
@@ -545,6 +553,7 @@ class DBusServices {
     metrics_event_service_.reset();
     plugin_vm_service_.reset();
     printers_service_.reset();
+    profiler_status_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
     chrome_features_service_.reset();
@@ -576,6 +585,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> metrics_event_service_;
   std::unique_ptr<CrosDBusService> plugin_vm_service_;
   std::unique_ptr<CrosDBusService> printers_service_;
+  std::unique_ptr<CrosDBusService> profiler_status_service_;
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
@@ -752,6 +762,9 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
 
   audio_survey_handler_ = std::make_unique<AudioSurveyHandler>();
+
+  camera_general_survey_handler_ =
+      std::make_unique<CameraGeneralSurveyHandler>();
 
   content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(
       CrasAudioHandler::Get());

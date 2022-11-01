@@ -150,7 +150,7 @@
   {
     "name": "ambient-subpage-ui-change",
     "owners": [ "assistive-eng@google.com" ],
-    "expiry_milestone": 114
+    "expiry_milestone": 120
   },
   {
     "name": "android-force-app-language-prompt",
@@ -936,6 +936,11 @@
     "expiry_milestone": 115
   },
   {
+    "name": "chrome-cart-dom-based-heuristics",
+    "owners": [ "yuezhanggg", "wychen"],
+    "expiry_milestone": 112
+  },
+  {
     "name": "chrome-labs",
     "owners": ["elainechien", "robliao"],
     "expiry_milestone": 112
@@ -1102,7 +1107,7 @@
   {
     "name": "context-menu-search-with-google-lens",
     "owners": [ "benwgold@google.com", "lens-chrome@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 114
   },
   {
     "name": "contextual-nudges",
@@ -4453,7 +4458,7 @@
   {
     "name": "lens-camera-assisted-search",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "fgorski", "wylieb", "lens-chrome@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 114
   },
   {
     "name": "lens-on-quick-action-search-widget",
@@ -5970,11 +5975,6 @@
     "name": "request-desktop-site-for-tablets",
     "owners": [ "gangwu@chromium.org", "fgorski@chromium.org" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "request-desktop-site-zoom",
-    "owners": [ "aishwaryarj", "twellington", "clank-app-team@google.com" ],
-    "expiry_milestone": 112
   },
   {
     "name": "restore-session-from-cache",

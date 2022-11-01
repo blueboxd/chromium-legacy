@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_request.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
@@ -2345,8 +2346,8 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   // failures are fixed.
   BlinkLifecycleScopeWillBeScriptForbidden forbid_script;
 
-  // RunScrollTimelineSteps must not run more than once.
-  bool should_run_scroll_timeline_steps = true;
+  // RunScrollSnapshotClientSteps must not run more than once.
+  bool should_run_scroll_snapshot_client_steps = true;
 
   // CSS Toggle steps must not run more than once.
   bool should_run_css_toggle_steps = true;
@@ -2409,16 +2410,15 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       return;
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
-    // ScrollTimelines may be associated with a source that never had a
-    // a chance to get a layout box at the time style was calculated; when
-    // this situation happens, RunScrollTimelineSteps will re-snapshot all
-    // affected timelines and dirty style for associated effect targets.
+    // ScrollSnapshotClients may be associated with scrollers that never had a
+    // chance to get a layout box at the time style was calculated; when this
+    // situation happens, RunScrollTimelineSteps will re-snapshot all affected
+    // clients and dirty style for associated effect targets.
     //
     // https://github.com/w3c/csswg-drafts/issues/5261
-    if (RuntimeEnabledFeatures::CSSScrollTimelineEnabled() &&
-        should_run_scroll_timeline_steps) {
-      should_run_scroll_timeline_steps = false;
-      bool needs_to_repeat_lifecycle = RunScrollTimelineSteps();
+    if (should_run_scroll_snapshot_client_steps) {
+      should_run_scroll_snapshot_client_steps = false;
+      bool needs_to_repeat_lifecycle = RunScrollSnapshotClientSteps();
       if (needs_to_repeat_lifecycle)
         continue;
     }
@@ -2535,7 +2535,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
          Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
 }
 
-bool LocalFrameView::RunScrollTimelineSteps() {
+bool LocalFrameView::RunScrollSnapshotClientSteps() {
   // TODO(crbug.com/1329159): Determine if the source for a view timeline has
   // changed, which may in turn require a fresh style/layout cycle.
 
@@ -2543,11 +2543,8 @@ bool LocalFrameView::RunScrollTimelineSteps() {
   bool re_run_lifecycles = false;
   ForAllNonThrottledLocalFrameViews(
       [&re_run_lifecycles](LocalFrameView& frame_view) {
-        bool timelines_valid = frame_view.GetFrame()
-                                   .GetDocument()
-                                   ->GetDocumentAnimations()
-                                   .ValidateTimelines();
-        re_run_lifecycles |= !timelines_valid;
+        bool valid = frame_view.GetFrame().ValidateScrollSnapshotClients();
+        re_run_lifecycles |= !valid;
       });
   return re_run_lifecycles;
 }
@@ -3647,6 +3644,11 @@ void LocalFrameView::ServiceScriptedAnimations(base::TimeTicks start_time) {
       }
     }
     GetFrame().AnimateSnapFling(start_time);
+
+    // After scroll updates, snapshot scroll state once at top of animation
+    // frame.
+    GetFrame().UpdateScrollSnapshots();
+
     if (SVGDocumentExtensions::ServiceSmilOnAnimationFrame(*document))
       GetPage()->Animator().SetHasSmilAnimation();
     SVGDocumentExtensions::ServiceWebAnimationsOnAnimationFrame(*document);
@@ -4457,9 +4459,8 @@ void LocalFrameView::SetIntersectionObservationState(
 }
 
 void LocalFrameView::SetVisualViewportOrOverlayNeedsRepaint() {
-  LocalFrameView* root = GetFrame().LocalFrameRoot().View();
-  DCHECK(root);
-  root->visual_viewport_or_overlay_needs_repaint_ = true;
+  if (LocalFrameView* root = GetFrame().LocalFrameRoot().View())
+    root->visual_viewport_or_overlay_needs_repaint_ = true;
 }
 
 bool LocalFrameView::VisualViewportOrOverlayNeedsRepaintForTesting() const {

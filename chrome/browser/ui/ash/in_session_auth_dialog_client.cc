@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/webauthn_dialog_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/login/quick_unlock/fingerprint_storage.h"
@@ -21,6 +23,9 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
+#include "chromeos/ash/components/login/auth/public/auth_session_intent.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -41,7 +46,8 @@ InSessionAuthDialogClient* g_auth_dialog_client_instance = nullptr;
 
 }  // namespace
 
-InSessionAuthDialogClient::InSessionAuthDialogClient() {
+InSessionAuthDialogClient::InSessionAuthDialogClient()
+    : auth_performer_(ash::UserDataAuthClient::Get()) {
   ash::WebAuthNDialogController::Get()->SetClient(this);
 
   DCHECK(!g_auth_dialog_client_instance);
@@ -102,6 +108,30 @@ void InSessionAuthDialogClient::CheckPinAuthAvailability(
       account_id, ash::quick_unlock::Purpose::kWebAuthn, std::move(callback));
 }
 
+void InSessionAuthDialogClient::StartAuthSession(
+    base::OnceCallback<void(bool)> callback) {
+  auto* user_manager = user_manager::UserManager::Get();
+  const user_manager::User* const user = user_manager->GetActiveUser();
+  const bool ephemeral =
+      user_manager->IsUserCryptohomeDataEphemeral(user->GetAccountId());
+  auto user_context = std::make_unique<UserContext>(*user);
+
+  auto on_auth_session_started =
+      base::BindOnce(&InSessionAuthDialogClient::OnAuthSessionStarted,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
+
+  auth_performer_.StartAuthSession(std::move(user_context), ephemeral,
+                                   ash::AuthSessionIntent::kWebAuthn,
+                                   std::move(on_auth_session_started));
+}
+
+void InSessionAuthDialogClient::InvalidateAuthSession() {
+  if (user_context_) {
+    auth_performer_.InvalidateAuthSession(std::move(user_context_),
+                                          base::DoNothing());
+  }
+}
+
 void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
     const std::string& password,
     bool authenticated_by_pin,
@@ -138,7 +168,7 @@ void InSessionAuthDialogClient::AuthenticateUserWithPasswordOrPin(
   // TODO(yichengli): If user type is SUPERVISED, use supervised authenticator?
 
   user_context->SetKey(std::move(key));
-  AuthenticateWithPassword(std::move(*user_context));
+  AuthenticateWithPassword(std::move(user_context), password);
 }
 
 void InSessionAuthDialogClient::OnPinAttemptDone(
@@ -156,16 +186,88 @@ void InSessionAuthDialogClient::OnPinAttemptDone(
 }
 
 void InSessionAuthDialogClient::AuthenticateWithPassword(
-    const UserContext& user_context) {
-  // TODO(crbug.com/1115120): Don't post to UI thread if it turns out to be
-  // unnecessary.
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ExtendedAuthenticator::AuthenticateToUnlockWebAuthnSecret,
-          GetExtendedAuthenticator(), user_context,
-          base::BindOnce(&InSessionAuthDialogClient::OnPasswordAuthSuccess,
-                         weak_factory_.GetWeakPtr(), user_context)));
+    std::unique_ptr<UserContext> user_context,
+    const std::string& password) {
+  if (!ash::features::IsUseAuthsessionForWebAuthNEnabled()) {
+    // TODO(crbug.com/1115120): Don't post to UI thread if it turns out to be
+    // unnecessary.
+    auto context = std::move(*user_context);
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &ExtendedAuthenticator::AuthenticateToUnlockWebAuthnSecret,
+            GetExtendedAuthenticator(), context,
+            base::BindOnce(&InSessionAuthDialogClient::OnPasswordAuthSuccess,
+                           weak_factory_.GetWeakPtr(), context)));
+    return;
+  }
+
+  // Check that we have a valid `user_context_`, provided by a prior
+  // `StartAuthSession`, this also nicely asserts that we are not waiting
+  // on other UserDataAuth dbus calls that involve the auth_session_id stored
+  // in this `user_context`.
+  CHECK(user_context_);
+  const cryptohome::AuthFactor* password_factor =
+      user_context_->GetAuthFactorsData().FindOnlinePasswordFactor();
+  if (!password_factor) {
+    LOG(ERROR) << "Could not find password key";
+    std::move(pending_auth_state_->callback).Run(false);
+    return;
+  }
+
+  auto on_authenticated = base::BindOnce(
+      &InSessionAuthDialogClient::OnAuthVerified, weak_factory_.GetWeakPtr(),
+      /*authenticated_by_password=*/true);
+
+  auth_performer_.AuthenticateWithPassword(*(password_factor->ref().label()),
+                                           password, std::move(user_context_),
+                                           std::move(on_authenticated));
+}
+
+void InSessionAuthDialogClient::OnAuthSessionStarted(
+    base::OnceCallback<void(bool)> callback,
+    bool user_exists,
+    std::unique_ptr<UserContext> user_context,
+    absl::optional<AuthenticationError> error) {
+  if (error.has_value()) {
+    LOG(ERROR) << "Failed to start auth session, code "
+               << error->get_cryptohome_code();
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!user_exists) {
+    LOG(ERROR) << "User does not exist";
+    // Invalidate the auth session that started, do not leave orphans behind.
+    auth_performer_.InvalidateAuthSession(std::move(user_context),
+                                          base::DoNothing());
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Take temporary ownership of user_context to pass on later.
+  user_context_ = std::move(user_context);
+  std::move(callback).Run(true);
+}
+
+void InSessionAuthDialogClient::OnAuthVerified(
+    bool authenticated_by_password,
+    std::unique_ptr<UserContext> user_context,
+    absl::optional<AuthenticationError> error) {
+  if (error.has_value()) {
+    LOG(ERROR) << "Failed to authenticate, code "
+               << error->get_cryptohome_code();
+    std::move(pending_auth_state_->callback).Run(false);
+  } else {
+    // TODO(b:241256423): Tell cryptohome to release WebAuthN secret.
+    if (authenticated_by_password)
+      OnPasswordAuthSuccess(*user_context);
+    std::move(pending_auth_state_->callback).Run(true);
+  }
+
+  // Take back ownership of user_context for future auth attempts.
+  user_context_ = std::move(user_context);
+  pending_auth_state_.reset();
 }
 
 void InSessionAuthDialogClient::OnPasswordAuthSuccess(

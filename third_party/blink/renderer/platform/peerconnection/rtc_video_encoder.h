@@ -50,8 +50,9 @@ class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
   RTCVideoEncoder& operator=(const RTCVideoEncoder&) = delete;
   ~RTCVideoEncoder() override;
 
-  // webrtc::VideoEncoder implementation.  Tasks are posted to |impl_| using the
-  // appropriate VEA methods.
+  // webrtc::VideoEncoder implementation.
+  // They run on |webrtc_sequence_checker_|. Tasks are posted to |impl_| using
+  // the appropriate VEA methods.
   int InitEncode(const webrtc::VideoCodec* codec_settings,
                  const webrtc::VideoEncoder::Settings& settings) override;
   int32_t Encode(
@@ -81,8 +82,14 @@ class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
   // Task runner that the video accelerator runs on.
   const scoped_refptr<base::SequencedTaskRunner> gpu_task_runner_;
 
+  // The sequence on which the webrtc::VideoEncoder functions are executed.
+  SEQUENCE_CHECKER(webrtc_sequence_checker_);
+
   // The RTCVideoEncoder::Impl that does all the work.
-  scoped_refptr<Impl> impl_;
+  std::unique_ptr<Impl> impl_;
+
+  // This weak pointer is bound to |gpu_task_runner_|.
+  base::WeakPtr<Impl> weak_impl_;
 };
 
 }  // namespace blink

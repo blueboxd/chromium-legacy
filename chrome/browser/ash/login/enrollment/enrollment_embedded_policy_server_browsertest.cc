@@ -46,7 +46,7 @@
 #include "chrome/browser/ui/webui/ash/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/attestation/attestation_flow_utils.h"
@@ -897,9 +897,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentEmbeddedPolicyServer, Attestation) {
       test::kTestDomain));
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
-  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
-                                        test::values::kLocation);
+
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
@@ -1155,8 +1153,12 @@ IN_PROC_BROWSER_TEST_F(InitialEnrollmentTest,
                        ZeroTouchForcedAttestationSuccess) {
   AllowlistSimpleChallengeSigningKey();
   policy_server_.SetupZeroTouchForcedEnrollment();
+  policy_server_.SetUpdateDeviceAttributesPermission(true);
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
+  enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
+                                        test::values::kLocation);
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());

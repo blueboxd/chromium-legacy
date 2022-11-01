@@ -62,31 +62,7 @@ void WaitableEvent::Reset() {
   PeekPort(receive_right_->Name(), true);
 }
 
-// NO_THREAD_SAFETY_ANALYSIS: Runtime dependent locking.
-void WaitableEvent::Signal() NO_THREAD_SAFETY_ANALYSIS {
-  // If using the slow watch-list, copy the watchers to a local. After
-  // mach_msg(), the event object may be deleted by an awoken thread.
-  const bool use_slow_path = UseSlowWatchList(policy_);
-  ReceiveRight* receive_right = nullptr;  // Manually reference counted.
-  std::unique_ptr<std::list<OnceClosure>> watch_list;
-  if (use_slow_path) {
-    // To avoid a race condition of a WaitableEventWatcher getting added
-    // while another thread is in this method, hold the watch-list lock for
-    // the duration of mach_msg(). This requires ref-counting the
-    // |receive_right_| object that contains it, in case the event is deleted
-    // by a waiting thread after mach_msg().
-    receive_right = receive_right_.get();
-    receive_right->AddRef();
-
-    ReceiveRight::WatchList* slow_watch_list = receive_right->SlowWatchList();
-    slow_watch_list->lock.Acquire();
-
-    if (!slow_watch_list->list.empty()) {
-      watch_list = std::make_unique<std::list<OnceClosure>>();
-      std::swap(*watch_list, slow_watch_list->list);
-    }
-  }
-
+void WaitableEvent::SignalImpl() {
   mach_msg_empty_send_t msg{};
   msg.header.msgh_bits = MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_COPY_SEND);
   msg.header.msgh_size = sizeof(&msg);
@@ -119,26 +95,7 @@ bool WaitableEvent::IsSignaled() {
   return PeekPort(receive_right_->Name(), policy_ == ResetPolicy::AUTOMATIC);
 }
 
-void WaitableEvent::Wait() {
-  bool result = TimedWait(TimeDelta::Max());
-  DCHECK(result) << "TimedWait() should never fail with infinite timeout";
-}
-
-bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
-  if (wait_delta <= TimeDelta())
-    return IsSignaled();
-
-  // Record the event that this thread is blocking upon (for hang diagnosis) and
-  // consider blocked for scheduling purposes. Ignore this for non-blocking
-  // WaitableEvents.
-  absl::optional<debug::ScopedEventWaitActivity> event_activity;
-  absl::optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
-      scoped_blocking_call;
-  if (waiting_is_blocking_) {
-    event_activity.emplace(this);
-    scoped_blocking_call.emplace(FROM_HERE, BlockingType::MAY_BLOCK);
-  }
-
+bool WaitableEvent::TimedWaitImpl(TimeDelta wait_delta) {
   mach_msg_empty_rcv_t msg{};
   msg.header.msgh_local_port = receive_right_->Name();
 

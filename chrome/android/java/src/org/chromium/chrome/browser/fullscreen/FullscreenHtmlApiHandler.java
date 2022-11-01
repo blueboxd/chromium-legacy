@@ -586,7 +586,10 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
                 // onLayoutChange would have no effect.
                 mHandler.sendEmptyMessage(MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS);
 
-                if ((bottom - top) <= (oldBottom - oldTop)) return;
+                if ((bottom - top) <= (oldBottom - oldTop)
+                        && (right - left) <= (oldRight - oldLeft)) {
+                    return;
+                }
 
                 beginNotificationToast();
                 contentView.removeOnLayoutChangeListener(this);
@@ -666,7 +669,7 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
         if (addView) {
             mActivity.addContentView(mNotificationToast,
                     new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT));
+                            ViewGroup.LayoutParams.MATCH_PARENT));
             // Ensure the toast is visible on bottom sheet CCT which is elevated for shadow effect.
             // Does no harm on other embedders.
             mNotificationToast.setElevation(mActivity.getResources().getDimensionPixelSize(

@@ -134,7 +134,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.Agc.DigitalGainApplied" units="dB"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>alessiob@chromium.org</owner>
   <summary>
     Logs adaptive digital compression gain that is applied by AgcManagerDirect.
@@ -165,7 +165,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.Agc2.DigitalGainApplied" units="dB"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>alessiob@chromium.org</owner>
   <summary>
     Logs adaptive digital compression gain that is applied by
@@ -309,7 +309,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.ApmCaptureInputLevelPeakRms"
-    units="dBFS (negated)" expires_after="2023-02-26">
+    units="dBFS (negated)" expires_after="2023-04-30">
   <owner>hlundin@chromium.org</owner>
   <summary>
     This histogram reports the peak RMS of the signal coming in to WebRTC's
@@ -810,7 +810,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.TargetJitterBufferDelayMs" units="ms"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>hlundin@chromium.org</owner>
   <summary>
     The target jitter buffer delay for the receiving side. Sampled once every 10
@@ -886,7 +886,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.BWE.InitialVsConvergedDiff" units="kbps"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>holmer@chromium.org</owner>
   <summary>
     The difference between the bandwidth estimate at 2 seconds and 20 seconds
@@ -1081,7 +1081,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Call.TimeReceivingVideoRtpPacketsInSeconds" units="s"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>saza@chromium.org</owner>
   <summary>
     The amount of time between the arrival of the first and last video RTP
@@ -1296,7 +1296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.BundlePolicy"
-    enum="PeerConnectionBundlePolicy" expires_after="2023-02-28">
+    enum="PeerConnectionBundlePolicy" expires_after="2023-04-30">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>
@@ -1310,7 +1310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.BundleUsage"
-    enum="PeerConnectionBundleUsage" expires_after="2023-02-28">
+    enum="PeerConnectionBundleUsage" expires_after="2023-04-30">
   <owner>hta@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>
   <summary>

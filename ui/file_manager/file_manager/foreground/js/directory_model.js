@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/js/cr_deprecated.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
 
 import {Aggregator, AsyncQueue} from '../../common/js/async_util.js';
 import {GuestOsPlaceholder} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
 import {util} from '../../common/js/util.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {isNative, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {EntriesChangedEvent} from '../../externs/entries_changed_event.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -308,8 +308,7 @@ export class DirectoryModel extends EventTarget {
   isOnNative() {
     const rootType = this.getCurrentRootType();
     return rootType != null && !util.isRecentRootType(rootType) &&
-        VolumeManagerCommon.VolumeType.isNative(
-            VolumeManagerCommon.getVolumeTypeFromRootType(rootType));
+        isNative(VolumeManagerCommon.getVolumeTypeFromRootType(rootType));
   }
 
   /**
@@ -1216,7 +1215,7 @@ export class DirectoryModel extends EventTarget {
    * Creates an object which could say whether directory has changed while it
    * has been active or not. Designed for long operations that should be
    * cancelled if the used change current directory.
-   * @return {Object} Created object.
+   * @return {!DirectoryChangeTracker} Created object.
    */
   createDirectoryChangeTracker() {
     const tracker = {
@@ -1676,3 +1675,23 @@ export class DirectoryModel extends EventTarget {
     }
   }
 }
+
+/**
+ * Used to track asynchronous directory change use like:
+ * const tracker = directoryModel.createDirectoryChangeTracker();
+ * tracker.start();
+ * try {
+ *    ... async code here ...
+ *    if (tracker.hasChanged) {
+ *      // This code shouldn't continue anymore.
+ *    }
+ * } finally {
+ *     tracker.stop();
+ * }
+ * @typedef {{
+ *   start: function(),
+ *   stop: function(),
+ *   hasChanged: boolean,
+ * }}
+ */
+export let DirectoryChangeTracker;

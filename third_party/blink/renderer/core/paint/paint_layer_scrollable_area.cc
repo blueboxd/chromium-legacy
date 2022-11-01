@@ -126,7 +126,6 @@ PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 
 void PaintLayerScrollableAreaRareData::Trace(Visitor* visitor) const {
   visitor->Trace(sticky_layers_);
-  visitor->Trace(anchor_positioned_layers_);
 }
 
 const int kResizerControlExpandRatioForTouch = 2;
@@ -539,7 +538,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
 void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   InvalidatePaintForStickyDescendants();
-  InvalidatePaintForAnchorPositionedLayers();
 
   auto* box = GetLayoutBox();
   auto* frame_view = box->GetFrameView();
@@ -958,7 +956,6 @@ void PaintLayerScrollableArea::SetScrollOffsetUnconditionally(
 
 void PaintLayerScrollableArea::UpdateAfterLayout() {
   InvalidateAllStickyConstraints();
-  InvalidateAllAnchorPositionedLayers();
 
   bool is_horizontal_scrollbar_frozen;
   bool is_vertical_scrollbar_frozen;
@@ -1963,8 +1960,10 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
   gfx::Rect resize_control_rect;
   if (GetLayoutBox()->CanResize()) {
     resize_control_rect = ResizerCornerRect(kResizerForPointer);
-    if (resize_control_rect.Contains(local_point))
+    if (resize_control_rect.Contains(local_point)) {
+      result.SetIsOverResizer(true);
       return true;
+    }
   }
   int resize_control_size = max(resize_control_rect.height(), 0);
 
@@ -2120,30 +2119,6 @@ void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
       DCHECK(object.StickyConstraints());
       object.StickyConstraints()->ComputeStickyOffset(ScrollPosition());
     }
-  }
-}
-
-bool PaintLayerScrollableArea::AddAnchorPositionedLayer(PaintLayer* layer) {
-  auto add_result = EnsureRareData().anchor_positioned_layers_.insert(layer);
-  return add_result.is_new_entry;
-}
-
-void PaintLayerScrollableArea::InvalidateAllAnchorPositionedLayers() {
-  if (rare_data_)
-    rare_data_->anchor_positioned_layers_.clear();
-}
-
-void PaintLayerScrollableArea::InvalidatePaintForAnchorPositionedLayers() {
-  // If this is called during layout, anchor_positioned_layers_ may contain
-  // stale pointers. Return because we'll InvalidateAllAnchorPositionedLayers(),
-  // and we'll SetNeedsPaintPropertyUpdate() when updating anchor positioned
-  // layers.
-  if (GetLayoutBox()->NeedsLayout())
-    return;
-
-  if (PaintLayerScrollableAreaRareData* d = RareData()) {
-    for (PaintLayer* anchor_positioned_layer : d->anchor_positioned_layers_)
-      anchor_positioned_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
 

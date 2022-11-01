@@ -1231,7 +1231,6 @@
       name: "FedCmMultipleIdentityProviders",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
     },
     {
       name: "FencedFrames",
@@ -2590,6 +2589,11 @@
       status: "experimental",
     },
     {
+      name: "StreamingDeclarativeShadowDOM",
+      status: "experimental",
+      base_feature: "StreamingDeclarativeShadowDOM",
+    },
+    {
       name: "StrictMimeTypesForWorkers",
       status: "experimental"
     },
@@ -3019,6 +3023,11 @@
     {
       name: "WebCryptoCurve25519",
       status: "experimental",
+    },
+    {
+      name: "WebFontResizeLCP",
+      status: "experimental",
+      base_feature: "WebFontResizeLCP",
     },
     {
       name: "WebGLColorManagement",

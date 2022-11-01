@@ -235,13 +235,14 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
 
   if (!view_) {
     AppListView* view = new AppListView(controller_);
-    view->InitView(controller_->GetContainerForDisplayId(display_id));
+    view->InitView(
+        controller_->GetFullscreenLauncherContainerForDisplayId(display_id));
     SetView(view);
     view_->GetWidget()->GetNativeWindow()->TrackOcclusionState();
   }
 
   OnVisibilityWillChange(GetTargetVisibility(), display_id);
-  controller_->UpdateLauncherContainer(display_id);
+  controller_->UpdateFullscreenLauncherContainer(display_id);
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
@@ -434,21 +435,6 @@ void AppListPresenterImpl::SetViewVisibility(bool visible) {
 
 bool AppListPresenterImpl::HandleCloseOpenFolder() {
   return is_target_visibility_show_ && view_ && view_->HandleCloseOpenFolder();
-}
-
-ShelfAction AppListPresenterImpl::ToggleAppList(
-    int64_t display_id,
-    AppListShowSource show_source,
-    base::TimeTicks event_time_stamp) {
-  // Dismiss or show based on the target visibility because the show/hide
-  // animation can be reversed.
-  if (is_target_visibility_show_ && GetDisplayId() == display_id) {
-    Dismiss(event_time_stamp);
-    return SHELF_ACTION_APP_LIST_DISMISSED;
-  }
-  Show(AppListViewState::kFullscreenAllApps, display_id, event_time_stamp,
-       show_source);
-  return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 void AppListPresenterImpl::UpdateForNewSortingOrder(

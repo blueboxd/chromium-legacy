@@ -264,34 +264,6 @@ void WebApps::Launch(const std::string& app_id,
       apps::ConvertMojomWindowInfoToWindowInfo(window_info));
 }
 
-void WebApps::LaunchAppWithFiles(const std::string& app_id,
-                                 int32_t event_flags,
-                                 apps::mojom::LaunchSource launch_source,
-                                 apps::mojom::FilePathsPtr file_paths) {
-  publisher_helper().LaunchAppWithFiles(
-      app_id, event_flags,
-      apps::ConvertMojomLaunchSourceToLaunchSource(launch_source),
-      apps::ConvertMojomFilePathsToFilePaths(std::move(file_paths)));
-}
-
-void WebApps::LaunchAppWithIntent(const std::string& app_id,
-                                  int32_t event_flags,
-                                  apps::mojom::IntentPtr intent,
-                                  apps::mojom::LaunchSource launch_source,
-                                  apps::mojom::WindowInfoPtr window_info,
-                                  LaunchAppWithIntentCallback callback) {
-  publisher_helper().LaunchAppWithIntent(
-      app_id, event_flags, apps::ConvertMojomIntentToIntent(intent),
-      apps::ConvertMojomLaunchSourceToLaunchSource(launch_source),
-      apps::ConvertMojomWindowInfoToWindowInfo(window_info),
-      base::BindOnce(
-          [](LaunchAppWithIntentCallback callback,
-             apps::LaunchResult&& result) {
-            std::move(callback).Run(apps::ConvertLaunchResultToBool(result));
-          },
-          std::move(callback)));
-}
-
 void WebApps::OpenNativeSettings(const std::string& app_id) {
   publisher_helper().OpenNativeSettings(app_id);
 }

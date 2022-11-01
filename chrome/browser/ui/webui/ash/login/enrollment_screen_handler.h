@@ -20,7 +20,7 @@
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ui/webui/ash/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/ash/login/network_state_informer.h"
 #include "net/cookies/canonical_cookie.h"
 
 namespace chromeos {
@@ -81,8 +81,6 @@ class EnrollmentScreenHandler
   void SetGaiaButtonsType(GaiaButtonsType buttons_type) override;
   void Show() override;
   void Hide() override;
-  void Bind(ash::EnrollmentScreen* screen) override;
-  void Unbind() override;
   void ShowSigninScreen() override;
   void ShowSkipConfirmationDialog() override;
   void ShowUserError(const std::string& email) override;
@@ -103,7 +101,7 @@ class EnrollmentScreenHandler
   void Shutdown() override;
 
   // Implements BaseScreenHandler:
-  void InitializeDeprecated() override;
+  void InitAfterJavascriptAllowed() override;
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void GetAdditionalParameters(base::Value::Dict* parameters) override;
@@ -222,7 +220,6 @@ class EnrollmentScreenHandler
       scoped_network_observation_{this};
 
   ErrorScreen* error_screen_ = nullptr;
-  ash::EnrollmentScreen* screen_ = nullptr;
 
   std::string signin_partition_name_;
 

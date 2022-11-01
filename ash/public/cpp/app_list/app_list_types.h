@@ -375,18 +375,16 @@ enum class AppListSearchResultType {
   kGames,                  // Game sarch results.
   kPersonalization,        // Personalization search results.
   kZeroStateHelpApp,       // Help App (aka Explore) results for zero-state.
-  kZeroStateApp,           // App recommendations for zero-state / recent apps.
   // Add new values here.
-  kMaxValue = kZeroStateApp,
+  kMaxValue = kZeroStateHelpApp,
 };
 
 ASH_PUBLIC_EXPORT bool IsAppListSearchResultAnApp(
     AppListSearchResultType result_type);
 
 // Returns whether the result type is a type of result shown in launcher
-// apps page, i.e. results shown in launcher "continue" section and among recent
-// apps.
-ASH_PUBLIC_EXPORT bool IsZeroStateResultType(
+// continue section.
+ASH_PUBLIC_EXPORT bool IsContinueSectionResultType(
     AppListSearchResultType result_type);
 
 // The different categories a search result can be part of. Every search result
@@ -427,6 +425,17 @@ enum class SearchResultDisplayType {
   kRecentApps = 7,  // Displays in recent apps row
   // Add new values here
   kLast,  // Don't use over IPC
+};
+
+// Which index in the UI container should the result be placed in.
+enum SearchResultDisplayIndex {
+  kFirstIndex,
+  kSecondIndex,
+  kThirdIndex,
+  kFourthIndex,
+  kFifthIndex,
+  kSixthIndex,
+  kUndefined,
 };
 
 // Actions for search results. These map to the buttons beside some search
@@ -668,6 +677,13 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Which UI container(s) the result should be displayed in.
   SearchResultDisplayType display_type = SearchResultDisplayType::kList;
+
+  // Which index in the UI container should the result be placed in.
+  SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
+
+  // A score to settle conflicts between two apps with the same requested
+  // |display_index|.
+  float position_priority = 0.0f;
 
   // A score to determine the result display order.
   double display_score = 0;

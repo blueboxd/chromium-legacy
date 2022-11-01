@@ -409,7 +409,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CloudReportingBasicRequestSize" units="KB"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -440,7 +440,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.CloudReportingResponse"
-    enum="EnterpriseCloudReportingResponse" expires_after="2023-02-26">
+    enum="EnterpriseCloudReportingResponse" expires_after="2023-04-30">
   <owner>zmin@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -509,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.DevicePolicyRefresh3"
-    enum="EnterprisePolicyRefresh" expires_after="2023-03-01">
+    enum="EnterprisePolicyRefresh" expires_after="2023-04-30">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -591,7 +591,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.DeviceRemoteCommand.Received"
-    enum="RemoteCommandReceivedStatus" expires_after="2023-03-01">
+    enum="RemoteCommandReceivedStatus" expires_after="2023-04-30">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -806,6 +806,17 @@ chromium-metrics-reviews@google.com.
     Recorded when a device starts the device trust attestation flow with a
     partner website. This captures the enrollment status of the device where the
     attestation flow is happening.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceTrust.Handshake.Result"
+    enum="DTHandshakeResult" expires_after="2023-08-01">
+  <owner>seblalancette@chromium.org</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Recorded when a Device Trust handshake was completed between the browser and
+    a server. This captures either the success or specific failure of the
+    overall flow.
   </summary>
 </histogram>
 
@@ -1490,7 +1501,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Enterprise.EnrollmentAttestationBased.EnrollmentCertificateStatus.InitialAttempt"
     enum="EnrollmentAttestationBasedCertificateStatus"
-    expires_after="2023-03-01">
+    expires_after="2023-04-30">
   <owner>asumaneev@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
@@ -1802,7 +1813,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.FCMInvalidationService.PolicyInvalidations"
-    enum="EnterprisePolicyInvalidations" expires_after="2023-03-01">
+    enum="EnterprisePolicyInvalidations" expires_after="2023-04-30">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -1817,7 +1828,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.FCMInvalidationService.PolicyInvalidationsRegistrationResult"
-    enum="BooleanSuccess" expires_after="2023-03-01">
+    enum="BooleanSuccess" expires_after="2023-04-30">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -2045,7 +2056,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.MultipartDataPipe.WriteRate"
-    units="kilobytes per second" expires_after="2023-02-26">
+    units="kilobytes per second" expires_after="2023-04-30">
   <owner>domfc@chromium.org</owner>
   <owner>anthonyvd@chromium.org</owner>
   <summary>
@@ -2119,7 +2130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PolicyInvalidations"
-    enum="EnterprisePolicyInvalidations" expires_after="2023-03-01">
+    enum="EnterprisePolicyInvalidations" expires_after="2023-04-30">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -2611,7 +2622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsDomainJoined" enum="BooleanEnabled"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2622,7 +2633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsEnterpriseUser" enum="BooleanEnabled"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>pastarmovj@chromium.org</owner>
   <owner>rogerta@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
@@ -2634,7 +2645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.IsFullyManaged2" enum="IsFullyManagedBoolean"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>twellington@google.com</owner>
   <owner>tedchcoc@chromium.org</owner>
   <summary>

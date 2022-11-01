@@ -31,7 +31,9 @@ MicrophoneMuteNotificationController::MicrophoneMuteNotificationController() {
 MicrophoneMuteNotificationController::~MicrophoneMuteNotificationController() =
     default;
 
-void MicrophoneMuteNotificationController::OnInputMuteChanged(bool mute_on) {
+void MicrophoneMuteNotificationController::OnInputMuteChanged(
+    bool mute_on,
+    CrasAudioHandler::InputMuteChangeMethod method) {
   mic_mute_on_ = mute_on;
   mic_muted_by_mute_switch_ =
       CrasAudioHandler::Get()->input_muted_by_microphone_mute_switch();
@@ -109,7 +111,6 @@ MicrophoneMuteNotificationController::GenerateMicrophoneMuteNotification(
   message_center::RichNotificationData notification_data;
   notification_data.priority = priority;
   current_notification_priority_ = priority;
-  notification_data.pinned = true;
 
   scoped_refptr<message_center::NotificationDelegate> delegate;
   // Don't show a button to unmute device if the microphone was muted by a HW
@@ -124,7 +125,8 @@ MicrophoneMuteNotificationController::GenerateMicrophoneMuteNotification(
               // Click on the notification body is no-op.
               if (!button_index)
                 return;
-              CrasAudioHandler::Get()->SetInputMute(false);
+              CrasAudioHandler::Get()->SetInputMute(
+                  false, CrasAudioHandler::InputMuteChangeMethod::kOther);
               privacy_hub_metrics::LogMicrophoneEnabledFromNotification(true);
             }));
   }

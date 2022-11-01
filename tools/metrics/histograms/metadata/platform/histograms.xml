@@ -1290,7 +1290,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.StatefulWritesDaily" units="KiB"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
   <owner>chromeos-storage@google.com</owner>
@@ -1336,7 +1336,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.SwapInDaily" units="pages" expires_after="2023-02-26">
+<histogram name="Platform.SwapInDaily" units="pages" expires_after="2023-04-30">
   <owner>asavery@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>Number of pages swapped IN over a day, sampled daily.</summary>
@@ -1361,7 +1361,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.SwapOutDaily" units="pages"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>asavery@chromium.org</owner>
   <owner>chromeos-memory@google.com</owner>
   <summary>Number of pages swapped OUT over a day, sampled daily.</summary>
@@ -1527,13 +1527,32 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.VersionFingerprint" enum="TPMVersionFingerprint"
-    expires_after="2023-02-26">
+    expires_after="2023-04-30">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     Indicates a fingerprint of hardware + firmware versions for the TPM chip
     present in a Chrome OS device.
   </summary>
+</histogram>
+
+<histogram name="Platform.TPM2.CommandAndResponse.{Client}"
+    enum="TPM2CommandAndResponse" expires_after="2023-04-20">
+  <owner>chingkang@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The TPM2 command and response code send from |Client| to trunks. The value
+    is the encoding of 2 bytes command code and 2 bytes response code.
+  </summary>
+  <token key="Client">
+    <variant name="Attestation"/>
+    <variant name="Chaps"/>
+    <variant name="Cryptohome"/>
+    <variant name="TpmManager"/>
+    <variant name="TrunksSend"/>
+    <variant name="U2f"/>
+    <variant name="Vtpm"/>
+  </token>
 </histogram>
 
 <histogram name="Platform.Trunks.FirstTimeoutReadingCommand"
@@ -1683,7 +1702,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WriteSectorsLong" units="sectors per second"
-    expires_after="2022-10-01">
+    expires_after="2023-10-27">
   <owner>gwendal@google.com</owner>
   <owner>chromeos-storage@google.com</owner>
   <summary>
@@ -1693,7 +1712,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WriteSectorsShort" units="sectors per second"
-    expires_after="2022-12-04">
+    expires_after="2023-10-27">
   <owner>gwendal@google.com</owner>
   <owner>chromeos-storage@google.com</owner>
   <summary>

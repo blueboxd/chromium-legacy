@@ -1771,6 +1771,15 @@ const FeatureEntry::FeatureVariation kCodeBasedRBDVariations[] = {
      nullptr},
 };
 
+// The following is Merchant wide promotion variation.
+const flags_ui::FeatureEntry::FeatureParam kMerchantWideFetchEnabled[] = {
+    {commerce::kReadyToFetchMerchantWidePromotionParam, "true"}};
+
+const FeatureEntry::FeatureVariation kMerchantWidePromotionVariations[] = {
+    {"- Enable fetch", kMerchantWideFetchEnabled,
+     std::size(kMerchantWideFetchEnabled), nullptr},
+};
+
 const FeatureEntry::FeatureParam kNtpDriveModuleFakeData[] = {
     {ntp_features::kNtpDriveModuleDataParam, "fake"}};
 const FeatureEntry::FeatureParam kNtpDriveModuleManagedUsersOnly[] = {
@@ -3315,6 +3324,18 @@ const FeatureEntry::FeatureVariation kGridTabSwitcherForTabletsVariations[] = {
      std::size(kGridTabSwitcherForTabletsDelayCreation), nullptr},
 };
 
+#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kContentVisibilityDelay10[] = {
+    {"content_visibility_delay", "10"}};
+const FeatureEntry::FeatureParam kContentVisibilityDelay5[] = {
+    {"content_visibility_delay", "5"}};
+const FeatureEntry::FeatureVariation kFoldableJankFixDelayVariations[] = {
+    {"10ms delay", kContentVisibilityDelay10,
+     std::size(kContentVisibilityDelay10), nullptr},
+    {"5ms delay", kContentVisibilityDelay5, std::size(kContentVisibilityDelay5),
+     nullptr}};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -6126,6 +6147,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpChromeCartModuleVariations,
                                     "DesktopNtpModules")},
 
+    {"chrome-cart-dom-based-heuristics",
+     commerce::flag_descriptions::kChromeCartDomBasedHeuristicsName,
+     commerce::flag_descriptions::kChromeCartDomBasedHeuristicsDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(commerce::kChromeCartDomBasedHeuristics)},
+
     {"ntp-comprehensive-theme-realbox",
      flag_descriptions::kNtpComprehensiveThemeRealboxName,
      flag_descriptions::kNtpComprehensiveThemeRealboxDescription, kOsDesktop,
@@ -6557,7 +6583,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-foldable-jank-fix", flag_descriptions::kFoldableJankFixAndroidName,
      flag_descriptions::kFoldableJankFixAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kFoldableJankFix)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kFoldableJankFix,
+                                    kFoldableJankFixDelayVariations,
+                                    "FoldableJankFix")},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"unsafely-treat-insecure-origin-as-secure",
@@ -9240,7 +9268,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-merchant-wide-promotions",
      flag_descriptions::kMerchantWidePromotionsName,
      flag_descriptions::kMerchantWidePromotionsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(commerce::kMerchantWidePromotion)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kMerchantWidePromotion,
+                                    kMerchantWidePromotionVariations,
+                                    "MerchantWidePromotion")},
 
 #endif
 
@@ -9607,13 +9637,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRequestDesktopSiteExceptionsDowngradeDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(browser_ui::kRequestDesktopSiteExceptionsDowngrade)},
-#endif  // BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_ANDROID)
-    {"request-desktop-site-zoom",
-     flag_descriptions::kRequestDesktopSiteZoomName,
-     flag_descriptions::kRequestDesktopSiteZoomDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kRequestDesktopSiteZoom)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)

@@ -60,24 +60,25 @@ class WebAppDatabaseTest : public WebAppTest {
  public:
   void SetUp() override {
     WebAppTest::SetUp();
+    provider_ = FakeWebAppProvider::Get(profile());
 
-    command_manager_ = std::make_unique<WebAppCommandManager>(profile());
-    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
-    registrar_mutable_ = std::make_unique<WebAppRegistrarMutable>(profile());
-    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
-        registrar_mutable_.get(), mock_processor_.CreateForwardingProcessor());
-    database_factory_ = std::make_unique<FakeWebAppDatabaseFactory>();
+    auto sync_bridge = std::make_unique<WebAppSyncBridge>(
+        &provider_->GetRegistrarMutable(),
+        mock_processor_.CreateForwardingProcessor());
+    sync_bridge_ = sync_bridge.get();
 
-    sync_bridge_->SetSubsystems(database_factory_.get(), install_manager_.get(),
-                                command_manager_.get());
+    auto database_factory = std::make_unique<FakeWebAppDatabaseFactory>();
+    database_factory_ = database_factory.get();
+
+    provider_->SetDatabaseFactory(std::move(database_factory));
+    provider_->SetSyncBridge(std::move(sync_bridge));
+
+    sync_bridge_->SetSubsystems(database_factory_,
+                                &provider_->GetInstallManager(),
+                                &provider_->GetCommandManager());
 
     ON_CALL(mock_processor_, IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
-  }
-
-  void TearDown() override {
-    DestroyManagers();
-    WebAppTest::TearDown();
   }
 
   bool IsDatabaseRegistryEqualToRegistrar() {
@@ -125,9 +126,11 @@ class WebAppDatabaseTest : public WebAppTest {
  protected:
   FakeWebAppDatabaseFactory& database_factory() { return *database_factory_; }
 
-  WebAppRegistrar& registrar() { return *registrar_mutable_; }
+  WebAppRegistrar& registrar() { return provider_->GetRegistrarMutable(); }
 
-  WebAppRegistrarMutable& mutable_registrar() { return *registrar_mutable_; }
+  WebAppRegistrarMutable& mutable_registrar() {
+    return provider_->GetRegistrarMutable();
+  }
 
   WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
 
@@ -135,25 +138,6 @@ class WebAppDatabaseTest : public WebAppTest {
     base::RunLoop loop;
     sync_bridge_->Init(loop.QuitClosure());
     loop.Run();
-  }
-
-  void DestroyManagers() {
-    if (command_manager_) {
-      command_manager_->Shutdown();
-      command_manager_.reset();
-    }
-    if (install_manager_) {
-      install_manager_.reset();
-    }
-    if (registrar_mutable_) {
-      registrar_mutable_.reset();
-    }
-    if (sync_bridge_) {
-      sync_bridge_.reset();
-    }
-    if (database_factory_) {
-      database_factory_.reset();
-    }
   }
 
   void RegisterApp(std::unique_ptr<WebApp> web_app) {
@@ -173,11 +157,9 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
  private:
-  std::unique_ptr<WebAppCommandManager> command_manager_;
-  std::unique_ptr<WebAppInstallManager> install_manager_;
-  std::unique_ptr<WebAppRegistrarMutable> registrar_mutable_;
-  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
-  std::unique_ptr<FakeWebAppDatabaseFactory> database_factory_;
+  WebAppSyncBridge* sync_bridge_;
+  FakeWebAppDatabaseFactory* database_factory_;
+  FakeWebAppProvider* provider_;
 
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
 };
@@ -705,15 +687,17 @@ TEST_F(WebAppDatabaseProtoDataTest,
 }
 
 TEST_F(WebAppDatabaseProtoDataTest, SavesDevModeProxyIsolationData) {
-  std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(
-      IsolationData(IsolationData::DevModeProxy{.proxy_url = "proxy"}));
+  std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(IsolationData(
+      IsolationData::DevModeProxy{.proxy_url = url::Origin::Create(
+                                      GURL("https://proxy-example.com/"))}));
 
   std::unique_ptr<WebApp> protoed_web_app = ToAndFromProto(*web_app);
   EXPECT_THAT(*web_app, Eq(*protoed_web_app));
   EXPECT_THAT(
       web_app->isolation_data()->content,
-      VariantWith<IsolationData::DevModeProxy>(Field(
-          "proxy_url", &IsolationData::DevModeProxy::proxy_url, Eq("proxy"))));
+      VariantWith<IsolationData::DevModeProxy>(
+          Field("proxy_url", &IsolationData::DevModeProxy::proxy_url,
+                Eq(url::Origin::Create(GURL("https://proxy-example.com/"))))));
 }
 
 TEST_F(WebAppDatabaseProtoDataTest, PermissionsPolicyRoundTrip) {

@@ -45,95 +45,11 @@ constexpr char kMountLabelOption[] = "mountlabel";
 
 CrosDisksClient* g_instance = nullptr;
 
-// Checks if retrieved media type is in boundaries of DeviceMediaType.
-bool IsValidMediaType(uint32_t type) {
-  return type < static_cast<uint32_t>(cros_disks::DEVICE_MEDIA_NUM_VALUES);
-}
-
-// Translates enum used in cros-disks to enum used in Chrome.
-// Note that we could just do static_cast, but this is less sensitive to
-// changes in cros-disks.
-DeviceType DeviceMediaTypeToDeviceType(uint32_t media_type_uint32) {
-  if (!IsValidMediaType(media_type_uint32))
+DeviceType ToDeviceType(uint32_t media_type) {
+  if (media_type > static_cast<uint32_t>(DeviceType::kMaxValue))
     return DeviceType::kUnknown;
 
-  cros_disks::DeviceMediaType media_type =
-      cros_disks::DeviceMediaType(media_type_uint32);
-
-  switch (media_type) {
-    case (cros_disks::DEVICE_MEDIA_UNKNOWN):
-      return DeviceType::kUnknown;
-    case (cros_disks::DEVICE_MEDIA_USB):
-      return DeviceType::kUSB;
-    case (cros_disks::DEVICE_MEDIA_SD):
-      return DeviceType::kSD;
-    case (cros_disks::DEVICE_MEDIA_OPTICAL_DISC):
-      return DeviceType::kOpticalDisc;
-    case (cros_disks::DEVICE_MEDIA_MOBILE):
-      return DeviceType::kMobile;
-    case (cros_disks::DEVICE_MEDIA_DVD):
-      return DeviceType::kDVD;
-    default:
-      return DeviceType::kUnknown;
-  }
-}
-
-MountError CrosDisksMountErrorToChromeMountError(
-    cros_disks::MountErrorType mount_error) {
-  switch (mount_error) {
-    case cros_disks::MOUNT_ERROR_NONE:
-      return MountError::kSuccess;
-    case cros_disks::MOUNT_ERROR_UNKNOWN:
-      return MountError::kUnknownError;
-    case cros_disks::MOUNT_ERROR_INTERNAL:
-      return MountError::kInternalError;
-    case cros_disks::MOUNT_ERROR_INVALID_ARGUMENT:
-      return MountError::kInvalidArgument;
-    case cros_disks::MOUNT_ERROR_INVALID_PATH:
-      return MountError::kInvalidPath;
-    case cros_disks::MOUNT_ERROR_PATH_ALREADY_MOUNTED:
-      return MountError::kPathAlreadyMounted;
-    case cros_disks::MOUNT_ERROR_PATH_NOT_MOUNTED:
-      return MountError::kPathNotMounted;
-    case cros_disks::MOUNT_ERROR_DIRECTORY_CREATION_FAILED:
-      return MountError::kDirectoryCreationFailed;
-    case cros_disks::MOUNT_ERROR_INVALID_MOUNT_OPTIONS:
-      return MountError::kInvalidMountOptions;
-    case cros_disks::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS:
-      return MountError::kInvalidUnmountOptions;
-    case cros_disks::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS:
-      return MountError::kInsufficientPermissions;
-    case cros_disks::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND:
-      return MountError::kMountProgramNotFound;
-    case cros_disks::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
-      return MountError::kMountProgramFailed;
-    case cros_disks::MOUNT_ERROR_INVALID_DEVICE_PATH:
-    case cros_disks::MOUNT_ERROR_INVALID_DEVICE_PATH_EX:
-      return MountError::kInvalidDevicePath;
-    case cros_disks::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
-    case cros_disks::MOUNT_ERROR_UNKNOWN_FILESYSTEM_EX:
-      return MountError::kUnknownFilesystem;
-    case cros_disks::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
-    case cros_disks::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM_EX:
-      return MountError::kUnsupportedFilesystem;
-    case cros_disks::MOUNT_ERROR_INVALID_ARCHIVE:
-    case cros_disks::MOUNT_ERROR_INVALID_ARCHIVE_EX:
-      return MountError::kInvalidArchive;
-    case cros_disks::MOUNT_ERROR_NEED_PASSWORD:
-    case cros_disks::MOUNT_ERROR_NEED_PASSWORD_EX:
-      return MountError::kNeedPassword;
-    case cros_disks::MOUNT_ERROR_IN_PROGRESS:
-    case cros_disks::MOUNT_ERROR_IN_PROGRESS_EX:
-      return MountError::kInProgress;
-    case cros_disks::MOUNT_ERROR_CANCELLED:
-    case cros_disks::MOUNT_ERROR_CANCELLED_EX:
-      return MountError::kCancelled;
-    case cros_disks::MOUNT_ERROR_BUSY:
-      return MountError::kBusy;
-    default:
-      LOG(ERROR) << "Unrecognised mount error code " << mount_error;
-      return MountError::kUnknownError;
-  }
+  return static_cast<DeviceType>(media_type);
 }
 
 bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountPoint* entry) {
@@ -154,8 +70,7 @@ bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountPoint* entry) {
     LOG(WARNING) << "Cannot get MountEntry's read-only flag from DBus";
   }
 
-  entry->mount_error = CrosDisksMountErrorToChromeMountError(
-      static_cast<cros_disks::MountErrorType>(error_code));
+  entry->mount_error = static_cast<MountError>(error_code);
   entry->mount_type = static_cast<MountType>(mount_type);
   entry->progress_percent = 100;
 
@@ -439,8 +354,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
     uint32_t error_code = 0;
     MountError mount_error = MountError::kSuccess;
     if (reader.PopUint32(&error_code)) {
-      mount_error = CrosDisksMountErrorToChromeMountError(
-          static_cast<cros_disks::MountErrorType>(error_code));
+      mount_error = static_cast<MountError>(error_code);
     } else {
       LOG(ERROR) << "Invalid response: " << response->ToString();
       mount_error = MountError::kUnknownError;
@@ -999,7 +913,7 @@ bool DiskInfo::InitializeFromResponse(dbus::Response* response) {
   absl::optional<double> media_type_double =
       value.FindDoubleKey(cros_disks::kDeviceMediaType);
   if (media_type_double.has_value())
-    device_type_ = DeviceMediaTypeToDeviceType(media_type_double.value());
+    device_type_ = ToDeviceType(media_type_double.value());
 
   if (const base::Value* const mount_paths =
           value.FindListKey(cros_disks::kDeviceMountPaths);

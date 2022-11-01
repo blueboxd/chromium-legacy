@@ -5,18 +5,26 @@
 #ifndef CHROME_BROWSER_UI_ASH_IN_SESSION_AUTH_DIALOG_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_IN_SESSION_AUTH_DIALOG_CLIENT_H_
 
+#include <memory>
+#include <string>
+
 #include "ash/public/cpp/in_session_auth_dialog_client.h"
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
 #include "chromeos/ash/components/login/auth/auth_status_consumer.h"
 #include "chromeos/ash/components/login/auth/extended_authenticator.h"
 #include "chromeos/ash/components/login/auth/public/authentication_error.h"
-#include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/login/auth/public/session_auth_factors.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace aura {
 class Window;
+}
+
+namespace ash {
+class UserContext;
 }
 
 class AccountId;
@@ -37,6 +45,8 @@ class InSessionAuthDialogClient : public ash::InSessionAuthDialogClient,
   static InSessionAuthDialogClient* Get();
 
   // ash::InSessionAuthDialogClient:
+  void StartAuthSession(base::OnceCallback<void(bool)> callback) override;
+  void InvalidateAuthSession() override;
   void AuthenticateUserWithPasswordOrPin(
       const std::string& password,
       bool authenticated_by_pin,
@@ -79,7 +89,22 @@ class InSessionAuthDialogClient : public ash::InSessionAuthDialogClient,
   // Otherwise creates one.
   ash::ExtendedAuthenticator* GetExtendedAuthenticator();
 
-  void AuthenticateWithPassword(const ash::UserContext& user_context);
+  // Attempts to authenticate user in `user_context` with the given `password`.
+  void AuthenticateWithPassword(std::unique_ptr<ash::UserContext> user_context,
+                                const std::string& password);
+
+  // Passed as a callback to `AuthPerformer::StartAuthSession`. Actually
+  // initiates the auth attempt.
+  void OnAuthSessionStarted(base::OnceCallback<void(bool)> callback,
+                            bool user_exists,
+                            std::unique_ptr<ash::UserContext> user_context,
+                            absl::optional<ash::AuthenticationError> error);
+
+  // Passed as a callback to `AuthPerformer::AuthenticateWith*`. Checks
+  // the result of the authentication operation.
+  void OnAuthVerified(bool authenticated_by_password,
+                      std::unique_ptr<ash::UserContext> user_context,
+                      absl::optional<ash::AuthenticationError> error);
 
   void OnPinAttemptDone(std::unique_ptr<ash::UserContext> user_context,
                         absl::optional<ash::AuthenticationError> error);
@@ -95,6 +120,11 @@ class InSessionAuthDialogClient : public ash::InSessionAuthDialogClient,
 
   // State associated with a pending authentication attempt.
   absl::optional<AuthState> pending_auth_state_;
+
+  // Used to start and authenticate auth sessions.
+  ash::AuthPerformer auth_performer_;
+
+  std::unique_ptr<ash::UserContext> user_context_;
 
   base::WeakPtrFactory<InSessionAuthDialogClient> weak_factory_{this};
 };

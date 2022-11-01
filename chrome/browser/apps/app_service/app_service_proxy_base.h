@@ -158,12 +158,6 @@ class AppServiceProxyBase : public KeyedService,
                           int32_t event_flags,
                           LaunchSource launch_source,
                           std::vector<base::FilePath> file_paths);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void LaunchAppWithFiles(const std::string& app_id,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths);
 
   // Launches an app for the given |app_id|, passing |intent| to the app.
   // |event_flags| provides additional context about the action which launch the
@@ -176,15 +170,6 @@ class AppServiceProxyBase : public KeyedService,
                                    LaunchSource launch_source,
                                    WindowInfoPtr window_info,
                                    LaunchCallback callback);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  virtual void LaunchAppWithIntent(
-      const std::string& app_id,
-      int32_t event_flags,
-      apps::mojom::IntentPtr intent,
-      apps::mojom::LaunchSource launch_source,
-      apps::mojom::WindowInfoPtr window_info,
-      apps::mojom::Publisher::LaunchAppWithIntentCallback callback);
 
   // Launches an app for the given |app_id|, passing |url| to the app.
   // |event_flags| provides additional context about the action which launch the
@@ -196,20 +181,6 @@ class AppServiceProxyBase : public KeyedService,
                         GURL url,
                         LaunchSource launch_source,
                         WindowInfoPtr window_info = nullptr);
-  // TODO(crbug.com/1253250): Will be replaced with LaunchAppWithUrl once the
-  // mojom LaunchAppWithUrl interface is removed.
-  void LaunchAppWithUrlForBind(const std::string& app_id,
-                               int32_t event_flags,
-                               GURL url,
-                               LaunchSource launch_source,
-                               WindowInfoPtr window_info = nullptr);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void LaunchAppWithUrl(const std::string& app_id,
-                        int32_t event_flags,
-                        GURL url,
-                        apps::mojom::LaunchSource launch_source,
-                        apps::mojom::WindowInfoPtr window_info = nullptr);
 
   // Launches an app for the given |params.app_id|. The |params| can also
   // contain other param such as launch container, window diposition, etc.

@@ -9,7 +9,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -39,6 +38,7 @@
 #include "base/containers/contains.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/header_view.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "chromeos/ui/wm/constants.h"
 #include "chromeos/ui/wm/features.h"
@@ -60,7 +60,7 @@
 namespace ash {
 
 // Gets the header view for `window` so it can be dragged.
-HeaderView* GetHeaderView(aura::Window* window) {
+chromeos::HeaderView* GetHeaderView(aura::Window* window) {
   // Exiting immersive mode because of float does not seem to trigger a layout
   // like it does in production code. Here we force a layout, otherwise the
   // client view will remain the size of the widget, and dragging it will give
@@ -133,7 +133,7 @@ TEST_F(WindowFloatTest, DoubleClickOnCaption) {
   std::unique_ptr<aura::Window> window = CreateFloatedWindow();
 
   // Double click on the caption. The window should be maximized now.
-  HeaderView* header_view = GetHeaderView(window.get());
+  chromeos::HeaderView* header_view = GetHeaderView(window.get());
   auto* event_generator = GetEventGenerator();
   event_generator->set_current_screen_location(
       header_view->GetBoundsInScreen().CenterPoint());
@@ -271,7 +271,7 @@ TEST_F(WindowFloatTest, DragToOtherDisplayThenMaximize) {
   // does not update the display associated with the cursor, so we have to
   // manually do it here.
   auto* frame = NonClientFrameViewAsh::Get(window.get());
-  HeaderView* header_view = frame->GetHeaderView();
+  chromeos::HeaderView* header_view = frame->GetHeaderView();
   auto* event_generator = GetEventGenerator();
   event_generator->set_current_screen_location(
       header_view->GetBoundsInScreen().CenterPoint());
@@ -313,6 +313,17 @@ TEST_F(WindowFloatTest, OneFloatWindowPerDeskLogic) {
   EXPECT_TRUE(desk_2->is_active());
   EXPECT_TRUE(WindowState::Get(window_1.get())->IsFloated());
   EXPECT_TRUE(WindowState::Get(window_2.get())->IsFloated());
+}
+
+// Tests that `desks_util::BelongsToActiveDesk()` works as intended.
+TEST_F(WindowFloatTest, BelongsToActiveDesk) {
+  NewDesk();
+
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  EXPECT_TRUE(desks_util::BelongsToActiveDesk(window.get()));
+
+  ActivateDesk(DesksController::Get()->desks()[1].get());
+  EXPECT_FALSE(desks_util::BelongsToActiveDesk(window.get()));
 }
 
 // Test Desk removal for floating window.
@@ -908,7 +919,7 @@ TEST_F(TabletWindowFloatTest, Dragging) {
   // Start dragging in the center of the header. When moving the touch, the
   // header should move with the touch such that the touch remains in the center
   // of the header.
-  HeaderView* header_view = GetHeaderView(window.get());
+  chromeos::HeaderView* header_view = GetHeaderView(window.get());
   auto* event_generator = GetEventGenerator();
   event_generator->PressTouch(header_view->GetBoundsInScreen().CenterPoint());
 
@@ -929,7 +940,7 @@ TEST_F(TabletWindowFloatTest, MaximizeWhileDragging) {
   std::unique_ptr<aura::Window> window = CreateFloatedWindow();
 
   // Press the accelerator to maximize before releasing touch.
-  HeaderView* header_view = GetHeaderView(window.get());
+  chromeos::HeaderView* header_view = GetHeaderView(window.get());
   auto* event_generator = GetEventGenerator();
   event_generator->PressTouch(header_view->GetBoundsInScreen().CenterPoint());
   event_generator->MoveTouch(gfx::Point(100, 100));
@@ -994,7 +1005,7 @@ TEST_F(TabletWindowFloatTest, DraggingSnapping) {
 
   // Move the mouse to towards the right edge. Test that on release, it snaps
   // right.
-  HeaderView* header_view = GetHeaderView(window.get());
+  chromeos::HeaderView* header_view = GetHeaderView(window.get());
   auto* event_generator = GetEventGenerator();
   event_generator->set_current_screen_location(
       header_view->GetBoundsInScreen().CenterPoint());
@@ -1232,6 +1243,35 @@ TEST_F(TabletWindowFloatTest, UntuckExtendedHitBounds) {
   GetEventGenerator()->GestureTapAt(point);
 
   EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+}
+
+TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  // The window is magnetized to the bottom right by default.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  auto* float_controller = Shell::Get()->float_controller();
+
+  // Tuck the window in the bottom right.
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // Swipe up on the handle. Test the window is still tucked.
+  views::Widget* tuck_handle_widget =
+      float_controller->GetTuckHandleWidget(window.get());
+  const gfx::Point start(
+      tuck_handle_widget->GetWindowBoundsInScreen().CenterPoint());
+  GetEventGenerator()->GestureScrollSequence(
+      start, start + gfx::Vector2d(0, -8), base::Milliseconds(100),
+      /*steps=*/3);
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // Swipe left on the handle. Test that it untucks and magnetizes to the bottom
+  // right.
+  GetEventGenerator()->GestureScrollSequence(
+      start, start + gfx::Vector2d(-8, 0), base::Milliseconds(100),
+      /*steps=*/3);
+  EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+  CheckMagnetized(window.get(), FloatController::MagnetismCorner::kBottomRight);
 }
 
 using TabletWindowFloatSplitviewTest = TabletWindowFloatTest;

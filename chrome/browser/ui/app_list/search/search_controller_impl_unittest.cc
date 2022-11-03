@@ -7,14 +7,13 @@
 #include <memory>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/test/ranking_test_util.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
+#include "chrome/test/base/testing_profile.h"
 
 namespace app_list::test {
 
@@ -25,10 +24,7 @@ using ::test::TestAppListControllerDelegate;
 
 class SearchControllerImplTest : public ChromeAshTestBase {
  public:
-  SearchControllerImplTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        ash::features::kProductivityLauncher);
-  }
+  SearchControllerImplTest() = default;
   SearchControllerImplTest(const SearchControllerImplTest&) = delete;
   SearchControllerImplTest& operator=(const SearchControllerImplTest&) = delete;
   ~SearchControllerImplTest() override = default;
@@ -36,14 +32,14 @@ class SearchControllerImplTest : public ChromeAshTestBase {
   void SetUp() override {
     ChromeAshTestBase::SetUp();
     search_controller_ = std::make_unique<SearchControllerImpl>(
-        /*model_updater=*/nullptr, &list_controller_, /*profile=*/nullptr,
-        /*notifier=*/nullptr);
+        /*model_updater=*/nullptr, &list_controller_,
+        /*notifier=*/nullptr, &profile_);
   }
   SearchController& search_controller() { return *search_controller_; }
   TestAppListControllerDelegate& list_controller() { return list_controller_; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  TestingProfile profile_;
   TestAppListControllerDelegate list_controller_;
   std::unique_ptr<SearchControllerImpl> search_controller_;
 };

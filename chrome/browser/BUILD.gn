@@ -608,6 +608,8 @@ static_library("browser") {
     "history/top_sites_factory.h",
     "history/web_history_service_factory.cc",
     "history/web_history_service_factory.h",
+    "history_clusters/history_clusters_image_fetcher.cc",
+    "history_clusters/history_clusters_image_fetcher.h",
     "history_clusters/history_clusters_metrics_logger.cc",
     "history_clusters/history_clusters_metrics_logger.h",
     "history_clusters/history_clusters_service_factory.cc",
@@ -2003,7 +2005,6 @@ static_library("browser") {
     "//chrome/app/vector_icons",
     "//chrome/browser/breadcrumbs",
     "//chrome/browser/browsing_data:constants",
-    "//chrome/browser/chrome_for_testing:buildflags",
     "//chrome/browser/devtools",
     "//chrome/browser/favicon",
     "//chrome/browser/feature_guide/notifications:public",
@@ -2236,6 +2237,7 @@ static_library("browser") {
     "//components/policy/core/browser",
     "//components/policy/proto",
     "//components/power_bookmarks/core",
+    "//components/power_bookmarks/storage",
     "//components/pref_registry",
     "//components/prefs",
     "//components/privacy_sandbox",
@@ -2491,6 +2493,10 @@ static_library("browser") {
     "//ui/web_dialogs",
     "//ui/webui",
   ]
+
+  if (is_chrome_for_testing_branded) {
+    deps += [ "//chrome/browser/chrome_for_testing:buildflags" ]
+  }
 
   if (enable_screen_ai_service) {
     sources += [
@@ -3467,6 +3473,7 @@ static_library("browser") {
       "//components/payments/content/android:jni_headers",
       "//components/permissions/android:native",
       "//components/power_bookmarks/core",
+      "//components/power_bookmarks/storage",
       "//components/power_scheduler",
       "//components/query_tiles",
       "//components/reading_list/features:flags",
@@ -3562,6 +3569,7 @@ static_library("browser") {
       "apps/app_service/app_icon/app_icon_loader.h",
       "apps/app_service/app_icon/app_icon_source.cc",
       "apps/app_service/app_icon/app_icon_source.h",
+      "apps/app_service/app_icon/app_icon_util.h",
       "apps/app_service/app_icon/dip_px_util.cc",
       "apps/app_service/app_icon/dip_px_util.h",
       "apps/app_service/app_icon/icon_key_util.cc",
@@ -4774,6 +4782,10 @@ static_library("browser") {
       "apps/app_preload_service/preload_app_definition.h",
       "apps/app_provisioning_service/app_provisioning_data_manager.cc",
       "apps/app_provisioning_service/app_provisioning_data_manager.h",
+      "apps/app_service/app_icon/app_icon_reader.cc",
+      "apps/app_service/app_icon/app_icon_reader.h",
+      "apps/app_service/app_icon/app_icon_writer.cc",
+      "apps/app_service/app_icon/app_icon_writer.h",
       "apps/app_service/app_icon/arc_activity_adaptive_icon_impl.cc",
       "apps/app_service/app_icon/arc_activity_adaptive_icon_impl.h",
       "apps/app_service/app_icon/arc_icon_once_loader.cc",
@@ -5176,6 +5188,7 @@ static_library("browser") {
       "//ash/webui/camera_app_ui",
       "//ash/webui/camera_app_ui:mojo_bindings",
       "//ash/webui/color_internals",
+      "//ash/webui/color_internals/mojom",
       "//ash/webui/common/mojom",
       "//ash/webui/connectivity_diagnostics",
       "//ash/webui/demo_mode_app_ui",
@@ -5256,6 +5269,7 @@ static_library("browser") {
       "//chrome/browser/ui/webui/ash/emoji:mojo_bindings",
       "//chrome/browser/ui/webui/ash/launcher_internals:mojo_bindings",
       "//chrome/browser/ui/webui/ash/manage_mirrorsync:mojo_bindings",
+      "//chrome/browser/ui/webui/ash/office_fallback:mojo_bindings",
       "//chrome/browser/ui/webui/ash/parent_access:mojo_bindings",
       "//chrome/browser/ui/webui/ash/vm:mojo_bindings",
       "//chrome/browser/ui/webui/nearby_share:mojom",
@@ -6083,11 +6097,15 @@ static_library("browser") {
     public_deps += [
       ":titlebar_config",
       "//build:branding_buildflags",
-      "//chrome/browser/chrome_for_testing:buildflags",
       "//chrome/services/util_win/public/mojom",
       "//ui/views",
       "//ui/views/controls/webview",
     ]
+
+    if (is_chrome_for_testing_branded) {
+      public_deps += [ "//chrome/browser/chrome_for_testing:buildflags" ]
+    }
+
     deps += [
       ":chrome_process_finder",
       "//base/win:base_win_buildflags",
@@ -6200,7 +6218,7 @@ static_library("browser") {
     allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
     sources += [
       "accessibility/caption_settings_dialog.h",
-      "accessibility/caption_settings_dialog_mac.mm",
+      "accessibility/caption_settings_dialog_mac.cc",
       "app_controller_mac.h",
       "app_controller_mac.mm",
       "apps/intent_helper/mac_intent_picker_helpers.h",
@@ -6243,8 +6261,6 @@ static_library("browser") {
       "mac/initial_prefs.mm",
       "mac/install_from_dmg.h",
       "mac/install_from_dmg.mm",
-      "mac/install_updater.h",
-      "mac/install_updater.mm",
       "mac/key_window_notifier.cc",
       "mac/key_window_notifier.h",
       "mac/mac_startup_profiler.cc",
@@ -6426,6 +6442,8 @@ static_library("browser") {
       "enterprise/connectors/device_trust/browser/browser_device_trust_connector_service.h",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.cc",
       "enterprise/connectors/device_trust/signals/decorators/browser/browser_signals_decorator.h",
+      "enterprise/idle/browser_closer.cc",
+      "enterprise/idle/browser_closer.h",
       "enterprise/idle/idle_service.cc",
       "enterprise/idle/idle_service.h",
       "enterprise/idle/idle_service_factory.cc",
@@ -6841,7 +6859,7 @@ static_library("browser") {
       sources += [ "background/background_mode_manager_win.cc" ]
     }
     if (is_mac) {
-      sources += [ "background/background_mode_manager_mac.mm" ]
+      sources += [ "background/background_mode_manager_mac.cc" ]
     }
     if (is_chromeos_ash) {
       sources += [ "background/background_mode_manager_chromeos.cc" ]
@@ -6906,7 +6924,7 @@ static_library("browser") {
       ]
     }
     if (is_mac) {
-      sources += [ "printing/printer_manager_dialog_mac.mm" ]
+      sources += [ "printing/printer_manager_dialog_mac.cc" ]
     }
     if (is_chromeos_lacros) {
       sources += [

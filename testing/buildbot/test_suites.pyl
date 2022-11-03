@@ -647,22 +647,6 @@
       },
     },
 
-    # TODO(crbug.com/1306345): Merge this back to
-    # 'chromeos_browser_all_tast_tests'.
-    'chromeos_browser_all_tast_tests_with_lacros': {
-      'chrome_all_tast_tests_with_lacros': {
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-          # Tast test doesn't always output. See crbug.com/1306300
-          'io_timeout': 3600,
-          'shards': 10,
-        },
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-    },
-
     'chromeos_browser_finch_tests': {
       'chrome_variations_tast_tests': {
         'swarming': {
@@ -5426,7 +5410,6 @@
       'wpt_tests_suite_highdpi': {
         'args': [
           '--child-processes=8',
-          '--no-restart-on-new-group',
           '--log-wptreport',
           '--xvfb',
           '--flag-specific',
@@ -5441,7 +5424,7 @@
         'isolate_name': 'wpt_tests_isolate_content_shell',
         'results_handler': 'layout tests',
         'swarming': {
-          'shards': 15,
+          'shards': 3,
         },
         'experiment_percentage': 100,
       },
@@ -5654,12 +5637,6 @@
 
     'chromeos_device_gtests': [
       'chromeos_browser_all_tast_tests',
-      'chromeos_browser_integration_tests',
-      'chromeos_device_only_gtests',
-    ],
-
-    'chromeos_device_gtests_with_lacros': [
-      'chromeos_browser_all_tast_tests_with_lacros',
       'chromeos_browser_integration_tests',
       'chromeos_device_only_gtests',
     ],
@@ -7166,6 +7143,10 @@
     'lacros_skylab_tests_amd64_generic': {
       'lacros_skylab_tests': {
         'variants': [
+          'CROS_DEDEDE_RELEASE_LKGM',
+          'CROS_DEDEDE_RELEASE_DEV',
+          'CROS_DEDEDE_RELEASE_BETA',
+          'CROS_DEDEDE_RELEASE_STABLE',
           'CROS_EVE_RELEASE_LKGM',
           'CROS_EVE_RELEASE_DEV',
           'CROS_EVE_RELEASE_BETA',
@@ -7286,27 +7267,31 @@
       'gpu_common_and_optional_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webcodecs_telemetry_test': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
@@ -7320,19 +7305,22 @@
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
     },
@@ -7341,21 +7329,24 @@
       'gpu_fyi_and_optional_non_linux_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_fyi_mac_specific_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_gles2_conform_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          'MAC_RETINA_AMD_GPU_STABLE',
+          # Not enough capacity on Mac AMD https://crbug.com/1380184.
+          # 'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },

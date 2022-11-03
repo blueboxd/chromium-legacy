@@ -177,6 +177,9 @@ extern const char kAssistantNonPersonalizedVoiceSearchDescription[];
 extern const char kEnableAutoDisableAccessibilityName[];
 extern const char kEnableAutoDisableAccessibilityDescription[];
 
+extern const char kEnableAutoDisableAccessibilityV2Name[];
+extern const char kEnableAutoDisableAccessibilityV2Description[];
+
 extern const char kAutofillAlwaysReturnCloudTokenizedCardName[];
 extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
 
@@ -721,6 +724,9 @@ extern const char kEnableShortcutCustomizationAppDescription[];
 
 extern const char kEnableShortcutCustomizationName[];
 extern const char kEnableShortcutCustomizationDescription[];
+
+extern const char kEnableInputDeviceSettingsSplitName[];
+extern const char kEnableInputDeviceSettingsSplitDescription[];
 
 extern const char kExperimentalRgbKeyboardPatternsName[];
 extern const char kExperimentalRgbKeyboardPatternsDescription[];
@@ -1428,9 +1434,6 @@ extern const char kSafetyCheckNotificationPermissionsDescription[];
 extern const char kSafetyCheckUnusedSitePermissionsName[];
 extern const char kSafetyCheckUnusedSitePermissionsDescription[];
 
-extern const char kSamePartyCookiesConsideredFirstPartyName[];
-extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
-
 extern const char kPartitionedCookiesName[];
 extern const char kPartitionedCookiesDescription[];
 // TODO(crbug.com/1296161): Remove this when the CHIPS OT ends.
@@ -1646,9 +1649,6 @@ extern const char kTabStripRedesignAndroidName[];
 extern const char kTabStripRedesignAndroidDescription[];
 extern const char kFoldableJankFixAndroidName[];
 extern const char kFoldableJankFixAndroidDescription[];
-
-extern const char kTailoredSecurityDesktopNoticeName[];
-extern const char kTailoredSecurityDesktopNoticeDescription[];
 
 extern const char kTextBasedAudioDescriptionName[];
 extern const char kTextBasedAudioDescriptionDescription[];
@@ -2252,9 +2252,6 @@ extern const char kRelatedSearchesAlternateUxDescription[];
 extern const char kRelatedSearchesInBarName[];
 extern const char kRelatedSearchesInBarDescription[];
 
-extern const char kRelatedSearchesSimplifiedUxName[];
-extern const char kRelatedSearchesSimplifiedUxDescription[];
-
 extern const char kRelatedSearchesUiName[];
 extern const char kRelatedSearchesUiDescription[];
 
@@ -2275,6 +2272,9 @@ extern const char kRequestDesktopSiteExceptionsDowngradeDescription[];
 
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
+
+extern const char kRequestDesktopSiteZoomName[];
+extern const char kRequestDesktopSiteZoomDescription[];
 
 extern const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[];
 extern const char
@@ -3250,6 +3250,9 @@ extern const char kLacrosSelectionStatefulDescription[];
 extern const char kLacrosSupportName[];
 extern const char kLacrosSupportDescription[];
 
+extern const char kLacrosWaylandLoggingName[];
+extern const char kLacrosWaylandLoggingDescription[];
+
 extern const char kLauncherItemSuggestName[];
 extern const char kLauncherItemSuggestDescription[];
 
@@ -3602,9 +3605,6 @@ extern const char kGetDisplayMediaSetDescription[];
 extern const char kGetDisplayMediaSetAutoSelectAllScreensName[];
 extern const char kGetDisplayMediaSetAutoSelectAllScreensDescription[];
 
-extern const char kVaapiAV1DecoderName[];
-extern const char kVaapiAV1DecoderDescription[];
-
 extern const char kIntentChipSkipsPickerName[];
 extern const char kIntentChipSkipsPickerDescription[];
 
@@ -3767,8 +3767,6 @@ extern const char kEnableOopPrintDriversDescription[];
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
 extern const char kPaintPreviewDemoName[];
 extern const char kPaintPreviewDemoDescription[];
-extern const char kPaintPreviewStartupName[];
-extern const char kPaintPreviewStartupDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

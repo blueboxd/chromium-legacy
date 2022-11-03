@@ -98,7 +98,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests_with_lacros',
+          'gtest_tests': 'chromeos_device_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -5078,17 +5078,6 @@
     'name': 'chromium.memory',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'Linux ASan LSan Low Symbols FYI Tests (1)': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
-        },
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
       'Linux ASan LSan Tests (1)': {
         'mixins': [
           'linux-bionic',

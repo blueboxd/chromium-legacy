@@ -1154,6 +1154,11 @@ BASE_FEATURE(kTouchpadOverscrollHistoryNavigation,
 #endif
 );
 
+// Enable TrustedTypes .fromLiteral support.
+BASE_FEATURE(kTrustedTypesFromLiteral,
+             "TrustedTypesFromLiteral",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // This feature is for a reverse Origin Trial, enabling SharedArrayBuffer for
 // sites as they migrate towards requiring cross-origin isolation for these
 // features.
@@ -1374,6 +1379,12 @@ BASE_FEATURE(kRequestDesktopSiteAdditions,
 // Refer to the launch bug (https://crbug.com/1244979) for more information.
 BASE_FEATURE(kRequestDesktopSiteExceptions,
              "RequestDesktopSiteExceptions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Request Desktop Site zoom for Android. Apply a pre-defined page zoom level
+// when desktop user agent is used.
+BASE_FEATURE(kRequestDesktopSiteZoom,
+             "RequestDesktopSiteZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Screen Capture API support for Android

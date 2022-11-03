@@ -305,7 +305,7 @@ Refer to README.md for content description and update process.
  <item id="url_icon_source_fetch" added_in_milestone="98" content_hash_code="0297f30b" os_list="chromeos" file_path="chrome/browser/ui/app_list/search/common/url_icon_source.cc" />
  <item id="launcher_item_suggest" added_in_milestone="98" content_hash_code="04a4041e" os_list="chromeos" file_path="chrome/browser/ui/app_list/search/files/item_suggest_cache.cc" />
  <item id="ambient_client" added_in_milestone="98" content_hash_code="062d821f" os_list="chromeos" file_path="chrome/browser/ui/ash/ambient/ambient_client_impl.cc" />
- <item id="calendar_get_events" added_in_milestone="98" content_hash_code="0108842a" os_list="chromeos" file_path="chrome/browser/ui/ash/calendar/calendar_keyed_service.cc" />
+ <item id="calendar_get_events" added_in_milestone="98" content_hash_code="0603f52a" os_list="chromeos" file_path="chrome/browser/ui/ash/calendar/calendar_keyed_service.cc" />
  <item id="side_search_availability_test" added_in_milestone="98" content_hash_code="04b1ffa5" os_list="chromeos,linux,windows" file_path="chrome/browser/ui/side_search/side_search_tab_contents_helper.cc" />
  <item id="edu_account_login_profile_image_fetcher" added_in_milestone="98" content_hash_code="0689301c" os_list="chromeos" file_path="chrome/browser/ui/webui/ash/edu_account_login_handler.cc" />
  <item id="management_ui_customer_logo" added_in_milestone="98" content_hash_code="01a17a58" os_list="chromeos" file_path="chrome/browser/ui/webui/management/management_ui_handler_chromeos.cc" />
@@ -380,7 +380,7 @@ Refer to README.md for content description and update process.
  <item id="chrome_commerce_subscriptions_create" added_in_milestone="105" content_hash_code="076a1b98" os_list="windows,android,linux,chromeos" file_path="components/commerce/core/subscriptions/subscriptions_server_proxy.cc" />
  <item id="chrome_commerce_subscriptions_delete" added_in_milestone="105" content_hash_code="05f47d4b" os_list="windows,android,linux,chromeos" file_path="components/commerce/core/subscriptions/subscriptions_server_proxy.cc" />
  <item id="chrome_commerce_subscriptions_get" added_in_milestone="105" content_hash_code="02f49372" os_list="windows,android,linux,chromeos" file_path="components/commerce/core/subscriptions/subscriptions_server_proxy.cc" />
- <item id="cryptauth_get_my_devices" added_in_milestone="106" type="partial" second_id="oauth2_api_call_flow" content_hash_code="04b33199" os_list="chromeos" file_path="ash/services/device_sync/cryptauth_device_manager_impl.cc" />
+ <item id="cryptauth_get_my_devices" added_in_milestone="106" type="partial" second_id="oauth2_api_call_flow" content_hash_code="04b33199" os_list="chromeos" file_path="chromeos/ash/services/device_sync/cryptauth_device_manager_impl.cc" />
  <item id="chrome_commerce_waa_fetcher" added_in_milestone="107" content_hash_code="016d45fc" os_list="linux,windows,android,chromeos" file_path="components/commerce/core/account_checker.cc" />
  <item id="favicon_fetcher_get_favicon" added_in_milestone="106" content_hash_code="0640ce11" os_list="android" file_path="chrome/browser/supervised_user/android/favicon_fetcher.cc" />
  <item id="k_anonymity_service_get_token" added_in_milestone="106" content_hash_code="02bc56b0" os_list="linux,windows,android,chromeos" file_path="chrome/browser/k_anonymity_service/k_anonymity_trust_token_getter.cc" />

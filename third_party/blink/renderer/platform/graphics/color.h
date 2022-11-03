@@ -206,7 +206,6 @@ class PLATFORM_EXPORT Color {
     kLonger,
     kIncreasing,
     kDecreasing,
-    kSpecified,
   };
 
   // Creates a color with the Color-Mix method in CSS Color 5. This will produce
@@ -252,8 +251,11 @@ class PLATFORM_EXPORT Color {
   bool SetFromString(const String&);
   bool SetNamedColor(const String&);
 
-  // Return true if the color is not opaque.
+  // Returns true if the color is not opaque.
   bool HasAlpha() const { return Alpha() < 255; }
+
+  // Returns true if the color is transparent.
+  bool IsTransparent() const { return Alpha() == 0; }
 
   // Access the color as though it were created using rgba syntax. This will
   // clamp all colors to an 8-bit sRGB representation. All callers of these
@@ -322,6 +324,10 @@ class PLATFORM_EXPORT Color {
       Color::ColorInterpolationSpace color_space,
       Color::HueInterpolationMethod hue_interpolation_method =
           Color::HueInterpolationMethod::kShorter);
+
+  ColorSpace GetColorSpace() const { return color_space_; }
+  static ColorSpace ColorInterpolationSpaceToColorSpace(
+      Color::ColorInterpolationSpace color_interpolation_space);
 
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ColorMixNone);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ColorInterpolation);

@@ -214,6 +214,7 @@
 #include "ash/webui/camera_app_ui/camera_app_helper.mojom.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/color_internals/color_internals_ui.h"
+#include "ash/webui/color_internals/mojom/color_internals.mojom.h"
 #include "ash/webui/common/mojom/accessibility_features.mojom.h"
 #include "ash/webui/connectivity_diagnostics/connectivity_diagnostics_ui.h"
 #include "ash/webui/demo_mode_app_ui/demo_mode_app_untrusted_ui.h"
@@ -281,6 +282,8 @@
 #include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/ash/network_ui.h"
+#include "chrome/browser/ui/webui/ash/office_fallback/office_fallback.mojom.h"
+#include "chrome/browser/ui/webui/ash/office_fallback/office_fallback_ui.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.mojom.h"
 #include "chrome/browser/ui/webui/ash/vm/vm.mojom.h"
@@ -1285,6 +1288,12 @@ void PopulateChromeWebUIFrameBinders(
         ash::cloud_upload::mojom::PageHandlerFactory,
         ash::cloud_upload::CloudUploadUI>(map);
   }
+
+  if (ash::features::IsUploadOfficeToCloudEnabled()) {
+    RegisterWebUIControllerInterfaceBinder<
+        ash::office_fallback::mojom::PageHandlerFactory,
+        ash::office_fallback::OfficeFallbackUI>(map);
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -1361,10 +1370,9 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
     registry.ForWebUI<ash::FaceMLAppUI>()
         .Add<ash::mojom::face_ml_app::PageHandlerFactory>();
   }
-  if (base::FeatureList::IsEnabled(ash::features::kJelly)) {
-    registry.ForWebUI<ash::ColorInternalsUI>()
-        .Add<color_change_listener::mojom::PageHandler>();
-  }
+  registry.ForWebUI<ash::ColorInternalsUI>()
+      .Add<color_change_listener::mojom::PageHandler>()
+      .Add<ash::color_internals::mojom::WallpaperColorsHandler>();
   registry.ForWebUI<ash::FilesInternalsUI>()
       .Add<ash::mojom::files_internals::PageHandler>();
   registry.ForWebUI<ash::file_manager::FileManagerUI>()

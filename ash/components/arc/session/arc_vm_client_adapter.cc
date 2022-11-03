@@ -213,8 +213,6 @@ std::vector<std::string> GenerateKernelCmdline(
       base::StringPrintf("androidboot.enable_notifications_refresh=%d",
                          start_params.enable_notifications_refresh),
       base::StringPrintf("androidboot.zram_size=%d", guest_zram_size),
-      base::StringPrintf("androidboot.update_o4c_list_via_a2c2=%d",
-                         start_params.update_o4c_list_via_a2c2),
   };
 
   const ArcVmUreadaheadMode mode =
@@ -444,6 +442,10 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Request guest memory locking, if configured.
   request.set_lock_guest_memory(base::FeatureList::IsEnabled(kLockGuestMemory));
 
+  // Add update_o4c_list_via_a2c2.
+  request.set_update_o4c_list_via_a2c2(
+      base::FeatureList::IsEnabled(kArcUpdateO4CListViaA2C2));
+
   // Specify VM Memory.
   if (base::FeatureList::IsEnabled(kVmMemorySize)) {
     base::SystemMemoryInfoKB info;
@@ -505,6 +507,14 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   if (base::FeatureList::IsEnabled(kGuestZram))
     request.set_guest_swappiness(kGuestZramSwappiness.Get());
+
+  if (base::FeatureList::IsEnabled(kMglruReclaim)) {
+    request.set_mglru_reclaim_interval(kMglruReclaimInterval.Get());
+    request.set_mglru_reclaim_swappiness(kMglruReclaimSwappiness.Get());
+  } else {
+    request.set_mglru_reclaim_interval(0);
+    request.set_mglru_reclaim_swappiness(0);
+  }
 
   request.set_enable_consumer_auto_update_toggle(base::FeatureList::IsEnabled(
       ash::features::kConsumerAutoUpdateToggleAllowed));

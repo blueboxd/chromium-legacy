@@ -519,7 +519,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://file-manager/*"
+      "chrome://file-manager/*",
+      "chrome://webui-test/*"
     ]
   }],
   "fileManagerPrivateInternal": [{
@@ -531,7 +532,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://file-manager/*"
+      "chrome://file-manager/*",
+      "chrome://webui-test/*"
     ]
   }],
   "fileSystemProvider": [{
@@ -1004,8 +1006,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bookmarks/*",
-      "chrome://tab-strip.top-chrome/*",
-      "chrome://file-manager/*"
+      "chrome://tab-strip.top-chrome/*"
     ]
   }, {
     "channel": "stable",

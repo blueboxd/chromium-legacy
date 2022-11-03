@@ -470,11 +470,6 @@ const char kEnterpriseEnableForcedReEnrollment[] =
 const char kEnterpriseEnableInitialEnrollment[] =
     "enterprise-enable-initial-enrollment";
 
-// Whether to use fake PSM (private set membership) RLWE client for testing
-// purposes.
-const char kEnterpriseUseFakePsmRlweClientForTesting[] =
-    "enterprise-use-fake-psm-rlwe-client-for-testing";
-
 // Enables the zero-touch enterprise enrollment flow.
 const char kEnterpriseEnableZeroTouchEnrollment[] =
     "enterprise-enable-zero-touch-enrollment";
@@ -778,6 +773,9 @@ const char kProfileRequiresPolicy[] = "profile-requires-policy";
 // (e.g. for SAML managed guest sessions)
 // TODO(984021): Remove when URL is sent by DMServer.
 const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
+
+// Adds fake Bluetooth devices to the quick settings menu for UI testing.
+const char kQsAddFakeBluetoothDevices[] = "qs-add-fake-bluetooth-devices";
 
 // The name of the per-model directory which contains per-region
 // subdirectories with regulatory label files for this model.

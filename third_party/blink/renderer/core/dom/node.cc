@@ -3388,6 +3388,10 @@ void Node::RemovedFromFlatTree() {
     DetachLayoutTree();
   }
   GetDocument().GetStyleEngine().RemovedFromFlatTree(*this);
+
+  // Ensure removal from accessibility cache even if it doesn't have layout.
+  if (GetDocument().HasAXObjectCache())
+    GetDocument().ExistingAXObjectCache()->Remove(this);
 }
 
 void Node::RegisterScrollTimeline(ScrollTimeline* timeline) {
@@ -3404,6 +3408,15 @@ HTMLSlotElement* Node::ManuallyAssignedSlot() {
   if (FlatTreeNodeData* data = GetFlatTreeNodeData())
     return data->ManuallyAssignedSlot();
   return nullptr;
+}
+
+HashSet<Member<TreeScope>> Node::GetAncestorTreeScopes() const {
+  HashSet<Member<TreeScope>> ancestor_tree_scopes;
+  for (TreeScope* scope = &GetTreeScope(); scope;
+       scope = scope->ParentTreeScope()) {
+    ancestor_tree_scopes.insert(scope);
+  }
+  return ancestor_tree_scopes;
 }
 
 void Node::Trace(Visitor* visitor) const {

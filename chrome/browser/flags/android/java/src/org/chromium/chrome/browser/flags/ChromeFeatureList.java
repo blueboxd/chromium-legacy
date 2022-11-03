@@ -413,8 +413,6 @@ public abstract class ChromeFeatureList {
     public static final String MESSAGES_FOR_ANDROID_PERMISSION_UPDATE =
             "MessagesForAndroidPermissionUpdate";
     public static final String MESSAGES_FOR_ANDROID_READER_MODE = "MessagesForAndroidReaderMode";
-    public static final String MESSAGES_FOR_ANDROID_REDUCE_LAYOUT_CHANGES =
-            "MessagesForAndroidReduceLayoutChanges";
     public static final String MESSAGES_FOR_ANDROID_SAVE_CARD = "MessagesForAndroidSaveCard";
     public static final String MESSAGES_FOR_ANDROID_STACKING_ANIMATION =
             "MessagesForAndroidStackingAnimation";
@@ -455,6 +453,8 @@ public abstract class ChromeFeatureList {
             "OmniboxRemoveSuggestionHeaderCapitalization";
     public static final String OMNIBOX_UPDATED_CONNECTION_SECURITY_INDICATORS =
             "OmniboxUpdatedConnectionSecurityIndicators";
+    public static final String OPAQUE_ORIGIN_FOR_INCOMING_INTENTS =
+            "OpaqueOriginForIncomingIntents";
     public static final String OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS =
             "OptimizationGuidePushNotifications";
     public static final String OPTIMIZE_GEOLOCATION_HEADER_GENERATION =
@@ -508,7 +508,6 @@ public abstract class ChromeFeatureList {
     public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String RELATED_SEARCHES_ALTERNATE_UX = "RelatedSearchesAlternateUx";
     public static final String RELATED_SEARCHES_IN_BAR = "RelatedSearchesInBar";
-    public static final String RELATED_SEARCHES_SIMPLIFIED_UX = "RelatedSearchesSimplifiedUx";
     public static final String RELATED_SEARCHES_UI = "RelatedSearchesUi";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS = "RequestDesktopSiteDefaults";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS_CONTROL =
@@ -717,8 +716,6 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sOSKResizesVisualViewportByDefault =
             new CachedFlag(OSK_RESIZES_VISUAL_VIEWPORT, false);
     public static final CachedFlag sPaintPreviewDemo = new CachedFlag(PAINT_PREVIEW_DEMO, false);
-    public static final CachedFlag sPaintPreviewShowOnStartup =
-            new CachedFlag(PAINT_PREVIEW_SHOW_ON_STARTUP, false);
     public static final CachedFlag sPrefetchNotificationSchedulingIntegration =
             new CachedFlag(PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false);
     public static final CachedFlag sQueryTiles = new CachedFlag(QUERY_TILES, false);

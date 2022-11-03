@@ -56,6 +56,9 @@ MockValueForHTTPHeaderField GetMockMethodWithHeader(
 // test cases. This avoids writing to global variable for the downloaded seed.
 @interface TestVariationsSeedFetcher : IOSChromeVariationsSeedFetcher
 
+// Exposure of parent class property.
+@property(nonatomic, assign) BOOL fetchingEnabled;
+
 // Initializer with designated arguments that substitutes for command line args.
 - (instancetype)initWithCommandLineArgsForTesting:
     (NSArray<NSString*>*)arguments;
@@ -68,6 +71,9 @@ MockValueForHTTPHeaderField GetMockMethodWithHeader(
     (NSArray<NSString*>*)arguments {
   self = [super init];
   if (self) {
+    self.fetchingEnabled = NO;
+    // This overrides `self.fetchingEnabled` if variations server URL is set in
+    // the argument.
     [self applySwitchesFromArguments:arguments];
   }
   return self;

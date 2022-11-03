@@ -1354,20 +1354,30 @@ TEST(XFormTest, IntegerTranslation) {
   EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
 }
 
-TEST(XFormTest, verifyMatrixInversion) {
+TEST(XFormTest, Inverse) {
+  {
+    Transform identity;
+    Transform inverse_identity;
+    EXPECT_TRUE(identity.GetInverse(&inverse_identity));
+    EXPECT_EQ(identity, inverse_identity);
+    EXPECT_EQ(identity, identity.InverseOrIdentity());
+  }
+
   {
     // Invert a translation
-    gfx::Transform translation;
+    Transform translation;
     translation.Translate3d(2.0, 3.0, 4.0);
     EXPECT_TRUE(translation.IsInvertible());
 
-    gfx::Transform inverse_translation;
+    Transform inverse_translation;
     bool is_invertible = translation.GetInverse(&inverse_translation);
     EXPECT_TRUE(is_invertible);
     EXPECT_ROW1_EQ(1.0f, 0.0f, 0.0f, -2.0f, inverse_translation);
     EXPECT_ROW2_EQ(0.0f, 1.0f, 0.0f, -3.0f, inverse_translation);
     EXPECT_ROW3_EQ(0.0f, 0.0f, 1.0f, -4.0f, inverse_translation);
     EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, inverse_translation);
+
+    EXPECT_EQ(inverse_translation, translation.InverseOrIdentity());
 
     // GetInverse with the parameter pointing to itself.
     EXPECT_TRUE(translation.GetInverse(&translation));
@@ -1376,30 +1386,50 @@ TEST(XFormTest, verifyMatrixInversion) {
 
   {
     // Invert a non-uniform scale
-    gfx::Transform scale;
+    Transform scale;
     scale.Scale3d(4.0, 10.0, 100.0);
     EXPECT_TRUE(scale.IsInvertible());
 
-    gfx::Transform inverse_scale;
+    Transform inverse_scale;
     bool is_invertible = scale.GetInverse(&inverse_scale);
     EXPECT_TRUE(is_invertible);
     EXPECT_ROW1_EQ(0.25f, 0.0f, 0.0f, 0.0f, inverse_scale);
     EXPECT_ROW2_EQ(0.0f, 0.1f, 0.0f, 0.0f, inverse_scale);
     EXPECT_ROW3_EQ(0.0f, 0.0f, 0.01f, 0.0f, inverse_scale);
     EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, inverse_scale);
+
+    EXPECT_EQ(inverse_scale, scale.InverseOrIdentity());
+  }
+
+  {
+    Transform m1;
+    m1.RotateAboutZAxis(-30);
+    m1.RotateAboutYAxis(10);
+    m1.RotateAboutXAxis(20);
+    m1.ApplyPerspectiveDepth(100);
+    Transform m2;
+    m2.ApplyPerspectiveDepth(-100);
+    m2.RotateAboutXAxis(-20);
+    m2.RotateAboutYAxis(-10);
+    m2.RotateAboutZAxis(30);
+    Transform inverse_m1, inverse_m2;
+    EXPECT_TRUE(m1.GetInverse(&inverse_m1));
+    EXPECT_TRUE(m2.GetInverse(&inverse_m2));
+    EXPECT_TRANSFORM_NEAR(m1, inverse_m2, 1e-6);
+    EXPECT_TRANSFORM_NEAR(m2, inverse_m1, 1e-6);
   }
 
   {
     // Try to invert a matrix that is not invertible.
     // The inverse() function should reset the output matrix to identity.
-    gfx::Transform uninvertible;
+    Transform uninvertible;
     uninvertible.set_rc(0, 0, 0.f);
     uninvertible.set_rc(1, 1, 0.f);
     uninvertible.set_rc(2, 2, 0.f);
     uninvertible.set_rc(3, 3, 0.f);
     EXPECT_FALSE(uninvertible.IsInvertible());
 
-    gfx::Transform inverse_of_uninvertible;
+    Transform inverse_of_uninvertible;
 
     // Add a scale just to more easily ensure that inverse_of_uninvertible is
     // reset to identity.
@@ -1412,6 +1442,8 @@ TEST(XFormTest, verifyMatrixInversion) {
     EXPECT_ROW2_EQ(0.0f, 1.0f, 0.0f, 0.0f, inverse_of_uninvertible);
     EXPECT_ROW3_EQ(0.0f, 0.0f, 1.0f, 0.0f, inverse_of_uninvertible);
     EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, inverse_of_uninvertible);
+
+    EXPECT_EQ(inverse_of_uninvertible, uninvertible.InverseOrIdentity());
   }
 }
 
@@ -2932,6 +2964,12 @@ TEST(XFormTest, MapRect) {
 
   auto singular = Transform::MakeScale(0.f);
   EXPECT_EQ(RectF(0, 0, 0, 0), singular.MapRect(rect));
+
+  auto negative_scale = Transform::MakeScale(-1, -2);
+  EXPECT_EQ(RectF(-5.f, -13.f, 3.75f, 8.f), negative_scale.MapRect(rect));
+
+  auto rotate = Transform::Make90degRotation();
+  EXPECT_EQ(RectF(-6.5f, 1.25f, 4.f, 3.75f), rotate.MapRect(rect));
 }
 
 TEST(XFormTest, MapIntRect) {
@@ -2954,6 +2992,13 @@ TEST(XFormTest, TransformRectReverse) {
 
   auto singular = Transform::MakeScale(0.f);
   EXPECT_FALSE(singular.InverseMapRect(rect));
+
+  auto negative_scale = Transform::MakeScale(-1, -2);
+  EXPECT_EQ(RectF(-5.f, -3.25f, 3.75f, 2.f),
+            negative_scale.InverseMapRect(rect));
+
+  auto rotate = Transform::Make90degRotation();
+  EXPECT_EQ(RectF(2.5f, -5.f, 4.f, 3.75f), rotate.InverseMapRect(rect));
 }
 
 TEST(XFormTest, InverseMapIntRect) {
@@ -2964,6 +3009,30 @@ TEST(XFormTest, InverseMapIntRect) {
 
   auto singular = Transform::MakeScale(0.f);
   EXPECT_FALSE(singular.InverseMapRect(Rect(1, 2, 3, 4)));
+}
+
+TEST(XFormTest, MapQuad) {
+  auto translation = Transform::MakeTranslation(3.25f, 7.75f);
+  QuadF q(PointF(1.25f, 2.5f), PointF(3.75f, 4.f), PointF(23.f, 45.f),
+          PointF(12.f, 67.f));
+  EXPECT_EQ(QuadF(PointF(4.5f, 10.25f), PointF(7.f, 11.75f),
+                  PointF(26.25f, 52.75f), PointF(15.25f, 74.75f)),
+            translation.MapQuad(q));
+
+  EXPECT_EQ(q, Transform().MapQuad(q));
+
+  auto singular = Transform::MakeScale(0.f);
+  EXPECT_EQ(QuadF(), singular.MapQuad(q));
+
+  auto negative_scale = Transform::MakeScale(-1, -2);
+  EXPECT_EQ(QuadF(PointF(-1.25f, -5.f), PointF(-3.75f, -8.f),
+                  PointF(-23.f, -90.f), PointF(-12.f, -134.f)),
+            negative_scale.MapQuad(q));
+
+  auto rotate = Transform::Make90degRotation();
+  EXPECT_EQ(QuadF(PointF(-2.5f, 1.25f), PointF(-4.f, 3.75f),
+                  PointF(-45.f, 23.f), PointF(-67.f, 12.f)),
+            rotate.MapQuad(q));
 }
 
 TEST(XFormTest, MapBox) {
@@ -3332,6 +3401,126 @@ TEST(XFormTest, ClampOutput) {
                              mv, mv, mv));
     test(Transform::MakeTranslation(mv, mv));
   }
+}
+
+constexpr float kProjectionClampedBigNumber =
+    1 << (std::numeric_limits<float>::digits - 1);
+
+// This test also demonstrates the relationship between ProjectPoint() and
+// MapPoint().
+TEST(XFormTest, ProjectPoint) {
+  Transform transform;
+  PointF p(1.25f, -3.5f);
+  bool clamped = true;
+  EXPECT_EQ(p, transform.ProjectPoint(p));
+  EXPECT_EQ(p, transform.ProjectPoint(p, &clamped));
+  EXPECT_FALSE(clamped);
+  // MapPoint() and ProjectPoint() are the same with a flat transform.
+  EXPECT_EQ(p, transform.MapPoint(p));
+
+  // ProjectPoint with simple 2d transform.
+  transform = Transform::MakeTranslation(10, 20) * Transform::MakeScale(3, 4);
+  clamped = true;
+  gfx::PointF projected = transform.ProjectPoint(p, &clamped);
+  EXPECT_EQ(PointF(13.75f, 6.f), projected);
+  EXPECT_FALSE(clamped);
+  // MapPoint() and ProjectPoint() are the same with a flat transform.
+  EXPECT_EQ(projected, transform.MapPoint(p));
+
+  clamped = true;
+  transform.EnsureFullMatrixForTesting();
+  EXPECT_EQ(projected, transform.ProjectPoint(p, &clamped));
+  EXPECT_FALSE(clamped);
+  EXPECT_EQ(projected, transform.MapPoint(p));
+
+  // Set scale z to 0.
+  transform.set_rc(2, 2, 0);
+  clamped = true;
+  projected = transform.ProjectPoint(p, &clamped);
+  EXPECT_EQ(PointF(), projected);
+  EXPECT_TRUE(clamped);
+  // MapPoint() still produces the original result.
+  EXPECT_EQ(PointF(13.75f, 6.f), transform.MapPoint(p));
+
+  // Normally (except the last case below), t.ProjectPoint() is equivalent to
+  // inverse(flatten(inverse(t))).MapPoint().
+  auto projection_transform = [](const Transform& t) {
+    auto flat = t.GetCheckedInverse();
+    flat.FlattenTo2d();
+    return flat.GetCheckedInverse();
+  };
+
+  transform.MakeIdentity();
+  transform.RotateAboutYAxis(60);
+  clamped = true;
+  projected = transform.ProjectPoint(p, &clamped);
+  EXPECT_EQ(PointF(2.5f, -3.5f), projected);
+  EXPECT_FALSE(clamped);
+  EXPECT_EQ(PointF(0.625f, -3.5f), transform.MapPoint(p));
+
+  EXPECT_EQ(projected, projection_transform(transform).MapPoint(p));
+  EXPECT_EQ(projected, projection_transform(transform).ProjectPoint(p));
+
+  transform.ApplyPerspectiveDepth(10);
+  clamped = true;
+  projected = transform.ProjectPoint(p, &clamped);
+  EXPECT_POINTF_NEAR(PointF(3.19f, -4.47f), projected, 0.01f);
+  EXPECT_FALSE(clamped);
+  EXPECT_EQ(PointF(0.625f, -3.5f), transform.MapPoint(p));
+
+  EXPECT_POINTF_NEAR(projected, projection_transform(transform).MapPoint(p),
+                     1e-5f);
+  EXPECT_POINTF_NEAR(projected, projection_transform(transform).ProjectPoint(p),
+                     1e-5f);
+
+  // With a small perspective, the ray doesn't intersect the destination plane.
+  transform.ApplyPerspectiveDepth(2);
+  clamped = false;
+  projected = transform.ProjectPoint(p, &clamped);
+  EXPECT_TRUE(clamped);
+  EXPECT_EQ(projected.x(), kProjectionClampedBigNumber);
+  EXPECT_EQ(projected.y(), -kProjectionClampedBigNumber);
+  EXPECT_EQ(PointF(0.625f, -3.5f), transform.MapPoint(p));
+  // In this case, MapPoint() returns a point behind the eye.
+  EXPECT_POINTF_NEAR(PointF(-8.36014f, 11.7042f),
+                     projection_transform(transform).MapPoint(p), 1e-5f);
+  EXPECT_POINTF_NEAR(projected, projection_transform(transform).ProjectPoint(p),
+                     1e-5f);
+}
+
+TEST(XFormTest, ProjectQuad) {
+  auto transform = Transform::MakeTranslation(3.25f, 7.75f);
+  QuadF q(PointF(1.25f, 2.5f), PointF(3.75f, 4.f), PointF(23.f, 45.f),
+          PointF(12.f, 67.f));
+  EXPECT_EQ(QuadF(PointF(4.5f, 10.25f), PointF(7.f, 11.75f),
+                  PointF(26.25f, 52.75f), PointF(15.25f, 74.75f)),
+            transform.ProjectQuad(q));
+
+  transform.set_rc(2, 2, 0);
+  EXPECT_EQ(QuadF(), transform.ProjectQuad(q));
+
+  transform.MakeIdentity();
+  transform.RotateAboutYAxis(60);
+  EXPECT_EQ(QuadF(PointF(2.5f, 2.5f), PointF(7.5f, 4.f), PointF(46.f, 45.f),
+                  PointF(24.f, 67.f)),
+            transform.ProjectQuad(q));
+
+  // With a small perspective, all points of |q| are clamped, and the
+  // projected result is an empty quad.
+  transform.ApplyPerspectiveDepth(2);
+  EXPECT_EQ(QuadF(), transform.ProjectQuad(q));
+
+  // Change the quad so that 2 points are clamped.
+  q.set_p1(PointF(-1.25f, -2.5f));
+  q.set_p2(PointF(-3.75f, 4.f));
+  q.set_p3(PointF(23.f, -45.f));
+  QuadF q1 = transform.ProjectQuad(q);
+  EXPECT_POINTF_NEAR(PointF(-1.2f, -1.2f), q1.p1(), 0.01f);
+  EXPECT_POINTF_NEAR(PointF(-1.77f, 0.94f), q1.p2(), 0.01f);
+  EXPECT_EQ(q1.p3().x(), kProjectionClampedBigNumber);
+  EXPECT_EQ(q1.p3().y(), -kProjectionClampedBigNumber);
+  EXPECT_EQ(q1.p4().x(), kProjectionClampedBigNumber);
+  EXPECT_EQ(q1.p4().y(), kProjectionClampedBigNumber);
 }
 
 TEST(XFormTest, ToString) {

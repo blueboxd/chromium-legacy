@@ -691,7 +691,7 @@ bool TransformationMatrix::IsInvertible() const {
   return InternalInverse<true>(nullptr);
 }
 
-TransformationMatrix TransformationMatrix::Inverse() const {
+TransformationMatrix TransformationMatrix::InverseOrIdentity() const {
   TransformationMatrix m;
   InternalInverse<false>(&m);
   return m;
@@ -704,6 +704,13 @@ bool TransformationMatrix::GetInverse(TransformationMatrix* m) const {
 
   m->MakeIdentity();
   return false;
+}
+
+TransformationMatrix TransformationMatrix::GetCheckedInverse() const {
+  TransformationMatrix m;
+  bool invertible = InternalInverse<false>(&m);
+  DCHECK(invertible);
+  return m;
 }
 
 template <bool check_invertibility_only>
@@ -720,8 +727,13 @@ bool TransformationMatrix::InternalInverse(TransformationMatrix* result) const {
 
     // Translation.
     if (!check_invertibility_only) {
-      result->MakeIdentity();
-      result->Translate3d(-matrix_[3][0], -matrix_[3][1], -matrix_[3][2]);
+      if (result != this)
+        result->MakeIdentity();
+      // Use `0.0 - component` to avoid -0 for 0 components. Not a big deal,
+      // but just to keep the original behavior.
+      result->matrix_[3][0] = 0.0 - matrix_[3][0];
+      result->matrix_[3][1] = 0.0 - matrix_[3][1];
+      result->matrix_[3][2] = 0.0 - matrix_[3][2];
     }
     return true;
   }

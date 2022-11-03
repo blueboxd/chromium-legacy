@@ -1001,7 +1001,7 @@ HeapVector<Member<Element>>* Element::GetElementArrayAttribute(
 }
 
 NamedNodeMap* Element::attributesForBindings() const {
-  ElementRareData& rare_data =
+  ElementRareDataBase& rare_data =
       const_cast<Element*>(this)->EnsureElementRareData();
   if (NamedNodeMap* attribute_map = rare_data.AttributeMap())
     return attribute_map;
@@ -1023,12 +1023,12 @@ Vector<AtomicString> Element::getAttributeNames() const {
   return attributesVector;
 }
 
-inline ElementRareData* Element::GetElementRareData() const {
+inline ElementRareDataBase* Element::GetElementRareData() const {
   DCHECK(HasRareData());
   return static_cast<ElementRareData*>(RareData());
 }
 
-inline ElementRareData& Element::EnsureElementRareData() {
+inline ElementRareDataBase& Element::EnsureElementRareData() {
   return static_cast<ElementRareData&>(EnsureRareData());
 }
 
@@ -1067,7 +1067,7 @@ ElementAnimations* Element::GetElementAnimations() const {
 }
 
 ElementAnimations& Element::EnsureElementAnimations() {
-  ElementRareData& rare_data = EnsureElementRareData();
+  ElementRareDataBase& rare_data = EnsureElementRareData();
   if (!rare_data.GetElementAnimations())
     rare_data.SetElementAnimations(MakeGarbageCollected<ElementAnimations>());
   return *rare_data.GetElementAnimations();
@@ -1318,7 +1318,7 @@ const ResizeObserverSize* Element::LastIntrinsicSize() const {
   if (!HasRareData())
     return nullptr;
   // If rare data exists, we are guaranteed that it's ElementRareData.
-  ElementRareData* data = GetElementRareData();
+  ElementRareDataBase* data = GetElementRareData();
   DCHECK(data);
   return data->LastIntrinsicSize();
 }
@@ -2161,7 +2161,7 @@ AccessibleNode* Element::accessibleNode() {
   if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled())
     return nullptr;
 
-  ElementRareData& rare_data = EnsureElementRareData();
+  ElementRareDataBase& rare_data = EnsureElementRareData();
   return rare_data.EnsureAccessibleNode(this);
 }
 
@@ -2588,7 +2588,7 @@ Node::InsertionNotificationRequest Element::InsertedInto(
     return kInsertionDone;
 
   if (isConnected() && HasRareData()) {
-    ElementRareData* rare_data = GetElementRareData();
+    ElementRareDataBase* rare_data = GetElementRareData();
     if (ElementIntersectionObserverData* observer_data =
             rare_data->IntersectionObserverData()) {
       observer_data->TrackWithController(
@@ -2701,7 +2701,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
   ClearElementFlag(ElementFlags::kIsInCanvasSubtree);
 
   if (HasRareData()) {
-    ElementRareData* data = GetElementRareData();
+    ElementRareDataBase* data = GetElementRareData();
 
     data->ClearFocusgroupFlags();
     data->ClearRestyleFlags();
@@ -2854,7 +2854,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
 void Element::DetachLayoutTree(bool performing_reattach) {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   if (HasRareData()) {
-    ElementRareData* data = GetElementRareData();
+    ElementRareDataBase* data = GetElementRareData();
     if (!performing_reattach) {
       data->ClearPseudoElements();
       data->ClearContainerQueryData();
@@ -3552,7 +3552,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
   }
 
   if (!new_style && HasRareData()) {
-    ElementRareData* rare_data = GetElementRareData();
+    ElementRareDataBase* rare_data = GetElementRareData();
     if (ElementAnimations* element_animations =
             rare_data->GetElementAnimations()) {
       element_animations->CssAnimations().Cancel();
@@ -3999,17 +3999,20 @@ void Element::PseudoStateChanged(
 
 bool Element::TryToSkipHighlightPseudos(const ComputedStyle* old_style,
                                         ComputedStyle& new_style) const {
-  // If we are a root element (our parent is a Document or ShadowRoot), we need
-  // to recalc if there are or were any non-UA highlight rules (regardless of
-  // whether or not they are non-universal). Otherwise we only need to recalc
-  // once for the UA highlight rules, since those won’t change. They could, if
-  // we ever changed the UA stylesheet dynamically, but we won’t.
+  // If we are a root element (our parent is a Document or ShadowRoot), we can
+  // skip highlight recalc if there neither are nor were any non-UA highlight
+  // rules (regardless of whether or not they are non-universal), and the root’s
+  // effective zoom (‘zoom’ × page zoom × device scale factor) did not change.
+  // In that case, we only need to calculate highlight styles once, because our
+  // UA styles only use type selectors and we never change them dynamically.
   if (parentNode() == ContainingTreeScope().RootNode()) {
     if (new_style.HasNonUaHighlightPseudoStyles())
       return false;
-    if (old_style && old_style->HasNonUaHighlightPseudoStyles())
-      return false;
     if (old_style) {
+      if (old_style->HasNonUaHighlightPseudoStyles())
+        return false;
+      if (old_style->EffectiveZoom() != new_style.EffectiveZoom())
+        return false;
       // Neither the new style nor the old style has any non-UA highlight rules,
       // so they will be equal. Let’s reuse the old styles for all highlights.
       new_style.SetHighlightData(old_style->HighlightData());
@@ -4079,7 +4082,7 @@ void Element::SetNeedsCompositingUpdate() {
 
 void Element::SetRegionCaptureCropId(
     std::unique_ptr<RegionCaptureCropId> crop_id) {
-  ElementRareData& rare_data = EnsureElementRareData();
+  ElementRareDataBase& rare_data = EnsureElementRareData();
 
   CHECK(!rare_data.GetRegionCaptureCropId());
 
@@ -4684,9 +4687,22 @@ void Element::DefaultEventHandler(Event& event) {
     // GetComputedStyle(), but it's also potentially expensive and we only
     // want to call it if we have a toggle-trigger.
     if (const ComputedStyle* style_before_update = GetComputedStyle()) {
+      Node* target_node = event.target()->ToNode();
       if (style_before_update->ToggleTrigger() &&
           IsFocusableStyleAfterUpdate() &&
-          !IsClickableControl(event.target()->ToNode())) {
+          // TODO(https://github.com/tabatkins/css-toggle/issues/39):
+          // There seems to be agreement that the spec's current
+          // statement that toggles should not work on elements with
+          // activation behavior is too restrictive.  Pending a
+          // resolution for what the spec should say, this completely
+          // stops checking for activation behavior on the element with
+          // 'toggle-trigger', but continues to check on descendants.
+          // It's possible that we should be checking for *some*
+          // conditions (e.g., causing a navigation) on the element with
+          // 'toggle-trigger', although perhaps that's unnecessary since
+          // the page will navigate anyway.
+          (ElementTraversal::FirstAncestorOrSelf(*target_node) == this ||
+           !IsClickableControl(target_node))) {
         if (const ComputedStyle* style = GetComputedStyle()) {
           // FireToggleActivation might change style too, so hold a reference
           // to toggle_triggers.
@@ -6493,8 +6509,11 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
     scoped_refptr<ComputedStyle> result =
         GetDocument().GetStyleResolver().ResolveStyle(
             target, style_recalc_context, first_line_inherited_request);
-    if (result)
-      result->SetStyleType(kPseudoIdFirstLineInherited);
+    if (result) {
+      ComputedStyleBuilder builder(*result);
+      builder.SetStyleType(kPseudoIdFirstLineInherited);
+      result = builder.TakeStyle();
+    }
     return result;
   }
 
@@ -6553,7 +6572,7 @@ Element* Element::closest(const AtomicString& selectors) {
 }
 
 DOMTokenList& Element::classList() {
-  ElementRareData& rare_data = EnsureElementRareData();
+  ElementRareDataBase& rare_data = EnsureElementRareData();
   if (!rare_data.GetClassList()) {
     auto* class_list =
         MakeGarbageCollected<DOMTokenList>(*this, html_names::kClassAttr);
@@ -6565,7 +6584,7 @@ DOMTokenList& Element::classList() {
 }
 
 DOMStringMap& Element::dataset() {
-  ElementRareData& rare_data = EnsureElementRareData();
+  ElementRareDataBase& rare_data = EnsureElementRareData();
   if (!rare_data.Dataset())
     rare_data.SetDataset(MakeGarbageCollected<DatasetDOMStringMap>(this));
   return *rare_data.Dataset();
@@ -7644,7 +7663,7 @@ DOMTokenList* Element::GetPart() const {
 }
 
 DOMTokenList& Element::part() {
-  ElementRareData& rare_data = EnsureElementRareData();
+  ElementRareDataBase& rare_data = EnsureElementRareData();
   DOMTokenList* part = rare_data.GetPart();
   if (!part) {
     part = MakeGarbageCollected<DOMTokenList>(*this, html_names::kPartAttr);

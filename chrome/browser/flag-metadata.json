@@ -661,7 +661,7 @@
   {
     "name": "back-gesture-refactor-android",
     "owners": ["lazzzis@google.com", "jinsukkim", "twellington"],
-    "expiry_milestone": 109
+    "expiry_milestone": 115
   },
   {
     "name": "batch-fetch-requests",
@@ -676,12 +676,12 @@
   {
     "name": "binding-manager-connection-limit",
     "owners": ["ckitagawa", "yfriedman"],
-    "expiry_milestone": 109
+    "expiry_milestone": 111
   },
   {
     "name": "binding-manager-use-not-perceptible-binding",
     "owners": ["ckitagawa", "yfriedman"],
-    "expiry_milestone": 109
+    "expiry_milestone": 111
   },
   {
     "name": "biometric-authentication-for-filling",
@@ -1514,7 +1514,7 @@
   {
     "name": "dns-proxy-enable-doh",
     "owners": [ "garrick", "jasongustaman" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 111
   },
   {
     "name": "document-picture-in-picture-api",
@@ -1745,6 +1745,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "enable-auto-disable-accessibility-v2",
+    "owners": [ "jacklynch@google.com", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-autofill-credit-card-authentication",
     "owners": [ "jsaul@google.com", "siyua" ],
     "expiry_milestone": 112
@@ -1896,7 +1901,7 @@
   {
     "name": "enable-critical-persisted-tab-data",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 120
   },
   {
     "name": "enable-cros-action-recorder",
@@ -2188,7 +2193,7 @@
   {
     "name": "enable-dns-proxy",
     "owners": [ "garrick", "jasongustaman", "cros-networking@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 111
   },
   {
     "name": "enable-docked-magnifier-resizing",
@@ -2500,6 +2505,11 @@
     "name": "enable-immersive-fullscreen-toolbar",
     "owners": [ "bur", "chrome-mac-dev@google.com" ],
     "expiry_milestone": 119
+  },
+  {
+    "name": "enable-input-device-settings-split",
+    "owners": ["dpad", "zentaro", "cros-peripherals@google.com"],
+    "expiry_milestone": 120
   },
   {
     "name": "enable-input-event-logging",
@@ -3136,11 +3146,6 @@
     "name": "enable-tab-to-gts-animation",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enable-tailored-security-desktop-notice",
-    "owners": ["jacastro@chromium.org", "chrome-counter-abuse-alerts@google.com"],
-    "expiry_milestone": 107
   },
   {
     "name": "enable-tailored-security-integration",
@@ -4264,7 +4269,7 @@
   {
     "name": "ios-new-post-restore-experience",
     "owners": [ "scottyoder@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 110
   },
   {
     "name": "ios-password-manager-cross-origin-iframe-support",
@@ -4307,7 +4312,7 @@
   {
     "name": "isolated-app-origins",
     "owners": [ "peletskyi@google.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 115
   },
   {
     "name": "isolation-by-default",
@@ -4429,6 +4434,14 @@
     "expiry_milestone": 130
   },
   {
+    "name": "lacros-wayland-logging",
+    "owners": [ "erikchen", "lacros-team@google.com" ],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
     "name": "large-favicon-from-google",
     "owners": [
       "bttk"
@@ -4459,11 +4472,6 @@
     "name": "lens-camera-assisted-search",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "fgorski", "wylieb", "lens-chrome@google.com" ],
     "expiry_milestone": 114
-  },
-  {
-    "name": "lens-on-quick-action-search-widget",
-    "owners": [ "juanmojica@google.com", "schechter@google.com", "lens-chrome@google.com" ],
-    "expiry_milestone": 107
   },
   {
     "name": "lightweight-reactions-android",
@@ -4785,7 +4793,7 @@
   {
     "name": "new-overflow-menu-share-chrome-action",
     "owners": [ "scottyoder@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "new-overflow-menu-simple-destination-icons",
@@ -5421,12 +5429,12 @@
   {
     "name": "page-info-about-this-page-description-placeholder",
     "owners": [ "dullweber", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
   },
   {
     "name": "page-info-about-this-page-persistent-side-panel-entry",
     "owners": [ "dullweber", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
   },
   {
     "name": "page-info-about-this-site",
@@ -5436,7 +5444,7 @@
   {
     "name": "page-info-cookies-subpage",
     "owners": [ "zsalata@google.com", "olesiamarukhno@google.com", "dullweber" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
   },
   {
     "name": "page-info-hide-site-settings",
@@ -5458,12 +5466,12 @@
       "dullweber",
       "olesiamarukhno@google.com"
     ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
   },
   {
     "name": "page-info-more-about-this-page",
     "owners": [ "dullweber", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
   },
   {
     "name": "page-info-store-info",
@@ -5478,12 +5486,7 @@
   {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "chrome-fdt@google.com" ],
-    "expiry_milestone": 109
-  },
-  {
-    "name": "paint-preview-startup",
-    "owners": [ "ckitagawa", "fredmello", "chrome-fdt@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 111
   },
   {
     "name": "partial-split",
@@ -5977,6 +5980,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "request-desktop-site-zoom",
+    "owners": [ "aishwaryarj@google.com", "twellington", "clank-app-team@google.com" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "restore-session-from-cache",
     "owners": [ "justincohen", "gambard", "bling-flags@google.com" ],
     // Needed for manual testing of native session restore flow on iOS.
@@ -6024,11 +6032,6 @@
     "name": "safety-check-unused-site-permissions",
     "owners": ["sideyilmaz"],
     "expiry_milestone": 115
-  },
-  {
-    "name": "sameparty-cookies-considered-first-party",
-    "owners": ["cfredric", "chrome-first-party-sets@chromium.org"],
-    "expiry_milestone": 108
   },
   {
     "name": "sanitizer-api",
@@ -6149,22 +6152,22 @@
   {
     "name": "shared-highlighting-manager",
     "owners": ["jeffreycohen", "kristipark", "cheickcisse@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "shared-highlighting-refined-blocklist",
     "owners": ["jeffreycohen", "chrome-with-friends-robots@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "shared-highlighting-refined-maxcontextwords",
     "owners": ["wissemgamra", "jeffreycohen", "chrome-with-friends-robots@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "shared-highlighting-v2",
     "owners": ["jeffreycohen", "kristipark", "cheickcisse@google.com", "chrome-with-friends-robots@google.com"],
-    "expiry_milestone": 108
+    "expiry_milestone": 111
   },
   {
     "name": "sharing-desktop-screenshots",
@@ -6335,7 +6338,7 @@
   {
     "name": "signin-intercept-bubble-v2",
     "owners": [ "gabolvr@google.com", "alexilin", "my-chrome-everywhere@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "sim-lock-policy",
@@ -6486,7 +6489,7 @@
   {
     "name": "sync-promo-after-signin-intercept",
     "owners": [ "gabolvr@google.com", "alexilin", "my-chrome-everywhere@google.com" ],
-    "expiry_milestone": 108
+    "expiry_milestone": 110
   },
   {
     "name": "sync-standalone-invalidations",
@@ -7061,8 +7064,8 @@
   },
   {
     "name": "web-midi",
-    "owners": [ "reillyg", "hongchan", "deviceapi-team@google.com" ],
-    "expiry_milestone": 109
+    "owners": [ "//third_party/blink/renderer/modules/webaudio/OWNERS", "reillyg", "deviceapi-team@google.com" ],
+    "expiry_milestone": 112
   },
   {
     "name": "web-otp-backend",

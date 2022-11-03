@@ -604,8 +604,6 @@ mixed_component("base") {
     "profiler/stack_copier_suspend.h",
     "profiler/stack_sampler.cc",
     "profiler/stack_sampler.h",
-    "profiler/stack_sampler_impl.cc",
-    "profiler/stack_sampler_impl.h",
     "profiler/stack_sampling_profiler.cc",
     "profiler/stack_sampling_profiler.h",
     "profiler/suspendable_thread_delegate.h",
@@ -768,7 +766,6 @@ mixed_component("base") {
     "task/sequence_manager/task_queue_impl.h",
     "task/sequence_manager/task_queue_selector.cc",
     "task/sequence_manager/task_queue_selector.h",
-    "task/sequence_manager/task_queue_selector_logic.h",
     "task/sequence_manager/task_time_observer.h",
     "task/sequence_manager/tasks.cc",
     "task/sequence_manager/tasks.h",
@@ -1939,6 +1936,7 @@ mixed_component("base") {
     # by public //base headers, which requires they be on the include path.
     # TODO(https://crbug.com/841171): Move these back to |deps|.
     public_deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.runner",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
@@ -3279,7 +3277,7 @@ test("base_unittests") {
     "profiler/stack_buffer_unittest.cc",
     "profiler/stack_copier_suspend_unittest.cc",
     "profiler/stack_copier_unittest.cc",
-    "profiler/stack_sampler_impl_unittest.cc",
+    "profiler/stack_sampler_unittest.cc",
     "profiler/stack_sampling_profiler_unittest.cc",
     "rand_util_unittest.cc",
     "ranges/algorithm_unittest.cc",

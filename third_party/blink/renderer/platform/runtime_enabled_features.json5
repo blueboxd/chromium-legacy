@@ -714,7 +714,7 @@
     },
     {
       name: "CSSFontFamilyMath",
-      status: "experimental",
+      status: "stable",
       implied_by: ["MathMLCore"],
     },
     {
@@ -780,22 +780,22 @@
     },
     {
       name: "CSSMathDepth",
-      status: "experimental",
+      status: "stable",
       implied_by: ["MathMLCore"],
     },
     {
       name: "CSSMathShift",
-      status: "experimental",
+      status: "stable",
       implied_by: ["MathMLCore"],
     },
     {
       name: "CSSMathStyle",
-      status: "experimental",
+      status: "stable",
       implied_by: ["MathMLCore"],
     },
     {
       name: "CSSMathVariant",
-      status: "experimental",
+      status: "stable",
       implied_by: ["MathMLCore"],
     },
     {
@@ -1664,7 +1664,7 @@
     },
     {
       name: "MathMLCore",
-      status:"experimental",
+      status: "stable",
       depends_on: ["LayoutNG"],
       base_feature: "MathMLCore",
     },
@@ -1876,7 +1876,7 @@
       // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after the
       // feature is in stable with no issues.
       name: "OffsetParentNewSpecBehavior",
-      status: "experimental",
+      status: "stable",
       base_feature: "OffsetParentNewSpecBehavior",
     },
     {
@@ -2557,6 +2557,11 @@
     {
       "name": "SpeculationRulesPrefetchWithSubresources",
     },
+    // Adds a "referrer_policy" key to speculation rules. See https://crbug.com/1355146
+    {
+      name: "SpeculationRulesReferrerPolicyKey",
+      base_feature: "SpeculationRulesReferrerPolicyKey",
+    },
     {
       name: "SrcsetMaxDensity",
     },
@@ -2603,6 +2608,14 @@
     {
       name: "SupportsFontFormatTech",
       status: "stable"
+    },
+    {
+      // Allow an application that's capturing a tab, to control whether
+      // the local audio playback of the captured tab is suppressed.
+      //
+      // https://w3c.github.io/mediacapture-screen-share/#dfn-suppresslocalaudioplayback
+      name: "SuppressLocalAudioPlayback",
+      status: "stable",
     },
     {
       // When a Web application calls getDisplayMedia() and asks for video,
@@ -2738,6 +2751,10 @@
     },
     {
       name: "TrustedTypeBeforePolicyCreationEvent",
+      status: "experimental",
+    },
+    {
+      name: "TrustedTypesFromLiteral",
       status: "experimental",
     },
     {

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import 'chrome://diagnostics/input_list.js';
+import 'chrome://diagnostics/strings.m.js';
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
 import {DiagnosticsBrowserProxyImpl} from 'chrome://diagnostics/diagnostics_browser_proxy.js';
 import {NavigationView} from 'chrome://diagnostics/diagnostics_types.js';
@@ -21,7 +23,7 @@ import {isVisible} from '../../test_util.js';
 
 import {TestDiagnosticsBrowserProxy} from './test_diagnostics_browser_proxy.js';
 
-export function inputListTestSuite() {
+suite('inputListTestSuite', function() {
   /** @type {?InputListElement} */
   let inputListElement = null;
 
@@ -205,9 +207,15 @@ export function inputListTestSuite() {
     await flushTasks();
     assertEquals(1, requestFullscreenCalled);
     assertTrue(introDialog.open);
+    assertEquals(
+        /*expectedMoveAppToTestingScreenCalled=*/ 1,
+        provider.getMoveAppToTestingScreenCalled());
 
     touchscreenTester.shadowRoot.dispatchEvent(new Event('fullscreenchange'));
     assertFalse(introDialog.open);
+    assertEquals(
+        /*expectedMoveAppBackToPreviousScreenCalled=*/ 1,
+        provider.getMoveAppBackToPreviousScreenCalled());
   });
 
   test('TouchscreenTesterShowAndCloseInTabletMode', async () => {
@@ -374,4 +382,4 @@ export function inputListTestSuite() {
         /** @type {!Array<!NavigationView>} */
         (diagnosticsBrowserProxy.getArgs('recordNavigation')[0]));
   });
-}
+});

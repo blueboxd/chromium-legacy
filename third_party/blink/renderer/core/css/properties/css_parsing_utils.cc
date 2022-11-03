@@ -74,7 +74,6 @@
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
-#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -1717,8 +1716,6 @@ static bool ConsumeColorInterpolationSpace(
         read_hue = Color::HueInterpolationMethod::kDecreasing;
       else if (ConsumeIdent<CSSValueID::kIncreasing>(args))
         read_hue = Color::HueInterpolationMethod::kIncreasing;
-      else if (ConsumeIdent<CSSValueID::kSpecified>(args))
-        read_hue = Color::HueInterpolationMethod::kSpecified;
       if (read_hue) {
         if (!ConsumeIdent<CSSValueID::kHue>(args))
           return false;
@@ -1744,7 +1741,8 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
   CSSParserTokenRange args = ConsumeFunction(range);
   // First argument is the colorspace
   Color::ColorInterpolationSpace color_space;
-  Color::HueInterpolationMethod hue_interpolation_method;
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
   if (!ConsumeColorInterpolationSpace(args, color_space,
                                       hue_interpolation_method))
     return nullptr;
@@ -1754,12 +1752,17 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
 
   CSSValue* color1 =
       ConsumeColor(args, context, false /* Accept quirky colors */);
-  if (!color1)
-    return nullptr;
   CSSPrimitiveValue* p1 =
       ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
-  // Reject negative values, but not negative calc() values.
-  if (p1 && p1->IsNumericLiteralValue() && p1->GetDoubleValue() < 0.0)
+  // Color can come after the percentage
+  if (!color1) {
+    color1 = ConsumeColor(args, context, false /* Accept quirky colors */);
+    if (!color1)
+      return nullptr;
+  }
+  // Reject negative values and values > 100%, but not calc() values.
+  if (p1 && p1->IsNumericLiteralValue() &&
+      (p1->GetDoubleValue() < 0.0 || p1->GetDoubleValue() > 100.0))
     return nullptr;
 
   if (!ConsumeCommaIncludingWhitespace(args))
@@ -1767,11 +1770,17 @@ static CSSValue* ConsumeColorMixFunction(CSSParserTokenRange& range,
 
   CSSValue* color2 =
       ConsumeColor(args, context, false /* Accept quirky colors */);
-  if (!color2)
-    return nullptr;
   CSSPrimitiveValue* p2 =
       ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
-  if (p2 && p2->IsNumericLiteralValue() && p2->GetDoubleValue() < 0.0)
+  // Color can come after the percentage
+  if (!color2) {
+    color2 = ConsumeColor(args, context, false /* Accept quirky colors */);
+    if (!color2)
+      return nullptr;
+  }
+  // Reject negative values and values > 100%, but not calc() values.
+  if (p2 && p2->IsNumericLiteralValue() &&
+      (p2->GetDoubleValue() < 0.0 || p2->GetDoubleValue() > 100.0))
     return nullptr;
 
   // If both values are literally zero (and not calc()) reject at parse time
@@ -2645,7 +2654,8 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   // [ [ circle | ellipse] || <size-keyword> ]] ]
 
   Color::ColorInterpolationSpace color_space;
-  Color::HueInterpolationMethod hue_interpolation_method;
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
   bool has_color_space = ConsumeColorInterpolationSpace(
       args, color_space, hue_interpolation_method);
 
@@ -2748,7 +2758,8 @@ static CSSValue* ConsumeLinearGradient(
   // [ in <color-space>? || [ <angle> | to <side-or-corner> ]?]
   bool expect_comma = true;
   Color::ColorInterpolationSpace color_space;
-  Color::HueInterpolationMethod hue_interpolation_method;
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
   bool has_color_space = ConsumeColorInterpolationSpace(
       args, color_space, hue_interpolation_method);
 
@@ -2805,7 +2816,8 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
                                       const CSSParserContext& context,
                                       cssvalue::CSSGradientRepeat repeating) {
   Color::ColorInterpolationSpace color_space;
-  Color::HueInterpolationMethod hue_interpolation_method;
+  Color::HueInterpolationMethod hue_interpolation_method =
+      Color::HueInterpolationMethod::kShorter;
   bool has_color_space = ConsumeColorInterpolationSpace(
       args, color_space, hue_interpolation_method);
 

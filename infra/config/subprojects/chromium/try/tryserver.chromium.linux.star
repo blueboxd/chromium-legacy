@@ -99,6 +99,7 @@ try_.builder(
 
 try_.builder(
     name = "linux-blink-heap-verification-try",
+    goma_backend = None,
 )
 
 try_.builder(
@@ -120,6 +121,7 @@ try_.builder(
     mirrors = [
         "ci/linux-extended-tracing-rel",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -133,6 +135,7 @@ try_.builder(
 
 try_.builder(
     name = "linux-headless-shell-rel",
+    goma_backend = None,
 )
 
 try_.builder(
@@ -147,6 +150,7 @@ try_.builder(
 try_.builder(
     name = "linux-mbi-mode-per-render-process-host-rel",
     mirrors = builder_config.copy_from("linux-rel"),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -186,6 +190,7 @@ try_.builder(
             "services/tracing/.+",
         ],
     ),
+    goma_backend = None,
 )
 
 try_.orchestrator_builder(
@@ -277,6 +282,7 @@ try_.builder(
     mirrors = [
         "ci/WebKit Linux MSAN",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -288,14 +294,17 @@ try_.builder(
 
 try_.builder(
     name = "linux-wpt-fyi-rel",
+    goma_backend = None,
 )
 
 try_.builder(
     name = "linux-wpt-identity-fyi-rel",
+    goma_backend = None,
 )
 
 try_.builder(
     name = "linux-wpt-input-fyi-rel",
+    goma_backend = None,
 )
 
 try_.builder(
@@ -339,6 +348,7 @@ try_.builder(
     mirrors = [
         "ci/linux-archive-rel",
     ],
+    goma_backend = None,
 )
 
 try_.orchestrator_builder(
@@ -375,6 +385,7 @@ try_.builder(
     cores = 32,
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 7 * time.hour,
+    goma_backend = None,
 )
 
 try_.builder(
@@ -457,6 +468,7 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -478,6 +490,7 @@ try_.builder(
             "build/.*check_gn_headers.*",
         ],
     ),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -486,7 +499,7 @@ try_.builder(
         "ci/Linux MSan Focal",
     ],
     execution_timeout = 16 * time.hour,
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
     os = os.LINUX_FOCAL,
 )
 
@@ -497,7 +510,7 @@ try_.builder(
         "ci/Linux MSan Tests",
     ],
     execution_timeout = 6 * time.hour,
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
 )
 
 try_.orchestrator_builder(
@@ -531,6 +544,7 @@ try_.builder(
     mirrors = [
         "ci/linux-ubsan-vptr",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -601,6 +615,7 @@ try_.builder(
             "content/browser/xr/.+",
         ],
     ),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -651,27 +666,27 @@ try_.gpu.optional_tests_builder(
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-            "content/test/gpu/.+",
-            "gpu/.+",
-            "media/audio/.+",
-            "media/base/.+",
-            "media/capture/.+",
-            "media/filters/.+",
-            "media/gpu/.+",
-            "media/mojo/.+",
-            "media/renderers/.+",
-            "media/video/.+",
-            "testing/buildbot/tryserver.chromium.linux.json",
-            "testing/trigger_scripts/.+",
-            "third_party/blink/renderer/modules/mediastream/.+",
-            "third_party/blink/renderer/modules/webcodecs/.+",
-            "third_party/blink/renderer/modules/webgl/.+",
-            "third_party/blink/renderer/platform/graphics/gpu/.+",
-            "tools/clang/scripts/update.py",
-            "tools/mb/mb_config_expectations/tryserver.chromium.linux.json",
-            "ui/gl/.+",
+            cq.location_filter(path_regexp = "chrome/browser/vr/.+"),
+            cq.location_filter(path_regexp = "content/browser/xr/.+"),
+            cq.location_filter(path_regexp = "content/test/gpu/.+"),
+            cq.location_filter(path_regexp = "gpu/.+"),
+            cq.location_filter(path_regexp = "media/audio/.+"),
+            cq.location_filter(path_regexp = "media/base/.+"),
+            cq.location_filter(path_regexp = "media/capture/.+"),
+            cq.location_filter(path_regexp = "media/filters/.+"),
+            cq.location_filter(path_regexp = "media/gpu/.+"),
+            cq.location_filter(path_regexp = "media/mojo/.+"),
+            cq.location_filter(path_regexp = "media/renderers/.+"),
+            cq.location_filter(path_regexp = "media/video/.+"),
+            cq.location_filter(path_regexp = "testing/buildbot/tryserver.chromium.linux.json"),
+            cq.location_filter(path_regexp = "testing/trigger_scripts/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/mediastream/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webcodecs/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webgl/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/platform/graphics/gpu/.+"),
+            cq.location_filter(path_regexp = "tools/clang/scripts/update.py"),
+            cq.location_filter(path_regexp = "tools/mb/mb_config_expectations/tryserver.chromium.linux.json"),
+            cq.location_filter(path_regexp = "ui/gl/.+"),
         ],
     ),
 )
@@ -717,4 +732,5 @@ try_.builder(
     cores = 16,
     builderless = False,
     experiments = {"chromium_rts.experimental_model": 100},
+    goma_backend = None,
 )

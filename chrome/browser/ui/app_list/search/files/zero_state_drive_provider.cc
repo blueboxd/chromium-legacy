@@ -156,10 +156,6 @@ ash::AppListSearchResultType ZeroStateDriveProvider::ResultType() const {
   return ash::AppListSearchResultType::kZeroStateDrive;
 }
 
-bool ZeroStateDriveProvider::ShouldBlockZeroState() const {
-  return true;
-}
-
 void ZeroStateDriveProvider::StartZeroState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -177,8 +173,12 @@ void ZeroStateDriveProvider::StartZeroState() {
 void ZeroStateDriveProvider::OnSuggestFileDataFetched(
     const absl::optional<SuggestResults>& suggest_results) {
   // Fail to fetch the suggest data, so return early.
-  if (!suggest_results)
+  if (!suggest_results) {
+    // Send empty result list to search controller to unblock zero state.
+    SearchProvider::Results empty_results;
+    SwapResults(&empty_results);
     return;
+  }
 
   SetSearchResults(*suggest_results);
 }

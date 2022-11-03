@@ -398,6 +398,10 @@ interface AudioScheduledSourceNode : AudioNode
     method start
     method stop
     setter onended
+interface AudioSinkInfo
+    attribute @@toStringTag
+    getter type
+    method constructor
 interface AudioTrack
     attribute @@toStringTag
     getter enabled
@@ -9176,16 +9180,19 @@ interface TreeWalker
     method previousSibling
     setter currentNode
 interface TrustedHTML
+    static method fromLiteral
     attribute @@toStringTag
     method constructor
     method toJSON
     method toString
 interface TrustedScript
+    static method fromLiteral
     attribute @@toStringTag
     method constructor
     method toJSON
     method toString
 interface TrustedScriptURL
+    static method fromLiteral
     attribute @@toStringTag
     method constructor
     method toJSON

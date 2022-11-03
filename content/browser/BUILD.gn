@@ -72,6 +72,7 @@ source_set("browser") {
     "//cc/animation",
     "//cc/mojo_embedder",
     "//cc/paint",
+    "//components/attribution_reporting:source_registration_error_mojom",
     "//components/back_forward_cache:enum",
     "//components/browsing_topics/common:common",
     "//components/cbor",
@@ -654,6 +655,8 @@ source_set("browser") {
     "buckets/bucket_manager.h",
     "buckets/bucket_manager_host.cc",
     "buckets/bucket_manager_host.h",
+    "buckets/bucket_utils.cc",
+    "buckets/bucket_utils.h",
     "byte_stream.cc",
     "byte_stream.h",
     "cache_storage/background_fetch_cache_entry_handler_impl.cc",
@@ -2396,8 +2399,6 @@ source_set("browser") {
 
   if (is_fuchsia) {
     sources += [
-      "accessibility/accessibility_event_recorder_fuchsia.cc",
-      "accessibility/accessibility_event_recorder_fuchsia.h",
       "accessibility/accessibility_tree_formatter_fuchsia.cc",
       "accessibility/accessibility_tree_formatter_fuchsia.h",
       "accessibility/browser_accessibility_fuchsia.cc",
@@ -2802,8 +2803,6 @@ source_set("browser") {
 
   if (use_atk) {
     sources += [
-      "accessibility/accessibility_event_recorder_auralinux.cc",
-      "accessibility/accessibility_event_recorder_auralinux.h",
       "accessibility/browser_accessibility_auralinux.cc",
       "accessibility/browser_accessibility_auralinux.h",
       "accessibility/browser_accessibility_manager_auralinux.cc",

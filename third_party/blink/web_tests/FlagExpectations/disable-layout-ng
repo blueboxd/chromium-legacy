@@ -11,6 +11,7 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/web-share/disabled-by-permissions-policy-cross-origin.https.sub.html [ Crash ]
 crbug.com/626703 external/wpt/dom/events/scrolling/scrollend-event-handler-content-attributes.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/active-lock.html [ Timeout ]
 crbug.com/626703 external/wpt/css/selectors/media/media-loading-state.html [ Timeout ]
@@ -2266,6 +2267,8 @@ crbug.com/1303102 virtual/document-transition/wpt_internal/document-transition/n
 crbug.com/1303102 virtual/document-transition/wpt_internal/document-transition/new-content-captures-different-size.html [ Skip ]
 crbug.com/1303102 virtual/document-transition/wpt_internal/document-transition/old-content-captures-different-size.html [ Skip ]
 crbug.com/1377777 virtual/document-transition/wpt_internal/document-transition/content-with-inline-child.html [ Skip ]
+crbug.com/1321217 virtual/document-transition-wide-gamut/wpt_internal/document-transition/element-with-overflow.html [ Skip ]
+crbug.com/1321217 virtual/document-transition/wpt_internal/document-transition/element-with-overflow.html [ Skip ]
 
 crbug.com/1303102 virtual/document-transition-wide-gamut/wpt_internal/document-transition/old-content-captures-different-size.html [ Skip ]
 crbug.com/1303102 virtual/document-transition-wide-gamut/wpt_internal/document-transition/new-content-captures-different-size.html [ Skip ]

@@ -69,6 +69,7 @@ http/tests/inspector-protocol/target/tab-target.js [ Skip ]
 http/tests/inspector-protocol/target/target-filter.js [ Skip ]
 virtual/fenced-frame-mparch/http/tests/inspector-protocol/fenced-frame/fenced-frame-in-oopif-auto-attach.js [ Skip ]
 http/tests/inspector-protocol/target/target-info-changed-auto-attach.js [ Skip ]
+http/tests/inspector-protocol/page/frame-detached-oopif.js [ Skip ]
 
 # Rely on OOPIF for an iframe to be a separate devtools target
 http/tests/inspector-protocol/timeline/auction-worklet-frame.js [ Skip ]
@@ -82,6 +83,7 @@ crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-
 crbug.com/1209233 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-redirect-with-same-origin-allow-popups.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/web-share/disabled-by-permissions-policy-cross-origin.https.sub.html [ Crash ]
 crbug.com/626703 external/wpt/dom/events/scrolling/scrollend-event-handler-content-attributes.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/active-lock.html [ Timeout ]
 crbug.com/626703 external/wpt/css/selectors/media/media-loading-state.html [ Timeout ]

@@ -3013,7 +3013,7 @@ Connect your device to power.
         IME menu button
       </message>
       <message name="IDS_ASH_SELECT_TO_SPEAK_TRAY_ACCESSIBLE_NAME" desc="The accessible text for the select-to-speak menu icon in the status tray.">
-        Select-to-Speak button
+        Select-to-speak button
       </message>
       <message name="IDS_ASH_AUTOCLICK_TRAY_ACCESSIBLE_NAME" desc="The accessible text for the automatic clicks menu icon in the status tray.">
         Automatic clicks button
@@ -4166,6 +4166,18 @@ Connect your device to power.
 
       <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_TOOL_TIP" desc="The tool tip label of a calendar event entry.">
         <ph name="event_summary">$1<ex>Lunch break</ex></ph>, <ph name="time_range">$2<ex>1:00 - 1:30 PM</ex></ph>
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_DAYS_ELAPSED" desc="In the event list view, used to display '(Day n / n)'.">
+        (Day <ph name="current_day">$1<ex>1</ex></ph>/<ph name="total_days">$2<ex>5</ex></ph>)
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_STARTS_AT_TIME" desc="In the event list view, the start of multi-day events will show 'Starts at hh:nn (Day n / n)'.">
+        Starts at <ph name="start_time">$1<ex>9 AM</ex></ph> <ph name="days_elapsed">$2<ex>(Day 1/2)</ex></ph>
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ENDS_AT_TIME" desc="In the event list view, the end of multi-day events will show 'Ends at hh:nn (Day n / n)'.">
+        Ends at <ph name="end_time">$1<ex>10 AM</ex></ph> <ph name="days_elapsed">$2<ex>(Day 2/2)</ex></ph>
       </message>
 
       <message name="IDS_ASH_CALENDAR_NO_EVENT_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar `Open in Google Calendar` button.">

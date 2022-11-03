@@ -189,13 +189,6 @@ builder.
   * [`//content/gpu/.+`](https://cs.chromium.org/chromium/src/content/gpu/)
   * [`//media/.+`](https://cs.chromium.org/chromium/src/media/)
 
-* [chromeos-kevin-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-kevin-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromeos-kevin-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""chromeos-kevin-rel""))
-
-  Location filters:
-  * [`//build/chromeos/.+`](https://cs.chromium.org/chromium/src/build/chromeos/)
-  * [`//build/config/chromeos/.*`](https://cs.chromium.org/search?q=+file:build/config/chromeos/.*)
-  * [`//chromeos/CHROMEOS_LKGM`](https://cs.chromium.org/chromium/src/chromeos/CHROMEOS_LKGM)
-
 * [dawn-android-arm-deps-rel](https://ci.chromium.org/p/chromium/builders/try/dawn-android-arm-deps-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""dawn-android-arm-deps-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""dawn-android-arm-deps-rel""))
 
   Location filters:
@@ -512,9 +505,6 @@ as required builders.
 
 * [linux-rel-ml](https://ci.chromium.org/p/chromium/builders/try/linux-rel-ml) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-rel-ml"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-rel-ml""))
   * Experiment percentage: 5.0
-
-* [mac-rel-inverse-fyi](https://ci.chromium.org/p/chromium/builders/try/mac-rel-inverse-fyi) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac-rel-inverse-fyi"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""mac-rel-inverse-fyi""))
-  * Experiment percentage: 100.0
 
 * [mac12-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/mac12-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac12-arm64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""mac12-arm64-rel""))
   * Experiment percentage: 100.0

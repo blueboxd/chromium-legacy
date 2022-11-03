@@ -12,17 +12,20 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/app_search_data_source.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/string_util.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
+#include "chrome/browser/ui/app_list/search/ranking/ranker_manager.h"
 #include "chrome/browser/ui/app_list/search/ranking/scoring.h"
 #include "chrome/browser/ui/app_list/search/search_metrics_manager.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
@@ -34,9 +37,9 @@
 namespace app_list {
 namespace {
 
-void ClearAllResultsExceptContinue(ResultsMap& results) {
+void ClearNonZeroStateResults(ResultsMap& results) {
   for (auto it = results.begin(); it != results.end();) {
-    if (!ash::IsContinueSectionResultType(it->first)) {
+    if (!ash::IsZeroStateResultType(it->first)) {
       it = results.erase(it);
     } else {
       ++it;
@@ -55,9 +58,13 @@ SearchControllerImplNew::SearchControllerImplNew(
       burnin_controller_(std::make_unique<BurnInController>(
           base::BindRepeating(&SearchControllerImplNew::OnBurnInPeriodElapsed,
                               base::Unretained(this)))),
-      ranker_(std::make_unique<RankerDelegate>(profile, this)),
+      ranker_manager_(std::make_unique<RankerManager>(profile, this)),
       metrics_manager_(
           std::make_unique<SearchMetricsManager>(profile, notifier)),
+      app_search_data_source_(std::make_unique<AppSearchDataSource>(
+          profile,
+          list_controller,
+          base::DefaultClock::GetInstance())),
       model_updater_(model_updater),
       list_controller_(list_controller) {}
 
@@ -85,12 +92,12 @@ void SearchControllerImplNew::StartSearch(const std::u16string& query) {
   //
   // b) were in search query: do not publish these changes, so that the
   //    old results stay on screen until the new ones are ready.
-  ClearAllResultsExceptContinue(results_);
+  ClearNonZeroStateResults(results_);
   if (last_query_.empty())
     Publish();
 
   categories_ = CreateAllCategories();
-  ranker_->Start(query, results_, categories_);
+  ranker_manager_->Start(query, results_, categories_);
 
   session_start_ = base::Time::Now();
   last_query_ = query;
@@ -121,7 +128,7 @@ void SearchControllerImplNew::StartZeroState(base::OnceClosure on_done,
 
   last_query_.clear();
 
-  ranker_->Start(std::u16string(), results_, categories_);
+  ranker_manager_->Start(std::u16string(), results_, categories_);
 
   on_zero_state_done_ = std::move(on_done);
   returned_zero_state_blockers_ = 0;
@@ -145,7 +152,7 @@ void SearchControllerImplNew::OnZeroStateTimedOut() {
 }
 
 void SearchControllerImplNew::OnBurnInPeriodElapsed() {
-  ranker_->OnBurnInPeriodElapsed();
+  ranker_manager_->OnBurnInPeriodElapsed();
   Publish();
 }
 
@@ -181,12 +188,16 @@ void SearchControllerImplNew::InvokeResultAction(
     return;
 
   if (action == ash::SearchResultActionType::kRemove) {
-    ranker_->Remove(result);
+    ranker_manager_->Remove(result);
     // We need to update the currently published results to not include the
     // just-removed result. Manually set the result as filtered and re-publish.
     result->scoring().filter = true;
     Publish();
   }
+}
+
+AppSearchDataSource* SearchControllerImplNew::GetAppSearchDataSource() {
+  return app_search_data_source_.get();
 }
 
 size_t SearchControllerImplNew::AddGroup(size_t max_results) {
@@ -197,13 +208,34 @@ size_t SearchControllerImplNew::AddGroup(size_t max_results) {
 void SearchControllerImplNew::AddProvider(
     size_t group_id,
     std::unique_ptr<SearchProvider> provider) {
-  if (provider->ShouldBlockZeroState())
+  if (ash::IsZeroStateResultType(provider->ResultType()))
     ++total_zero_state_blockers_;
   provider->set_controller(this);
   provider->set_result_changed_callback(
       base::BindRepeating(&SearchControllerImplNew::OnResultsChangedWithType,
                           base::Unretained(this), provider->ResultType()));
   providers_.emplace_back(std::move(provider));
+}
+
+size_t SearchControllerImplNew::ReplaceProvidersForResultTypeForTest(
+    ash::AppListSearchResultType result_type,
+    std::unique_ptr<SearchProvider> new_provider) {
+  DCHECK_EQ(result_type, new_provider->ResultType());
+
+  size_t removed_providers = base::EraseIf(
+      providers_, [&](const std::unique_ptr<SearchProvider>& provider) {
+        return provider->ResultType() == result_type;
+      });
+  if (!removed_providers)
+    return 0u;
+  DCHECK_EQ(1u, removed_providers);
+
+  if (ash::IsZeroStateResultType(result_type))
+    total_zero_state_blockers_ -= removed_providers;
+
+  // Note that `group_id` is not used by this search controller implementation.
+  AddProvider(/*group_id=*/-1, std::move(new_provider));
+  return removed_providers;
 }
 
 void SearchControllerImplNew::SetResults(const SearchProvider* provider,
@@ -240,7 +272,7 @@ void SearchControllerImplNew::SetZeroStateResults(
     const SearchProvider* provider) {
   Rank(provider->ResultType());
 
-  if (provider->ShouldBlockZeroState())
+  if (ash::IsZeroStateResultType(provider->ResultType()))
     ++returned_zero_state_blockers_;
 
   if (!on_zero_state_done_) {
@@ -256,7 +288,7 @@ void SearchControllerImplNew::SetZeroStateResults(
 }
 
 void SearchControllerImplNew::Rank(ProviderType provider_type) {
-  DCHECK(ranker_);
+  DCHECK(ranker_manager_);
   if (results_.empty()) {
     // Happens if the burn-in period has elapsed without any results having been
     // received from providers. Return early.
@@ -268,8 +300,8 @@ void SearchControllerImplNew::Rank(ProviderType provider_type) {
 
   // Update ranking of all results and categories for this provider. This
   // ordering is important, as result scores may affect category scores.
-  ranker_->UpdateResultRanks(results_, provider_type);
-  ranker_->UpdateCategoryRanks(results_, categories_, provider_type);
+  ranker_manager_->UpdateResultRanks(results_, provider_type);
+  ranker_manager_->UpdateCategoryRanks(results_, categories_, provider_type);
 }
 
 void SearchControllerImplNew::Publish() {
@@ -389,7 +421,7 @@ void SearchControllerImplNew::Train(LaunchData&& launch_data) {
                      base::HashMetricName(base::UTF16ToUTF8(last_query_)))}});
 
   // Train all search result ranking models.
-  ranker_->Train(launch_data);
+  ranker_manager_->Train(launch_data);
 }
 
 void SearchControllerImplNew::AppListClosing() {

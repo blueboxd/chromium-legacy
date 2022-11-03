@@ -18,7 +18,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/burnin_controller.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
-#include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
+#include "chrome/browser/ui/app_list/search/ranking/ranker_manager.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -62,9 +62,13 @@ class SearchControllerImplNew : public SearchController {
   void OpenResult(ChromeSearchResult* result, int event_flags) override;
   void InvokeResultAction(ChromeSearchResult* result,
                           ash::SearchResultActionType action) override;
+  AppSearchDataSource* GetAppSearchDataSource() override;
   size_t AddGroup(size_t max_results) override;
   void AddProvider(size_t group_id,
                    std::unique_ptr<SearchProvider> provider) override;
+  size_t ReplaceProvidersForResultTypeForTest(
+      ash::AppListSearchResultType result_type,
+      std::unique_ptr<SearchProvider> provider) override;
   void SetResults(const SearchProvider* provider, Results results) override;
   void Publish() override;
   ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
@@ -80,9 +84,9 @@ class SearchControllerImplNew : public SearchController {
   base::Time session_start() override;
   void disable_ranking_for_test() override;
 
-  void set_ranker_delegate_for_test(
-      std::unique_ptr<RankerDelegate> ranker_delegate) {
-    ranker_ = std::move(ranker_delegate);
+  void set_ranker_manager_for_test(
+      std::unique_ptr<RankerManager> ranker_manager) {
+    ranker_manager_ = std::move(ranker_manager);
   }
 
  private:
@@ -131,7 +135,7 @@ class SearchControllerImplNew : public SearchController {
   std::string last_launched_app_id_;
 
   // Top-level result ranker.
-  std::unique_ptr<RankerDelegate> ranker_;
+  std::unique_ptr<RankerManager> ranker_manager_;
 
   bool disable_ranking_for_test_ = false;
 
@@ -145,6 +149,7 @@ class SearchControllerImplNew : public SearchController {
   ResultsChangedCallback results_changed_callback_;
 
   std::unique_ptr<SearchMetricsManager> metrics_manager_;
+  std::unique_ptr<AppSearchDataSource> app_search_data_source_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   AppListModelUpdater* const model_updater_;

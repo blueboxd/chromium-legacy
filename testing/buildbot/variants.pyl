@@ -22,16 +22,16 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5394.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v109.0.5398.0/test_ash_chrome',
     ],
-    'description': 'Run with ash-chrome version 109.0.5394.0',
+    'description': 'Run with ash-chrome version 109.0.5398.0',
     'identifier': 'Lacros version skew testing ash canary',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v109.0.5394.0',
-          'revision': 'version:109.0.5394.0',
+          'location': 'lacros_version_skew_tests_v109.0.5398.0',
+          'revision': 'version:109.0.5398.0',
         },
       ],
     },
@@ -99,12 +99,13 @@
       'mac_mini_intel_gpu_stable',
     ],
   },
-  'MAC_RETINA_AMD_GPU_STABLE': {
-    'identifier': '1002:6821',
-    'mixins': [
-      'mac_retina_amd_gpu_stable',
-    ],
-  },
+  # Not enough capacity on Mac AMD https://crbug.com/1380184.
+  # 'MAC_RETINA_AMD_GPU_STABLE': {
+  #   'identifier': '1002:6821',
+  #   'mixins': [
+  #     'mac_retina_amd_gpu_stable',
+  #   ],
+  # },
   'MAC_RETINA_NVIDIA_GPU_STABLE': {
     'identifier': '10de:0fe9',
     'mixins': [
@@ -537,6 +538,42 @@
       '--test-apk-as-instant',
     ],
   },
+  'CROS_DEDEDE_RELEASE_LKGM': {
+    'skylab': {
+      'cros_board': 'dedede',
+      'cros_chrome_version': '109.0.5367.0',
+      'cros_img': 'dedede-release/R109-15201.0.0',
+    },
+    'enabled': True,
+    'identifier': 'DEDEDE_RELEASE_LKGM',
+  },
+  'CROS_DEDEDE_RELEASE_DEV': {
+    'skylab': {
+      'cros_board': 'dedede',
+      'cros_chrome_version': '108.0.5359.12',
+      'cros_img': 'dedede-release/R108-15183.14.0',
+    },
+    'enabled': True,
+    'identifier': 'DEDEDE_RELEASE_DEV',
+  },
+  'CROS_DEDEDE_RELEASE_BETA': {
+    'skylab': {
+      'cros_board': 'dedede',
+      'cros_chrome_version': '107.0.5304.51',
+      'cros_img': 'dedede-release/R107-15117.66.0',
+    },
+    'enabled': True,
+    'identifier': 'DEDEDE_RELEASE_BETA',
+  },
+  'CROS_DEDEDE_RELEASE_STABLE': {
+    'skylab': {
+      'cros_board': 'dedede',
+      'cros_chrome_version': '107.0.5304.92',
+      'cros_img': 'dedede-release/R107-15117.86.0',
+    },
+    'enabled': True,
+    'identifier': 'DEDEDE_RELEASE_STABLE',
+  },
   'CROS_EVE_RELEASE_LKGM': {
     'skylab': {
       'cros_board': 'eve',
@@ -724,8 +761,8 @@
   'CROS_OCTOPUS_RELEASE_STABLE': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '106.0.5249.112',
-      'cros_img': 'octopus-release/R106-15054.98.0',
+      'cros_chrome_version': '107.0.5304.92',
+      'cros_img': 'octopus-release/R107-15117.86.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_STABLE',

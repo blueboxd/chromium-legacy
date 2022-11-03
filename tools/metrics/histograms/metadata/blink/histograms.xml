@@ -952,6 +952,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.FedCm.SignUp.PrivacyPolicyClicked" enum="BooleanHit"
+    expires_after="M120">
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Recorded each time that the privacy-policy link in the FedCM prompt is
+    clicked.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.SignUp.TermsOfServiceClicked" enum="BooleanHit"
+    expires_after="M120">
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Recorded each time that the terms-of-service link in the FedCM prompt is
+    clicked.
+  </summary>
+</histogram>
+
 <histogram name="Blink.FedCm.Status.Csp" enum="FedCmCspStatus"
     expires_after="M120">
   <owner>cbiesinger@chromium.org</owner>
@@ -1125,7 +1145,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Fetch.ReducedUserAgent" enum="Boolean"
-    expires_after="M110">
+    expires_after="M111">
   <owner>miketaylr@chromium.org</owner>
   <owner>victortan@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
@@ -1925,7 +1945,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Blink.LocalFrameRoot.DidReachFirstContentfulPaint"
+<histogram name="Blink.LocalFrameRoot.DidReachFirstContentfulPaint"
     units="Boolean" expires_after="2023-03-19">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>

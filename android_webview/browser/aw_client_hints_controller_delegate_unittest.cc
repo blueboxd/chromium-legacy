@@ -39,15 +39,19 @@ TEST_F(AwClientHintsControllerDelegateTest, GetAllowedClientHintsFromSource) {
 }
 
 TEST_F(AwClientHintsControllerDelegateTest, IsJavaScriptAllowed) {
-  // TODO(crbug.com/921655): Actually test function once implemented.
   EXPECT_FALSE(client_hints_controller_delegate_->IsJavaScriptAllowed(GURL(""),
                                                                       nullptr));
+  EXPECT_FALSE(client_hints_controller_delegate_->IsJavaScriptAllowed(
+      GURL("https://example.com/"), nullptr));
+  // TODO(crbug.com/921655): Add integration test when the rest is implemented.
 }
 
 TEST_F(AwClientHintsControllerDelegateTest, AreThirdPartyCookiesBlocked) {
-  // TODO(crbug.com/921655): Actually test function once implemented.
-  EXPECT_FALSE(
-      client_hints_controller_delegate_->AreThirdPartyCookiesBlocked(GURL("")));
+  EXPECT_TRUE(client_hints_controller_delegate_->AreThirdPartyCookiesBlocked(
+      GURL(""), nullptr));
+  EXPECT_TRUE(client_hints_controller_delegate_->AreThirdPartyCookiesBlocked(
+      GURL("https://example.com"), nullptr));
+  // TODO(crbug.com/921655): Add integration test when the rest is implemented.
 }
 
 TEST_F(AwClientHintsControllerDelegateTest, GetUserAgentMetadata) {

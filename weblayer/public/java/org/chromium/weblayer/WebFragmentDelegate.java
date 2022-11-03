@@ -13,11 +13,8 @@ import android.os.RemoteException;
 import android.view.SurfaceControlViewHost;
 import android.view.WindowManager;
 
-import org.chromium.webengine.interfaces.IBooleanCallback;
 import org.chromium.webengine.interfaces.IFragmentParams;
-import org.chromium.webengine.interfaces.ITabCallback;
 import org.chromium.webengine.interfaces.ITabListObserverDelegate;
-import org.chromium.webengine.interfaces.ITabParams;
 import org.chromium.webengine.interfaces.IWebFragmentDelegate;
 import org.chromium.webengine.interfaces.IWebFragmentDelegateClient;
 import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
@@ -87,7 +84,7 @@ class WebFragmentDelegate extends IWebFragmentDelegate.Stub {
         mSurfaceControlViewHost =
                 new SurfaceControlViewHost(mContext, window.getDefaultDisplay(), hostToken);
 
-        mEventHandler.getBrowser().setSurfaceControlViewHost(mSurfaceControlViewHost);
+        mEventHandler.setSurfaceControlViewHost(mSurfaceControlViewHost);
         try {
             mClient.onSurfacePackageReady(mSurfaceControlViewHost.getSurfacePackage());
         } catch (RemoteException e) {
@@ -99,7 +96,7 @@ class WebFragmentDelegate extends IWebFragmentDelegate.Stub {
         mHandler.post(() -> {
             try {
                 mClient.onContentViewRenderViewReady(
-                        ObjectWrapper.wrap(mEventHandler.getBrowser().getContentViewRenderView()));
+                        ObjectWrapper.wrap(mEventHandler.getContentViewRenderView()));
             } catch (RemoteException e) {
             }
         });
@@ -110,22 +107,6 @@ class WebFragmentDelegate extends IWebFragmentDelegate.Stub {
         mHandler.post(() -> {
             if (mSurfaceControlViewHost != null) {
                 mSurfaceControlViewHost.relayout(width, height);
-            }
-        });
-    }
-
-    @Override
-    public void getActiveTab(ITabCallback tabCallback) {
-        mHandler.post(() -> {
-            Tab activeTab = mEventHandler.getBrowser().getActiveTab();
-            try {
-                if (activeTab != null) {
-                    ITabParams tabParams = TabParams.buildParcelable(activeTab);
-                    tabCallback.onResult(tabParams);
-                } else {
-                    tabCallback.onResult(null);
-                }
-            } catch (RemoteException e) {
             }
         });
     }
@@ -180,6 +161,7 @@ class WebFragmentDelegate extends IWebFragmentDelegate.Stub {
 
             try {
                 mClient.onStarted(instanceState);
+                mClient.onTabManagerReady(new TabManagerDelegate(mEventHandler.getBrowser()));
             } catch (RemoteException e) {
             }
         });
@@ -203,28 +185,5 @@ class WebFragmentDelegate extends IWebFragmentDelegate.Stub {
     @Override
     public void setTabListObserverDelegate(ITabListObserverDelegate browserObserverDelegate) {
         mTabListDelegate.setObserver(browserObserverDelegate);
-    }
-
-    @Override
-    public void tryNavigateBack(IBooleanCallback callback) {
-        mHandler.post(() -> {
-            mEventHandler.getBrowser().tryNavigateBack(didNavigate -> {
-                try {
-                    callback.onResult(didNavigate);
-                } catch (RemoteException e) {
-                }
-            });
-        });
-    }
-
-    @Override
-    public void createTab(ITabCallback callback) {
-        mHandler.post(() -> {
-            Tab newTab = mEventHandler.getBrowser().createTab();
-            try {
-                callback.onResult(TabParams.buildParcelable(newTab));
-            } catch (RemoteException e) {
-            }
-        });
     }
 }

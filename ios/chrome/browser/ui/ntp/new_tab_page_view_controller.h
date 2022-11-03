@@ -46,11 +46,7 @@
 // controller.
 @property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
 
-// Identity disc shown in the NTP.
-// TODO(crbug.com/1170995): Remove once the Feed header properly supports
-// ContentSuggestions.
-@property(nonatomic, weak) UIButton* identityDiscButton;
-
+// The view controller representing the content suggestions.
 @property(nonatomic, strong)
     ContentSuggestionsViewController* contentSuggestionsViewController;
 
@@ -134,6 +130,10 @@
 
 // Updates the scroll position to account for the feed promo being removed.
 - (void)updateScrollPositionForFeedTopSectionClosed;
+
+// Forces the elements that stick to the top when scrolling (eg. omnibox, feed
+// header) to update for the current scroll position.
+- (void)updateStickyElements;
 
 @end
 

@@ -19,13 +19,13 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -305,6 +305,8 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
 
   switch (result) {
     case StorableSource::Result::kSuccess:
+    // TODO(linnan): Consider displaying source noised in internals UI.
+    case StorableSource::Result::kSuccessNoised:
       return;
     case StorableSource::Result::kInternalError:
       attributability = Attributability::kInternalError;

@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -232,13 +232,6 @@ try_.builder(
         "ci/chromeos-kevin-rel",
     ],
     main_list_view = "try",
-    tryjob = try_.job(
-        location_filters = [
-            "build/chromeos/.+",
-            "build/config/chromeos/.*",
-            "chromeos/CHROMEOS_LKGM",
-        ],
-    ),
     execution_timeout = 6 * time.hour,
 )
 
@@ -343,6 +336,8 @@ try_.builder(
             "chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
         ],
     ),
+    goma_backend = None,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
 )
 
 # RTS builders

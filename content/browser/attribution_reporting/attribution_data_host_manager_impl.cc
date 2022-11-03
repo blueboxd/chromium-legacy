@@ -15,13 +15,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
 #include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_header_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -109,15 +109,13 @@ absl::optional<std::vector<AttributionAggregatableTriggerData>> FromMojo(
   aggregatable_trigger_data.reserve(mojo.size());
 
   for (auto& aggregatable_trigger : mojo) {
-    absl::optional<AttributionFilterData> filters =
-        AttributionFilterData::FromTriggerFilterValues(
-            std::move(aggregatable_trigger->filters->filter_values));
+    absl::optional<AttributionFilters> filters = AttributionFilters::Create(
+        std::move(aggregatable_trigger->filters->filter_values));
     if (!filters.has_value())
       return absl::nullopt;
 
-    absl::optional<AttributionFilterData> not_filters =
-        AttributionFilterData::FromTriggerFilterValues(
-            std::move(aggregatable_trigger->not_filters->filter_values));
+    absl::optional<AttributionFilters> not_filters = AttributionFilters::Create(
+        std::move(aggregatable_trigger->not_filters->filter_values));
     if (!not_filters.has_value())
       return absl::nullopt;
 
@@ -394,7 +392,7 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
   // renderer. All of the validation here is also performed renderer-side.
 
   absl::optional<AttributionFilterData> filter_data =
-      AttributionFilterData::FromSourceFilterValues(
+      AttributionFilterData::Create(
           std::move(data->filter_data->filter_values));
   if (!filter_data.has_value()) {
     RecordSourceDataHandleStatus(DataHandleStatus::kInvalidData);
@@ -415,16 +413,14 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
   context.num_data_registered++;
 
   StorableSource storable_source(
-      CommonSourceInfo(
-          data->source_event_id, context.context_origin,
-          std::move(data->destination), std::move(data->reporting_origin),
-          source_time,
-          CommonSourceInfo::GetExpiryTime(data->expiry, source_time,
-                                          context.source_type),
-          context.source_type, data->priority, std::move(*filter_data),
-          data->debug_key ? absl::make_optional(data->debug_key->value)
-                          : absl::nullopt,
-          std::move(*aggregation_keys)),
+      CommonSourceInfo(data->source_event_id, context.context_origin,
+                       std::move(data->destination),
+                       std::move(data->reporting_origin), source_time,
+                       CommonSourceInfo::GetExpiryTime(
+                           data->expiry, source_time, context.source_type),
+                       context.source_type, data->priority,
+                       std::move(*filter_data), data->debug_key,
+                       std::move(*aggregation_keys)),
       context.is_within_fenced_frame, data->debug_reporting);
 
   attribution_manager_->HandleSource(std::move(storable_source));
@@ -462,18 +458,16 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
     context.registration_type = RegistrationType::kTrigger;
   }
 
-  absl::optional<AttributionFilterData> filters =
-      AttributionFilterData::FromTriggerFilterValues(
-          std::move(data->filters->filter_values));
+  absl::optional<AttributionFilters> filters =
+      AttributionFilters::Create(std::move(data->filters->filter_values));
   if (!filters.has_value()) {
     RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
     mojo::ReportBadMessage("AttributionDataHost: Invalid top-level filters.");
     return;
   }
 
-  absl::optional<AttributionFilterData> not_filters =
-      AttributionFilterData::FromTriggerFilterValues(
-          std::move(data->not_filters->filter_values));
+  absl::optional<AttributionFilters> not_filters =
+      AttributionFilters::Create(std::move(data->not_filters->filter_values));
   if (!not_filters.has_value()) {
     RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
     mojo::ReportBadMessage(
@@ -491,8 +485,8 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
   event_triggers.reserve(data->event_triggers.size());
 
   for (auto& event_trigger : data->event_triggers) {
-    absl::optional<AttributionFilterData> event_filters =
-        AttributionFilterData::FromTriggerFilterValues(
+    absl::optional<AttributionFilters> event_filters =
+        AttributionFilters::Create(
             std::move(event_trigger->filters->filter_values));
     if (!event_filters.has_value()) {
       RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
@@ -501,8 +495,8 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
       return;
     }
 
-    absl::optional<AttributionFilterData> not_event_filters =
-        AttributionFilterData::FromTriggerFilterValues(
+    absl::optional<AttributionFilters> not_event_filters =
+        AttributionFilters::Create(
             std::move(event_trigger->not_filters->filter_values));
     if (!not_event_filters.has_value()) {
       RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
@@ -512,10 +506,7 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
     }
 
     event_triggers.emplace_back(
-        event_trigger->data, event_trigger->priority,
-        event_trigger->dedup_key
-            ? absl::make_optional(event_trigger->dedup_key->value)
-            : absl::nullopt,
+        event_trigger->data, event_trigger->priority, event_trigger->dedup_key,
         std::move(*event_filters), std::move(*not_event_filters));
   }
 
@@ -545,12 +536,7 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
   AttributionTrigger trigger(
       /*destination_origin=*/context.context_origin,
       std::move(data->reporting_origin), std::move(*filters),
-      std::move(*not_filters),
-      data->debug_key ? absl::make_optional(data->debug_key->value)
-                      : absl::nullopt,
-      data->aggregatable_dedup_key
-          ? absl::make_optional(data->aggregatable_dedup_key->value)
-          : absl::nullopt,
+      std::move(*not_filters), data->debug_key, data->aggregatable_dedup_key,
       std::move(event_triggers), std::move(*aggregatable_trigger_data),
       std::move(*aggregatable_values));
 

@@ -8,6 +8,7 @@
 #include "content/public/browser/webui_config_map.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
@@ -20,9 +21,20 @@
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/browser/ui/webui/ash/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/ash/drive_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/human_presence_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
+#include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/ash/network_ui.h"
 #include "chrome/browser/ui/webui/ash/notification_tester/notification_tester_ui.h"
+#include "chrome/browser/ui/webui/ash/office_fallback/office_fallback_ui.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
+#include "chrome/browser/ui/webui/ash/power_ui.h"
+#include "chrome/browser/ui/webui/ash/set_time_ui.h"
+#include "chrome/browser/ui/webui/ash/slow_trace_ui.h"
+#include "chrome/browser/ui/webui/ash/slow_ui.h"
+#include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
+#include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
 #if !defined(OFFICIAL_BUILD)
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
 #endif  // !defined(OFFICIAL_BUILD)
@@ -64,10 +76,24 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<ash::CrostiniUpgraderUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::CryptohomeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::DriveInternalsUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::HumanPresenceInternalsUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::InternetConfigDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::InternetDetailDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::NetworkUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::NotificationTesterUIConfig>());
+  map.AddWebUIConfig(
+      std::make_unique<ash::office_fallback::OfficeFallbackUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::settings::OSSettingsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::ParentAccessUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::PowerUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::SetTimeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::ShortcutCustomizationAppUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::SlowTraceControllerConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::SlowUIConfig>());
+  map.AddWebUIConfig(
+      std::make_unique<ash::smb_dialog::SmbCredentialsDialogUIConfig>());
+  map.AddWebUIConfig(
+      std::make_unique<ash::smb_dialog::SmbShareDialogUIConfig>());
 #if !defined(OFFICIAL_BUILD)
   map.AddWebUIConfig(std::make_unique<ash::SampleSystemWebAppUIConfig>());
 #endif  // !defined(OFFICIAL_BUILD)

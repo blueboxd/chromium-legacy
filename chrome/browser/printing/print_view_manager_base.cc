@@ -551,13 +551,21 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
         queue_->CreatePrinterQuery(render_frame_host->GetGlobalId());
   }
 
+  // Sometimes it is desired to get the PDF settings as opposed to the settings
+  // of the default system print driver.
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+  bool want_pdf_settings = snapshotting_for_content_analysis_;
+#else
+  bool want_pdf_settings = false;
+#endif
+
   // Loads default settings. This is asynchronous, only the mojo message sender
   // will hang until the settings are retrieved.
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetDefaultSettings(
       base::BindOnce(&OnDidGetDefaultPrintSettings, queue_,
                      std::move(printer_query), std::move(callback_wrapper)),
-      !render_process_host->IsPdf());
+      !render_process_host->IsPdf(), want_pdf_settings);
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -756,6 +764,11 @@ void PrintViewManagerBase::OnJobDone() {
 }
 
 void PrintViewManagerBase::OnFailed() {
+#if !BUILDFLAG(IS_ANDROID)  // Android does not implement this function.
+  if (!canceling_job_)
+    ShowPrintErrorDialog();
+#endif
+
   TerminatePrintJob(true);
 }
 
@@ -863,6 +876,8 @@ void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
     return;
 
   if (cancel) {
+    canceling_job_ = true;
+
     // We don't need the metafile data anymore because the printing is canceled.
     print_job_->Cancel();
     quit_inner_loop_.Reset();

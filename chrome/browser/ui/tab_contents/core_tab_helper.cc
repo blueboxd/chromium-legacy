@@ -42,6 +42,8 @@
 #include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/webp_codec.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
@@ -189,14 +191,29 @@ void CoreTabHelper::SearchByImageImpl(
   TemplateURLRef::SearchTermsArgs search_args =
       TemplateURLRef::SearchTermsArgs(std::u16string());
 
-  // Get the front and end of the image bytes in order to store them in the
-  // search_args to be sent as part of the PostContent in the request.
-  size_t image_bytes_size = image.As1xPNGBytes()->size();
-  const unsigned char* image_bytes_begin = image.As1xPNGBytes()->front();
-  const unsigned char* image_bytes_end = image_bytes_begin + image_bytes_size;
+  std::vector<unsigned char> data;
+  if (lens::features::IsWebpForRegionSearchEnabled() &&
+      gfx::WebpCodec::Encode(image.AsBitmap(),
+                             lens::features::GetRegionSearchEncodingQuality(),
+                             &data)) {
+    search_args.image_thumbnail_content.assign(data.begin(), data.end());
+  } else if (lens::features::IsJpegForRegionSearchEnabled() &&
+             gfx::JPEGCodec::Encode(
+                 image.AsBitmap(),
+                 lens::features::GetRegionSearchEncodingQuality(), &data)) {
+    search_args.image_thumbnail_content.assign(data.begin(), data.end());
+  } else {
+    // If the WebP/JPEG encoding fails, fall back to PNG.
+    // Get the front and end of the image bytes in order to store them in the
+    // search_args to be sent as part of the PostContent in the request.
+    size_t image_bytes_size = image.As1xPNGBytes()->size();
+    const unsigned char* image_bytes_begin = image.As1xPNGBytes()->front();
+    const unsigned char* image_bytes_end = image_bytes_begin + image_bytes_size;
 
-  search_args.image_thumbnail_content.assign(image_bytes_begin,
-                                             image_bytes_end);
+    search_args.image_thumbnail_content.assign(image_bytes_begin,
+                                               image_bytes_end);
+  }
+
   search_args.image_original_size = image_original_size;
   search_args.additional_query_params = additional_query_params;
 
@@ -229,6 +246,7 @@ void CoreTabHelper::SearchByImageImpl(
       thumbnail_min_size, gfx::Size(thumbnail_max_width, thumbnail_max_height),
       lens::features::GetSendImagesAsPng() ? chrome::mojom::ImageFormat::PNG
                                            : chrome::mojom::ImageFormat::JPEG,
+      chrome::mojom::kDefaultQuality,
       base::BindOnce(&CoreTabHelper::DoSearchByImage,
                      weak_factory_.GetWeakPtr(), std::move(chrome_render_frame),
                      src_url, additional_query_params, use_side_panel));

@@ -221,9 +221,7 @@ class AppListViewTest : public views::ViewsTestBase {
   }
 
  protected:
-  void Show(bool is_side_shelf = false) {
-    view_->Show(AppListViewState::kFullscreenAllApps, is_side_shelf);
-  }
+  void Show() { view_->Show(AppListViewState::kFullscreenAllApps); }
 
   void Initialize(bool is_tablet_mode) {
     delegate_ = std::make_unique<AppListTestViewDelegate>();
@@ -507,17 +505,6 @@ class AppListViewTest : public views::ViewsTestBase {
   keyboard::KeyboardUIController keyboard_ui_controller_;
 };
 
-// Tests for the legacy "peeking" clamshell launcher. These can be deleted when
-// ProductivityLauncher is the default.
-class AppListViewPeekingTest : public AppListViewTest {
- public:
-  AppListViewPeekingTest() {
-    feature_list_.InitAndDisableFeature(features::kProductivityLauncher);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Tests app list view layout for different screen sizes.
 class AppListViewScalableLayoutTest : public AppListViewTest {
  public:
@@ -607,9 +594,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     view_->SetState(state);
   }
 
-  void Show() {
-    view_->Show(AppListViewState::kFullscreenAllApps, /*is_side_shelf=*/false);
-  }
+  void Show() { view_->Show(AppListViewState::kFullscreenAllApps); }
 
   SearchResultListView* GetSearchResultListView() {
     return contents_view()
@@ -880,17 +865,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 };
 
 INSTANTIATE_TEST_SUITE_P(Rtl, AppListViewFocusTest, testing::Bool());
-
-// Tests for the legacy "peeking" clamshell launcher. These can be deleted when
-// ProductivityLauncher is the default.
-class AppListViewPeekingFocusTest : public AppListViewFocusTest {
- public:
-  AppListViewPeekingFocusTest() {
-    feature_list_.InitAndDisableFeature(features::kProductivityLauncher);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
 
 // Tests that the initial focus is on search box.
 TEST_F(AppListViewFocusTest, InitialFocus) {
@@ -1168,8 +1142,7 @@ TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
 
 // Tests that search box becomes focused when it is activated.
 TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
-  app_list_view()->Show(AppListViewState::kFullscreenAllApps,
-                        /*is_side_shelf=*/false);
+  app_list_view()->Show(AppListViewState::kFullscreenAllApps);
 
   // Press tab several times to move focus out of the search box.
   SimulateKeyPress(ui::VKEY_TAB, false);
@@ -1318,15 +1291,6 @@ TEST_F(AppListViewFocusTest, SelectionGoesIntoFolderIfSelected) {
   EXPECT_EQ(folder_item_view(), focused_view());
 }
 
-// Tests that opening the app list opens in fullscreen mode by default.
-TEST_F(AppListViewPeekingTest, ShowFullscreenByDefault) {
-  Initialize(false /*is_tablet_mode*/);
-
-  Show();
-
-  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-}
-
 // Tests that in tablet mode, the app list opens in fullscreen by default.
 TEST_F(AppListViewTest, ShowFullscreenWhenInTabletMode) {
   Initialize(/*is_tablet_mode=*/true);
@@ -1336,23 +1300,12 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInTabletMode) {
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
-// Tests that setting empty text in the search box does not change the state.
-TEST_F(AppListViewPeekingTest, EmptySearchTextStaysAtFullscreenAllApps) {
-  Initialize(false /*is_tablet_mode*/);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(std::u16string());
-
-  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-}
-
 // Tests that typing when in fullscreen changes the state to fullscreen search.
-TEST_F(AppListViewPeekingTest, TypingFullscreenToFullscreenSearch) {
-  Initialize(false /*is_tablet_mode*/);
+TEST_F(AppListViewTest, TypingFullscreenToFullscreenSearch) {
+  Initialize(true /*is_tablet_mode*/);
   Show();
 
+  view_->SetState(AppListViewState::kFullscreenAllApps);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
@@ -1376,17 +1329,6 @@ TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
   // space query.
   SetTextInSearchBox(u" ");
   EXPECT_EQ(ash::AppListViewState::kFullscreenSearch, view_->app_list_state());
-}
-
-// Tests that pressing escape when in fullscreen side-shelf closes the app list.
-TEST_F(AppListViewPeekingTest, EscapeKeySideShelfFullscreenToClosed) {
-  // Put into fullscreen by using side-shelf.
-  Initialize(false /*is_tablet_mode*/);
-
-  Show(/*is_side_shelf=*/true);
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(1, delegate_->dismiss_count());
 }
 
 // Tests that pressing escape when in tablet mode keeps app list in fullscreen.
@@ -1416,7 +1358,7 @@ TEST_F(AppListViewTest, EscapeKeySideShelfSearchToFullscreen) {
   // Put into fullscreen using side-shelf.
   Initialize(/*is_tablet_mode=*/true);
 
-  Show(true /*is_side_shelf*/);
+  Show();
   SetTextInSearchBox(u"kitty");
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
@@ -1445,27 +1387,6 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
-// Tests that opening in fullscreen mode sets the correct height.
-TEST_F(AppListViewPeekingTest, OpenInFullscreenCorrectHeight) {
-  Initialize(false /*is_tablet_mode*/);
-
-  Show();
-  const int y = view_->GetWidget()->GetWindowBoundsInScreen().y();
-  ASSERT_EQ(0, y);
-}
-
-// Tests that AppListView::SetState succeeds when the state has been set to
-// CLOSED.
-TEST_F(AppListViewPeekingTest, SetStateFailsWhenClosing) {
-  Initialize(false /*is_tablet_mode*/);
-  Show();
-  view_->SetState(ash::AppListViewState::kClosed);
-
-  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-
-  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-}
-
 TEST_F(AppListViewTest, AppsGridViewVisibilityOnReopening) {
   Initialize(/*is_tablet_mode=*/true);
   Show();
@@ -1482,30 +1403,6 @@ TEST_F(AppListViewTest, AppsGridViewVisibilityOnReopening) {
 
 // Tests displaying the app list and performs a standard set of checks on its
 // top level views.
-TEST_F(AppListViewPeekingTest, DisplayTest) {
-  Initialize(/*is_tablet_mode=*/false);
-  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-
-  Show();
-
-  // |view_| bounds equal to the root window's size.
-  EXPECT_EQ("800x600", view_->bounds().size().ToString());
-
-  EXPECT_EQ(2, GetPaginationModel()->total_pages());
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-
-  // Checks on the main view.
-  AppListMainView* main_view = view_->app_list_main_view();
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
-
-  ash::AppListState expected = ash::AppListState::kStateApps;
-  EXPECT_TRUE(main_view->contents_view()->IsStateActive(expected));
-  EXPECT_EQ(expected, delegate_->GetCurrentAppListPage());
-}
-
-// As above above, but tests tablet mode with and without ProductivityLauncher.
 TEST_F(AppListViewTest, DisplayTest) {
   Initialize(/*is_tablet_mode=*/true);
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
@@ -1665,33 +1562,6 @@ TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
 
   // The wallpaper context menu should show.
   EXPECT_EQ(2, show_wallpaper_context_menu_count());
-  EXPECT_TRUE(view_->GetWidget()->IsVisible());
-}
-
-// Tests that context menus are not shown between app icons in clamshell mode.
-TEST_F(AppListViewPeekingTest, DontShowContextMenuBetweenAppsInClamshellMode) {
-  Initialize(false /* disable tablet mode */);
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-  Show();
-
-  // Tap between two apps in clamshell mode.
-  const gfx::Point middle = GetPointBetweenTwoApps();
-  ui::GestureEvent tap(middle.x(), middle.y(), 0, base::TimeTicks(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_TWO_FINGER_TAP));
-  view_->OnGestureEvent(&tap);
-
-  // The wallpaper menu should not show.
-  EXPECT_EQ(0, show_wallpaper_context_menu_count());
-  EXPECT_TRUE(view_->GetWidget()->IsVisible());
-
-  // Right click between two apps in clamshell mode.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, middle, middle,
-                             ui::EventTimeForNow(), ui::EF_RIGHT_MOUSE_BUTTON,
-                             ui::EF_RIGHT_MOUSE_BUTTON);
-  view_->OnMouseEvent(&mouse_event);
-
-  // The wallpaper menu should not show.
-  EXPECT_EQ(0, show_wallpaper_context_menu_count());
   EXPECT_TRUE(view_->GetWidget()->IsVisible());
 }
 

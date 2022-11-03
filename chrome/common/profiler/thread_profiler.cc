@@ -5,7 +5,6 @@
 #include "chrome/common/profiler/thread_profiler.h"
 
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -14,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/process/process.h"
 #include "base/profiler/profiler_buildflags.h"
@@ -23,7 +21,6 @@
 #include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
-#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/common/profiler/process_type.h"
@@ -37,6 +34,10 @@
 #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 #include "chrome/android/modules/stack_unwinder/public/module.h"
 #endif  // BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+
+#if BUILDFLAG(IS_MAC)
+#include "base/process/port_provider_mac.h"
+#endif  // BUILDFLAG(IS_MAC)
 
 using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
@@ -54,14 +55,7 @@ constexpr double kFractionOfExecutionTimeToSample = 0.02;
 
 bool IsCurrentProcessBackgrounded() {
 #if BUILDFLAG(IS_MAC)
-  // Port provider that returns the calling process's task port, ignoring its
-  // argument.
-  class SelfPortProvider : public base::PortProvider {
-    mach_port_t TaskForPid(base::ProcessHandle process) const override {
-      return mach_task_self();
-    }
-  };
-  SelfPortProvider provider;
+  base::SelfPortProvider provider;
   return base::Process::Current().IsProcessBackgrounded(&provider);
 #else   // BUILDFLAG(IS_MAC)
   return base::Process::Current().IsProcessBackgrounded();
@@ -130,24 +124,6 @@ base::TimeTicks PeriodicSamplingScheduler::Now() const {
   return base::TimeTicks::Now();
 }
 
-ChildThreadProfilerProxy::ChildThreadProfilerProxy(
-    base::WeakPtr<ThreadProfiler> profiler)
-    : profiler_(std::move(profiler)) {}
-
-ChildThreadProfilerProxy::~ChildThreadProfilerProxy() = default;
-ChildThreadProfilerProxy::ChildThreadProfilerProxy(
-    ChildThreadProfilerProxy&& other) = default;
-ChildThreadProfilerProxy& ChildThreadProfilerProxy::operator=(
-    ChildThreadProfilerProxy&& other) = default;
-
-void ChildThreadProfilerProxy::SetAuxUnwinderFactory(
-    const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>& factory) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (profiler_ != nullptr) {
-    profiler_->SetAuxUnwinderFactory(factory);
-  }
-}
-
 // Records the current unique id for the work item being executed in the target
 // thread's message loop.
 class ThreadProfiler::WorkIdRecorder : public metrics::WorkIdRecorder {
@@ -209,45 +185,19 @@ void ThreadProfiler::SetAuxUnwinderFactory(
 }
 
 // static
-void ThreadProfiler::StartOnChildThread(
-    const CallStackProfileParams::Thread thread) {
-  std::ignore = StartOnChildThreadWithProxy(thread);
-}
-
-namespace {
-
-// A helper class to allow a thread to own a `ThreadProfiler` while allowing
-// other threads to hold `WeakPtr`s to it.
-class OwningWeakPointerFactory {
- public:
-  explicit OwningWeakPointerFactory(std::unique_ptr<ThreadProfiler> profiler)
-      : profiler_(std::move(profiler)), factory_(profiler_.get()) {}
-
-  base::WeakPtr<ThreadProfiler> GetWeakPtr() { return factory_.GetWeakPtr(); }
-
- private:
-  std::unique_ptr<ThreadProfiler> profiler_;
-  base::WeakPtrFactory<ThreadProfiler> factory_;
-};
-
-}  // namespace
-
-// static
-ChildThreadProfilerProxy ThreadProfiler::StartOnChildThreadWithProxy(
-    const metrics::CallStackProfileParams::Thread thread) {
-  if (!ThreadProfilerConfiguration::Get()
-           ->IsProfilerEnabledForCurrentProcessAndThread(thread)) {
-    return ChildThreadProfilerProxy(nullptr);
-  }
-
+void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
   // The profiler object is stored in a SequenceLocalStorageSlot on child
   // threads to give it the same lifetime as the threads.
-  static base::SequenceLocalStorageSlot<OwningWeakPointerFactory>
+  static base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>
       child_thread_profiler_sequence_local_storage;
-  OwningWeakPointerFactory* factory =
-      child_thread_profiler_sequence_local_storage.emplace(base::WrapUnique(
-          new ThreadProfiler(thread, base::ThreadTaskRunnerHandle::Get())));
-  return ChildThreadProfilerProxy(factory->GetWeakPtr());
+
+  if (!ThreadProfilerConfiguration::Get()
+           ->IsProfilerEnabledForCurrentProcessAndThread(thread)) {
+    return;
+  }
+
+  child_thread_profiler_sequence_local_storage.emplace(
+      new ThreadProfiler(thread, base::ThreadTaskRunnerHandle::Get()));
 }
 
 // static

@@ -63,11 +63,11 @@ constexpr size_t kTimestampCacheSize = 128;
 absl::optional<VideoPixelFormat> GetPixelFormatForBitDepth(uint8_t bit_depth) {
   constexpr auto kSupportedBitDepthAndGfxFormats = base::MakeFixedFlatMap<
       uint8_t, gfx::BufferFormat>({
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
     {8u, gfx::BufferFormat::YUV_420_BIPLANAR}, {10u, gfx::BufferFormat::P010},
 #else
     {8u, gfx::BufferFormat::RGBX_8888},
-#endif  // defined(USE_OZONE)
+#endif  // BUILDFLAG(IS_OZONE)
   });
   if (!base::Contains(kSupportedBitDepthAndGfxFormats, bit_depth)) {
     VLOGF(1) << "Unsupported bit depth: " << base::strict_cast<int>(bit_depth);
@@ -805,9 +805,15 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
        .modifier = dummy_frame->layout().modifier()}};
 #endif  // BUILDFLAG(IS_LINUX)
 
+  const size_t num_codec_reference_frames = decoder_->GetNumReferenceFrames();
+  // Verify |num_codec_reference_frames| has a reasonable value. Anecdotally 16
+  // is the largest amount of reference frames seen, on an ITU-T H.264 test
+  // vector (CAPCM*1_Sand_E.h264).
+  CHECK_LE(num_codec_reference_frames, 32u);
+
   auto status_or_layout = client_->PickDecoderOutputFormat(
       candidates, decoder_visible_rect, decoder_natural_size,
-      output_visible_rect.size(), decoder_->GetRequiredNumOfPictures(),
+      output_visible_rect.size(), num_codec_reference_frames,
       /*use_protected=*/!!cdm_context_ref_,
       /*need_aux_frame_pool=*/true, std::move(allocator));
 

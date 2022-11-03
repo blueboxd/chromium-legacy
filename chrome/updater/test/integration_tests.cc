@@ -33,7 +33,6 @@
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test_scope.h"
-#include "chrome/updater/unittest_util.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -96,9 +95,6 @@ class IntegrationTest : public ::testing::Test {
                          true,    // enable_thread_id
                          true,    // enable_timestamp
                          false);  // enable_tickcount
-#if BUILDFLAG(IS_WIN)
-    ASSERT_TRUE(base::PathExists(updater_path_)) << updater_path_;
-#endif
     Clean();
     ExpectClean();
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
@@ -117,9 +113,6 @@ class IntegrationTest : public ::testing::Test {
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // TearDownTestService();
     Clean();
-#if BUILDFLAG(IS_WIN)
-    ASSERT_TRUE(base::PathExists(updater_path_)) << updater_path_;
-#endif
   }
 
   void CopyLog() { test_commands_->CopyLog(); }
@@ -343,7 +336,6 @@ class IntegrationTest : public ::testing::Test {
 
  private:
   base::test::TaskEnvironment environment_;
-  const base::FilePath updater_path_ = GetUpdaterTestPath();
 };
 
 // The project's position is that component builds are not portable outside of
@@ -413,7 +405,14 @@ TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
   ExpectVersionNotActive(kUpdaterVersion);
   ExpectVersionNotActive("0.0.0.0");
 
-  Uninstall();
+  // Do not call `Uninstall()` since the outdated updater uninstalled itself.
+  // Additional clean up is needed because of how this test is set up. After
+  // the outdated instance uninstalls, a few files are left in the product
+  // directory: prefs.json, updater.log, and overrides.json. These files are
+  // owned by the active instance of the updater but in this case there is
+  // no active instance left; therefore, explicit clean up is required.
+  PrintLog();
+  CopyLog();
   Clean();
 }
 
@@ -442,7 +441,6 @@ TEST_F(IntegrationTest, QualifyUpdater) {
   ExpectVersionActive(kUpdaterVersion);
 
   Uninstall();
-  Clean();
 }
 
 TEST_F(IntegrationTest, SelfUpdate) {
@@ -458,7 +456,6 @@ TEST_F(IntegrationTest, SelfUpdate) {
   ExpectAppVersion(kUpdaterAppId, next_version);
 
   Uninstall();
-  Clean();
 }
 
 TEST_F(IntegrationTest, ReportsActive) {
@@ -521,7 +518,6 @@ TEST_F(IntegrationTest, UpdateApp) {
   ExpectLastStarted();
 
   Uninstall();
-  Clean();
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -547,7 +543,6 @@ TEST_F(IntegrationTest, ForceInstallApp) {
   ExpectAppVersion(kAppId, v1);
 
   Uninstall();
-  Clean();
 }
 #endif  // BUILDFLAG(IS_WIN)
 

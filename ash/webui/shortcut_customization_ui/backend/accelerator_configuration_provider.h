@@ -10,14 +10,18 @@
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_event_observer.h"
 
 namespace ash {
 namespace shortcut_ui {
 
 class AcceleratorConfigurationProvider
-    : shortcut_customization::mojom::AcceleratorConfigurationProvider {
+    : public shortcut_customization::mojom::AcceleratorConfigurationProvider,
+      public ui::InputDeviceEventObserver {
  public:
   using AcceleratorConfigurationMap =
       base::flat_map<mojom::AcceleratorSource,
@@ -39,6 +43,14 @@ class AcceleratorConfigurationProvider
   void IsMutable(ash::mojom::AcceleratorSource source,
                  IsMutableCallback callback) override;
   void GetAccelerators(GetAcceleratorsCallback callback) override;
+  void AddObserver(mojo::PendingRemote<
+                   shortcut_customization::mojom::AcceleratorsUpdatedObserver>
+                       observer) override;
+  void GetAcceleratorLayoutInfos(
+      GetAcceleratorLayoutInfosCallback callback) override;
+
+  // ui::InputDeviceEventObserver:
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   void BindInterface(
       mojo::PendingReceiver<
@@ -53,16 +65,31 @@ class AcceleratorConfigurationProvider
 
   mojom::AcceleratorType GetAcceleratorType(ui::Accelerator accelerator);
 
+  void UpdateKeyboards();
+
+  void NotifyAcceleratorsUpdated();
+
+  AcceleratorConfigurationMap CreateConfigurationMap();
+
   std::vector<AcceleratorInfo> accelerator_infos_;
+
+  std::vector<mojom::AcceleratorLayoutInfoPtr> layout_infos_;
 
   std::map<AcceleratorActionId, std::vector<AcceleratorInfo>>
       id_to_accelerator_info_;
+
+  // Stores all connected keyboards.
+  std::vector<ui::InputDevice> connected_keyboards_;
 
   mojo::Receiver<
       shortcut_customization::mojom::AcceleratorConfigurationProvider>
       receiver_{this};
 
   AcceleratorConfiguration* ash_accelerator_configuration_;
+
+  mojo::Remote<shortcut_customization::mojom::AcceleratorsUpdatedObserver>
+      accelerators_updated_observers_;
+
   base::WeakPtrFactory<AcceleratorConfigurationProvider> weak_ptr_factory_{
       this};
 };

@@ -252,8 +252,7 @@ void SurfaceAudioProcessingSettings(MediaStreamSource* source) {
 template <typename T>
 std::vector<T> ToStdVector(const Vector<T>& format_vector) {
   std::vector<T> formats;
-  std::copy(format_vector.begin(), format_vector.end(),
-            std::back_inserter(formats));
+  base::ranges::copy(format_vector, std::back_inserter(formats));
   return formats;
 }
 
@@ -591,6 +590,9 @@ void UserMediaProcessor::SetupAudioInput() {
   StreamControls* const stream_controls =
       current_request_info_->stream_controls();
   stream_controls->exclude_system_audio = request->exclude_system_audio();
+
+  stream_controls->suppress_local_audio_playback =
+      request->suppress_local_audio_playback();
 
   TrackControls& audio_controls = stream_controls->audio;
   InitializeAudioTrackControls(request, &audio_controls);

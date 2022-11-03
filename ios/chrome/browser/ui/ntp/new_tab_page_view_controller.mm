@@ -86,6 +86,11 @@
 @property(nonatomic, strong)
     NSMutableArray<UIViewController*>* viewControllersAboveFeed;
 
+// Identity disc shown in the NTP.
+// TODO(crbug.com/1170995): Remove once the Feed header properly supports
+// ContentSuggestions.
+@property(nonatomic, weak) UIButton* identityDiscButton;
+
 @end
 
 @implementation NewTabPageViewController
@@ -145,6 +150,9 @@
   [self registerNotifications];
 
   [self layoutContentInParentCollectionView];
+
+  self.identityDiscButton = [self.headerController identityDiscButton];
+  DCHECK(self.identityDiscButton);
 }
 
 - (void)viewWillLayoutSubviews {
@@ -197,10 +205,6 @@
   // changed in another tab. This ensures that the sticky elements are correct
   // whenever an NTP reappears.
   [self handleStickyElementsForScrollPosition:[self scrollPosition] force:YES];
-  
-  if (![self isInitialOffsetFromSavedState]) {
-    [self setContentOffsetToTop];
-  }
 
   self.viewDidAppear = YES;
 }
@@ -508,6 +512,10 @@
   if (self.fakeOmniboxPinnedToTop) {
     [self setContentOffset:[self scrollPosition] + [self feedTopSectionHeight]];
   }
+}
+
+- (void)updateStickyElements {
+  [self handleStickyElementsForScrollPosition:[self scrollPosition] force:YES];
 }
 
 #pragma mark - UIScrollViewDelegate

@@ -22,6 +22,7 @@
 #endif
 
 namespace {
+
 // Maximum time allowed to fetch the seed before the request is cancelled.
 const base::TimeDelta kRequestTimeout = base::Seconds(2);
 
@@ -49,7 +50,7 @@ static BOOL g_seed_fetching_in_progress = NO;
 }
 
 // Whether the current binary should fetch Finch seed for experiment purpose.
-@property(nonatomic, readonly) BOOL fetchingEnabled;
+@property(nonatomic, assign) BOOL fetchingEnabled;
 
 // The URL of the variations server, including query parameters that identifies
 // the request initiator.
@@ -132,8 +133,8 @@ static BOOL g_seed_fetching_in_progress = NO;
 
     if (base::StartsWith(arg, url_switch)) {
       _variationsDomain = arg.substr(url_switch.size());
-      if (!_fetchingEnabled && !_variationsDomain.empty()) {
-        _fetchingEnabled = YES;
+      if (!self.fetchingEnabled && !_variationsDomain.empty()) {
+        self.fetchingEnabled = YES;
       }
     } else if (base::StartsWith(arg, channel_switch)) {
       _forcedChannel = arg.substr(channel_switch.size());
@@ -244,16 +245,14 @@ static BOOL g_seed_fetching_in_progress = NO;
 }
 
 // Notifies the delegate of the seed fetching result. Since the seed fetch
-// request is sent on the global queue instead of the main queue, this method
+// request is sent on the background instead of the main queue, this method
 // should explicitly dispatch the result back on the main queue.
 // TODO(crbug.com/3835653): Merge with `recordSeedFetchResult`.
 - (void)notifyDelegateSeedFetchResult:(BOOL)result {
-  if (self.delegate) {
-    __weak IOSChromeVariationsSeedFetcher* weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [weakSelf.delegate didFetchSeedSuccess:result];
-    });
-  }
+  __weak IOSChromeVariationsSeedFetcher* weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [weakSelf.delegate didFetchSeedSuccess:result];
+  });
 }
 
 // Invoked by the testing code to reset the fetching status after each test. DO

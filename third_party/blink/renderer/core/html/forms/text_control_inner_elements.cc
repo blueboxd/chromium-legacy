@@ -146,19 +146,19 @@ TextControlInnerEditorElement::CustomStyleForLayoutObject(
   // TODO(https://crbug.com/1101564): The custom inheritance done here means we
   // need to mark for style recalc inside style recalc. See the workaround in
   // LayoutTextControl::StyleDidChange.
-  text_block_style->SetDirection(start_style.Direction());
-  text_block_style->SetUnicodeBidi(start_style.GetUnicodeBidi());
+  text_block_style_builder.SetDirection(start_style.Direction());
+  text_block_style_builder.SetUnicodeBidi(start_style.GetUnicodeBidi());
   text_block_style_builder.SetUserSelect(EUserSelect::kText);
   text_block_style->SetUserModify(
       To<HTMLFormControlElement>(host)->IsDisabledOrReadOnly()
           ? EUserModify::kReadOnly
           : EUserModify::kReadWritePlaintextOnly);
-  text_block_style->SetDisplay(EDisplay::kBlock);
+  text_block_style_builder.SetDisplay(EDisplay::kBlock);
   text_block_style_builder.SetHasLineIfEmpty(true);
   text_block_style->SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
 
   if (!IsA<HTMLTextAreaElement>(host)) {
-    text_block_style->SetWhiteSpace(EWhiteSpace::kPre);
+    text_block_style_builder.SetWhiteSpace(EWhiteSpace::kPre);
     text_block_style_builder.SetOverflowWrap(EOverflowWrap::kNormal);
     text_block_style_builder.SetTextOverflow(
         ToTextControl(host)->ValueForTextOverflow());
@@ -191,22 +191,23 @@ TextControlInnerEditorElement::CustomStyleForLayoutObject(
     text_block_style_builder.SetOverflowX(EOverflow::kScroll);
     // overflow-y:visible doesn't work because overflow-x:scroll makes a layer.
     text_block_style_builder.SetOverflowY(EOverflow::kScroll);
-    scoped_refptr<ComputedStyle> no_scrollbar_style =
-        GetDocument().GetStyleResolver().CreateComputedStyle();
-    no_scrollbar_style->SetStyleType(kPseudoIdScrollbar);
-    no_scrollbar_style->SetDisplay(EDisplay::kNone);
+    ComputedStyleBuilder no_scrollbar_style_builder =
+        GetDocument().GetStyleResolver().CreateComputedStyleBuilder();
+    no_scrollbar_style_builder.SetStyleType(kPseudoIdScrollbar);
+    no_scrollbar_style_builder.SetDisplay(EDisplay::kNone);
     text_block_style->AddCachedPseudoElementStyle(
-        no_scrollbar_style, kPseudoIdScrollbar, g_null_atom);
+        no_scrollbar_style_builder.TakeStyle(), kPseudoIdScrollbar,
+        g_null_atom);
     text_block_style->SetHasPseudoElementStyle(kPseudoIdScrollbar);
 
-    text_block_style->SetDisplay(EDisplay::kFlowRoot);
+    text_block_style_builder.SetDisplay(EDisplay::kFlowRoot);
     if (parentNode()->IsShadowRoot())
       text_block_style_builder.SetAlignSelfBlockCenter(true);
   }
 
   // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
   // to apply only editing-related and alignment-related.
-  StyleAdjuster::AdjustStyleForEditing(*text_block_style);
+  StyleAdjuster::AdjustStyleForEditing(text_block_style_builder);
   if (!is_visible_)
     text_block_style_builder.SetOpacity(0);
 

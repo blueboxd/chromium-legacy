@@ -265,6 +265,7 @@ ts_files = [
   # Widgets.
   "file_manager/widgets/xf_base.ts",
   "file_manager/widgets/xf_breadcrumb.ts",
+  "file_manager/widgets/xf_conflict_dialog.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.ts",
   "file_manager/widgets/xf_nudge.ts",
   "file_manager/widgets/xf_select.ts",
@@ -276,6 +277,7 @@ ts_files = [
 
 # HTML template files that are used to generate the ".html.ts"
 ts_templates = [
+  "file_manager/widgets/xf_conflict_dialog.html",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.html",
   "file_manager/widgets/xf_nudge.html",
   "file_manager/widgets/xf_select.html",
@@ -295,9 +297,14 @@ ts_test_files = [
 
   # Widgets:
   "file_manager/widgets/xf_breadcrumb_unittest.ts",
+  "file_manager/widgets/xf_conflict_dialog_unittest.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog_unittest.ts",
   "file_manager/widgets/xf_nudge_unittest.ts",
   "file_manager/widgets/xf_select_unittest.ts",
+
+  # Foreground:
+  "file_manager/foreground/js/file_tasks_unittest.ts",
+  "file_manager/foreground/js/task_controller_unittest.ts",
 ]
 
 ts_generated_templates = []
@@ -333,7 +340,6 @@ generated_js_files = [
   "file_manager/foreground/elements/files_metadata_entry.js",
   "file_manager/foreground/elements/files_password_dialog.js",
   "file_manager/foreground/elements/files_quick_view.js",
-  "file_manager/foreground/elements/files_ripple.js",
   "file_manager/foreground/elements/files_safe_media.js",
   "file_manager/foreground/elements/files_spinner.js",
   "file_manager/foreground/elements/files_toast.js",
@@ -400,7 +406,6 @@ unittest_files = [
   "file_manager/foreground/js/metadata/metadata_cache_set_unittest.js",
   "file_manager/foreground/js/metadata/multi_metadata_provider_unittest.js",
   "file_manager/foreground/js/file_manager_commands_unittest.js",
-  "file_manager/foreground/js/task_controller_unittest.js",
   "file_manager/foreground/js/thumbnail_loader_unittest.js",
   "file_manager/foreground/js/directory_contents_unittest.js",
   "file_manager/foreground/js/file_list_model_unittest.js",
@@ -440,7 +445,6 @@ unittest_files = [
   "file_manager/foreground/js/ui/directory_tree_unittest.js",
   "file_manager/foreground/js/navigation_list_model_unittest.js",
   "file_manager/foreground/js/directory_model_unittest.js",
-  "file_manager/foreground/js/file_tasks_unittest.js",
   "file_manager/foreground/js/file_transfer_controller_unittest.js",
 
   # Image Loader:

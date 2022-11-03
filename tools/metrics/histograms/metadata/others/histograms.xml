@@ -116,6 +116,8 @@ chromium-metrics-reviews@google.com.
       summary="post-auction forDebuggingOnly.reportAdAuctionLoss() report"/>
   <variant name="DebugWinReport"
       summary="post-auction forDebuggingOnly.reportAdAuctionWin() report"/>
+  <variant name="DirectFromSellerSignals"
+      summary="auction directFromSellerSignals"/>
   <variant name="ScoringScriptJS" summary="seller JavaScript scoring script"/>
   <variant name="SendReportToReport"
       summary="post-auction sendReportTo() report (from either the winning
@@ -422,6 +424,25 @@ chromium-metrics-reviews@google.com.
     seller script rejecting all bidders. Not recoded when there are no bidders,
     or when an auction fails due to the seller worklet failing to load. Recorded
     on auction complete.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.DirectFromSellerSignals.RequestType"
+    enum="DirectFromSellerSignalsRequestType" expires_after="2023-07-31">
+  <owner>caraitto@chromium.org</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    For each request made for a DirectFromSellerSignals bundle subresource,
+    records whether the request was made to the network service, or whether the
+    request was elided due to either loading from the
+    DirectFromSellerSignalsRequester cache, or coalescing with an exiting
+    request for the same subresource URL.
+
+    Reported at each DirectFromSellerSignalsRequester request.
 
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
@@ -4295,6 +4316,22 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Conversions.SourceStoredStatus"
     enum="ConversionStorageSourceStatus" expires_after="M117">
+  <obsolete>
+    Replaced with Conversions.SourceStoredStatus2 due to enum value change,
+    November 2022.
+  </obsolete>
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures how often sources are stored successfully or rejected and why.
+    Recorded once for each source event processed by the attribution storage
+    layer.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.SourceStoredStatus2"
+    enum="ConversionStorageSourceStatus" expires_after="M117">
   <owner>anthonygarant@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -7826,7 +7863,24 @@ chromium-metrics-reviews@google.com.
 
   <owner>calamity@chromium.org</owner>
   <owner>grt@chromium.org</owner>
-  <summary>The different ways Chrome is launched.</summary>
+  <summary>
+    The different ways Chrome is launched.
+
+    This metric is gradually being replaced with an improved version. See
+    tracking bug http://crbug.com/1366137
+
+    Warnings about this version of this metric.
+
+    1. If user starts Chrome while Chrome is already running, this reports
+    incorrect data. See http://crbug.com/1067205
+
+    2. On ChromeOS, if a user session-restores multiple profiles, each profile
+    records this metric. See http://crbug.com/1356222
+
+    3. When the profile picker is shown on startup (which can only happen on
+    Windows, Mac, and Linux), this metric is not recorded. See
+    http://crbug.com/1380458
+  </summary>
 </histogram>
 
 <histogram name="Layout.MicroSecondsPerComplexText" units="microseconds"
@@ -13863,27 +13917,6 @@ should be kept until we remove incident reporting. -->
   <summary>
     The number of windows in overview when dragging a window from top in tablet
     mode. Logged when start the window drag and overview has been opened behind.
-  </summary>
-</histogram>
-
-<histogram name="TaskQueueManager.ActiveQueuesCount" units="units"
-    expires_after="M85">
-  <owner>altimin@chromium.org</owner>
-  <owner>farahcharab@chromium.org</owner>
-  <summary>
-    Used to track the number of active task queues in the task queue manager.
-    Reported every time a task is selected for execution.
-  </summary>
-</histogram>
-
-<histogram name="TaskQueueSelector.TaskServicedPerSelectorLogic"
-    enum="TaskQueueSelectorLogic" expires_after="M85">
-  <owner>altimin@chromium.org</owner>
-  <owner>farahcharab@chromium.org</owner>
-  <summary>
-    Used to track the number of tasks serviced due to starvation versus the
-    number of tasks serviced due to priroity. Incremented whenever a task queue
-    is selected to service.
   </summary>
 </histogram>
 

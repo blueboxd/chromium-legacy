@@ -1009,8 +1009,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ash::LauncherInternalsUI>;
   if (url.host_piece() == ash::kChromeUIHelpAppHost)
     return &NewComponentUI<ash::HelpAppUI, ash::ChromeHelpAppUIDelegate>;
-  if (url.host_piece() == chrome::kChromeUIHumanPresenceInternalsHost)
-    return &NewWebUI<ash::HumanPresenceInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIManageMirrorSyncHost &&
       ash::features::IsDriveFsMirroringEnabled()) {
     return &NewWebUI<ash::ManageMirrorSyncUI>;
@@ -1027,10 +1025,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     }
     return nullptr;
   }
-  if (url.host_piece() == chrome::kChromeUIOSSettingsHost)
-    return &NewWebUI<ash::settings::OSSettingsUI>;
-  if (url.host_piece() == chrome::kChromeUIPowerHost)
-    return &NewWebUI<ash::PowerUI>;
   if (url.host_piece() == ash::kChromeUIDiagnosticsAppHost) {
     return &NewWebUI<ash::DiagnosticsDialogUI>;
   }
@@ -1053,10 +1047,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       !profile->IsOffTheRecord()) {
     return &NewWebUI<ash::multidevice::ProximityAuthUI>;
   }
-  if (url.host_piece() == chrome::kChromeUIInternetConfigDialogHost)
-    return &NewWebUI<ash::InternetConfigDialogUI>;
-  if (url.host_piece() == chrome::kChromeUIInternetDetailDialogHost)
-    return &NewWebUI<ash::InternetDetailDialogUI>;
   if (NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
           profile) &&
       url.host_piece() == chrome::kChromeUINearbyShareHost &&
@@ -1072,16 +1062,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
   }
-  if (url.host_piece() == chrome::kChromeUISetTimeHost)
-    return &NewWebUI<ash::SetTimeUI>;
-  if (url.host_piece() == chrome::kChromeUISlowHost)
-    return &NewWebUI<ash::SlowUI>;
-  if (url.host_piece() == chrome::kChromeUISlowTraceHost)
-    return &NewWebUI<ash::SlowTraceController>;
-  if (url.host_piece() == chrome::kChromeUISmbCredentialsHost)
-    return &NewWebUI<ash::smb_dialog::SmbCredentialsDialogUI>;
-  if (url.host_piece() == chrome::kChromeUISmbShareHost)
-    return &NewWebUI<ash::smb_dialog::SmbShareDialogUI>;
   if (url.host_piece() == chrome::kChromeUISysInternalsHost)
     return &NewWebUI<ash::SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
@@ -1612,6 +1592,7 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
       GURL(chrome::kChromeUIManageMirrorSyncURL),
       GURL(chrome::kChromeUIMultiDeviceSetupUrl),
       GURL(chrome::kChromeUINetworkUrl),
+      GURL(chrome::kChromeUIOfficeFallbackURL),
       GURL(chrome::kOsUINetworkURL),
       GURL(chrome::kChromeUIOSCreditsURL),
       GURL(chrome::kChromeUIPowerUrl),

@@ -27,6 +27,8 @@ import {PhoneticData} from '../phonetic_data.js';
 import {OutputAncestryInfo} from './output_ancestry_info.js';
 import {OutputFormatParser, OutputFormatParserObserver} from './output_format_parser.js';
 import {OutputFormatTree} from './output_format_tree.js';
+import {OutputFormatter} from './output_formatter.js';
+import {OutputInterface} from './output_interface.js';
 import {OutputFormatLogger} from './output_logger.js';
 import {OutputRoleInfo} from './output_role_info.js';
 import {OutputRule, OutputRuleSpecifier} from './output_rules.js';
@@ -68,6 +70,7 @@ const StateType = chrome.automation.StateType;
  * = suffix: used to specify substitution only if not previously appended.
  *     For example, $name= would insert the name attribute only if no name
  * attribute had been inserted previously.
+ * @implements {OutputInterface}
  */
 export class Output {
   constructor() {
@@ -221,7 +224,7 @@ export class Output {
    * Specify ranges for speech.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @return {!Output}
    */
   withSpeech(range, prevRange, type) {
@@ -236,7 +239,7 @@ export class Output {
    * Specify ranges for aurally styled speech.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @return {!Output}
    */
   withRichSpeech(range, prevRange, type) {
@@ -251,7 +254,7 @@ export class Output {
    * Specify ranges for braille.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @return {!Output}
    */
   withBraille(range, prevRange, type) {
@@ -282,7 +285,7 @@ export class Output {
    * Specify ranges for location.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @return {!Output}
    */
   withLocation(range, prevRange, type) {
@@ -298,7 +301,7 @@ export class Output {
    * Specify the same ranges for speech and braille.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @return {!Output}
    */
   withSpeechAndBraille(range, prevRange, type) {
@@ -311,7 +314,7 @@ export class Output {
    * Specify the same ranges for aurally styled speech and braille.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @return {!Output}
    */
   withRichSpeechAndBraille(range, prevRange, type) {
@@ -626,7 +629,7 @@ export class Output {
    * type.
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @param {!Array<Spannable>} buff Buffer to receive rendered output.
    * @param {!OutputFormatLogger} formatLog
    * @param {{suppressStartEndAncestry: (boolean|undefined)}} optionalArgs
@@ -676,186 +679,11 @@ export class Output {
    * @private
    */
   format_(params) {
-    let speechProps = params['opt_speechProps'];
-    const owner = this;
-    const observer =
-        new /** @implements {OutputFormatParserObserver} */ (class {
-          /** @override */
-          onTokenStart() {}
-
-          /** @override */
-          onNodeAttributeOrSpecialToken(token, tree, options) {
-            if (owner.suppressions_[token]) {
-              return true;
-            }
-
-            if (token === 'value') {
-              owner.formatValue_(params, token, options);
-            } else if (token === 'name') {
-              owner.formatName_(params, token, options);
-            } else if (token === 'description') {
-              owner.formatDescription_(params, token, options);
-            } else if (token === 'urlFilename') {
-              owner.formatUrlFilename_(params, token, options);
-            } else if (token === 'nameFromNode') {
-              owner.formatNameFromNode_(params, token, options);
-            } else if (token === 'nameOrDescendants') {
-              // This token is similar to nameOrTextContent except it gathers
-              // rich output for descendants. It also lets name from contents
-              // override the descendants text if |node| has only static text
-              // children.
-              owner.formatNameOrDescendants_(params, token, options);
-            } else if (token === 'indexInParent') {
-              owner.formatIndexInParent_(params, token, tree, options);
-            } else if (token === 'restriction') {
-              owner.formatRestriction_(params, token);
-            } else if (token === 'checked') {
-              owner.formatChecked_(params, token);
-            } else if (token === 'pressed') {
-              owner.formatPressed_(params, token);
-            } else if (token === 'state') {
-              owner.formatState_(params, token);
-            } else if (token === 'find') {
-              owner.formatFind_(params, token, tree);
-            } else if (token === 'descendants') {
-              owner.formatDescendants_(params, token);
-            } else if (token === 'joinedDescendants') {
-              owner.formatJoinedDescendants_(params, token, options);
-            } else if (token === 'role') {
-              if (localStorage['useVerboseMode'] === 'false') {
-                return true;
-              }
-              if (owner.formatOptions_.auralStyle) {
-                speechProps = new outputTypes.OutputSpeechProperties();
-                speechProps.properties['relativePitch'] = -0.3;
-              }
-
-              owner.formatRole_(params, token, options);
-            } else if (token === 'inputType') {
-              owner.formatInputType_(params, token, options);
-            } else if (
-                token === 'tableCellRowIndex' ||
-                token === 'tableCellColumnIndex') {
-              owner.formatTableCellIndex_(params, token, options);
-            } else if (token === 'cellIndexText') {
-              owner.formatCellIndexText_(params, token, options);
-            } else if (token === 'node') {
-              owner.formatNode_(params, token, tree, options);
-            } else if (
-                token === 'nameOrTextContent' || token === 'textContent') {
-              owner.formatTextContent_(params, token, options);
-            } else if (params.node[token] !== undefined) {
-              owner.formatAsFieldAccessor_(params, token, options);
-            } else if (outputTypes.OUTPUT_STATE_INFO[token]) {
-              owner.formatAsStateValue_(params, token, options);
-            } else if (token === 'phoneticReading') {
-              owner.formatPhoneticReading_(params);
-            } else if (token === 'listNestedLevel') {
-              owner.formatListNestedLevel_(params);
-            } else if (token === 'precedingBullet') {
-              owner.formatPrecedingBullet_(params);
-            } else if (tree.firstChild) {
-              owner.formatCustomFunction_(params, token, tree, options);
-            }
-          }
-
-          /** @override */
-          onMessageToken(token, tree, options) {
-            params.outputFormatLogger.write(' @');
-            if (owner.formatOptions_.auralStyle) {
-              if (!speechProps) {
-                speechProps = new outputTypes.OutputSpeechProperties();
-              }
-              speechProps.properties['relativePitch'] = -0.2;
-            }
-            owner.formatMessage_(params, token, tree, options);
-          }
-
-          /** @override */
-          onSpeechPropertyToken(token, tree, options) {
-            params.outputFormatLogger.write(' ! ' + token + '\n');
-            speechProps = new outputTypes.OutputSpeechProperties();
-            speechProps.properties[token] = true;
-            if (tree.firstChild) {
-              if (!owner.formatOptions_.auralStyle) {
-                speechProps = undefined;
-                return true;
-              }
-
-              let value = tree.firstChild.value;
-
-              // Currently, speech params take either attributes or floats.
-              let float = 0;
-              if (float = parseFloat(value)) {
-                value = float;
-              } else {
-                value = parseFloat(params.node[value]) / -10.0;
-              }
-              speechProps.properties[token] = value;
-              return true;
-            }
-          }
-
-          /** @override */
-          onTokenEnd() {
-            const buff = params.outputBuffer;
-
-            // Post processing.
-            if (speechProps) {
-              if (buff.length > 0) {
-                buff[buff.length - 1].setSpan(speechProps, 0, 0);
-                speechProps = null;
-              }
-            }
-          }
-        })();
-
-    new OutputFormatParser(observer).parse(params.outputFormat);
+    const formatter = new OutputFormatter(this, params);
+    new OutputFormatParser(formatter).parse(params.outputFormat);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatValue_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    const text = node.value || '';
-    if (!node.state[StateType.EDITABLE] && node.name === text) {
-      return;
-    }
-
-    let selectedText = '';
-    if (node.textSelStart !== undefined) {
-      options.annotation.push(new outputTypes.OutputSelectionSpan(
-          node.textSelStart || 0, node.textSelEnd || 0));
-
-      if (node.value) {
-        selectedText =
-            node.value.substring(node.textSelStart || 0, node.textSelEnd || 0);
-      }
-    }
-    options.annotation.push(token);
-    if (selectedText && !this.formatOptions_.braille &&
-        node.state[StateType.FOCUSED]) {
-      this.append_(buff, selectedText, options);
-      this.append_(buff, Msgs.getMsg('selected'));
-      formatLog.writeTokenWithValue(token, selectedText);
-      formatLog.write('selected\n');
-    } else {
-      this.append_(buff, text, options);
-      formatLog.writeTokenWithValue(token, text);
-    }
-  }
-
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatName_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -884,11 +712,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, node.name);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatDescription_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -903,11 +727,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, node.description);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatUrlFilename_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -928,11 +748,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, filename);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatNameFromNode_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -947,11 +763,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, node.name);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatNameOrDescendants_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -974,12 +786,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatIndexInParent_(data, token, tree, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1009,10 +816,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   */
+  /** @override */
   formatRestriction_(data, token) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1030,10 +834,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   */
+  /** @override */
   formatChecked_(data, token) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1051,10 +852,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   */
+  /** @override */
   formatPressed_(data, token) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1072,10 +870,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   */
+  /** @override */
   formatState_(data, token) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1097,11 +892,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   */
+  /** @override */
   formatFind_(data, token, tree) {
     const buff = data.outputBuffer;
     const formatLog = data.outputFormatLogger;
@@ -1125,10 +916,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   */
+  /** @override */
   formatDescendants_(data, token) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1170,15 +958,11 @@ export class Output {
     }
     formatLog.writeToken(token);
     this.render_(
-        subrange, prev, outputTypes.OutputEventType.NAVIGATE, buff, formatLog,
+        subrange, prev, outputTypes.OutputCustomEvent.NAVIGATE, buff, formatLog,
         {suppressStartEndAncestry: true});
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatJoinedDescendants_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1197,11 +981,7 @@ export class Output {
         '}: ' + (unjoined.length ? unjoined.join(' ') : 'EMPTY') + '\n');
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatRole_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1227,11 +1007,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, msg);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatInputType_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1250,11 +1026,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, Msgs.getMsg(msgId));
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatTableCellIndex_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1270,11 +1042,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, value);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatCellIndexText_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1306,12 +1074,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatNode_(data, token, tree, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1357,16 +1120,12 @@ export class Output {
     } else if (node[relationName]) {
       const related = node[relationName];
       this.node_(
-          related, related, outputTypes.OutputEventType.NAVIGATE, buff,
+          related, related, outputTypes.OutputCustomEvent.NAVIGATE, buff,
           formatLog);
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatTextContent_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1408,11 +1167,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, finalOutput);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatAsFieldAccessor_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1427,11 +1182,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, value);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatAsStateValue_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1457,9 +1208,7 @@ export class Output {
     formatLog.writeTokenWithValue(token, msg);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   */
+  /** @override */
   formatPhoneticReading_(data) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1469,9 +1218,7 @@ export class Output {
     this.append_(buff, text);
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   */
+  /** @override */
   formatListNestedLevel_(data) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1487,9 +1234,7 @@ export class Output {
     this.append_(buff, level.toString());
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   */
+  /** @override */
   formatPrecedingBullet_(data) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1507,12 +1252,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatCustomFunction_(data, token, tree, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1574,12 +1314,7 @@ export class Output {
     }
   }
 
-  /**
-   * @param {!outputTypes.OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
+  /** @override */
   formatMessage_(data, token, tree, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -1687,7 +1422,7 @@ export class Output {
   /**
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @param {!Array<Spannable>} rangeBuff
    * @param {!OutputFormatLogger} formatLog
    * @param {{suppressStartEndAncestry: (boolean|undefined)}} optionalArgs
@@ -1826,7 +1561,7 @@ export class Output {
   /**
    * @param {!AutomationNode} node
    * @param {!AutomationNode} prevNode
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @param {!Array<Spannable>} buff
    * @param {!OutputFormatLogger} formatLog
    * @param {{suppressStartEndAncestry: (boolean|undefined),
@@ -1905,7 +1640,7 @@ export class Output {
    * @param {{
    * node: !AutomationNode,
    * prevNode: !AutomationNode,
-   * type: (EventType|outputTypes.OutputEventType),
+   * type: !outputTypes.OutputEventType,
    * buff: !Array<Spannable>,
    * formatLog: !OutputFormatLogger,
    * ancestors: !Array<!AutomationNode>,
@@ -1986,7 +1721,7 @@ export class Output {
   /**
    * @param {!AutomationNode} node
    * @param {!AutomationNode} prevNode
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @param {!Array<Spannable>} buff
    * @param {!OutputFormatLogger} formatLog
    * @private
@@ -2046,7 +1781,7 @@ export class Output {
   /**
    * @param {!CursorRange} range
    * @param {CursorRange} prevRange
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @param {!Array<Spannable>} buff
    * @private
    */
@@ -2148,7 +1883,7 @@ export class Output {
    * |computeDelayedHints_|.
    * @param {!CursorRange} range
    * @param {!Array<AutomationNode>} uniqueAncestors
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @param {!Array<Spannable>} buff Buffer to receive rendered output.
    * @param {!OutputFormatLogger} formatLog
    * @private
@@ -2260,7 +1995,7 @@ export class Output {
    * Internal helper to |hint_|. Returns a list of message hints.
    * @param {!AutomationNode} node
    * @param {!Array<AutomationNode>} uniqueAncestors
-   * @param {EventType|outputTypes.OutputEventType} type
+   * @param {!outputTypes.OutputEventType} type
    * @return {!Array<{text: (string|undefined),
    *           msgId: (string|undefined),
    *           subs: (Array<string>|undefined),
@@ -2397,12 +2132,7 @@ export class Output {
     return ret;
   }
 
-  /**
-   * Appends output to the |buff|.
-   * @param {!Array<Spannable>} buff
-   * @param {string|!Spannable} value
-   * @param {{annotation: Array<*>, isUnique: (boolean|undefined)}=} opt_options
-   */
+  /** @override */
   append_(buff, value, opt_options) {
     opt_options = opt_options || {isUnique: false, annotation: []};
 
@@ -2595,6 +2325,21 @@ export class Output {
     if (buff.length > 0) {
       buff[buff.length - 1].setSpan(speechProps, 0, 0);
     }
+  }
+
+  /** @override */
+  shouldSuppress(token) {
+    return this.suppressions_[token];
+  }
+
+  /** @override */
+  get useAuralStyle() {
+    return this.formatOptions_.auralStyle;
+  }
+
+  /** @override */
+  get formatAsBraille() {
+    return this.formatOptions_.braille;
   }
 }
 

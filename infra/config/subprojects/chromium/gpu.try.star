@@ -318,11 +318,6 @@ gpu_mac_builder(
 )
 
 gpu_mac_builder(
-    name = "gpu-fyi-try-mac-nvidia-retina-dbg",
-    pool = "luci.chromium.gpu.mac.retina.nvidia.try",
-)
-
-gpu_mac_builder(
     name = "gpu-fyi-try-mac-nvidia-retina-exp",
     # This bot has one machine backing its tests at the moment.
     # If it gets more, the modified execution_timeout should be removed.
@@ -403,6 +398,10 @@ gpu_win_builder(
 gpu_win_builder(
     name = "gpu-fyi-try-win10-nvidia-rel-32",
     pool = "luci.chromium.gpu.win10.nvidia.try",
+    mirrors = [
+        "ci/GPU FYI Win Builder",
+        "ci/Win10 FYI x86 Release (NVIDIA)",
+    ],
 )
 
 gpu_win_builder(

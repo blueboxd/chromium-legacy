@@ -98,7 +98,9 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
   /**
    * Shows the tester's dialog.
    */
-  async showTester(): Promise<void> {
+  async showTester(evdevId: number): Promise<void> {
+    await this.inputDataProvider.moveAppToTestingScreen(evdevId);
+
     this.receiver_ = new TabletModeObserverReceiver(this);
     const {isTabletMode} = await this.inputDataProvider.observeTabletMode(
         this.receiver_.$.bindNewPipeAndPassRemote());
@@ -119,11 +121,12 @@ export class TouchscreenTesterElement extends TouchscreenTesterElementBase {
    * 'fullscreenchange' event to handle this case.
    */
   private closeDialogWhenExitFullscreen(): void {
-    this.shadowRoot!.addEventListener('fullscreenchange', (e: Event) => {
+    this.shadowRoot!.addEventListener('fullscreenchange', async (e: Event) => {
       e.preventDefault();
       if (!document.fullscreenElement) {
         this.getDialog(DialogType.INTRO).close();
         this.getDialog(DialogType.CANVAS).close();
+        await this.inputDataProvider.moveAppBackToPreviousScreen();
         if (this.receiver_) {
           this.receiver_.$.close();
         }

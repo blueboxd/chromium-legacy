@@ -5,13 +5,16 @@
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 
 #include "base/containers/contains.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
@@ -56,7 +59,11 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
   const char* const kKnownKeys[] = {"source", "urls", "requires", "target_hint",
                                     "where"};
   for (wtf_size_t i = 0; i < input->size(); ++i) {
-    if (!base::Contains(kKnownKeys, input->at(i).first))
+    const String& input_key = input->at(i).first;
+    const bool conditionally_known_key =
+        RuntimeEnabledFeatures::SpeculationRulesReferrerPolicyKeyEnabled() &&
+        (input_key == "referrer_policy");
+    if (!base::Contains(kKnownKeys, input_key) && !conditionally_known_key)
       return nullptr;
   }
 
@@ -116,7 +123,8 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     // predicate given input["where"] and baseURL.
     else {
       document_rule_predicate =
-          DocumentRulePredicate::Parse(input->GetJSONObject("where"), base_url);
+          DocumentRulePredicate::Parse(input->GetJSONObject("where"), base_url,
+                                       IGNORE_EXCEPTION_FOR_TESTING);
     }
     if (!document_rule_predicate)
       return nullptr;
@@ -172,9 +180,30 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     }
   }
 
+  absl::optional<network::mojom::ReferrerPolicy> referrer_policy;
+  JSONValue* referrer_policy_value = input->Get("referrer_policy");
+  if (referrer_policy_value) {
+    // Feature gated due to known keys check above.
+    DCHECK(RuntimeEnabledFeatures::SpeculationRulesReferrerPolicyKeyEnabled());
+
+    String referrer_policy_str;
+    if (!referrer_policy_value->AsString(&referrer_policy_str))
+      return nullptr;
+
+    network::mojom::ReferrerPolicy referrer_policy_out =
+        network::mojom::ReferrerPolicy::kDefault;
+    if (!SecurityPolicy::ReferrerPolicyFromString(
+            referrer_policy_str, kDoNotSupportReferrerPolicyLegacyKeywords,
+            &referrer_policy_out)) {
+      return nullptr;
+    }
+    DCHECK_NE(referrer_policy_out, network::mojom::ReferrerPolicy::kDefault);
+    referrer_policy = referrer_policy_out;
+  }
+
   return MakeGarbageCollected<SpeculationRule>(
       std::move(urls), document_rule_predicate, requires_anonymous_client_ip,
-      target_hint);
+      target_hint, referrer_policy);
 }
 
 }  // namespace

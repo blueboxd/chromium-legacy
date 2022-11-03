@@ -88,7 +88,12 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   wm::CompoundEventFilter* root_window_event_filter() {
     return root_window_event_filter_.get();
   }
+
   aura::WindowTreeHost* host() { return host_.get(); }
+
+  DesktopWindowTreeHost* desktop_window_tree_host_for_testing() {
+    return desktop_window_tree_host_.get();
+  }
 
   aura::Window* content_window() { return content_window_; }
 
@@ -108,9 +113,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // DesktopWindowTreeHost's transparency.
   void UpdateWindowTransparency();
 
-  void set_delegate_for_testing(internal::NativeWidgetDelegate* delegate) {
-    native_widget_delegate_ = delegate;
-  }
+  base::WeakPtr<internal::NativeWidgetPrivate> GetWeakPtr() override;
 
  protected:
   // internal::NativeWidgetPrivate:
@@ -292,9 +295,12 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // WARNING: this may be NULL, in particular during shutdown it becomes NULL.
   raw_ptr<aura::Window, DanglingUntriaged> content_window_;
 
-  // TODO(crbug.com/1346381) Change delegate to a WeakPtr after
-  // removing ownership model.
-  raw_ptr<internal::NativeWidgetDelegate> native_widget_delegate_;
+  base::WeakPtr<internal::NativeWidgetDelegate> native_widget_delegate_;
+
+  // This is a unique ptr to enforce scenarios where NativeWidget
+  // will own the NativeWidgetDelegate.
+  // Used for ownership model: NativeWidgetOwnsWidget.
+  std::unique_ptr<internal::NativeWidgetDelegate> owned_native_widget_delegate;
 
   std::unique_ptr<wm::FocusController> focus_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> position_client_;
@@ -348,7 +354,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // See DesktopWindowTreeHost::ShouldUseDesktopNativeCursorManager().
   bool use_desktop_native_cursor_manager_ = false;
 
-  // The following factory is used for calls to close to run drop callback.
+  // The following factory is used to provide references to the
+  // DesktopNativeWidgetAura instance and used for calls to close to run drop
+  // callback.
   base::WeakPtrFactory<DesktopNativeWidgetAura> weak_ptr_factory_{this};
 };
 

@@ -4687,6 +4687,28 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BillingInterstitial.Advanced">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>
+    User opened the &quot;Advanced&quot; tab on the Billing interstitial.
+  </description>
+</action>
+
+<action name="BillingInterstitial.Back">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User pressed back on a Billing interstitial.</description>
+</action>
+
+<action name="BillingInterstitial.Proceed">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User proceeded on a Billing interstitial.</description>
+</action>
+
+<action name="BillingInterstitial.Show">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User saw the Billing interstitial.</description>
+</action>
+
 <action name="BindingsMismatch_GetProcessHostPerSite">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -25493,6 +25515,28 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PhishingInterstitial.Advanced">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>
+    User opened the &quot;Advanced&quot; tab on the Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.Back">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User pressed back on a Phishing interstitial.</description>
+</action>
+
+<action name="PhishingInterstitial.Proceed">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User proceeded on a Phishing interstitial.</description>
+</action>
+
+<action name="PhishingInterstitial.Show">
+  <owner>psarouthakis@chromium.org</owner>
+  <description>User saw the Phishing interstitial.</description>
+</action>
+
 <action name="PhysicalWeb.NotificationPressed">
   <obsolete>Replaced by the histogram PhysicalWeb.ActivityReferral</obsolete>
   <owner>cco3@chromium.org</owner>
@@ -32521,6 +32565,13 @@ should be able to be added at any place in this file.
 <action name="SystemBack">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="SystemBackBeforeUINativeInitialized">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back before UI with Native is initialized.
+  </description>
 </action>
 
 <action name="SystemBackForNavigation">

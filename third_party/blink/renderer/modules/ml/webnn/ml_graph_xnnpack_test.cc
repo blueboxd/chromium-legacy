@@ -49,20 +49,6 @@ ScriptPromise BuildSimpleGraph(
                              scope.GetExceptionState());
 }
 
-// Test the XNNPACK initialization and memory allocator by creating an XNNPACK
-// clamp operator. It internally checks whether XNNPACK is initialized and
-// calls xnn_allocate_simd_memory() to allocate aligned memory by the
-// PartitionAlloc.
-void CheckXnnpack() {
-  xnn_operator_t xnn_clamp_op = nullptr;
-  xnn_status status = xnn_create_clamp_nc_f32(
-      3, 3, 3, 0.0f, std::numeric_limits<float>::infinity(), 0, &xnn_clamp_op);
-  EXPECT_EQ(status, xnn_status_success);
-  EXPECT_NE(xnn_clamp_op, nullptr);
-  status = xnn_delete_operator(xnn_clamp_op);
-  EXPECT_EQ(status, xnn_status_success);
-}
-
 TEST_F(MLGraphXnnpackTest, SharedXnnpackContextTest) {
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
@@ -75,7 +61,6 @@ TEST_F(MLGraphXnnpackTest, SharedXnnpackContextTest) {
     EXPECT_TRUE(tester.IsFulfilled());
     auto* xnnpack_graph = ToMLGraphXnnpack(&scope, tester.Value());
     EXPECT_NE(xnnpack_graph, nullptr);
-    CheckXnnpack();
   }
   {
     // Test building MLGraphXnnpack with devicePreference = "cpu". The promise
@@ -89,7 +74,6 @@ TEST_F(MLGraphXnnpackTest, SharedXnnpackContextTest) {
     EXPECT_TRUE(tester.IsFulfilled());
     auto* xnnpack_graph = ToMLGraphXnnpack(&scope, tester.Value());
     EXPECT_NE(xnnpack_graph, nullptr);
-    CheckXnnpack();
   }
 }
 

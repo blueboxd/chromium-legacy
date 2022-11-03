@@ -267,6 +267,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBackGestureRefactorAndroid,
     &kOmahaMinSdkVersionAndroid,
     &kOmniboxModernizeVisualUpdate,
+    &kOpaqueOriginForIncomingIntents,
     &kOptimizeGeolocationHeaderGeneration,
     &kOptimizeLayoutsForPullRefresh,
     &kPostTaskFocusTab,
@@ -277,7 +278,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRelatedSearches,
     &kRelatedSearchesAlternateUx,
     &kRelatedSearchesInBar,
-    &kRelatedSearchesSimplifiedUx,
     &kRelatedSearchesUi,
     &kRequestDesktopSiteDefaults,
     &kRequestDesktopSiteDefaultsControl,
@@ -344,7 +344,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kDnsOverHttps,
     &notifications::features::kUseChimeAndroidSdk,
     &paint_preview::kPaintPreviewDemo,
-    &paint_preview::kPaintPreviewShowOnStartup,
     &language::kAppLanguagePrompt,
     &language::kAppLanguagePromptULP,
     &language::kDetailedLanguageSettings,
@@ -356,7 +355,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &messages::kMessagesForAndroidChromeSurvey,
     &messages::kMessagesForAndroidInfrastructure,
     &messages::kMessagesForAndroidReaderMode,
-    &messages::kMessagesForAndroidReduceLayoutChanges,
     &messages::kMessagesForAndroidSaveCard,
     &offline_pages::kOfflineIndicatorFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
@@ -862,6 +860,10 @@ BASE_FEATURE(kOmniboxModernizeVisualUpdate,
              "OmniboxModernizeVisualUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kOpaqueOriginForIncomingIntents,
+             "OpaqueOriginForIncomingIntents",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kOptimizeGeolocationHeaderGeneration,
              "OptimizeGeolocationHeaderGeneration",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -901,10 +903,6 @@ BASE_FEATURE(kRelatedSearchesAlternateUx,
 BASE_FEATURE(kRelatedSearchesInBar,
              "RelatedSearchesInBar",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kRelatedSearchesSimplifiedUx,
-             "RelatedSearchesSimplifiedUx",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRelatedSearchesUi,
              "RelatedSearchesUi",

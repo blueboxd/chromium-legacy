@@ -627,10 +627,13 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if the given URL needs be loaded with the "isolated
   // application" isolation level. COOP/COEP headers must also be properly set
-  // in order to enable the application isolation level.
+  // in order to enable the application isolation level. `origin_matches_flag`
+  // specifies whether the URL's origin is allowed to use application isolation
+  // according to the content-level `kIsolatedAppOrigins` switch.
   virtual bool ShouldUrlUseApplicationIsolationLevel(
       BrowserContext* browser_context,
-      const GURL& url);
+      const GURL& url,
+      bool origin_matches_flag);
 
   // Allows the embedder to enable access to Isolated Context Web APIs for the
   // given |lock_url| -- the URL to which the renderer process is locked.
@@ -1796,20 +1799,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         bool is_outermost_main_frame,
                                         ui::PageTransition transition,
                                         bool* ignore_navigation);
-
-  // Only used by Android WebView. Whether creating or modifying the initial
-  // NavigationEntry of a WebContents should notify the embedder via
-  // NavigationStateChanged() calls or not. The embedder should return true if
-  // NavigationStateChanged() calls should be skipped for the initial entry, or
-  // false otherwise (which is the default). On Android WebView, we should not
-  // fire the initial NavigationEntry creation/modification
-  // NavigationStateChanged calls to preserve legacy behavior (not firing extra
-  // onPageFinished calls), as initial NavigationEntries used to not exist.
-  // See https://crbug.com/1277414.
-  // TODO(https://crbug.com/1293332): Remove this function if the
-  // kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess approach works.
-  virtual bool
-  ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport();
 
   // Returns true if navigation can synchronously continue if the frame
   // being navigated (and all child frames) do not have beforeunload handlers.

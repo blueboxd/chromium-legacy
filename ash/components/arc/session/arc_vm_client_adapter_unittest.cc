@@ -2653,5 +2653,46 @@ TEST_F(ArcVmClientAdapterTest, ConvertUpgradeParams_EnableTtsCacheSetup) {
                              "ro.boot.skip_tts_cache=0"));
 }
 
+// Test that update_o4c_list_via_a2c2 is not set with the feature flag disabled.
+TEST_F(ArcVmClientAdapterTest, ArcUpdateO4CListViaA2C2Disabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kArcUpdateO4CListViaA2C2);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(request.update_o4c_list_via_a2c2());
+}
+
+// Test that update_o4c_list_via_a2c2 is set with the feature flag enabled.
+TEST_F(ArcVmClientAdapterTest, ArcUpdateO4CListViaA2C2Enabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kArcUpdateO4CListViaA2C2);
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(request.update_o4c_list_via_a2c2());
+}
+
+TEST_F(ArcVmClientAdapterTest, mglruReclaimDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kMglruReclaim, false);
+  StartMiniArcWithParams(true, GetPopulatedStartParams());
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(req.mglru_reclaim_interval(), 0);
+  EXPECT_EQ(req.mglru_reclaim_swappiness(), 0);
+}
+
+TEST_F(ArcVmClientAdapterTest, mglruReclaimEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["interval"] = "30000";
+  params["swappiness"] = "100";
+  feature_list.InitAndEnableFeatureWithParameters(kMglruReclaim, params);
+  StartMiniArcWithParams(true, GetPopulatedStartParams());
+  auto req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(req.mglru_reclaim_interval(), 30000);
+  EXPECT_EQ(req.mglru_reclaim_swappiness(), 100);
+}
+
 }  // namespace
 }  // namespace arc

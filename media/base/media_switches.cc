@@ -297,6 +297,13 @@ BASE_FEATURE(kPictureInPicture,
 BASE_FEATURE(kPlatformHEVCDecoderSupport,
              "PlatformHEVCDecoderSupport",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+// Enables HEVC hardware accelerated encoding for Windows and Mac.
+BASE_FEATURE(kPlatformHEVCEncoderSupport,
+             "PlatformHEVCEncoderSupport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 // Only decode preload=metadata elements upon visibility.
@@ -589,11 +596,6 @@ BASE_FEATURE(kVaapiIgnoreDriverChecks,
              "VaapiIgnoreDriverChecks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_LINUX)
-
-// Enable VA-API hardware decode acceleration for AV1.
-BASE_FEATURE(kVaapiAV1Decoder,
-             "VaapiAV1Decoder",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable VA-API hardware low power encoder for all codecs on intel Gen9x gpu.
 BASE_FEATURE(kVaapiLowPowerEncoderGen9x,
@@ -901,6 +903,11 @@ BASE_FEATURE(kUseRealColorSpaceForAndroidVideo,
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+// Enable hardware AV1 decoder on ChromeOS.
+BASE_FEATURE(kChromeOSHWAV1Decoder,
+             "ChromeOSHWAV1Decoder",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enable Variable Bitrate encoding with hardware accelerated encoders on
 // ChromeOS.
 BASE_FEATURE(kChromeOSHWVBREncoding,
@@ -964,12 +971,6 @@ BASE_FEATURE(kDirectShowGetPhotoState,
 BASE_FEATURE(kIncludeIRCamerasInDeviceEnumeration,
              "IncludeIRCamerasInDeviceEnumeration",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-// Enables HEVC encode acceleration for Windows.
-const base::Feature MEDIA_EXPORT kMediaFoundationHEVCEncoding{
-    "MediaFoundationHEVCEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Enables AV1 encode acceleration for Windows.
 const base::Feature MEDIA_EXPORT kMediaFoundationAV1Encoding{

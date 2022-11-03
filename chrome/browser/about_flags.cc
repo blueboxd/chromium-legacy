@@ -600,6 +600,23 @@ const FeatureEntry::FeatureVariation
 };
 
 const FeatureEntry::FeatureParam
+    kContextualPageActionReaderMode_NoRateLimiting[] = {
+        {"reader_mode_session_rate_limiting", "false"},
+};
+const FeatureEntry::FeatureParam kContextualPageActionReaderMode_RateLimited[] =
+    {
+        {"reader_mode_session_rate_limiting", "true"},
+};
+
+const FeatureEntry::FeatureVariation
+    kContextualPageActionReaderModeVariations[] = {
+        {"Use rate limiting", kContextualPageActionReaderMode_RateLimited,
+         std::size(kContextualPageActionReaderMode_RateLimited), nullptr},
+        {"Don't rate limit", kContextualPageActionReaderMode_NoRateLimiting,
+         std::size(kContextualPageActionReaderMode_NoRateLimiting), nullptr},
+};
+
+const FeatureEntry::FeatureParam
     kOmniboxRemoveSuggestionHeaderChevron_DisallowCollapse[] = {
         {"allow_group_collapsed_state", "false"}};
 const FeatureEntry::FeatureVariation
@@ -887,6 +904,7 @@ const char kLacrosOnlyInternalName[] = "lacros-only";
 const char kLacrosPrimaryInternalName[] = "lacros-primary";
 const char kLacrosSupportInternalName[] = "lacros-support";
 const char kLacrosStabilityInternalName[] = "lacros-stability";
+const char kLacrosWaylandLoggingInternalName[] = "lacros-wayland-logging";
 const char kWebAppsCrosapiInternalName[] = "web-apps-crosapi";
 const char kArcEnableVirtioBlkForDataInternalName[] =
     "arc-enable-virtio-blk-for-data";
@@ -2412,14 +2430,6 @@ const FeatureEntry::FeatureVariation
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kLensOnQuickActionSearchWidgetOnTablet[] = {
-    {"enableCameraAssistedSearchOnTabletWidget", "true"}};
-
-const FeatureEntry::FeatureVariation
-    kLensOnQuickActionSearchWidgetVariations[] = {
-        {"(on Tablet)", kLensOnQuickActionSearchWidgetOnTablet,
-         std::size(kLensOnQuickActionSearchWidgetOnTablet), nullptr}};
-
 const FeatureEntry::FeatureParam kLensCameraAssistedSearchLensButtonStart[] = {
     {"searchBoxStartVariantForLensCameraAssistedSearch", "true"}};
 
@@ -2947,15 +2957,6 @@ constexpr char kWallpaperGooglePhotosIntegrationInternalName[] =
     "wallpaper-google-photos-integration";
 constexpr char kWallpaperPerDeskName[] = "per-desk-wallpaper";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kPaintPreviewStartupWithAccessibility[] = {
-    {"has_accessibility_support", "true"}};
-
-const FeatureEntry::FeatureVariation kPaintPreviewStartupVariations[] = {
-    {"with accessibility support", kPaintPreviewStartupWithAccessibility,
-     std::size(kPaintPreviewStartupWithAccessibility), nullptr}};
-#endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kBorealisBigGlInternalName[] = "borealis-big-gl";
@@ -3775,10 +3776,6 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kRelatedSearchesAlternateUx,
          kRelatedSearchesAlternateUxVariations,
          "RelatedSearchesAlternateUx")},
-    {"related-searches-simplified-ux",
-     flag_descriptions::kRelatedSearchesSimplifiedUxName,
-     flag_descriptions::kRelatedSearchesSimplifiedUxDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kRelatedSearchesSimplifiedUx)},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
@@ -4064,6 +4061,10 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosStabilityInternalName, flag_descriptions::kLacrosStabilityName,
      flag_descriptions::kLacrosStabilityDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kLacrosStabilityChoices)},
+    {kLacrosWaylandLoggingInternalName,
+     flag_descriptions::kLacrosWaylandLoggingName,
+     flag_descriptions::kLacrosWaylandLoggingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLacrosWaylandLogging)},
     {kPreferDcheckInternalName, flag_descriptions::kPreferDcheckName,
      flag_descriptions::kPreferDcheckDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kPreferDcheckChoices)},
@@ -4447,8 +4448,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"contextual-page-actions-reader-mode",
      flag_descriptions::kContextualPageActionsReaderModeName,
      flag_descriptions::kContextualPageActionsReaderModeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         segmentation_platform::features::kContextualPageActionReaderMode)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         segmentation_platform::features::kContextualPageActionReaderMode,
+         kContextualPageActionReaderModeVariations,
+         "ContextualPageActions")},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
@@ -6620,6 +6623,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kAutoDisableAccessibility)},
 
 #if BUILDFLAG(IS_ANDROID)
+    {"enable-auto-disable-accessibility-v2",
+     flag_descriptions::kEnableAutoDisableAccessibilityV2Name,
+     flag_descriptions::kEnableAutoDisableAccessibilityV2Description,
+     kOsAndroid, FEATURE_VALUE_TYPE(features::kAutoDisableAccessibilityV2)},
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
     {"cct-incognito", flag_descriptions::kCCTIncognitoName,
      flag_descriptions::kCCTIncognitoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTIncognito)},
@@ -7135,6 +7145,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableShortcutCustomizationAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShortcutCustomizationApp)},
 
+    {"enable-input-device-settings-split",
+     flag_descriptions::kEnableInputDeviceSettingsSplitName,
+     flag_descriptions::kEnableInputDeviceSettingsSplitDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kShortcutCustomizationApp)},
+
     {"enable-shortcut-customization",
      flag_descriptions::kEnableShortcutCustomizationName,
      flag_descriptions::kEnableShortcutCustomizationDescription, kOsCrOS,
@@ -7419,14 +7434,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kLensCameraAssistedSearchVariations,
                                     "LensCameraAssistedSearch")},
 
-    {"lens-on-quick-action-search-widget",
-     flag_descriptions::kLensOnQuickActionSearchWidgetName,
-     flag_descriptions::kLensOnQuickActionSearchWidgetDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kLensOnQuickActionSearchWidget,
-         kLensOnQuickActionSearchWidgetVariations,
-         "LensOnQuickActionSearchWidget")},
-
     {"enable-iph", flag_descriptions::kEnableIphName,
      flag_descriptions::kEnableIphDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feature_engagement::kEnableIPH)},
@@ -7638,11 +7645,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"paint-preview-demo", flag_descriptions::kPaintPreviewDemoName,
      flag_descriptions::kPaintPreviewDemoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewDemo)},
-    {"paint-preview-startup", flag_descriptions::kPaintPreviewStartupName,
-     flag_descriptions::kPaintPreviewStartupDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(paint_preview::kPaintPreviewShowOnStartup,
-                                    kPaintPreviewStartupVariations,
-                                    "PaintPreviewShowOnStartup")},
 #endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -8378,11 +8380,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kGetDisplayMediaSetAutoSelectAllScreens)},
 
-    {"enable-vaapi-av1-decode-acceleration",
-     flag_descriptions::kVaapiAV1DecoderName,
-     flag_descriptions::kVaapiAV1DecoderDescription, kOsCrOS | kOsLacros,
-     FEATURE_VALUE_TYPE(media::kVaapiAV1Decoder)},
-
     {"default-chrome-apps-migration",
      flag_descriptions::kDefaultChromeAppsMigrationName,
      flag_descriptions::kDefaultChromeAppsMigrationDescription, kOsCrOS,
@@ -8823,12 +8820,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kPhoneHubFeatureSetupErrorHandling)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    {"sameparty-cookies-considered-first-party",
-     flag_descriptions::kSamePartyCookiesConsideredFirstPartyName,
-     flag_descriptions::kSamePartyCookiesConsideredFirstPartyDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kSamePartyCookiesConsideredFirstParty)},
-
     {"partitioned-cookies", flag_descriptions::kPartitionedCookiesName,
      flag_descriptions::kPartitionedCookiesDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kPartitionedCookies)},
@@ -9206,13 +9197,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLacrosScreenCoordinatesEnabledDescription,
      kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kWaylandScreenCoordinatesEnabled)},
-#endif
-
-#if !BUILDFLAG(IS_ANDROID)
-    {"enable-tailored-security-desktop-notice",
-     flag_descriptions::kTailoredSecurityDesktopNoticeName,
-     flag_descriptions::kTailoredSecurityDesktopNoticeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(safe_browsing::kTailoredSecurityDesktopNotice)},
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -9637,6 +9621,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRequestDesktopSiteExceptionsDowngradeDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(browser_ui::kRequestDesktopSiteExceptionsDowngrade)},
+#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID)
+    {"request-desktop-site-zoom",
+     flag_descriptions::kRequestDesktopSiteZoomName,
+     flag_descriptions::kRequestDesktopSiteZoomDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kRequestDesktopSiteZoom)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)

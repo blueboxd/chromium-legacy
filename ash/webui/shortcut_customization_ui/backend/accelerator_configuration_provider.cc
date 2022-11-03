@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/accelerators/accelerator_layout_table.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/public/cpp/accelerators_util.h"
 #include "ash/shell.h"
@@ -13,8 +14,12 @@
 #include "base/containers/flat_map.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device.h"
 
 namespace ash {
 
@@ -33,6 +38,22 @@ mojom::AcceleratorInfoPtr AcceleratorInfoToMojom(
   return info_mojom;
 }
 
+mojom::AcceleratorLayoutInfoPtr LayoutInfoToMojom(
+    AcceleratorActionId action_id,
+    AcceleratorLayoutDetails layout_details) {
+  mojom::AcceleratorLayoutInfoPtr layout_info =
+      mojom::AcceleratorLayoutInfo::New();
+  layout_info->category = layout_details.category;
+  layout_info->sub_category = layout_details.sub_category;
+  layout_info->description =
+      l10n_util::GetStringUTF16(kAcceleratorActionToStringIdMap.at(action_id));
+  layout_info->style = layout_details.layout_style;
+  layout_info->source = mojom::AcceleratorSource::kAsh;
+  layout_info->action = static_cast<uint32_t>(action_id);
+
+  return layout_info;
+}
+
 }  // namespace
 
 namespace shortcut_ui {
@@ -40,13 +61,26 @@ namespace shortcut_ui {
 AcceleratorConfigurationProvider::AcceleratorConfigurationProvider()
     : ash_accelerator_configuration_(
           Shell::Get()->ash_accelerator_configuration()) {
+  // Observe connected keyboard events.
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
+
   ash_accelerator_configuration_->AddAcceleratorsUpdatedCallback(
       base::BindRepeating(
           &AcceleratorConfigurationProvider::OnAcceleratorsUpdated,
           weak_ptr_factory_.GetWeakPtr()));
+
+  UpdateKeyboards();
+
+  // Create LayoutInfos from kAcceleratorLayouts map. LayoutInfos are static
+  // data that provides additional details for the app for styling.
+  for (const auto& [action_id, layout_details] : kAcceleratorLayouts) {
+    layout_infos_.push_back(LayoutInfoToMojom(action_id, layout_details));
+  }
 }
 
-AcceleratorConfigurationProvider::~AcceleratorConfigurationProvider() = default;
+AcceleratorConfigurationProvider::~AcceleratorConfigurationProvider() {
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+}
 
 void AcceleratorConfigurationProvider::IsMutable(
     ash::mojom::AcceleratorSource source,
@@ -64,25 +98,26 @@ void AcceleratorConfigurationProvider::IsMutable(
 
 void AcceleratorConfigurationProvider::GetAccelerators(
     GetAcceleratorsCallback callback) {
-  AcceleratorConfigurationMap accelerator_config;
+  std::move(callback).Run(CreateConfigurationMap());
+}
 
-  base::flat_map<AcceleratorActionId, std::vector<mojom::AcceleratorInfoPtr>>
-      accelerators_mojom;
-  // TODO(jimmyxgong): Currently only handling Ash case, need to also include
-  // other accelerator sources.
-  for (const auto& [action_id, accelerators] : id_to_accelerator_info_) {
-    std::vector<mojom::AcceleratorInfoPtr> infos_mojom;
-    infos_mojom.reserve(accelerators.size());
-    for (const auto& accelerator : accelerators) {
-      infos_mojom.push_back(AcceleratorInfoToMojom(accelerator));
-    }
-    accelerators_mojom.emplace(action_id, std::move(infos_mojom));
+void AcceleratorConfigurationProvider::AddObserver(
+    mojo::PendingRemote<
+        shortcut_customization::mojom::AcceleratorsUpdatedObserver> observer) {
+  accelerators_updated_observers_.reset();
+  accelerators_updated_observers_.Bind(std::move(observer));
+}
+
+void AcceleratorConfigurationProvider::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & (ui::InputDeviceEventObserver::kKeyboard)) {
+    UpdateKeyboards();
   }
+}
 
-  accelerator_config.emplace(mojom::AcceleratorSource::kAsh,
-                             std::move(accelerators_mojom));
-
-  std::move(callback).Run(std::move(accelerator_config));
+void AcceleratorConfigurationProvider::GetAcceleratorLayoutInfos(
+    GetAcceleratorLayoutInfosCallback callback) {
+  std::move(callback).Run(mojo::Clone(layout_infos_));
 }
 
 void AcceleratorConfigurationProvider::BindInterface(
@@ -100,6 +135,15 @@ mojom::AcceleratorType AcceleratorConfigurationProvider::GetAcceleratorType(
     return mojom::AcceleratorType::kDeprecated;
   }
   return mojom::AcceleratorType::kDefault;
+}
+
+void AcceleratorConfigurationProvider::UpdateKeyboards() {
+  ui::DeviceDataManager* device_data_manager =
+      ui::DeviceDataManager::GetInstance();
+  DCHECK(device_data_manager);
+
+  connected_keyboards_ = device_data_manager->GetKeyboardDevices();
+  NotifyAcceleratorsUpdated();
 }
 
 void AcceleratorConfigurationProvider::OnAcceleratorsUpdated(
@@ -124,6 +168,37 @@ void AcceleratorConfigurationProvider::OnAcceleratorsUpdated(
       id_to_accelerator_info_[action_id].push_back(info);
     }
   }
+  NotifyAcceleratorsUpdated();
+}
+
+void AcceleratorConfigurationProvider::NotifyAcceleratorsUpdated() {
+  if (accelerators_updated_observers_.is_bound()) {
+    accelerators_updated_observers_->OnAcceleratorsUpdated(
+        CreateConfigurationMap());
+  }
+}
+
+AcceleratorConfigurationProvider::AcceleratorConfigurationMap
+AcceleratorConfigurationProvider::CreateConfigurationMap() {
+  AcceleratorConfigurationMap accelerator_config;
+
+  base::flat_map<AcceleratorActionId, std::vector<mojom::AcceleratorInfoPtr>>
+      accelerators_mojom;
+  // TODO(jimmyxgong): Currently only handling Ash case, need to also include
+  // other accelerator sources.
+  for (const auto& [action_id, accelerators] : id_to_accelerator_info_) {
+    std::vector<mojom::AcceleratorInfoPtr> infos_mojom;
+    infos_mojom.reserve(accelerators.size());
+    for (const auto& accelerator : accelerators) {
+      infos_mojom.push_back(AcceleratorInfoToMojom(accelerator));
+    }
+    accelerators_mojom.emplace(action_id, std::move(infos_mojom));
+  }
+
+  accelerator_config.emplace(mojom::AcceleratorSource::kAsh,
+                             std::move(accelerators_mojom));
+
+  return accelerator_config;
 }
 
 }  // namespace shortcut_ui

@@ -120,18 +120,19 @@ bool HostIsInputFile(const Element* element) {
   return false;
 }
 
-void AdjustStyleForSvgElement(const SVGElement& element, ComputedStyle& style) {
+void AdjustStyleForSvgElement(const SVGElement& element,
+                              ComputedStyleBuilder& builder) {
   // Disable some of text decoration properties.
   //
   // Note that SetFooBar() is more efficient than ResetFooBar() if the current
   // value is same as the reset value.
-  style.SetTextDecorationSkipInk(ETextDecorationSkipInk::kAuto);
-  style.SetTextDecorationStyle(
+  builder.SetTextDecorationSkipInk(ETextDecorationSkipInk::kAuto);
+  builder.SetTextDecorationStyle(
       ETextDecorationStyle::kSolid);  // crbug.com/1246719
-  style.SetTextDecorationThickness(TextDecorationThickness(Length::Auto()));
-  style.SetTextEmphasisMark(TextEmphasisMark::kNone);
-  style.SetTextUnderlineOffset(Length());  // crbug.com/1247912
-  style.SetTextUnderlinePosition(kTextUnderlinePositionAuto);
+  builder.SetTextDecorationThickness(TextDecorationThickness(Length::Auto()));
+  builder.MutableInternalStyle()->SetTextEmphasisMark(TextEmphasisMark::kNone);
+  builder.SetTextUnderlineOffset(Length());  // crbug.com/1247912
+  builder.SetTextUnderlinePosition(kTextUnderlinePositionAuto);
 }
 
 // Adjust style for anchor() and anchor-size() queries.
@@ -308,16 +309,17 @@ static bool LayoutParentStyleForcesZIndexToCreateStackingContext(
   return layout_parent_style.IsDisplayFlexibleOrGridBox();
 }
 
-void StyleAdjuster::AdjustStyleForEditing(ComputedStyle& style) {
+void StyleAdjuster::AdjustStyleForEditing(ComputedStyleBuilder& builder) {
+  const ComputedStyle& style = *builder.InternalStyle();
   if (style.UserModify() != EUserModify::kReadWritePlaintextOnly)
     return;
   // Collapsing whitespace is harmful in plain-text editing.
-  if (style.WhiteSpace() == EWhiteSpace::kNormal)
-    style.SetWhiteSpace(EWhiteSpace::kPreWrap);
-  else if (style.WhiteSpace() == EWhiteSpace::kNowrap)
-    style.SetWhiteSpace(EWhiteSpace::kPre);
-  else if (style.WhiteSpace() == EWhiteSpace::kPreLine)
-    style.SetWhiteSpace(EWhiteSpace::kPreWrap);
+  if (builder.WhiteSpace() == EWhiteSpace::kNormal)
+    builder.SetWhiteSpace(EWhiteSpace::kPreWrap);
+  else if (builder.WhiteSpace() == EWhiteSpace::kNowrap)
+    builder.SetWhiteSpace(EWhiteSpace::kPre);
+  else if (builder.WhiteSpace() == EWhiteSpace::kPreLine)
+    builder.SetWhiteSpace(EWhiteSpace::kPreWrap);
 }
 
 void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyleBuilder& builder) {
@@ -330,32 +332,32 @@ void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyleBuilder& builder) {
   const auto line_height = style.GetFontHeight().LineHeight();
   const auto size =
       LengthSize(Length::Fixed(line_height), Length::Fixed(one_em));
-  style.SetContainIntrinsicWidth(StyleIntrinsicLength(false, size.Width()));
-  style.SetContainIntrinsicHeight(StyleIntrinsicLength(false, size.Height()));
-  style.SetHeight(size.Height());
+  builder.SetContainIntrinsicWidth(StyleIntrinsicLength(false, size.Width()));
+  builder.SetContainIntrinsicHeight(StyleIntrinsicLength(false, size.Height()));
+  builder.SetHeight(size.Height());
   builder.SetLineHeight(size.Height());
   builder.SetMaxHeight(size.Height());
   builder.SetMaxWidth(size.Width());
   builder.SetMinHeight(size.Height());
   builder.SetMinWidth(size.Width());
-  style.SetWidth(size.Width());
+  builder.SetWidth(size.Width());
   AdjustStyleForCombinedText(builder);
 }
 
 void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyleBuilder& builder) {
   ComputedStyle& style = *builder.MutableInternalStyle();
-  style.ResetTextCombine();
+  builder.ResetTextCombine();
   style.SetLetterSpacing(0.0f);
-  style.SetTextAlign(ETextAlign::kCenter);
-  style.SetTextDecorationLine(TextDecorationLine::kNone);
+  builder.SetTextAlign(ETextAlign::kCenter);
+  builder.SetTextDecorationLine(TextDecorationLine::kNone);
   style.SetTextEmphasisMark(TextEmphasisMark::kNone);
   style.SetVerticalAlign(EVerticalAlign ::kMiddle);
-  style.SetWordBreak(EWordBreak::kKeepAll);
+  builder.SetWordBreak(EWordBreak::kKeepAll);
   style.SetWordSpacing(0.0f);
-  style.SetWritingMode(WritingMode::kHorizontalTb);
+  builder.SetWritingMode(WritingMode::kHorizontalTb);
 
   style.ClearAppliedTextDecorations();
-  style.ResetTextIndent();
+  builder.ResetTextIndent();
   style.UpdateFontOrientation();
 
   DCHECK_EQ(style.GetFont().GetFontDescription().Orientation(),
@@ -364,12 +366,13 @@ void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyleBuilder& builder) {
   LayoutNGTextCombine::AssertStyleIsValid(style);
 }
 
-static void AdjustStyleForFirstLetter(ComputedStyle& style) {
+static void AdjustStyleForFirstLetter(ComputedStyleBuilder& builder) {
+  const ComputedStyle& style = *builder.InternalStyle();
   if (style.StyleType() != kPseudoIdFirstLetter)
     return;
 
   // Force inline display (except for floating first-letters).
-  style.SetDisplay(style.IsFloating() ? EDisplay::kBlock : EDisplay::kInline);
+  builder.SetDisplay(style.IsFloating() ? EDisplay::kBlock : EDisplay::kInline);
 }
 
 static void AdjustStyleForMarker(ComputedStyle& style,
@@ -397,10 +400,10 @@ static void AdjustStyleForMarker(ComputedStyle& style,
     setter.SetInlineEnd(Length::Fixed(margins.second));
   } else {
     // Outside list markers should generate a block container.
-    style.SetDisplay(EDisplay::kInlineBlock);
+    builder.SetDisplay(EDisplay::kInlineBlock);
 
     // Do not break inside the marker, and honor the trailing spaces.
-    style.SetWhiteSpace(EWhiteSpace::kPre);
+    builder.SetWhiteSpace(EWhiteSpace::kPre);
 
     // Compute margins for 'outside' during layout, because it requires the
     // layout size of the marker.
@@ -420,7 +423,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
 
   if (auto* image = DynamicTo<HTMLImageElement>(element)) {
     if (image->IsCollapsed() || style.Display() == EDisplay::kContents)
-      style.SetDisplay(EDisplay::kNone);
+      builder.SetDisplay(EDisplay::kNone);
     return;
   }
 
@@ -430,7 +433,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     if (style.GetTextAlign() == ETextAlign::kWebkitLeft ||
         style.GetTextAlign() == ETextAlign::kWebkitCenter ||
         style.GetTextAlign() == ETextAlign::kWebkitRight)
-      style.SetTextAlign(ETextAlign::kStart);
+      builder.SetTextAlign(ETextAlign::kStart);
     return;
   }
 
@@ -438,15 +441,15 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     // Frames and framesets never honor position:relative or position:absolute.
     // This is necessary to fix a crash where a site tries to position these
     // objects. They also never honor display nor floating.
-    style.SetPosition(EPosition::kStatic);
-    style.SetDisplay(EDisplay::kBlock);
-    style.SetFloating(EFloat::kNone);
+    builder.SetPosition(EPosition::kStatic);
+    builder.SetDisplay(EDisplay::kBlock);
+    builder.SetFloating(EFloat::kNone);
     return;
   }
 
   if (IsA<HTMLFrameElementBase>(element)) {
     if (style.Display() == EDisplay::kContents) {
-      style.SetDisplay(EDisplay::kNone);
+      builder.SetDisplay(EDisplay::kNone);
       return;
     }
     return;
@@ -465,16 +468,16 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
       switch (DisplayOutside(style.Display())) {
         case EDisplay::kInline:
         case EDisplay::kContents:
-          style.SetDisplay(EDisplay::kInlineBlock);
+          builder.SetDisplay(EDisplay::kInlineBlock);
           break;
         case EDisplay::kBlock:
-          style.SetDisplay(EDisplay::kBlock);
+          builder.SetDisplay(EDisplay::kBlock);
           break;
         case EDisplay::kNone:
           break;
         default:
           NOTREACHED();
-          style.SetDisplay(EDisplay::kInlineBlock);
+          builder.SetDisplay(EDisplay::kInlineBlock);
           break;
       }
     }
@@ -483,8 +486,8 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   if (IsA<HTMLRTElement>(element)) {
     // Ruby text does not support float or position. This might change with
     // evolution of the specification.
-    style.SetPosition(EPosition::kStatic);
-    style.SetFloating(EFloat::kNone);
+    builder.SetPosition(EPosition::kStatic);
+    builder.SetFloating(EFloat::kNone);
     return;
   }
 
@@ -497,7 +500,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     // fieldset. However, Blink determines the rendered legend during layout
     // instead of during layout object creation, and also generally makes
     // assumptions that the computed display value is the one to use.
-    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+    builder.SetDisplay(EquivalentBlockDisplay(style.Display()));
     return;
   }
 
@@ -517,7 +520,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
                              ? EOverflow::kAuto
                              : style.OverflowY());
     if (style.Display() == EDisplay::kContents)
-      style.SetDisplay(EDisplay::kNone);
+      builder.SetDisplay(EDisplay::kNone);
     return;
   }
 
@@ -525,7 +528,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     style.SetRequiresAcceleratedCompositingForExternalReasons(
         html_plugin_element->ShouldAccelerate());
     if (style.Display() == EDisplay::kContents)
-      style.SetDisplay(EDisplay::kNone);
+      builder.SetDisplay(EDisplay::kNone);
     return;
   }
 
@@ -542,7 +545,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
         IsA<HTMLCanvasElement>(element) || IsA<HTMLMediaElement>(element) ||
         IsA<HTMLInputElement>(element) || IsA<HTMLTextAreaElement>(element) ||
         IsA<HTMLSelectElement>(element)) {
-      style.SetDisplay(EDisplay::kNone);
+      builder.SetDisplay(EDisplay::kNone);
     }
   }
 
@@ -603,6 +606,7 @@ void StyleAdjuster::AdjustOverflow(ComputedStyle& style,
 }
 
 static void AdjustStyleForDisplay(ComputedStyle& style,
+                                  ComputedStyleBuilder& builder,
                                   const ComputedStyle& layout_parent_style,
                                   const Element* element,
                                   Document* document) {
@@ -610,7 +614,7 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
   if (layout_parent_style.BlockifiesChildren() && !HostIsInputFile(element)) {
     style.SetIsInBlockifyingDisplay();
     if (style.Display() != EDisplay::kContents) {
-      style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+      builder.SetDisplay(EquivalentBlockDisplay(style.Display()));
       if (!style.HasOutOfFlowPosition())
         style.SetIsFlexOrGridOrCustomItem();
     }
@@ -626,7 +630,7 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
   if (style.Display() == EDisplay::kInline &&
       style.StyleType() == kPseudoIdNone &&
       style.GetWritingMode() != layout_parent_style.GetWritingMode())
-    style.SetDisplay(EDisplay::kInlineBlock);
+    builder.SetDisplay(EDisplay::kInlineBlock);
 
   // writing-mode does not apply to table row groups, table column groups, table
   // rows, and table columns.
@@ -638,8 +642,8 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.Display() == EDisplay::kTableHeaderGroup ||
       style.Display() == EDisplay::kTableRow ||
       style.Display() == EDisplay::kTableRowGroup) {
-    style.SetWritingMode(layout_parent_style.GetWritingMode());
-    style.SetTextOrientation(layout_parent_style.GetTextOrientation());
+    builder.SetWritingMode(layout_parent_style.GetWritingMode());
+    builder.SetTextOrientation(layout_parent_style.GetTextOrientation());
     style.UpdateFontOrientation();
   }
 }
@@ -853,7 +857,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   if (style.Display() != EDisplay::kNone) {
     if (svg_element)
-      AdjustStyleForSvgElement(*svg_element, style);
+      AdjustStyleForSvgElement(*svg_element, builder);
 
     bool is_document_element =
         element && element->GetDocument().documentElement() == element;
@@ -864,13 +868,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     if (IsInTopLayer(element, style) && !is_document_element) {
       if (style.GetPosition() == EPosition::kStatic ||
           style.GetPosition() == EPosition::kRelative) {
-        style.SetPosition(EPosition::kAbsolute);
+        builder.SetPosition(EPosition::kAbsolute);
       }
       if (style.Display() == EDisplay::kContents) {
         // See crbug.com/1240701 for more details.
         // https://fullscreen.spec.whatwg.org/#new-stacking-layer
         // If its specified display property is contents, it computes to block.
-        style.SetDisplay(EDisplay::kBlock);
+        builder.SetDisplay(EDisplay::kBlock);
       }
     }
 
@@ -878,33 +882,33 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // element need block-like outside display.
     if (style.Display() != EDisplay::kContents &&
         (style.HasOutOfFlowPosition() || style.IsFloating()))
-      style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+      builder.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
     if (is_document_element)
-      style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+      builder.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
     // math display values on non-MathML elements compute to flow display
     // values.
     if ((!element || !is_mathml_element) &&
         style.IsDisplayMathBox(style.Display())) {
       DCHECK(RuntimeEnabledFeatures::MathMLCoreEnabled());
-      style.SetDisplay(style.Display() == EDisplay::kBlockMath
-                           ? EDisplay::kBlock
-                           : EDisplay::kInline);
+      builder.SetDisplay(style.Display() == EDisplay::kBlockMath
+                             ? EDisplay::kBlock
+                             : EDisplay::kInline);
     }
 
     // We don't adjust the first letter style earlier because we may change the
     // display setting in AdjustStyleForHTMLElement() above.
-    AdjustStyleForFirstLetter(style);
+    AdjustStyleForFirstLetter(builder);
     AdjustStyleForMarker(style, builder, parent_style, state.GetElement());
 
-    AdjustStyleForDisplay(style, layout_parent_style, element,
+    AdjustStyleForDisplay(style, builder, layout_parent_style, element,
                           element ? &element->GetDocument() : nullptr);
 
     // If this is a child of a LayoutNGCustom, we need the name of the parent
     // layout function for invalidation purposes.
     if (layout_parent_style.IsDisplayLayoutCustomBox()) {
-      style.SetDisplayLayoutCustomParentName(
+      builder.SetDisplayLayoutCustomParentName(
           layout_parent_style.DisplayLayoutCustomName());
     }
 
@@ -912,9 +916,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // The root element of the main frame has no backdrop, so don't allow
     // it to have a backdrop filter either.
     if (is_document_element && is_in_main_frame && style.HasBackdropFilter())
-      style.MutableBackdropFilter().clear();
+      builder.MutableBackdropFilter().clear();
   } else {
-    AdjustStyleForFirstLetter(style);
+    AdjustStyleForFirstLetter(builder);
   }
 
   // Make sure our z-index value is only applied if the object is positioned.
@@ -974,7 +978,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   AdjustStyleForInert(style, element);
 
-  AdjustStyleForEditing(style);
+  AdjustStyleForEditing(builder);
 
   bool is_svg_root = false;
 
@@ -983,7 +987,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     if (!is_svg_root) {
       // Only the root <svg> element in an SVG document fragment tree honors css
       // position.
-      style.SetPosition(ComputedStyleInitialValues::InitialPosition());
+      builder.SetPosition(ComputedStyleInitialValues::InitialPosition());
     }
 
     if (style.Display() == EDisplay::kContents &&
@@ -995,14 +999,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // "hoisted". For other elements display:contents behaves as display:none.
       //
       // [1] https://drafts.csswg.org/css-display/#unbox-svg
-      style.SetDisplay(EDisplay::kNone);
+      builder.SetDisplay(EDisplay::kNone);
     }
 
     // SVG text layout code expects us to be a block-level style element.
     if ((IsA<SVGForeignObjectElement>(*element) ||
          IsA<SVGTextElement>(*element)) &&
         style.IsDisplayInlineType())
-      style.SetDisplay(EDisplay::kBlock);
+      builder.SetDisplay(EDisplay::kBlock);
 
     // Columns don't apply to svg text elements.
     if (IsA<SVGTextElement>(*element))
@@ -1025,13 +1029,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   } else if (is_mathml_element) {
     if (style.Display() == EDisplay::kContents) {
       // https://drafts.csswg.org/css-display/#unbox-mathml
-      style.SetDisplay(EDisplay::kNone);
+      builder.SetDisplay(EDisplay::kNone);
     }
 
     if (style.GetWritingMode() != WritingMode::kHorizontalTb) {
       // TODO(rbuis): this will not work with logical CSS properties.
       // Disable vertical writing-mode for now.
-      style.SetWritingMode(WritingMode::kHorizontalTb);
+      builder.SetWritingMode(WritingMode::kHorizontalTb);
       style.UpdateFontOrientation();
     }
   }
@@ -1093,7 +1097,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // compatible with the block fragmentation implementation being used.
     if (style.SpecifiesColumns() ||
         (element && element->GetDocument().Printing()))
-      style.SetInsideFragmentationContextWithNondeterministicEngine(true);
+      builder.SetInsideFragmentationContextWithNondeterministicEngine(true);
   }
 }
 }  // namespace blink

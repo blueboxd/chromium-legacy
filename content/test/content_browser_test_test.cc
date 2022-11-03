@@ -39,7 +39,7 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
@@ -60,7 +60,7 @@ namespace {
 base::CommandLine CreateCommandLine() {
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   base::CommandLine command_line = base::CommandLine(cmdline.GetProgram());
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   const char* kSwitchesToCopy[] = {
       // Keep the kOzonePlatform switch that the Ozone must use.
       switches::kOzonePlatform,
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(MockContentBrowserTest, DISABLED_FailTest) {
 }
 // Basic Test to crash
 IN_PROC_BROWSER_TEST_F(MockContentBrowserTest, DISABLED_CrashTest) {
-  IMMEDIATE_CRASH();
+  base::ImmediateCrash();
 }
 
 // This is disabled due to flakiness: https://crbug.com/1086372

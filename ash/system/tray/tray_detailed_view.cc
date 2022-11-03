@@ -19,6 +19,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/adapters.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,9 +115,6 @@ class ScrollContentsView : public views::View {
     box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
     // NOTE: Pre-QsRevamp, insets are added in ViewHierarchyChanged().
-    if (features::IsQsRevampEnabled()) {
-      box_layout_->set_inside_border_insets(kQsScrollViewInsideBorderInsets);
-    }
   }
 
   ScrollContentsView(const ScrollContentsView&) = delete;
@@ -369,6 +367,7 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
 TrayDetailedView::~TrayDetailedView() = default;
 
 void TrayDetailedView::OnViewClicked(views::View* sender) {
+  DCHECK(sender);
   HandleViewClicked(sender);
 }
 

@@ -18,6 +18,7 @@ class ValueView;
 namespace content {
 
 class AttributionFilterData;
+class AttributionFilters;
 class CommonSourceInfo;
 
 // Calculates the report time for a conversion associated with a given
@@ -40,13 +41,15 @@ CONTENT_EXPORT std::string SerializeAttributionJson(base::ValueView body,
 // should not be used to apply "not_filters" within this API.
 CONTENT_EXPORT bool AttributionFilterDataMatch(
     const AttributionFilterData& source,
-    const AttributionFilterData& trigger,
+    AttributionSourceType,
+    const AttributionFilters& trigger,
     bool negated = false);
 
 CONTENT_EXPORT bool AttributionFiltersMatch(
     const AttributionFilterData& source_filter_data,
-    const AttributionFilterData& trigger_filters,
-    const AttributionFilterData& trigger_not_filters);
+    AttributionSourceType,
+    const AttributionFilters& trigger_filters,
+    const AttributionFilters& trigger_not_filters);
 
 }  // namespace content
 

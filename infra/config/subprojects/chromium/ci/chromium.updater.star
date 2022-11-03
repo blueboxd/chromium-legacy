@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "builders", "cpu", "goma", "os", "reclient")
+load("//lib/builders.star", "builders", "cpu", "os", "reclient")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 
@@ -14,9 +14,10 @@ ci.defaults.set(
     cores = 8,
     executable = ci.DEFAULT_EXECUTABLE,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
 )
 
@@ -61,9 +62,6 @@ ci.builder(
     ),
     cores = None,
     os = os.MAC_ANY,
-    goma_backend = None,
-    reclient_jobs = reclient.jobs.DEFAULT,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -89,9 +87,6 @@ ci.builder(
     ),
     cores = None,
     os = os.MAC_ANY,
-    goma_backend = None,
-    reclient_jobs = reclient.jobs.DEFAULT,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -444,9 +439,7 @@ ci.builder(
         short_name = "bld",
     ),
     os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -472,9 +465,7 @@ ci.builder(
     ),
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT * 2,
     os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     free_space = builders.free_space.high,
 )
 
@@ -500,9 +491,7 @@ ci.builder(
         short_name = "bld",
     ),
     os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.builder(
@@ -527,9 +516,7 @@ ci.builder(
         short_name = "bld",
     ),
     os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
 )
 
 ci.thin_tester(

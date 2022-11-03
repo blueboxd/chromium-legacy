@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "base/values.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
@@ -93,7 +93,7 @@ base::expected<StorableSource, SourceRegistrationError> ParseSourceRegistration(
   absl::optional<uint64_t> debug_key = ParseDebugKey(registration);
 
   base::expected<AttributionFilterData, SourceRegistrationError> filter_data =
-      AttributionFilterData::FromSourceJSON(registration.Find("filter_data"));
+      AttributionFilterData::FromJSON(registration.Find("filter_data"));
   if (!filter_data.has_value())
     return base::unexpected(filter_data.error());
 

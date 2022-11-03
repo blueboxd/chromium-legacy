@@ -2086,7 +2086,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // This value gets cached by bitfields_.can_contain_fixed_position_objects_.
   bool ComputeIsFixedContainer(const ComputedStyle* style) const;
 
-  Element* OffsetParent(const Element* = nullptr) const;
+  // If |base| is provided, then this function will not return an Element which
+  // is closed shadow hidden from |base|.
+  Element* OffsetParent(const Element* base = nullptr) const;
 
   // Mark this object needing to re-run |CollectInlines()|. Ancestors may be
   // marked too if needed.
@@ -2104,7 +2106,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   void MarkContainerChainForLayout(bool schedule_relayout = true,
                                    SubtreeLayoutScope* = nullptr);
-  void MarkParentForOutOfFlowPositionedChange();
+  void MarkParentForSpannerOrOutOfFlowPositionedChange();
   void SetNeedsLayout(LayoutInvalidationReasonForTracing,
                       MarkingBehavior = kMarkContainerChain,
                       SubtreeLayoutScope* = nullptr);

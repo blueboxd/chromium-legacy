@@ -576,7 +576,7 @@ BASE_FEATURE(kDemoModeSWA, "DemoModeSWA", base::FEATURE_DISABLED_BY_DEFAULT);
 // selection flow triggered by the stylus long press action.
 BASE_FEATURE(kDeprecateAssistantStylusFeatures,
              "DeprecateAssistantStylusFeatures",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables Sync for desk templates on ChromeOS.
 BASE_FEATURE(kDeskTemplateSync,
@@ -1211,6 +1211,11 @@ BASE_FEATURE(kLacrosSupport,
              "LacrosSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When this feature is enabled, wayland logging is enabled for Lacros.
+BASE_FEATURE(kLacrosWaylandLogging,
+             "LacrosWaylandLogging",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Emergency switch to turn off profile migration.
 BASE_FEATURE(kLacrosProfileMigrationForceOff,
              "LacrosProfileMigrationForceOff",
@@ -1839,11 +1844,6 @@ BASE_FEATURE(kSmartDimExperimentalComponent,
              "SmartDimExperimentalComponent",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Disconnects bluetooth connection when screen turns off.
-BASE_FEATURE(kSmartLockBluetoothScreenOffFix,
-             "SmartLockBluetoothScreenOffFix",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Deprecates Sign in with Smart Lock feature. Hides Smart Lock at the sign in
 // screen, removes the Smart Lock subpage in settings, and shows a one-time
 // notification for users who previously had this feature enabled.
@@ -2137,6 +2137,11 @@ BASE_FEATURE(kDeviceForceScheduledReboot,
 const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay{
     &kDeviceForceScheduledReboot, "max-delay-in-seconds", 120};
 
+// Enables settings to be split per device.
+BASE_FEATURE(kInputDeviceSettingsSplit,
+             "InputDeviceSettingsSplit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables whether to store UMA logs per-user and whether metrics
 // consent is per-user.
 BASE_FEATURE(kPerUserMetrics,
@@ -2383,6 +2388,10 @@ bool IsDeprecateAssistantStylusFeaturesEnabled() {
 
 bool IsDeskTemplateSyncEnabled() {
   return base::FeatureList::IsEnabled(kDeskTemplateSync);
+}
+
+bool IsInputDeviceSettingsSplitEnabled() {
+  return base::FeatureList::IsEnabled(kInputDeviceSettingsSplit);
 }
 
 bool IsDisplayAlignmentAssistanceEnabled() {

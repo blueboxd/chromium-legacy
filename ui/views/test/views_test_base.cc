@@ -30,7 +30,7 @@
 #include "ui/views/widget/native_widget_mac.h"
 #endif
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_gl_egl_utility.h"
 #endif
@@ -40,7 +40,7 @@ namespace views {
 namespace {
 
 bool DoesVisualHaveAlphaForTest() {
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   const auto* const egl_utility =
       ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
   return egl_utility ? egl_utility->X11DoesVisualHaveAlphaForTest() : false;
@@ -140,6 +140,12 @@ bool ViewsTestBase::HasCompositingManager() const {
 void ViewsTestBase::SimulateNativeDestroy(Widget* widget) {
   test_helper_->SimulateNativeDestroy(widget);
 }
+
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+void ViewsTestBase::SimulateDesktopNativeDestroy(Widget* widget) {
+  test_helper_->SimulateDesktopNativeDestroy(widget);
+}
+#endif
 
 #if !BUILDFLAG(IS_MAC)
 int ViewsTestBase::GetSystemReservedHeightAtTopOfScreen() {

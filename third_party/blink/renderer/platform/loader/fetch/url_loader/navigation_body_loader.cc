@@ -21,7 +21,8 @@
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/platform/loader/fetch/body_text_decoder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -39,6 +40,14 @@ bool ShouldSendDirectlyToPreloadScanner() {
   static const base::FeatureParam<bool> kSendToScannerParam{
       &features::kThreadedBodyLoader, "send-to-scanner", true};
   return kSendToScannerParam.Get();
+}
+
+// Returns the maximum data size to process in TakeData(). Returning 0 means
+// process all the data available.
+size_t GetMaxDataToProcessPerTask() {
+  static const base::FeatureParam<int> kMaxDataToProcessParam{
+      &features::kThreadedBodyLoader, "max-data-to-process", 0};
+  return kMaxDataToProcessParam.Get();
 }
 
 // A chunk of data read by the OffThreadBodyReader. This will be created on a
@@ -131,10 +140,26 @@ class NavigationBodyLoader::OffThreadBodyReader : public BodyReader {
     DCHECK(reader_task_runner_->RunsTasksInCurrentSequence());
   }
 
-  std::vector<DataChunk> TakeData() {
+  std::vector<DataChunk> TakeData(size_t max_data_to_process) {
     DCHECK(IsMainThread());
     base::AutoLock lock(lock_);
-    return std::move(data_chunks_);
+    if (max_data_to_process == 0)
+      return std::move(data_chunks_);
+
+    std::vector<DataChunk> data;
+    size_t data_processed = 0;
+    while (!data_chunks_.empty() && data_processed < max_data_to_process) {
+      data.emplace_back(std::move(data_chunks_.front()));
+      data_processed += data.back().encoded_data_size;
+      data_chunks_.erase(data_chunks_.begin());
+    }
+    if (!data_chunks_.empty()) {
+      PostCrossThreadTask(
+          *main_thread_task_runner_, FROM_HERE,
+          CrossThreadBindOnce(&NavigationBodyLoader::ProcessOffThreadData,
+                              body_loader_));
+    }
+    return data;
   }
 
   void StoreProcessBackgroundDataCallback(Client* client) {
@@ -311,7 +336,8 @@ NavigationBodyLoader::NavigationBodyLoader(
           std::move(resource_load_info_notifier_wrapper)),
       original_url_(original_url),
       should_send_directly_to_preload_scanner_(
-          ShouldSendDirectlyToPreloadScanner()) {}
+          ShouldSendDirectlyToPreloadScanner()),
+      max_data_to_process_per_task_(GetMaxDataToProcessPerTask()) {}
 
 NavigationBodyLoader::~NavigationBodyLoader() {
   if (!has_received_completion_ || !has_seen_end_of_data_) {
@@ -448,7 +474,8 @@ void NavigationBodyLoader::ProcessOffThreadData() {
     return;
   }
 
-  auto chunks = off_thread_body_reader_->TakeData();
+  auto chunks =
+      off_thread_body_reader_->TakeData(max_data_to_process_per_task_);
   auto weak_self = weak_factory_.GetWeakPtr();
   for (const auto& chunk : chunks) {
     client_->DecodedBodyDataReceived(
@@ -466,10 +493,10 @@ void NavigationBodyLoader::ProcessOffThreadData() {
       break;
     }
   }
-  NotifyCompletionIfAppropriate();
-
   if (weak_self && should_send_directly_to_preload_scanner_)
     off_thread_body_reader_->StoreProcessBackgroundDataCallback(client_);
+
+  NotifyCompletionIfAppropriate();
 }
 
 void NavigationBodyLoader::ReadFromDataPipe() {
@@ -488,7 +515,7 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
 
   absl::optional<WebURLError> error;
   if (status_.error_code != net::OK) {
-    error = WebURLLoader::PopulateURLError(status_, original_url_);
+    error = WebURLError::Create(status_, original_url_);
   }
 
   resource_load_info_notifier_wrapper_->NotifyResourceLoadCompleted(status_);
@@ -583,9 +610,9 @@ void WebNavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         navigation_params->redirects[i];
     auto& redirect_info = commit_params->redirect_infos[i];
     auto& redirect_response = commit_params->redirect_response[i];
-    WebURLLoader::PopulateURLResponse(
-        url, *redirect_response, &redirect.redirect_response,
-        response_head->ssl_info.has_value(), request_id);
+    redirect.redirect_response =
+        WebURLResponse::Create(url, *redirect_response,
+                               response_head->ssl_info.has_value(), request_id);
     resource_load_info_notifier_wrapper->NotifyResourceRedirectReceived(
         redirect_info, std::move(redirect_response));
     if (url.ProtocolIsData())
@@ -601,9 +628,8 @@ void WebNavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     url = KURL(redirect_info.new_url);
   }
 
-  WebURLLoader::PopulateURLResponse(
-      url, *response_head, &navigation_params->response,
-      response_head->ssl_info.has_value(), request_id);
+  navigation_params->response = WebURLResponse::Create(
+      url, *response_head, response_head->ssl_info.has_value(), request_id);
   if (url.ProtocolIsData())
     navigation_params->response.SetHttpStatusCode(200);
 

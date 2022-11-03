@@ -834,6 +834,13 @@ const char kEnableAutoDisableAccessibilityDescription[] =
     "turned off or if an extension which uses accessibility APIs no longer "
     "needs them.";
 
+const char kEnableAutoDisableAccessibilityV2Name[] =
+    "Auto-disable Accessibility V2";
+const char kEnableAutoDisableAccessibilityV2Description[] =
+    "Automatically disable accessibility when Android reports no assistive "
+    "technologies are running. Might break accessibility for assistive "
+    "technologies without isAccessibilityTool set.";
+
 const char kEnableAutofillAddressSavePromptName[] =
     "Autofill Address Save Prompts";
 const char kEnableAutofillAddressSavePromptDescription[] =
@@ -1082,6 +1089,11 @@ extern const char kEnableShortcutCustomizationName[] =
     "Enable customization in new shortcuts app";
 extern const char kEnableShortcutCustomizationDescription[] =
     "Enable customization of shortcuts in the new shortcuts app.";
+
+const char kEnableInputDeviceSettingsSplitName[] =
+    "Enable input device settings split";
+const char kEnableInputDeviceSettingsSplitDescription[] =
+    "Enable input device settings to be split per-device.";
 
 const char kExperimentalRgbKeyboardPatternsName[] =
     "Enable experimental RGB Keyboard patterns support";
@@ -1777,12 +1789,6 @@ const char kLensRegionSearchStaticPageName[] =
 const char kLensRegionSearchStaticPageDescription[] =
     "Enables use of a static page in a new tab when using the Lens region "
     "search feature.";
-
-const char kLensOnQuickActionSearchWidgetName[] =
-    "Google Lens in Chrome's Quick Action Search Widget";
-const char kLensOnQuickActionSearchWidgetDescription[] =
-    "Enable an entry point to Google Lens to allow users to search what they "
-    "see using their mobile camera in the Quick Action Search Widget.";
 
 const char kLogJsConsoleMessagesName[] =
     "Log JS console messages in system logs";
@@ -2550,12 +2556,6 @@ const char kSafetyCheckUnusedSitePermissionsDescription[] =
     "When enabled, adds the unused sites permission module to Safety Check on "
     "desktop. The module will be shown depending on the browser state.";
 
-const char kSamePartyCookiesConsideredFirstPartyName[] =
-    "Consider SameParty cookies to be first-party.";
-const char kSamePartyCookiesConsideredFirstPartyDescription[] =
-    "If enabled, SameParty cookies will not be blocked even if third-party "
-    "cookies are blocked.";
-
 const char kPartitionedCookiesName[] = "Partitioned cookies";
 const char kPartitionedCookiesDescription[] =
     "Controls if the Partitioned cookie attribute is enabled.";
@@ -2903,13 +2903,6 @@ const char kTabOutlinesInLowContrastThemesDescription[] =
 const char kTabSearchFuzzySearchName[] = "Fuzzy search for Tab Search";
 const char kTabSearchFuzzySearchDescription[] =
     "Enable fuzzy search for Tab Search.";
-
-const char kTailoredSecurityDesktopNoticeName[] =
-    "Dialogs to notify the user of Safe Browsing Enhanced Protection";
-const char kTailoredSecurityDesktopNoticeDescription[] =
-    "Enable the use of dialogs to notify the user of Safe Browsing Enhanced "
-    "Protection within Chrome when they enable or disable Enhanced Protection "
-    "on their Account.";
 
 const char kTextInShelfName[] = "Internal test: text in shelf";
 const char kTextInShelfDescription[] =
@@ -3930,12 +3923,6 @@ const char kRelatedSearchesInBarDescription[] =
     "Enables showing related searches suggestions in a carousel in the "
     "peeking bar of the bottom sheet on Android.";
 
-const char kRelatedSearchesSimplifiedUxName[] =
-    "Enables showing Related Searches in a simplified user experience.";
-const char kRelatedSearchesSimplifiedUxDescription[] =
-    "Enables showing related searches with a simplified form of the normal "
-    "user experience treatment.";
-
 const char kRelatedSearchesUiName[] =
     "Forces showing of the Related Searches UI on Android";
 const char kRelatedSearchesUiDescription[] =
@@ -3979,6 +3966,11 @@ const char kRequestDesktopSiteForTabletsDescription[] =
     "Requests a desktop site, if the screen size is large enough on Android."
     " On tablets with small screens a mobile site will be requested by "
     "default.";
+
+const char kRequestDesktopSiteZoomName[] =
+    "Default zoom for request desktop site on Android.";
+const char kRequestDesktopSiteZoomDescription[] =
+    "Apply default page zoom on the desktop version of websites.";
 
 const char kRevokeNotificationsPermissionIfDisabledOnAppLevelName[] =
     "Revoke site-level notification permission on Android";
@@ -5643,6 +5635,11 @@ const char kLacrosSupportDescription[] =
     "first restart can take some time to setup lacros-chrome. Please DO NOT "
     "attempt to turn off the device during the restart.";
 
+const char kLacrosWaylandLoggingName[] = "Lacros wayland logging";
+const char kLacrosWaylandLoggingDescription[] =
+    "Enables wayland logging for Lacros. This generates a significant amount "
+    "of logs on disk. Logs are cleared after two restarts.";
+
 const char kLacrosProfileMigrationForAnyUserName[] =
     "Lacros profile migration for any user";
 const char kLacrosProfileMigrationForAnyUserDescription[] =
@@ -6278,10 +6275,6 @@ const char kGetDisplayMediaSetAutoSelectAllScreensDescription[] =
     "When enabled, the autoSelectAllScreens attribute is available for usage "
     "with the GetDisplayMediaSet API.";
 
-const char kVaapiAV1DecoderName[] = "VA-API decode acceleration for AV1";
-const char kVaapiAV1DecoderDescription[] =
-    "Enable or disable decode acceleration of AV1 videos using the VA-API.";
-
 const char kIntentChipSkipsPickerName[] =
     "Link capturing intent chip skips the intent picker bubble";
 const char kIntentChipSkipsPickerDescription[] =
@@ -6533,12 +6526,6 @@ const char kPaintPreviewDemoName[] = "Paint Preview Demo";
 const char kPaintPreviewDemoDescription[] =
     "If enabled a menu item is added to the Android main menu to demo paint "
     "previews.";
-const char kPaintPreviewStartupName[] = "Paint Preview Startup";
-const char kPaintPreviewStartupDescription[] =
-    "If enabled, paint previews for each tab are captured when a tab is hidden "
-    "and are deleted when a tab is closed. If a paint preview was captured for "
-    "the tab to be restored on startup, the paint preview will be shown "
-    "instead.";
 #endif  // ENABLE_PAINT_PREVIEW && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

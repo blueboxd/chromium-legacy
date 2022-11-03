@@ -244,10 +244,10 @@ void LayoutTheme::AdjustStyle(const Element* element,
       style.Display() == EDisplay::kTableColumn ||
       style.Display() == EDisplay::kTableCell ||
       style.Display() == EDisplay::kTableCaption)
-    style.SetDisplay(EDisplay::kInlineBlock);
+    builder.SetDisplay(EDisplay::kInlineBlock);
   else if (style.Display() == EDisplay::kListItem ||
            style.Display() == EDisplay::kTable)
-    style.SetDisplay(EDisplay::kBlock);
+    builder.SetDisplay(EDisplay::kBlock);
 
   ControlPart part = AdjustAppearanceWithAuthorStyle(
       AdjustAppearanceWithElementType(style, element), style);
@@ -270,9 +270,9 @@ void LayoutTheme::AdjustStyle(const Element* element,
       return AdjustMenuListButtonStyle(builder);
     case kSliderThumbHorizontalPart:
     case kSliderThumbVerticalPart:
-      return AdjustSliderThumbStyle(style);
+      return AdjustSliderThumbStyle(builder);
     case kSearchFieldCancelButtonPart:
-      return AdjustSearchFieldCancelButtonStyle(style);
+      return AdjustSearchFieldCancelButtonStyle(builder);
     default:
       break;
   }
@@ -466,13 +466,13 @@ void LayoutTheme::AdjustSliderContainerStyle(
   DCHECK(IsSliderContainer(element));
 
   if (style.EffectiveAppearance() == kSliderVerticalPart) {
-    style.SetTouchAction(TouchAction::kPanX);
-    style.SetWritingMode(WritingMode::kVerticalRl);
+    builder.SetTouchAction(TouchAction::kPanX);
+    builder.SetWritingMode(WritingMode::kVerticalRl);
     // It's always in RTL because the slider value increases up even in LTR.
-    style.SetDirection(TextDirection::kRtl);
+    builder.SetDirection(TextDirection::kRtl);
   } else {
-    style.SetTouchAction(TouchAction::kPanY);
-    style.SetWritingMode(WritingMode::kHorizontalTb);
+    builder.SetTouchAction(TouchAction::kPanY);
+    builder.SetWritingMode(WritingMode::kHorizontalTb);
     if (To<HTMLInputElement>(element.OwnerShadowHost())->list()) {
       builder.SetAlignSelf(StyleSelfAlignmentData(ItemPosition::kCenter,
                                                   OverflowAlignment::kUnsafe));
@@ -481,13 +481,14 @@ void LayoutTheme::AdjustSliderContainerStyle(
   style.SetEffectiveAppearance(kNoControlPart);
 }
 
-void LayoutTheme::AdjustSliderThumbStyle(ComputedStyle& style) const {
-  AdjustSliderThumbSize(style);
+void LayoutTheme::AdjustSliderThumbStyle(ComputedStyleBuilder& builder) const {
+  AdjustSliderThumbSize(builder);
 }
 
-void LayoutTheme::AdjustSliderThumbSize(ComputedStyle&) const {}
+void LayoutTheme::AdjustSliderThumbSize(ComputedStyleBuilder&) const {}
 
-void LayoutTheme::AdjustSearchFieldCancelButtonStyle(ComputedStyle&) const {}
+void LayoutTheme::AdjustSearchFieldCancelButtonStyle(
+    ComputedStyleBuilder&) const {}
 
 void LayoutTheme::PlatformColorsDidChange() {
   UpdateForcedColorsState();

@@ -261,7 +261,7 @@ void RenderViewHostImpl::GetPlatformSpecificPrefs(
   // TODO(crbug.com/1066605): Consider exposing this as a FIDL parameter.
   prefs->focus_ring_color = SK_AlphaTRANSPARENT;
 #endif
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   prefs->selection_clipboard_buffer_available =
       ui::Clipboard::IsSupportedClipboardBuffer(
           ui::ClipboardBuffer::kSelection);
@@ -725,14 +725,6 @@ void RenderViewHostImpl::ClosePage() {
 
   if (IsRenderViewLive() && !SuddenTerminationAllowed()) {
     close_timeout_->Start(kUnloadTimeout);
-
-    // TODO(creis): Should this be moved to Shutdown?  It may not be called for
-    // RenderViewHosts that have been swapped out.
-#if !BUILDFLAG(IS_ANDROID)
-    static_cast<HostZoomMapImpl*>(
-        HostZoomMap::Get(GetMainRenderFrameHost()->GetSiteInstance()))
-        ->WillCloseRenderView(GetProcess()->GetID(), GetRoutingID());
-#endif
 
     GetMainRenderFrameHost()->GetAssociatedLocalMainFrame()->ClosePage(
         base::BindOnce(&RenderViewHostImpl::OnPageClosed,

@@ -84,8 +84,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
+#if BUILDFLAG(IS_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_gl_egl_utility.h"
 #endif
@@ -705,9 +704,17 @@ TEST_F(WidgetTest, ChildBoundsRelativeToParent) {
 // Widget ownership tests.
 //
 // Tests various permutations of Widget ownership specified in the
-// InitParams::Ownership param.
+// InitParams::Ownership param. Make sure that they are properly destructed
+// during shutdown.
 
-// A WidgetTest that supplies a toplevel widget for NativeWidget to parent to.
+// A bag of state to monitor destructions.
+struct OwnershipTestState {
+  OwnershipTestState() = default;
+
+  bool widget_deleted = false;
+  bool native_widget_deleted = false;
+};
+
 class WidgetOwnershipTest : public WidgetTest {
  public:
   WidgetOwnershipTest() = default;
@@ -717,26 +724,16 @@ class WidgetOwnershipTest : public WidgetTest {
 
   ~WidgetOwnershipTest() override = default;
 
-  void SetUp() override {
-    WidgetTest::SetUp();
-    desktop_widget_ = CreateTopLevelPlatformWidget();
-  }
-
   void TearDown() override {
-    desktop_widget_->CloseNow();
+    EXPECT_TRUE(state()->widget_deleted);
+    EXPECT_TRUE(state()->native_widget_deleted);
     WidgetTest::TearDown();
   }
 
+  OwnershipTestState* state() { return &state_; }
+
  private:
-  raw_ptr<Widget> desktop_widget_;
-};
-
-// A bag of state to monitor destructions.
-struct OwnershipTestState {
-  OwnershipTestState() = default;
-
-  bool widget_deleted = false;
-  bool native_widget_deleted = false;
+  OwnershipTestState state_;
 };
 
 // A Widget subclass that updates a bag of state when it is destroyed.
@@ -753,139 +750,186 @@ class OwnershipTestWidget : public Widget {
   raw_ptr<OwnershipTestState> state_;
 };
 
-// TODO(sky): add coverage of ownership for the desktop variants.
+class NativeWidgetDestroyedWaiter {
+ public:
+  explicit NativeWidgetDestroyedWaiter(OwnershipTestState* state)
+      : state_(state) {}
 
-// NativeWidget owns its Widget, part 1: NativeWidget is a platform-native
-// widget.
-TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
-  OwnershipTestState state;
+  base::OnceClosure GetNativeWidgetDestroyedCallback() {
+    return base::BindOnce(
+        [](OwnershipTestState* state, base::RunLoop* run_loop) {
+          state->native_widget_deleted = true;
+          run_loop->Quit();
+        },
+        state_.get(), &run_loop_);
+  }
 
-  Widget* widget = new OwnershipTestWidget(&state);
+  void Wait() {
+    if (!state_->native_widget_deleted)
+      run_loop_.Run();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  raw_ptr<OwnershipTestState> state_;
+};
+
+using NativeWidgetOwnsWidgetTest = WidgetOwnershipTest;
+// NativeWidget owns its Widget, part 1.1: NativeWidget is a non-desktop
+// widget, CloseNow() destroys Widget and NativeWidget synchronously.
+TEST_F(NativeWidgetOwnsWidgetTest, NonDesktopWidget_CloseNow) {
+  Widget* widget = new OwnershipTestWidget(state());
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, &state()->native_widget_deleted);
   widget->Init(std::move(params));
 
-  // Now destroy the native widget.
   widget->CloseNow();
 
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
+  // Both widget and native widget should be deleted synchronously.
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
 }
 
-// NativeWidget owns its Widget, part 2: NativeWidget is a NativeWidget.
-TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
-  OwnershipTestState state;
+// NativeWidget owns its Widget, part 1.2: NativeWidget is a non-desktop
+// widget, Close() destroys Widget and NativeWidget asynchronously.
+TEST_F(NativeWidgetOwnsWidgetTest, NonDesktopWidget_Close) {
+  NativeWidgetDestroyedWaiter waiter(state());
+  Widget* widget = new OwnershipTestWidget(state());
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.native_widget = CreatePlatformNativeWidgetImpl(
+      widget, kStubCapture, waiter.GetNativeWidgetDestroyedCallback());
+  widget->Init(std::move(params));
 
+  widget->Close();
+  waiter.Wait();
+
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
+}
+
+// NativeWidget owns its Widget, part 1.3: NativeWidget is a desktop
+// widget, Close() destroys Widget and NativeWidget asynchronously.
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+TEST_F(NativeWidgetOwnsWidgetTest, DesktopWidget_Close) {
+  NativeWidgetDestroyedWaiter waiter(state());
+  Widget* widget = new OwnershipTestWidget(state());
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+      widget, kStubCapture, waiter.GetNativeWidgetDestroyedCallback());
+  widget->Init(std::move(params));
+
+  widget->Close();
+  waiter.Wait();
+
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
+}
+#endif
+
+// NativeWidget owns its Widget, part 1.4: NativeWidget is a desktop
+// widget. Unlike desktop widget, CloseNow() might destroy Widget and
+// NativeWidget asynchronously.
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+TEST_F(NativeWidgetOwnsWidgetTest, DesktopWidget_CloseNow) {
+  NativeWidgetDestroyedWaiter waiter(state());
+  Widget* widget = new OwnershipTestWidget(state());
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+      widget, kStubCapture, waiter.GetNativeWidgetDestroyedCallback());
+  widget->Init(std::move(params));
+
+  widget->CloseNow();
+  waiter.Wait();
+
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
+}
+#endif
+
+// NativeWidget owns its Widget, part 2.1: NativeWidget is a non-desktop
+// widget. CloseNow() the parent should destroy the child.
+TEST_F(NativeWidgetOwnsWidgetTest, NonDestkopWidget_CloseNowParent) {
+  NativeWidgetDestroyedWaiter waiter(state());
   Widget* toplevel = CreateTopLevelPlatformWidget();
-
-  Widget* widget = new OwnershipTestWidget(&state);
+  Widget* widget = new OwnershipTestWidget(state());
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, waiter.GetNativeWidgetDestroyedCallback());
   widget->Init(std::move(params));
 
   // Now destroy the native widget. This is achieved by closing the toplevel.
   toplevel->CloseNow();
-
   // The NativeWidget won't be deleted until after a return to the message loop
   // so we have to run pending messages before testing the destruction status.
-  RunPendingMessages();
+  waiter.Wait();
 
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
 }
 
-// NativeWidget owns its Widget, part 3: NativeWidget is a platform-native
-// widget, destroyed out from under it by the OS.
-TEST_F(WidgetOwnershipTest,
-       Ownership_PlatformNativeWidgetOwnsWidget_NativeDestroy) {
-  OwnershipTestState state;
+// NativeWidget owns its Widget, part 2.2: NativeWidget is a desktop
+// widget. CloseNow() the parent should destroy the child.
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+TEST_F(NativeWidgetOwnsWidgetTest, DestkopWidget_CloseNowParent) {
+  NativeWidgetDestroyedWaiter waiter(state());
+  Widget* toplevel = CreateTopLevelPlatformDesktopWidget();
+  Widget* widget = new OwnershipTestWidget(state());
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.parent = toplevel->GetNativeView();
+  params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+      widget, kStubCapture, waiter.GetNativeWidgetDestroyedCallback());
+  widget->Init(std::move(params));
 
-  Widget* widget = new OwnershipTestWidget(&state);
+  // Now destroy the native widget. This is achieved by closing the toplevel.
+  toplevel->CloseNow();
+  // The NativeWidget won't be deleted until after a return to the message loop
+  // so we have to run pending messages before testing the destruction status.
+  waiter.Wait();
+
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
+}
+#endif
+
+// NativeWidget owns its Widget, part 3.1: NativeWidget is a non-desktop
+// widget, destroyed out from under it by the OS.
+TEST_F(NativeWidgetOwnsWidgetTest, NonDesktopWidget_NativeDestroy) {
+  Widget* widget = new OwnershipTestWidget(state());
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget = CreatePlatformNativeWidgetImpl(
-      widget, kStubCapture, &state.native_widget_deleted);
+      widget, kStubCapture, &state()->native_widget_deleted);
   widget->Init(std::move(params));
 
   // Now simulate a destroy of the platform native widget from the OS:
   SimulateNativeDestroy(widget);
 
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
 }
 
-// NativeWidget owns its Widget, part 4: NativeWidget is a NativeWidget,
-// destroyed by the view hierarchy that contains it.
-TEST_F(WidgetOwnershipTest,
-       Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy) {
-  OwnershipTestState state;
-
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-
-  Widget* widget = new OwnershipTestWidget(&state);
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+// NativeWidget owns its Widget, part 3.2: NativeWidget is a desktop
+// widget, destroyed out from under it by the OS.
+TEST_F(NativeWidgetOwnsWidgetTest, DesktopWidget_NativeDestroy) {
+  NativeWidgetDestroyedWaiter waiter(state());
+  Widget* widget = new OwnershipTestWidget(state());
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.parent = toplevel->GetNativeView();
-  params.native_widget = CreatePlatformNativeWidgetImpl(
-      widget, kStubCapture, &state.native_widget_deleted);
+  params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+      widget, kStubCapture, waiter.GetNativeWidgetDestroyedCallback());
   widget->Init(std::move(params));
 
-  // Destroy the widget (achieved by closing the toplevel).
-  toplevel->CloseNow();
+  // Now simulate a destroy of the platform native widget from the OS:
+  SimulateDesktopNativeDestroy(widget);
+  waiter.Wait();
 
-  // The NativeWidget won't be deleted until after a return to the message loop
-  // so we have to run pending messages before testing the destruction status.
-  RunPendingMessages();
-
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
+  EXPECT_TRUE(state()->widget_deleted);
+  EXPECT_TRUE(state()->native_widget_deleted);
 }
+#endif
 
-// NativeWidget owns its Widget, part 5: NativeWidget is a NativeWidget,
-// we close it directly.
-TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget_Close) {
-  OwnershipTestState state;
-
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-
-  Widget* widget = new OwnershipTestWidget(&state);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.parent = toplevel->GetNativeView();
-  params.native_widget = CreatePlatformNativeWidgetImpl(
-      widget, kStubCapture, &state.native_widget_deleted);
-  widget->Init(std::move(params));
-
-  // Destroy the widget.
-  widget->Close();
-  toplevel->CloseNow();
-
-  // The NativeWidget won't be deleted until after a return to the message loop
-  // so we have to run pending messages before testing the destruction status.
-  RunPendingMessages();
-
-  EXPECT_TRUE(state.widget_deleted);
-  EXPECT_TRUE(state.native_widget_deleted);
-}
-
-class WidgetOwnsNativeWidgetTest : public WidgetOwnershipTest {
- public:
-  WidgetOwnsNativeWidgetTest() = default;
-  ~WidgetOwnsNativeWidgetTest() override = default;
-
-  void TearDown() override {
-    EXPECT_TRUE(state_.widget_deleted);
-    EXPECT_TRUE(state_.native_widget_deleted);
-
-    WidgetOwnershipTest::TearDown();
-  }
-
-  OwnershipTestState* state() { return &state_; }
-
- private:
-  OwnershipTestState state_;
-};
-
+using WidgetOwnsNativeWidgetTest = WidgetOwnershipTest;
 // Widget owns its NativeWidget, part 1.
 TEST_F(WidgetOwnsNativeWidgetTest, Ownership) {
   auto widget = std::make_unique<OwnershipTestWidget>(state());
@@ -957,23 +1001,7 @@ TEST_F(WidgetOwnsNativeWidgetTest, IdempotentCloseNow) {
 
 // Test for CLIENT_OWNS_WIDGET. The client holds a unique_ptr<Widget>.
 // The NativeWidget will be destroyed when the platform window is closed.
-class ClientOwnsWidgetTest : public WidgetOwnershipTest {
- public:
-  ClientOwnsWidgetTest() = default;
-  ~ClientOwnsWidgetTest() override = default;
-
-  void TearDown() override {
-    EXPECT_TRUE(state_.widget_deleted);
-    EXPECT_TRUE(state_.native_widget_deleted);
-
-    WidgetOwnershipTest::TearDown();
-  }
-
-  OwnershipTestState* state() { return &state_; }
-
- private:
-  OwnershipTestState state_;
-};
+using ClientOwnsWidgetTest = WidgetOwnershipTest;
 
 TEST_F(ClientOwnsWidgetTest, Ownership) {
   auto widget = std::make_unique<OwnershipTestWidget>(state());
@@ -1009,23 +1037,14 @@ class WidgetWithDestroyedNativeWidgetTest : public ViewsTestBase {
     ViewsTestBase::SetUp();
     widget_ = CreateTestWidget();
     widget_->Show();
-    native_widget_ = widget_->native_widget_private();
-    widget_->SetNativeWidgetForTesting(nullptr);
-  }
-
-  void TearDown() override {
-    ViewsTestBase::TearDown();
-    // Add the NativeWidget back to be destroyed. We should be able to directly
-    // tell the NativeWidget to be destroyed if we decouple the lifetime of
-    // Widget and NativeWidget.
-    widget_->SetNativeWidgetForTesting(native_widget_);
+    widget_->Close();
+    RunPendingMessages();
   }
 
   Widget* widget() { return widget_.get(); }
 
  private:
   std::unique_ptr<Widget> widget_;
-  internal::NativeWidgetPrivate* native_widget_;
 };
 
 TEST_F(WidgetWithDestroyedNativeWidgetTest, Activate) {
@@ -2257,19 +2276,6 @@ TEST_F(WidgetTest, GetWindowPlacement) {
 #else
 TEST_F(DesktopWidgetTest, GetWindowPlacement) {
 #endif
-
-#if defined(OS_APPLE)
-  if (base::mac::IsOS10_10())
-    return;  // Fails when swarmed. http://crbug.com/660582
-#endif
-
-#if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform() &&
-      ui::OzonePlatform::GetPlatformNameForTest() != "x11") {
-    GTEST_SKIP() << "This test is X11-only";
-  }
-#endif
-
   WidgetAutoclosePtr widget;
   widget.reset(CreateTopLevelNativeWidget());
 
@@ -5309,13 +5315,15 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
             widget, false, nullptr);
     return init_params;
   };
-  Widget owner_dialog_widget(
+  Widget owner_dialog_widget;
+  owner_dialog_widget.Init(
       create_params(&owner_dialog_widget, top_level_widget->GetNativeView()));
   owner_dialog_widget.Show();
   HWND owner_hwnd = HWNDForWidget(&owner_dialog_widget);
 
   // Create the owned modal dialog.
-  Widget owned_dialog_widget(
+  Widget owned_dialog_widget;
+  owned_dialog_widget.Init(
       create_params(&owned_dialog_widget, owner_dialog_widget.GetNativeView()));
   owned_dialog_widget.Show();
   HWND owned_hwnd = HWNDForWidget(&owned_dialog_widget);
@@ -5402,15 +5410,10 @@ TEST_F(DesktopWidgetTest, StackAboveTest) {
 namespace {
 
 bool CanHaveCompositingManager() {
-#if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    auto* const egl_utility =
-        ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
-    return (egl_utility != nullptr) && egl_utility->HasVisualManager();
-  }
-#endif
-#if defined(USE_X11)
-  return true;
+#if BUILDFLAG(IS_OZONE)
+  auto* const egl_utility =
+      ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
+  return (egl_utility != nullptr) && egl_utility->HasVisualManager();
 #else
   return false;
 #endif

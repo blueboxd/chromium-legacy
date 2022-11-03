@@ -9,7 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/types/expected.h"
-#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,10 +31,6 @@ class CONTENT_EXPORT AttributionAggregationKeys {
                         attribution_reporting::mojom::SourceRegistrationError>
   FromJSON(const base::Value*);
 
-  // Deserializes `str`, if valid. Returns `absl::nullopt` if not.
-  static absl::optional<AttributionAggregationKeys> Deserialize(
-      const std::string& str);
-
   AttributionAggregationKeys();
   ~AttributionAggregationKeys();
 
@@ -45,8 +41,6 @@ class CONTENT_EXPORT AttributionAggregationKeys {
   AttributionAggregationKeys& operator=(AttributionAggregationKeys&&);
 
   const Keys& keys() const { return keys_; }
-
-  std::string Serialize() const;
 
  private:
   explicit AttributionAggregationKeys(Keys keys);

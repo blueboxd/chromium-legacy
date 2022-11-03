@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
@@ -486,19 +487,14 @@ class Storage::KeyInStorage {
         dir_enum,
         base::BindRepeating(
             [](uint64_t new_file_index, const base::FilePath& full_name) {
-              const auto extension = full_name.Extension();
-              if (extension.empty()) {
-                // Should not happen, will remove this file.
-                return true;
-              }
-              uint64_t file_index = 0;
-              if (!base::StringToUint64(extension.substr(1), &file_index)) {
-                // Bad extension - not a number. Should not happen, will remove
-                // this file.
-                return true;
-              }
-              if (file_index < new_file_index) {
-                // Lower index file, will remove it.
+              const auto file_index =
+                  StorageQueue::GetFileSequenceIdFromPath(full_name);
+              if (!file_index.ok() ||  // Should not happen, will remove file.
+                  file_index.ValueOrDie() <
+                      static_cast<int64_t>(
+                          new_file_index)) {  // Lower index file, will remove
+                                              // it.
+
                 return true;
               }
               return false;
@@ -522,25 +518,24 @@ class Storage::KeyInStorage {
         // Duplicate file name. Should not happen.
         continue;
       }
-      const auto extension = full_name.Extension();
-      if (extension.empty()) {
-        // Should not happen.
+      const auto file_index =
+          StorageQueue::GetFileSequenceIdFromPath(full_name);
+      if (!file_index.ok()) {  // Shouldn't happen, something went wrong.
         continue;
       }
-      uint64_t file_index = 0;
-      bool success = base::StringToUint64(extension.substr(1), &file_index);
-      if (!success) {
-        // Bad extension - not a number. Should not happen (file is corrupt).
-        continue;
-      }
-      if (!found_key_files->emplace(file_index, full_name).second) {
+      if (!found_key_files
+               ->emplace(static_cast<uint64_t>(file_index.ValueOrDie()),
+                         full_name)
+               .second) {
         // Duplicate extension (e.g., 01 and 001). Should not happen (file is
         // corrupt).
         continue;
       }
       // Set 'next_key_file_index_' to a number which is definitely not used.
-      if (next_key_file_index_.load() <= file_index) {
-        next_key_file_index_.store(file_index + 1);
+      if (static_cast<int64_t>(next_key_file_index_.load()) <=
+          file_index.ValueOrDie()) {
+        next_key_file_index_.store(
+            static_cast<uint64_t>(file_index.ValueOrDie() + 1));
       }
     }
   }
@@ -948,5 +943,26 @@ Status Storage::StorePipelineId(base::StringPiece pipeline_id) {
 
 StatusOr<std::string> Storage::GetPipelineId() {
   return pipeline_id_in_storage_->GetPipelineId();
+}
+
+void Storage::RegisterCompletionCallback(base::OnceClosure callback) {
+  // Although this is an asynchronous action, note that Storage cannot be
+  // destructed until the callback is registered - StorageQueue is held by added
+  // reference here. Thus, the callback being registered is guaranteed
+  // to be called when the Storage is being destructed.
+  DCHECK(callback);
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::OnceClosure callback, scoped_refptr<Storage> self) {
+            DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
+            const base::RepeatingClosure queue_callback =
+                base::BarrierClosure(self->queues_.size(), std::move(callback));
+            for (auto& queue : self->queues_) {
+              // Copy the callback as base::OnceClosure.
+              queue.second->RegisterCompletionCallback(queue_callback);
+            }
+          },
+          std::move(callback), base::WrapRefCounted(this)));
 }
 }  // namespace reporting

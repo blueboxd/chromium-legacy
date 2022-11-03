@@ -302,6 +302,11 @@
         },
       ],
     },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_vm_cache',
+      ],
+    },
   },
   'chromeos-betty': {
     'swarming': {
@@ -328,6 +333,11 @@
           'name': 'cros_vm',
           'path': 'magic_cros_vm_cache',
         },
+      ],
+    },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_vm_cache',
       ],
     },
   },
@@ -388,6 +398,11 @@
         },
       ],
     },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_reven_vm_cache',
+      ],
+    },
   },
   'chromeos-zork': {
     'swarming': {
@@ -445,7 +460,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd',
-        'machine_type': 'n1-standard-4|e2-standard-4',
+        'machine_type': 'n1-standard-4|e2-standard-4|n2-standard-4',
       },
     },
   },
@@ -455,7 +470,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd',
-        'machine_type': 'e2-standard-8',
+        'machine_type': 'e2-standard-8|n2-standard-8',
       },
     },
   },

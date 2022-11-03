@@ -1697,17 +1697,24 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // focus dependency is because doing it earlier can cause drawing bugs, e.g. crbug/673831.
         if (!mNativeInitialized || !hasWindowFocus()) return;
 
-        // The window background color is used as the resizing background color in Android N+
-        // multi-window mode. See crbug.com/602366.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             changeBackgroundColorForResizing();
         } else {
-            // Post the removeWindowBackground() call as a separate task, as doing it synchronously
-            // here can cause redrawing glitches. See crbug.com/686662 for an example problem.
+            // Post the background update call as a separate task, as doing it synchronously
+            // here can cause redrawing glitches. See crbug.com/686662 and crbug.com/1260127 for
+            // example problems.
             Handler handler = new Handler();
-            handler.post(() -> removeWindowBackground());
+            handler.post(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    // The window background color is used as the resizing background color in
+                    // Android N+ multi-window mode. See crbug.com/602366.
+                    changeBackgroundColorForResizing();
+                } else {
+                    removeWindowBackground();
+                }
+            });
         }
-
         mRemoveWindowBackgroundDone = true;
     }
 
@@ -2245,7 +2252,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /** Handles back press events for Chrome in various states. */
-    protected final void handleOnBackPressed() {
+    protected final boolean handleOnBackPressed() {
         assert !BackPressManager.isEnabled()
             : "Back press should be handled by implementors of BackPressHandler if enabled";
         if (mNativeInitialized) RecordUserAction.record("SystemBack");
@@ -2259,13 +2266,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         if (VrModuleProvider.getDelegate().onBackPressed()) {
             BackPressManager.record(Type.VR_DELEGATE);
-            return;
+            return true;
         }
 
         ArDelegate arDelegate = ArDelegateProvider.getDelegate();
         if (arDelegate != null && arDelegate.onBackPressed()) {
             BackPressManager.record(Type.AR_DELEGATE);
-            return;
+            return true;
         }
 
         if (mCompositorViewHolderSupplier.hasValue()) {
@@ -2273,7 +2280,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     mCompositorViewHolderSupplier.get().getLayoutManager();
             if (layoutManager != null && layoutManager.onBackPressed()) {
                 // Back press metrics recording is handled by LayoutManagerImpl internally.
-                return;
+                return true;
             }
         }
 
@@ -2281,23 +2288,23 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (controller != null && controller.isSelectActionBarShowing()) {
             controller.clearSelection();
             BackPressManager.record(Type.SELECTION_POPUP);
-            return;
+            return true;
         }
 
         if (getManualFillingComponent().onBackPressed()) {
             BackPressManager.record(Type.MANUAL_FILLING);
-            return;
+            return true;
         }
 
         if (exitFullscreenIfShowing()) {
             BackPressManager.record(Type.FULLSCREEN);
-            return;
+            return true;
         }
 
         if (mRootUiCoordinator.getBottomSheetController() != null
                 && mRootUiCoordinator.getBottomSheetController().handleBackPress()) {
             BackPressManager.record(BackPressHandler.Type.BOTTOM_SHEET);
-            return;
+            return true;
         }
 
         // This only intercepts back press when back press refactor is disabled on T+. Otherwise,
@@ -2306,10 +2313,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 && mRootUiCoordinator.getFindToolbarManager().isShowing()) {
             BackPressManager.record(BackPressHandler.Type.FIND_TOOLBAR);
             mRootUiCoordinator.getFindToolbarManager().hideToolbar();
-            return;
+            return true;
         }
 
-        handleBackPressed();
+        return handleBackPressed();
     }
 
     @CallSuper
@@ -2352,7 +2359,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             OnBackPressedCallback callback = new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {
-                    ChromeActivity.this.handleOnBackPressed();
+                    if (!ChromeActivity.this.handleOnBackPressed()) {
+                        setEnabled(false);
+                        getOnBackPressedDispatcher().onBackPressed();
+                        setEnabled(true);
+                    }
                 }
             };
             getOnBackPressedDispatcher().addCallback(this, callback);

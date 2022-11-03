@@ -151,6 +151,18 @@ void CameraPrivacySwitchController::OnCameraHWPrivacySwitchStateChanged(
   }
 }
 
+void CameraPrivacySwitchController::OnCameraSWPrivacySwitchStateChanged(
+    cros::mojom::CameraPrivacySwitchState state) {
+  const CameraSWPrivacySwitchSetting pref_val = GetUserSwitchPreference();
+  cros::mojom::CameraPrivacySwitchState pref_state =
+      pref_val == CameraSWPrivacySwitchSetting::kEnabled
+          ? cros::mojom::CameraPrivacySwitchState::OFF
+          : cros::mojom::CameraPrivacySwitchState::ON;
+  if (state != pref_state) {
+    switch_api_->SetCameraSWPrivacySwitch(pref_val);
+  }
+}
+
 cros::mojom::CameraPrivacySwitchState
 CameraPrivacySwitchController::HWSwitchState() const {
   return camera_privacy_switch_state_;
@@ -248,9 +260,18 @@ void CameraPrivacySwitchController::OnActiveClientChange(
     active_camera_client_count_--;
   }
 
-  if (active_camera_client_count_ > 0) {
-    if (GetUserSwitchPreference() == CameraSWPrivacySwitchSetting::kDisabled)
-      ShowCameraOffNotification();
+  // Notification should pop up when the number of active clients increases but
+  // the camera is disabled by the software switch.
+  if (is_new_active_client &&
+      GetUserSwitchPreference() == CameraSWPrivacySwitchSetting::kDisabled) {
+    ShowCameraOffNotification();
+  }
+
+  // Remove existing software switch notification when the number of active
+  // clients is 0.
+  if (active_camera_client_count_ == 0) {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        kPrivacyHubCameraOffNotificationId, /*by_user=*/false);
   }
 }
 

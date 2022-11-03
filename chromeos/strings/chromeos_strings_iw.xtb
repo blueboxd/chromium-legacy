@@ -6,7 +6,6 @@
 <translation id="1047458377670401304">‏<ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> שרשורים, GHz‏ <ph name="CPU_MAX_CLOCK_SPEED" />)</translation>
 <translation id="1047773237499189053">יש תכונה חדשה. למידע נוסף יש להקיש על מקש החץ למעלה.</translation>
 <translation id="1059913517121127803">לא ניתן היה להתחיל את הסריקה</translation>
-<translation id="1062407476771304334">החלפה</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">זוהתה חומת אש</translation>
 <translation id="1075811647922107217">גודל הדף</translation>
@@ -471,6 +470,7 @@
 <translation id="5502931783115429516">‏מערכת Android לא פועלת</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5559898619118303662">מעבר אוטומטי לעיצוב כהה בשקיעה</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">סריקה מחדש</translation>
 <translation id="5583640892426849032">Backspace</translation>

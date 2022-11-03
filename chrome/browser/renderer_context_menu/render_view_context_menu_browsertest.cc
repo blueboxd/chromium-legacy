@@ -324,7 +324,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     std::string response_file_extension;
     std::vector<lens::mojom::LatencyLogPtr> response_log_data;
     chrome_render_frame->RequestImageForContextNode(
-        0, request_size, request_image_format,
+        0, request_size, request_image_format, chrome::mojom::kDefaultQuality,
         base::BindOnce(callback, &response_image_data, &response_original_size,
                        &response_file_extension, &response_log_data,
                        run_loop.QuitClosure()));
@@ -2321,6 +2321,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   bool response_received = false;
   chrome_render_frame->RequestImageForContextNode(
       0, gfx::Size(2048, 2048), chrome::mojom::ImageFormat::JPEG,
+      chrome::mojom::kDefaultQuality,
       base::BindOnce(callback, &response_received, run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -2492,10 +2493,11 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
                                      public ::testing::WithParamInterface<int> {
  public:
   PdfOcrContextMenuBrowserTest() {
-    if (IsPdfOcrEnabled())
+    if (IsPdfOcrEnabled()) {
       scoped_feature_list_.InitAndEnableFeature(features::kPdfOcr);
-    else
+    } else {
       scoped_feature_list_.InitAndDisableFeature(features::kPdfOcr);
+    }
     accessibility_state_utils::OverrideIsScreenReaderEnabledForTesting(
         IsScreenReaderEnabled());
     if (IsComponentReady()) {
@@ -2524,7 +2526,9 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, PdfOcr) {
+// TODO(crbug.com/1278249): Re-enable this test once a mock OCR Service has been
+// created.
+IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, DISABLED_PdfOcr) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
   ASSERT_EQ(menu->IsItemPresent(IDC_CONTENT_CONTEXT_RUN_PDF_OCR),
             IsPdfOcrEnabled() && IsScreenReaderEnabled() && IsComponentReady());
@@ -2534,7 +2538,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PdfOcrContextMenuBrowserTest,
                          ::testing::Range(0, 8));
 
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) && (BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_MAC))
 
 #endif  // BUILDFLAG(ENABLE_PDF)
 

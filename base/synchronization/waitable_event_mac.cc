@@ -73,22 +73,6 @@ void WaitableEvent::SignalImpl() {
       mach_msg(&msg.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof(msg), 0,
                MACH_PORT_NULL, 0, MACH_PORT_NULL);
   MACH_CHECK(kr == KERN_SUCCESS || kr == MACH_SEND_TIMED_OUT, kr) << "mach_msg";
-
-  if (use_slow_path) {
-    // If a WaitableEventWatcher were to start watching when the event is
-    // signaled, it runs the callback immediately without adding it to the
-    // list. Therefore the watch list can only be non-empty if the event is
-    // newly signaled.
-    if (watch_list.get()) {
-      MACH_CHECK(kr == KERN_SUCCESS, kr);
-      for (auto& watcher : *watch_list) {
-        std::move(watcher).Run();
-      }
-    }
-
-    receive_right->SlowWatchList()->lock.Release();
-    receive_right->Release();
-  }
 }
 
 bool WaitableEvent::IsSignaled() {

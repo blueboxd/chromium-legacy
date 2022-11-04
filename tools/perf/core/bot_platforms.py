@@ -444,7 +444,7 @@ _ANDROID_PIXEL4A_POWER_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.scroll_jank_mobile')
 ])
 _ANDROID_GO_WEMBLEY_BENCHMARK_CONFIGS = PerfSuite(
-    [_GetBenchmarkConfig('jetstream2'),
+    [_GetBenchmarkConfig('startup.mobile'),
      _GetBenchmarkConfig('speedometer2')])
 _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig('system_health.scroll_jank_mobile')])
@@ -698,7 +698,7 @@ ANDROID_NEW_PIXEL_PRO_PGO = PerfPlatform('android-new-pixel-pro-perf-pgo',
 
 # Cros/Lacros
 LACROS_EVE_PERF = PerfPlatform('lacros-eve-perf', '', _LACROS_BENCHMARK_CONFIGS,
-                               8, 'chromeos')
+                               4, 'chromeos')
 LACROS_X86_PERF = PerfPlatform('lacros-x86-perf', '', _LACROS_BENCHMARK_CONFIGS,
                                12, 'chromeos')
 # Fuchsia

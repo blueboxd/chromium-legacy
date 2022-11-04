@@ -3798,7 +3798,7 @@ String AXObject::RecursiveTextAlternative(
     const AXObject& ax_obj,
     const AXObject* aria_label_or_description_root,
     AXObjectSet& visited) {
-  ax::mojom::blink::NameFrom tmp_name_from;
+  ax::mojom::blink::NameFrom tmp_name_from = ax::mojom::blink::NameFrom::kNone;
   return RecursiveTextAlternative(ax_obj, aria_label_or_description_root,
                                   visited, tmp_name_from);
 }
@@ -3842,6 +3842,13 @@ const ComputedStyle* AXObject::GetComputedStyle() const {
 // * "content-visibility: auto" is "paint when it's scrolled into the viewport,
 //   but its layout information is not updated when it isn't"
 bool AXObject::ComputeIsHiddenViaStyle(const ComputedStyle* style) const {
+  // The the parent element of text is hidden, then the text is hidden too.
+  // This helps provide more consistent results in edge cases, e.g. text inside
+  // of a <canvas> or display:none content.
+  if (RoleValue() == ax::mojom::blink::Role::kStaticText &&
+      ParentObject()->IsHiddenViaStyle())
+    return true;
+
   if (style) {
     if (GetLayoutObject())
       return style->Visibility() != EVisibility::kVisible;
@@ -3972,6 +3979,12 @@ String AXObject::AriaTextAlternative(
   String text_alternative;
   bool already_visited = visited.Contains(this);
   visited.insert(this);
+
+  // Slots are elements that cannot be named.
+  if (IsA<HTMLSlotElement>(GetNode())) {
+    *found_text_alternative = false;
+    return String();
+  }
 
   // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.

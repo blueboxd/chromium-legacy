@@ -705,10 +705,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
      flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(breadcrumbs::kLogBreadcrumbs)},
-    {"ios-synthetic-crash-reports",
-     flag_descriptions::kSyntheticCrashReportsForUteName,
-     flag_descriptions::kSyntheticCrashReportsForUteDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSyntheticCrashReportsForUte)},
     {"force-startup-signin-promo",
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
@@ -734,10 +730,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
-    {"enable-fre-ui-module-ios-with-options",
-     flag_descriptions::kEnableFREUIModuleIOSName,
-     flag_descriptions::kEnableFREUIModuleIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableFREUIModuleIOS)},
     {"new-mobile-identity-consistency-fre",
      flag_descriptions::kNewMobileIdentityConsistencyFREName,
      flag_descriptions::kNewMobileIdentityConsistencyFREDescription,
@@ -1312,6 +1304,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxCarouselDynamicSpacingName,
      flag_descriptions::kOmniboxCarouselDynamicSpacingDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxCarouselDynamicSpacing)},
+    {"use-sf-symbols-omnibox", flag_descriptions::kUseSFSymbolsInOmniboxName,
+     flag_descriptions::kUseSFSymbolsInOmniboxDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUseSFSymbolsInOmnibox)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

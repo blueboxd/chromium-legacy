@@ -235,7 +235,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchSuppressShortView,
     &kContextualSearchThinWebViewImplementation,
     &kDirectActions,
-    &kDisableCompositedProgressBar,
     &kDownloadFileProvider,
     &kDownloadNotificationBadge,
     &kDownloadRename,
@@ -344,6 +343,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kDnsOverHttps,
     &notifications::features::kUseChimeAndroidSdk,
     &paint_preview::kPaintPreviewDemo,
+    &paint_preview::kPaintPreviewShowOnStartup,
     &language::kAppLanguagePrompt,
     &language::kAppLanguagePromptULP,
     &language::kDetailedLanguageSettings,
@@ -731,10 +731,6 @@ BASE_FEATURE(kContextualSearchThinWebViewImplementation,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDirectActions, "DirectActions", base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDisableCompositedProgressBar,
-             "DisableCompositedProgressBar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDownloadAutoResumptionThrottling,
              "DownloadAutoResumptionThrottling",

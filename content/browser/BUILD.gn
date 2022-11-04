@@ -20,6 +20,7 @@ import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -35,6 +36,7 @@ source_set("browser") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
   visibility = [
+    ":content_sms_parser_fuzzer",
     ":for_content_tests",  # See top of //content/BUILD.gn for why.
     "//content/app:*",
     "//content/public/browser:browser_sources",
@@ -1137,6 +1139,10 @@ source_set("browser") {
     "interest_group/interest_group_update_manager.h",
     "interest_group/storage_interest_group.cc",
     "interest_group/storage_interest_group.h",
+    "interest_group/subresource_url_authorizations.cc",
+    "interest_group/subresource_url_authorizations.h",
+    "interest_group/subresource_url_builder.cc",
+    "interest_group/subresource_url_builder.h",
     "isolated_origin_util.cc",
     "isolated_origin_util.h",
     "isolation_context.cc",
@@ -2979,6 +2985,8 @@ source_set("browser") {
       "renderer_host/render_frame_host_android.h",
       "renderer_host/render_widget_host_view_android.cc",
       "renderer_host/render_widget_host_view_android.h",
+      "renderer_host/screen_state.cc",
+      "renderer_host/screen_state.h",
       "screen_orientation/screen_orientation_delegate_android.cc",
       "screen_orientation/screen_orientation_delegate_android.h",
       "sms/sms_provider_gms.cc",
@@ -3266,4 +3274,13 @@ if (is_android) {
   java_cpp_enum("client_data_json_generated_enum") {
     sources = [ "webauth/client_data_json.h" ]
   }
+}
+
+fuzzer_test("content_sms_parser_fuzzer") {
+  sources = [ "sms/sms_parser_fuzzer.cc" ]
+  deps = [
+    ":browser",
+    "//base",
+    "//content/public/browser:browser_sources",
+  ]
 }

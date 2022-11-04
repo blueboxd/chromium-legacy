@@ -85,14 +85,14 @@ void BrowserFrame::InitBrowserFrame() {
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
   params.name = "BrowserFrame";
   params.delegate = browser_view_;
-  params.headless_mode = headless::IsChromeNativeHeadless();
+  params.headless_mode = headless::IsHeadlessMode();
 
   Browser* browser = browser_view_->browser();
   if (browser->is_type_picture_in_picture()) {
     params.z_order = ui::ZOrderLevel::kFloatingWindow;
   }
 
-#if defined(USE_OZONE)
+#if BUILDFLAG(IS_OZONE)
   params.inhibit_keyboard_shortcuts =
       browser->is_type_app() || browser->is_type_app_popup();
 #endif

@@ -1052,9 +1052,6 @@ extern const char kDestroySystemProfilesDescription[];
 extern const char kNotificationInteractionHistoryName[];
 extern const char kNotificationInteractionHistoryDescription[];
 
-extern const char kNotificationsRevampName[];
-extern const char kNotificationsRevampDescription[];
-
 extern const char kNotificationSchedulerName[];
 extern const char kNotificationSchedulerDescription[];
 
@@ -3087,6 +3084,9 @@ extern const char kEnableOAuthIppDescription[];
 extern const char kEnableVariableRefreshRateName[];
 extern const char kEnableVariableRefreshRateDescription[];
 
+extern const char kEnableViewPpdName[];
+extern const char kEnableViewPpdDescription[];
+
 extern const char kEnforceAshExtensionKeeplistName[];
 extern const char kEnforceAshExtensionKeeplistDescription[];
 
@@ -3381,9 +3381,6 @@ extern const char kSecondaryGoogleAccountUsageDescription[];
 
 extern const char kShelfAutoHideSeparationName[];
 extern const char kShelfAutoHideSeparationDescription[];
-
-extern const char kShelfFocusOrderV1Name[];
-extern const char kShelfFocusOrderV1Description[];
 
 extern const char kShimlessRMAFlowName[];
 extern const char kShimlessRMAFlowDescription[];
@@ -3767,6 +3764,8 @@ extern const char kEnableOopPrintDriversDescription[];
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
 extern const char kPaintPreviewDemoName[];
 extern const char kPaintPreviewDemoDescription[];
+extern const char kPaintPreviewStartupName[];
+extern const char kPaintPreviewStartupDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

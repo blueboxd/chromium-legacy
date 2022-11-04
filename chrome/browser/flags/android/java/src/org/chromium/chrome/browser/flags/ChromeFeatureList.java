@@ -334,7 +334,6 @@ public abstract class ChromeFeatureList {
             "DarkenWebsitesCheckboxInThemesSetting";
     public static final String DETAILED_LANGUAGE_SETTINGS = "DetailedLanguageSettings";
     public static final String DIRECT_ACTIONS = "DirectActions";
-    public static final String DISABLE_COMPOSITED_PROGRESS_BAR = "DisableCompositedProgressBar";
     public static final String ENABLE_IPH = "EnableIPH";
     public static final String DNS_OVER_HTTPS = "DnsOverHttps";
     public static final String DOWNLOAD_FILE_PROVIDER = "DownloadFileProvider";
@@ -716,6 +715,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sOSKResizesVisualViewportByDefault =
             new CachedFlag(OSK_RESIZES_VISUAL_VIEWPORT, false);
     public static final CachedFlag sPaintPreviewDemo = new CachedFlag(PAINT_PREVIEW_DEMO, false);
+    public static final CachedFlag sPaintPreviewShowOnStartup =
+            new CachedFlag(PAINT_PREVIEW_SHOW_ON_STARTUP, false);
     public static final CachedFlag sPrefetchNotificationSchedulingIntegration =
             new CachedFlag(PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false);
     public static final CachedFlag sQueryTiles = new CachedFlag(QUERY_TILES, false);

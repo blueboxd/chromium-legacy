@@ -19,6 +19,7 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -124,6 +125,7 @@ class IntegrationTest : public ::testing::Test {
   void ExpectInstalled() { test_commands_->ExpectInstalled(); }
 
   void Uninstall() {
+    EXPECT_TRUE(WaitForUpdaterExit());
     PrintLog();
     CopyLog();
     test_commands_->Uninstall();
@@ -221,6 +223,10 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void SetServerStarts(int value) { test_commands_->SetServerStarts(value); }
+
+  void FillLog() { test_commands_->FillLog(); }
+
+  void ExpectLogRotated() { test_commands_->ExpectLogRotated(); }
 
   void ExpectRegistered(const std::string& app_id) {
     test_commands_->ExpectRegistered(app_id);
@@ -556,7 +562,6 @@ TEST_F(IntegrationTest, MultipleWakesOneNetRequest) {
   RunWake(0);
 
   Uninstall();
-  Clean();
 }
 
 TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
@@ -569,7 +574,6 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
   UpdateAll();
 
   Uninstall();
-  Clean();
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -709,6 +713,15 @@ TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   UninstallApp("test1");
   RunWake(0);
   EXPECT_TRUE(WaitForUpdaterExit());
+}
+
+TEST_F(IntegrationTest, RotateLog) {
+  Install();
+  FillLog();
+  RunWake(0);
+  EXPECT_TRUE(WaitForUpdaterExit());
+  ExpectLogRotated();
+  Uninstall();
 }
 
 // Windows does not currently have a concept of app ownership, so this

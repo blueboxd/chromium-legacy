@@ -1069,6 +1069,28 @@
             ]
         }
     ],
+    "AutofillCountryFromLocalName": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillCountryFromLocalName"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableLabelPrecedenceForTurkishAddresses": [
         {
             "platforms": [
@@ -1256,6 +1278,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillFillMerchantPromoCodeFields"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillImprovedLabelForInference": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillImprovedLabelForInference"
                     ]
                 }
             ]
@@ -4026,21 +4068,6 @@
             ]
         }
     ],
-    "DisableCompositedProgressBar": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DisableCompositedProgressBar"
-                    ]
-                }
-            ]
-        }
-    ],
     "DisableFontManagerEarlyInitDesktop": [
         {
             "platforms": [
@@ -4220,6 +4247,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DohProviderCox"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DnsOverHttpsSwitch": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "DohProviderSwitch"
                     ]
                 }
             ]
@@ -4757,7 +4804,7 @@
             ],
             "experiments": [
                 {
-                    "name": "LowPriLoading_20220927",
+                    "name": "LowPriLoading_20221102",
                     "params": {
                         "low_pri_async_loading_cross_site_only": "true",
                         "low_pri_async_loading_feature_limit": "5s",
@@ -4769,6 +4816,7 @@
                     "disable_features": [
                         "DOMContentLoadedWaitForAsyncScript",
                         "DelayAsyncScriptExecution",
+                        "ImageLoadingPrioritizationFix",
                         "LowPriorityAsyncScriptExecution"
                     ]
                 }
@@ -5200,7 +5248,7 @@
             ]
         }
     ],
-    "HTMLPopupAttribute": [
+    "HTMLPopoverAttribute": [
         {
             "platforms": [
                 "android",
@@ -5215,7 +5263,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "HTMLPopupAttribute"
+                        "HTMLPopoverAttribute"
                     ]
                 }
             ]
@@ -6044,27 +6092,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ImageControllerWaitOnlyForRunningTask"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ImageLoadingPrioritizationFix": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ImageLoadingPrioritizationFix"
                     ]
                 }
             ]
@@ -7093,11 +7120,10 @@
             ],
             "experiments": [
                 {
-                    "name": "NoSetDefault-ForYou3",
+                    "name": "NoBackground-ForYou2",
                     "params": {
-                        "new-user-modules": "nux-google-apps,nux-ntp-background,signin-view",
-                        "onboarding-group": "NoSetDefaultSynthetic-ForYou3",
-                        "returning-user-modules": "nux-invalid-module"
+                        "new-user-modules": "nux-google-apps,nux-set-as-default,signin-view",
+                        "onboarding-group": "NoBackgroundSynthetic-ForYou2"
                     },
                     "enable_features": [
                         "NuxOnboarding"
@@ -7660,6 +7686,33 @@
             ]
         }
     ],
+    "OmniboxPedalsActionsIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Variation1_V2",
+                    "params": {
+                        "PopupUIVariant": "variant-one-UIKit"
+                    },
+                    "enable_features": [
+                        "IOSOmniboxUpdatedPopupUI"
+                    ]
+                },
+                {
+                    "name": "Enabled_Variation2_V2",
+                    "params": {
+                        "PopupUIVariant": "variant-two-UIKit"
+                    },
+                    "enable_features": [
+                        "IOSOmniboxUpdatedPopupUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxPrerender": [
         {
             "platforms": [
@@ -8065,6 +8118,24 @@
                     "name": "Enabled_20211028",
                     "enable_features": [
                         "PaintHoldingCrossOrigin"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PaintPreviewShowOnStartup": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_NoSrp_20220719",
+                    "params": {
+                        "allow_srp": "false"
+                    },
+                    "enable_features": [
+                        "PaintPreviewShowOnStartup"
                     ]
                 }
             ]
@@ -8916,7 +8987,7 @@
                         "BiddingAndScoringDebugReportingAPI",
                         "BrowsingTopics",
                         "FencedFrames",
-                        "FencedFramesInnerConfig",
+                        "FencedFramesAPIChanges",
                         "InterestGroupStorage",
                         "NoncedPartitionedCookies",
                         "PrivacySandboxAdsAPIs",
@@ -10390,30 +10461,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SiteIsolationForGuests"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SmallerFontCache": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "fuchsia",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SmallerFontCache"
                     ]
                 }
             ]

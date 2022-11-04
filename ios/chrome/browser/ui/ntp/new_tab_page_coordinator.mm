@@ -454,7 +454,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
         self.feedMetricsRecorder.feedControlDelegate = self;
         self.feedMetricsRecorder.followDelegate = self;
       }
-      [self.feedMetricsRecorder recordNTPBecameVisible];
     }
     if (!visible) {
       // Unfocus omnibox, to prevent it from lingering when it should be
@@ -465,7 +464,16 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
           self.browser->GetCommandDispatcher(), OmniboxCommands);
       [omniboxCommandHandler cancelOmniboxEdit];
     }
+    // Check if feed is visible before reporting NTP visibility as the feed
+    // needs to be visible in order to use for metrics.
+    // TODO(crbug.com/1373650) Move isFeedVisible check to the metrics recorder
+    if (IsGoodVisitsMetricEnabled()) {
+      if (self.started && [self isFeedVisible]) {
+        [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
+      }
+    }
   }
+
   self.viewPresented = visible;
   [self updateVisible];
 }
@@ -527,16 +535,13 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   self.sceneInForeground =
       sceneState.activationLevel >= SceneActivationLevelForegroundInactive;
 
-  // Only handle app state for the new First Run UI.
-  if (base::FeatureList::IsEnabled(kEnableFREUIModuleIOS)) {
-    AppState* appState = sceneState.appState;
-    [appState addObserver:self];
+  AppState* appState = sceneState.appState;
+  [appState addObserver:self];
 
-    // Do not focus on omnibox for voice over if there are other screens to
-    // show.
-    if (appState.initStage < InitStageFinal) {
-      self.headerController.focusOmniboxWhenViewAppears = NO;
-    }
+  // Do not focus on omnibox for voice over if there are other screens to
+  // show.
+  if (appState.initStage < InitStageFinal) {
+    self.headerController.focusOmniboxWhenViewAppears = NO;
   }
 }
 
@@ -883,17 +888,21 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
     return;
   }
 
+  // Save the scroll position before changing sort type.
+  CGFloat scrollPosition = [self.ntpViewController scrollPosition];
+
   [self.feedMetricsRecorder recordFollowingFeedSortTypeSelected:sortType];
-  [self.ntpViewController setContentOffsetToTop];
   self.prefService->SetInteger(prefs::kNTPFollowingFeedSortType, sortType);
   self.prefService->SetBoolean(prefs::kDefaultFollowingFeedSortTypeChanged,
                                true);
   self.discoverFeedService->SetFollowingFeedSortType(sortType);
   self.feedHeaderViewController.followingFeedSortType = sortType;
 
-  // Changing the sort type affects the scroll position, so update the feed
-  // layout.
-  [self updateFeedLayout];
+  [self updateNTPForFeed];
+
+  // Scroll position resets when changing the feed, so we set it back to what it
+  // was.
+  [self.ntpViewController setContentOffsetToTopOfFeed:scrollPosition];
 }
 
 - (BOOL)shouldFeedBeVisible {
@@ -1100,13 +1109,11 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
 - (void)appState:(AppState*)appState
     didTransitionFromInitStage:(InitStage)previousInitStage {
-  if (base::FeatureList::IsEnabled(kEnableFREUIModuleIOS)) {
-    if (previousInitStage == InitStageFirstRun) {
-      self.headerController.focusOmniboxWhenViewAppears = YES;
-      [self.headerController focusAccessibilityOnOmnibox];
+  if (previousInitStage == InitStageFirstRun) {
+    self.headerController.focusOmniboxWhenViewAppears = YES;
+    [self.headerController focusAccessibilityOnOmnibox];
 
-      [appState removeObserver:self];
-    }
+    [appState removeObserver:self];
   }
 }
 

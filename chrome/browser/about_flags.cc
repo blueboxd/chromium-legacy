@@ -2958,6 +2958,15 @@ constexpr char kWallpaperGooglePhotosIntegrationInternalName[] =
 constexpr char kWallpaperPerDeskName[] = "per-desk-wallpaper";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kPaintPreviewStartupWithAccessibility[] = {
+    {"has_accessibility_support", "true"}};
+
+const FeatureEntry::FeatureVariation kPaintPreviewStartupVariations[] = {
+    {"with accessibility support", kPaintPreviewStartupWithAccessibility,
+     std::size(kPaintPreviewStartupWithAccessibility), nullptr}};
+#endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kBorealisBigGlInternalName[] = "borealis-big-gl";
 constexpr char kBorealisDiskManagementInternalName[] =
@@ -4046,9 +4055,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultCalculatorWebAppName,
      flag_descriptions::kDefaultCalculatorWebAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(web_app::kDefaultCalculatorWebApp)},
-    {"enable-notifications-revamp", flag_descriptions::kNotificationsRevampName,
-     flag_descriptions::kNotificationsRevampDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNotificationsRefresh)},
     {"enable-zram-writeback", flag_descriptions::kEnableZramWriteback,
      flag_descriptions::kEnableZramWritebackDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::kCrOSEnableZramWriteback)},
@@ -7199,6 +7205,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAccessibilitySelectToSpeakPageMigration)},
 
+    {"enable-view-ppd", flag_descriptions::kEnableViewPpdName,
+     flag_descriptions::kEnableViewPpdDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnableViewPpd)},
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-fenced-frames", flag_descriptions::kEnableFencedFramesName,
@@ -7645,6 +7655,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"paint-preview-demo", flag_descriptions::kPaintPreviewDemoName,
      flag_descriptions::kPaintPreviewDemoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewDemo)},
+    {"paint-preview-startup", flag_descriptions::kPaintPreviewStartupName,
+     flag_descriptions::kPaintPreviewStartupDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(paint_preview::kPaintPreviewShowOnStartup,
+                                    kPaintPreviewStartupVariations,
+                                    "PaintPreviewShowOnStartup")},
 #endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -7969,9 +7984,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-drag-to-pin", flag_descriptions::kShelfDragToPinName,
      flag_descriptions::kShelfDragToPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragUnpinnedAppToPin)},
-    {"shelf-focus-order-v1", flag_descriptions::kShelfFocusOrderV1Name,
-     flag_descriptions::kShelfFocusOrderV1Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kShelfFocusOrderV1)},
     {"shelf-gestures-with-vk",
      flag_descriptions::kShelfGesturesWithVirtualKeyboardName,
      flag_descriptions::kShelfGesturesWithVirtualKeyboardDescription, kOsCrOS,

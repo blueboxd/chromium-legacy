@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/optin/arc_optin_preference_handler_observer.h"
@@ -23,11 +24,8 @@ class ArcOptInPreferenceHandler;
 }
 
 namespace ash {
+
 class ArcTermsOfServiceScreen;
-}
-
-namespace chromeos {
-
 class ArcTermsOfServiceScreenView;
 
 class ArcTermsOfServiceScreenViewObserver {
@@ -49,9 +47,11 @@ class ArcTermsOfServiceScreenViewObserver {
   ArcTermsOfServiceScreenViewObserver() = default;
 };
 
-class ArcTermsOfServiceScreenView {
+class ArcTermsOfServiceScreenView
+    : public base::SupportsWeakPtr<ArcTermsOfServiceScreenView> {
  public:
-  constexpr static StaticOobeScreenId kScreenId{"arc-tos"};
+  inline constexpr static StaticOobeScreenId kScreenId{
+      "arc-tos", "ArcTermsOfServiceScreen"};
 
   ArcTermsOfServiceScreenView(const ArcTermsOfServiceScreenView&) = delete;
   ArcTermsOfServiceScreenView& operator=(const ArcTermsOfServiceScreenView&) =
@@ -70,9 +70,6 @@ class ArcTermsOfServiceScreenView {
   // Hides the contents of the screen.
   virtual void Hide() = 0;
 
-  // Sets view and screen.
-  virtual void Bind(ash::ArcTermsOfServiceScreen* screen) = 0;
-
  protected:
   ArcTermsOfServiceScreenView() = default;
 };
@@ -84,7 +81,7 @@ class ArcTermsOfServiceScreenHandler
       public arc::ArcOptInPreferenceHandlerObserver,
       public OobeUI::Observer,
       public system::TimezoneSettings::Observer,
-      public chromeos::NetworkStateHandlerObserver,
+      public NetworkStateHandlerObserver,
       public session_manager::SessionManagerObserver {
  public:
   using TView = ArcTermsOfServiceScreenView;
@@ -110,7 +107,6 @@ class ArcTermsOfServiceScreenHandler
   void RemoveObserver(ArcTermsOfServiceScreenViewObserver* observer) override;
   void Show() override;
   void Hide() override;
-  void Bind(ash::ArcTermsOfServiceScreen* screen) override;
 
   // OobeUI::Observer:
   void OnCurrentScreenChanged(OobeScreenId current_screen,
@@ -120,12 +116,12 @@ class ArcTermsOfServiceScreenHandler
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
-  // chromeos::NetworkStateHandlerObserver:
+  // NetworkStateHandlerObserver:
   void DefaultNetworkChanged(const NetworkState* network) override;
 
  private:
   // BaseScreenHandler:
-  void InitializeDeprecated() override;
+  void InitAfterJavascriptAllowed() override;
 
   // session_manager::SessionManagerObserver:
   void OnUserProfileLoaded(const AccountId& account_id) override;
@@ -174,8 +170,7 @@ class ArcTermsOfServiceScreenHandler
   base::ObserverList<ArcTermsOfServiceScreenViewObserver, true>::Unchecked
       observer_list_;
 
-  // Whether the screen should be shown right after initialization.
-  bool show_on_init_ = false;
+  bool was_shown_ = false;
 
   // Indicates that we already started network and time zone observing.
   bool network_time_zone_observing_ = false;
@@ -196,21 +191,12 @@ class ArcTermsOfServiceScreenHandler
   // To track if a child account is being set up.
   bool is_child_account_;
 
-  base::ScopedObservation<chromeos::NetworkStateHandler,
-                          chromeos::NetworkStateHandlerObserver>
+  base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
 
   std::unique_ptr<arc::ArcOptInPreferenceHandler> pref_handler_;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::ArcTermsOfServiceScreenHandler;
-using ::chromeos::ArcTermsOfServiceScreenView;
-using ::chromeos::ArcTermsOfServiceScreenViewObserver;
 }  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_WEBUI_ASH_LOGIN_ARC_TERMS_OF_SERVICE_SCREEN_HANDLER_H_

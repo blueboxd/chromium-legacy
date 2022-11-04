@@ -79,6 +79,7 @@
 #include "chrome/browser/ui/webui/ash/login/consolidated_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/local_state_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/ash/login/reset_screen_handler.h"
@@ -533,7 +534,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     // Set up the mocks for all screens.
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            GetOobeUI()->GetView<WelcomeScreenHandler>(),
+            GetOobeUI()->GetView<WelcomeScreenHandler>()->AsWeakPtr(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -549,7 +550,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockArcTermsOfServiceScreenView>();
     mock_arc_terms_of_service_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockArcTermsOfServiceScreen>(
-            mock_arc_terms_of_service_screen_view_.get(),
+            mock_arc_terms_of_service_screen_view_->AsWeakPtr(),
             base::BindRepeating(
                 &WizardController::OnArcTermsOfServiceScreenExit,
                 base::Unretained(wizard_controller))));
@@ -642,7 +643,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockArcTermsOfServiceScreenView>();
     mock_arc_terms_of_service_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockArcTermsOfServiceScreen>(
-            mock_arc_terms_of_service_screen_view_.get(),
+            mock_arc_terms_of_service_screen_view_->AsWeakPtr(),
             base::BindRepeating(
                 &WizardController::OnArcTermsOfServiceScreenExit,
                 base::Unretained(wizard_controller))));
@@ -2974,10 +2975,9 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
 
     // Set up the mocks for all screens.
     mock_welcome_view_ = std::make_unique<MockWelcomeView>();
-    ExpectBindUnbind(mock_welcome_view_.get());
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            mock_welcome_view_.get(),
+            mock_welcome_view_->AsWeakPtr(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 

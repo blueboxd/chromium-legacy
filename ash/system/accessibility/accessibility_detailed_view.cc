@@ -18,12 +18,15 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/style/rounded_container.h"
 #include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/hover_highlight_view.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_toggle_button.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/bind.h"
@@ -33,10 +36,15 @@
 #include "components/prefs/pref_service.h"
 #include "components/soda/soda_installer.h"
 #include "components/vector_icons/vector_icons.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 namespace {
@@ -110,15 +118,37 @@ bool SodaFeatureHasUpdate(SodaFeature feature,
          language_code == GetSodaFeatureLocale(feature);
 }
 
-// Updates the check mark to `checked` on `view1` and `view2` if the views
-// exist.
-void UpdateCheckMark(bool checked,
-                     HoverHighlightView* view1,
-                     HoverHighlightView* view2) {
-  if (view1)
-    TrayPopupUtils::UpdateCheckMarkVisibility(view1, checked);
-  if (view2)
-    TrayPopupUtils::UpdateCheckMarkVisibility(view2, checked);
+// Updates the toggle button state and accessibility state for `item` to
+// `toggled`.
+void UpdateToggleState(HoverHighlightView* item, bool toggled) {
+  if (!item)
+    return;
+  views::View* right_view = item->right_view();
+  // The right view is either an enterprise icon or a tray toggle button.
+  if (views::IsViewClass<TrayToggleButton>(right_view)) {
+    TrayToggleButton* button = static_cast<TrayToggleButton*>(right_view);
+    button->AnimateIsOn(toggled);
+  }
+  // The entire row is treated as one element for accessibility.
+  item->SetAccessibilityState(
+      toggled ? HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX
+              : HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
+}
+
+// Updates the feature state in the UI to `enabled` on `view1` and `view2` if
+// the views exist.
+void UpdateFeatureState(bool enabled,
+                        HoverHighlightView* view1,
+                        HoverHighlightView* view2) {
+  if (features::IsQsRevampEnabled()) {
+    // QsRevamp uses toggle buttons.
+    UpdateToggleState(view1, enabled);
+    UpdateToggleState(view2, enabled);
+    return;
+  }
+  // Pre-QsRevamp uses check marks.
+  TrayPopupUtils::UpdateCheckMarkVisibility(view1, enabled);
+  TrayPopupUtils::UpdateCheckMarkVisibility(view2, enabled);
 }
 
 }  // namespace
@@ -165,87 +195,90 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
 
   if (controller->IsSpokenFeedbackSettingVisibleInTray()) {
     bool checked = controller->spoken_feedback().enabled();
-    UpdateCheckMark(checked, spoken_feedback_view_, spoken_feedback_top_view_);
+    UpdateFeatureState(checked, spoken_feedback_view_,
+                       spoken_feedback_top_view_);
   }
 
   if (controller->IsSelectToSpeakSettingVisibleInTray()) {
     bool checked = controller->select_to_speak().enabled();
-    UpdateCheckMark(checked, select_to_speak_view_, select_to_speak_top_view_);
+    UpdateFeatureState(checked, select_to_speak_view_,
+                       select_to_speak_top_view_);
   }
 
   if (controller->IsDictationSettingVisibleInTray()) {
     bool checked = controller->dictation().enabled();
-    UpdateCheckMark(checked, dictation_view_, dictation_top_view_);
+    UpdateFeatureState(checked, dictation_view_, dictation_top_view_);
   }
 
   if (controller->IsHighContrastSettingVisibleInTray()) {
     bool checked = controller->high_contrast().enabled();
-    UpdateCheckMark(checked, high_contrast_view_, high_contrast_top_view_);
+    UpdateFeatureState(checked, high_contrast_view_, high_contrast_top_view_);
   }
 
   if (controller->IsFullScreenMagnifierSettingVisibleInTray()) {
     bool checked = delegate->IsMagnifierEnabled();
-    UpdateCheckMark(checked, screen_magnifier_view_,
-                    screen_magnifier_top_view_);
+    UpdateFeatureState(checked, screen_magnifier_view_,
+                       screen_magnifier_top_view_);
   }
 
   if (controller->IsDockedMagnifierSettingVisibleInTray()) {
     bool checked = Shell::Get()->docked_magnifier_controller()->GetEnabled();
-    UpdateCheckMark(checked, docked_magnifier_view_,
-                    docked_magnifier_top_view_);
+    UpdateFeatureState(checked, docked_magnifier_view_,
+                       docked_magnifier_top_view_);
   }
 
   if (controller->IsAutoclickSettingVisibleInTray()) {
     bool checked = controller->autoclick().enabled();
-    UpdateCheckMark(checked, autoclick_view_, autoclick_top_view_);
+    UpdateFeatureState(checked, autoclick_view_, autoclick_top_view_);
   }
 
   if (controller->IsVirtualKeyboardSettingVisibleInTray()) {
     bool checked = controller->virtual_keyboard().enabled();
-    UpdateCheckMark(checked, virtual_keyboard_view_,
-                    virtual_keyboard_top_view_);
+    UpdateFeatureState(checked, virtual_keyboard_view_,
+                       virtual_keyboard_top_view_);
   }
 
   if (controller->IsSwitchAccessSettingVisibleInTray()) {
     bool checked = controller->switch_access().enabled();
-    UpdateCheckMark(checked, switch_access_view_, switch_access_top_view_);
+    UpdateFeatureState(checked, switch_access_view_, switch_access_top_view_);
   }
 
   if (controller->IsLiveCaptionSettingVisibleInTray()) {
     bool checked = controller->live_caption().enabled();
-    UpdateCheckMark(checked, live_caption_view_, live_caption_top_view_);
+    UpdateFeatureState(checked, live_caption_view_, live_caption_top_view_);
   }
 
   if (controller->IsLargeCursorSettingVisibleInTray()) {
     bool checked = controller->large_cursor().enabled();
-    UpdateCheckMark(checked, large_cursor_view_, large_cursor_top_view_);
+    UpdateFeatureState(checked, large_cursor_view_, large_cursor_top_view_);
   }
 
   if (controller->IsMonoAudioSettingVisibleInTray()) {
     bool checked = controller->mono_audio().enabled();
-    UpdateCheckMark(checked, mono_audio_view_, mono_audio_top_view_);
+    UpdateFeatureState(checked, mono_audio_view_, mono_audio_top_view_);
   }
 
   if (controller->IsCaretHighlightSettingVisibleInTray()) {
     bool checked = controller->caret_highlight().enabled();
-    UpdateCheckMark(checked, caret_highlight_view_, caret_highlight_top_view_);
+    UpdateFeatureState(checked, caret_highlight_view_,
+                       caret_highlight_top_view_);
   }
 
   if (controller->IsCursorHighlightSettingVisibleInTray()) {
     bool checked = controller->cursor_highlight().enabled();
-    UpdateCheckMark(checked, highlight_mouse_cursor_view_,
-                    highlight_mouse_cursor_top_view_);
+    UpdateFeatureState(checked, highlight_mouse_cursor_view_,
+                       highlight_mouse_cursor_top_view_);
   }
 
   if (controller->IsFocusHighlightSettingVisibleInTray()) {
     bool checked = controller->focus_highlight().enabled();
-    UpdateCheckMark(checked, highlight_keyboard_focus_view_,
-                    highlight_keyboard_focus_top_view_);
+    UpdateFeatureState(checked, highlight_keyboard_focus_view_,
+                       highlight_keyboard_focus_top_view_);
   }
 
   if (controller->IsStickyKeysSettingVisibleInTray()) {
     bool checked = controller->sticky_keys().enabled();
-    UpdateCheckMark(checked, sticky_keys_view_, sticky_keys_top_view_);
+    UpdateFeatureState(checked, sticky_keys_view_, sticky_keys_top_view_);
   }
 }
 
@@ -256,15 +289,23 @@ const char* AccessibilityDetailedView::GetClassName() const {
 void AccessibilityDetailedView::AppendAccessibilityList() {
   CreateScrollableList();
 
-  views::View* container = scroll_content();
   if (features::IsQsRevampEnabled()) {
-    container =
+    auto top_container = std::make_unique<RoundedContainer>();
+    AddEnabledFeatures(top_container.get());
+
+    // If enabled features were added, add the top container and some padding.
+    if (!top_container->children().empty()) {
+      auto* view = scroll_content()->AddChildView(std::move(top_container));
+      constexpr auto kTopContainerMargins = gfx::Insets::TLBR(0, 0, 8, 0);
+      view->SetProperty(views::kMarginsKey, kTopContainerMargins);
+    }
+
+    views::View* main_container =
         scroll_content()->AddChildView(std::make_unique<RoundedContainer>());
-
-    AddEnabledFeatures(container);
+    AddAllFeatures(main_container);
+  } else {
+    AddAllFeatures(scroll_content());
   }
-
-  AddAllFeatures(container);
 }
 
 void AccessibilityDetailedView::AddEnabledFeatures(views::View* container) {
@@ -339,11 +380,6 @@ void AccessibilityDetailedView::AddEnabledFeatures(views::View* container) {
       controller->sticky_keys().enabled()) {
     sticky_keys_top_view_ = AddStickyKeysView(container);
   }
-
-  // Add a divider line if any features were added above.
-  if (!container->children().empty()) {
-    container->AddChildView(TrayPopupUtils::CreateListSubHeaderSeparator());
-  }
 }
 
 void AccessibilityDetailedView::AddAllFeatures(views::View* container) {
@@ -393,14 +429,17 @@ void AccessibilityDetailedView::AddAllFeatures(views::View* container) {
     live_caption_view_ = AddLiveCaptionView(container);
   }
 
-  if (controller->IsAdditionalSettingsSeparatorVisibleInTray()) {
-    container->AddChildView(TrayPopupUtils::CreateListSubHeaderSeparator());
-  }
+  // QsRevamp does not use a separator or sub-header.
+  if (!features::IsQsRevampEnabled()) {
+    if (controller->IsAdditionalSettingsSeparatorVisibleInTray()) {
+      container->AddChildView(TrayPopupUtils::CreateListSubHeaderSeparator());
+    }
 
-  if (controller->IsAdditionalSettingsViewVisibleInTray()) {
-    AddScrollListSubHeader(
-        container, gfx::kNoneIcon,
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS);
+    if (controller->IsAdditionalSettingsViewVisibleInTray()) {
+      AddScrollListSubHeader(
+          container, gfx::kNoneIcon,
+          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS);
+    }
   }
 
   if (controller->IsLargeCursorSettingVisibleInTray()) {
@@ -434,7 +473,7 @@ HoverHighlightView* AccessibilityDetailedView::AddSpokenFeedbackView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->spoken_feedback().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSystemMenuAccessibilityChromevoxIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK),
@@ -445,7 +484,7 @@ HoverHighlightView* AccessibilityDetailedView::AddSelectToSpeakView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->select_to_speak().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSystemMenuAccessibilitySelectToSpeakIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK),
@@ -456,7 +495,7 @@ HoverHighlightView* AccessibilityDetailedView::AddDictationView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->dictation().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kDictationMenuIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
       checked, controller->IsEnterpriseIconVisibleForDictation());
@@ -466,7 +505,7 @@ HoverHighlightView* AccessibilityDetailedView::AddHighContrastView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->high_contrast().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSystemMenuAccessibilityContrastIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE),
@@ -477,7 +516,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScreenMagnifierView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = Shell::Get()->accessibility_delegate()->IsMagnifierEnabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSystemMenuAccessibilityFullscreenMagnifierIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
@@ -488,7 +527,7 @@ HoverHighlightView* AccessibilityDetailedView::AddDockedMagnifierView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = Shell::Get()->docked_magnifier_controller()->GetEnabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSystemMenuAccessibilityDockedMagnifierIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER),
@@ -499,7 +538,7 @@ HoverHighlightView* AccessibilityDetailedView::AddAutoclickView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->autoclick().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSystemMenuAccessibilityAutoClickIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
       checked, controller->IsEnterpriseIconVisibleForAutoclick());
@@ -509,7 +548,7 @@ HoverHighlightView* AccessibilityDetailedView::AddVirtualKeyboardView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->virtual_keyboard().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSystemMenuKeyboardLegacyIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
@@ -520,7 +559,7 @@ HoverHighlightView* AccessibilityDetailedView::AddSwitchAccessView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->switch_access().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, kSwitchAccessIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SWITCH_ACCESS),
@@ -531,7 +570,7 @@ HoverHighlightView* AccessibilityDetailedView::AddLiveCaptionView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->live_caption().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, vector_icons::kLiveCaptionOnIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LIVE_CAPTION), checked,
       controller->IsEnterpriseIconVisibleForLiveCaption());
@@ -541,7 +580,7 @@ HoverHighlightView* AccessibilityDetailedView::AddLargeCursorView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->large_cursor().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, gfx::kNoneIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
       checked, controller->IsEnterpriseIconVisibleForLargeCursor());
@@ -551,7 +590,7 @@ HoverHighlightView* AccessibilityDetailedView::AddMonoAudioView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->mono_audio().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, gfx::kNoneIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO),
       checked, controller->IsEnterpriseIconVisibleForMonoAudio());
@@ -561,7 +600,7 @@ HoverHighlightView* AccessibilityDetailedView::AddCaretHighlightView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->caret_highlight().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, gfx::kNoneIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_CARET_HIGHLIGHT),
@@ -572,7 +611,7 @@ HoverHighlightView* AccessibilityDetailedView::AddHighlightMouseCursorView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->cursor_highlight().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, gfx::kNoneIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR),
@@ -583,7 +622,7 @@ HoverHighlightView* AccessibilityDetailedView::AddHighlightKeyboardFocusView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->focus_highlight().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, gfx::kNoneIcon,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS),
@@ -594,10 +633,64 @@ HoverHighlightView* AccessibilityDetailedView::AddStickyKeysView(
     views::View* container) {
   auto* controller = Shell::Get()->accessibility_controller();
   bool checked = controller->sticky_keys().enabled();
-  return AddScrollListCheckableItem(
+  return AddScrollListFeatureItem(
       container, gfx::kNoneIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_STICKY_KEYS),
       checked, controller->IsEnterpriseIconVisibleForStickyKeys());
+}
+
+HoverHighlightView* AccessibilityDetailedView::AddScrollListFeatureItem(
+    views::View* container,
+    const gfx::VectorIcon& icon,
+    const std::u16string& text,
+    bool checked,
+    bool enterprise_managed) {
+  if (features::IsQsRevampEnabled()) {
+    // QsRevamp uses items with a toggle button on the right.
+    return AddScrollListToggleItem(container, icon, text, checked,
+                                   enterprise_managed);
+  }
+  // Pre-QsRevamp uses items with check marks on the right.
+  return AddScrollListCheckableItem(container, icon, text, checked,
+                                    enterprise_managed);
+}
+
+HoverHighlightView* AccessibilityDetailedView::AddScrollListToggleItem(
+    views::View* container,
+    const gfx::VectorIcon& icon,
+    const std::u16string& text,
+    bool checked,
+    bool enterprise_managed) {
+  HoverHighlightView* item = AddScrollListItem(container, icon, text);
+  item->SetAccessibilityState(
+      checked ? HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX
+              : HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
+  if (enterprise_managed) {
+    // Show the enterprise "building" icon on the right.
+    item->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_ACCESSIBILITY_FEATURE_MANAGED, text));
+    // TODO(b/257315380): The color should update on theme change.
+    SkColor color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconColorPrimary);
+    gfx::ImageSkia enterprise_managed_icon =
+        CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconSize, color);
+    item->AddRightIcon(enterprise_managed_icon,
+                       enterprise_managed_icon.width());
+  } else {
+    // Create a non-clickable non-focusable toggle button on the right.
+    auto toggle = std::make_unique<TrayToggleButton>(
+        views::Button::PressedCallback(),
+        /*accessible_name_id=*/absl::nullopt);
+    toggle->SetIsOn(checked);
+    toggle->SetCanProcessEventsWithinSubtree(false);
+    toggle->SetFocusBehavior(views::View::FocusBehavior::NEVER);
+    // Ignore the toggle for accessibility.
+    auto& view_accessibility = toggle->GetViewAccessibility();
+    view_accessibility.OverrideIsLeaf(true);
+    view_accessibility.OverrideIsIgnored(true);
+    item->AddRightView(toggle.release());
+  }
+  return item;
 }
 
 void AccessibilityDetailedView::HandleViewClicked(views::View* view) {

@@ -225,6 +225,11 @@ crbug.com/1376647 [ Linux ] virtual/scalefactor200/css3/filters/effect-reference
 
 # --- END Skia roll test suppresions
 
+# ====== Popover and Anchor Positioning failures from here ======
+
+crbug.com/1380112 external/wpt/html/semantics/popovers/popover-anchor-display.tentative.html [ Failure ]
+
+# ====== Popover and Anchor Positioning failures to here ======
 
 # Sheriff on 2020-09-03
 crbug.com/1124352 media/picture-in-picture/clear-after-request.html [ Crash Pass ]
@@ -3414,8 +3419,6 @@ crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/abort/servi
 crbug.com/626703 external/wpt/avif/animated-avif-timeout.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
 crbug.com/626703 [ Win ] external/wpt/encoding/unsupported-labels.window.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/resize-observer/notify.html [ Timeout ]
-crbug.com/626703 external/wpt/resize-observer/svg.html [ Timeout ]
 crbug.com/626703 [ Win11 ] wpt_internal/geolocation-api/watchPosition-page-visibility.https.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/api/redirect/redirect-upload.h2.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/infrastructure/server/http2-context.sub.h2.any.html [ Timeout ]
@@ -4113,10 +4116,7 @@ crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success.html [ Timeout ]
 
-crbug.com/892212 http/tests/wasm/wasm_remote_postMessage_test.https.html [ Failure Pass Timeout ]
-
 crbug.com/1380554 external/wpt/content-security-policy/wasm-unsafe-eval/postMessage-wasm-module.html [ Timeout ]
-crbug.com/1380554 virtual/wasm-csp/external/wpt/content-security-policy/wasm-unsafe-eval/postMessage-wasm-module.html [ Timeout ]
 
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
@@ -6867,9 +6867,6 @@ crbug.com/1324428 fast/webgl/canvas-toDataURL-crash.html [ Crash Pass ]
 # Throttling a hidden-cross origin frame may stall animations.
 crbug.com/1323246 external/wpt/web-animations/timing-model/timelines/sibling-iframe-timeline.html [ Failure Pass ]
 
-# Sheriff 2022-05-16
-crbug.com/1325858 virtual/wasm-code-caching/http/tests/wasm/caching/code-cache.html [ Skip ]
-
 # introduce blink_wpt_tests
 crbug.com/1299834 [ Win ] wpt_internal/html/interaction/focus/the-autofocus-attribute/object-fallback.html [ Timeout ]
 crbug.com/1299834 external/wpt/css/css-pseudo/first-letter-with-quote.html [ Failure ]
@@ -6903,7 +6900,7 @@ crbug.com/1277696 fast/loader/reload-zero-byte-plugin.html [ Failure Pass ]
 # Flaky on Windows
 crbug.com/1316343 [ Win ] external/wpt/web-bundle/subresource-loading/reuse-web-bundle-resource.https.tentative.html [ Failure ]
 
-# Manual test fails when run under automation due to lack of pop-up blocking. https://github.com/web-platform-tests/wpt/issues/3867
+# Manual test fails when run under automation due to lack of popup blocking. https://github.com/web-platform-tests/wpt/issues/3867
 crbug.com/1337125 external/wpt/window-placement/fullscreen-companion-window-manual.tentative.https.html [ Failure ]
 
 # Temporarily disable test to merge 'reveal' button change to adorner
@@ -7252,8 +7249,6 @@ crbug.com/1234839 [ Debug Linux ] external/wpt/html/semantics/interactive-elemen
 crbug.com/1379180 [ Linux ] fast/events/event-hit-testing-fallback-to-iframe.html [ Failure Pass ]
 crbug.com/1194961 [ Debug Linux ] fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Failure Pass ]
 crbug.com/1379156 [ Debug Linux ] compositing/layer-creation/overflow-hidden-scroll-with-fixed-overlap.html [ Timeout ]
-crbug.com/1380065 [ Mac11 ] external/wpt/screen-capture/getdisplaymedia-capture-controller.https.window.html [ Timeout ]
-crbug.com/1380065 [ Mac10.15 ] external/wpt/screen-capture/getdisplaymedia-capture-controller.https.window.html [ Timeout ]
 crbug.com/1380069 [ Mac10.15 ] virtual/pending-beacon/external/wpt/pending-beacon/pending_beacon-sendonhidden.tentative.https.window.html [ Timeout ]
 crbug.com/1380069 [ Linux ] virtual/pending-beacon/external/wpt/pending-beacon/pending_beacon-sendonhidden.tentative.https.window.html [ Timeout ]
 crbug.com/1380069 [ Mac12 ] virtual/pending-beacon/external/wpt/pending-beacon/pending_post_beacon-cors.tentative.https.window.html [ Timeout ]
@@ -7719,16 +7714,11 @@ crbug.com/1347831 http/tests/devtools/indexeddb/database-version-number.js [ Ski
 crbug.com/1347831 http/tests/devtools/indexeddb/track-valid-origin.js [ Skip ]
 crbug.com/1347831 http/tests/devtools/indexeddb/upgrade-events.js [ Skip ]
 
-# Disabled to land devtools-frontend change:
-crbug.com/1376854 http/tests/devtools/elements/accessibility/autocomplete-attribute.js [ Skip ]
-crbug.com/1376854 http/tests/devtools/elements/styles-3/style-autocomplete.js [ Skip ]
-
 # WebRTC: temporarily disabled to allow new WebRTC stats to roll.
 crbug.com/webrtc/14619 external/wpt/webrtc-stats/supported-stats.html [ Failure Pass ]
 
 # Sheriff 2022-10-20
 crbug.com/1376822 [ Win11 ] external/wpt/html/rendering/replaced-elements/attributes-for-embedded-content-and-images/video-intrinsic-width-height.html [ Failure ]
-crbug.com/1376495 http/tests/devtools/runtime/evaluate-timeout.js [ Failure Pass ]
 crbug.com/1376845 external/wpt/mediacapture-insertable-streams/MediaStreamTrackProcessor-backpressure.https.html [ Failure Pass ]
 
 crbug.com/1378359 external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ Failure ]
@@ -7736,12 +7726,5 @@ crbug.com/1378359 external/wpt/clipboard-apis/async-navigator-clipboard-basics.h
 # Sheriff 2022-10-31
 crbug.com/1376679 virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-dynamic.tentative.html [ Skip ]
 
-# Sheriff 2022-11-01
-crbug.com/1380381 [ Linux ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure Pass ]
-
 # Investigate the flake.
 crbug.com/1371395 external/wpt/performance-timeline/not-restored-reasons/performance-navigation-timing-same-origin-bfcache.window.html [ Failure Pass ]
-
-# Sheriff 2022-11-02
-crbug.com/1380762 [ Mac12-arm64 ] wpt_internal/webcodecs/avc_encoder_config.https.any.html [ Failure ]
-crbug.com/1380762 [ Mac12-arm64 ] wpt_internal/webcodecs/avc_encoder_config.https.any.worker.html [ Failure ]

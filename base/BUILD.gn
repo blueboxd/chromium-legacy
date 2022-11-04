@@ -634,6 +634,7 @@ mixed_component("base") {
     "scoped_native_library.cc",
     "scoped_native_library.h",
     "scoped_observation.h",
+    "scoped_observation_traits.h",
     "sequence_checker.cc",
     "sequence_checker.h",
     "sequence_checker_impl.cc",
@@ -1404,7 +1405,6 @@ mixed_component("base") {
       "debug/proc_maps_linux.cc",
       "debug/proc_maps_linux.h",
       "files/dir_reader_linux.h",
-      "files/file_util_linux.cc",
       "files/scoped_file_linux.cc",
       "process/internal_linux.cc",
       "process/internal_linux.h",
@@ -4729,6 +4729,11 @@ if (is_mac) {
     seed_corpus = "$target_gen_dir/base_mach_port_rendezvous_corpus"
     seed_corpus_deps = [ ":base_mach_port_rendezvous_convert_corpus" ]
   }
+}
+
+fuzzer_test("command_line_fuzzer") {
+  sources = [ "command_line_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 fuzzer_test("escape_fuzzer") {

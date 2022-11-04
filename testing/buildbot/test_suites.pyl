@@ -320,10 +320,10 @@
       'bf_cache_chrome_public_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_chrome_public_test_apk.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_chrome_public_test_apk.filter'
         ],
         'swarming': {
-          'shards': 20,
+          'shards': 15,
         },
         'mixins': [
           'skia_gold_test',
@@ -333,7 +333,6 @@
       'bf_cache_chrome_public_unit_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.chrome_public_unit_test_apk.filter'
         ],
         'mixins': [
           'skia_gold_test',
@@ -343,11 +342,8 @@
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_content_shell_test_apk.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_content_shell_test_apk.filter'
         ],
-        'swarming': {
-          'shards': 5,
-        },
         'test': 'content_shell_test_apk',
       },
     },
@@ -4573,10 +4569,11 @@
     },
 
     'rust_native_tests': {
-      'autocxx_tests': {
-        'swarming': {},
-        'test': 'autocxx_tests',
-      },
+      # TODO(https://crbug.com/1380857): reenable test coverage.
+      # 'autocxx_tests': {
+      #   'swarming': {},
+      #   'test': 'autocxx_tests',
+      # },
       'build_rust_tests': {
         'swarming': {},
         'test': 'build_rust_tests',
@@ -6613,7 +6610,7 @@
         ],
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_X_16_1',
           'SIM_IPHONE_8_16_1',
@@ -6623,7 +6620,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_8_16_1',
           'SIM_IPHONE_X_16_1',
@@ -6796,7 +6793,7 @@
         ],
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           # Latest beta iOS version Sims
           'SIM_IPHONE_7_14_5',
@@ -6805,7 +6802,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           # Latest beta iOS version Sims
           'SIM_IPHONE_X_14_5',
@@ -6907,7 +6904,7 @@
         ]
       },
       'ios_eg2_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_6S_14_5',
           'SIM_IPHONE_7_14_5',
@@ -6916,7 +6913,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
-        'mixins': ['xcode_parallelization'],
+        'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
           'SIM_IPHONE_6S_PLUS_14_5',
           'SIM_IPHONE_6S_14_5',

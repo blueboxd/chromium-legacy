@@ -283,10 +283,6 @@ const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
 
-const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module";
-const char kEnableFREUIModuleIOSDescription[] =
-    "Use the new FRE UI module for first run.";
-
 const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
@@ -728,12 +724,6 @@ const char kSynthesizedRestoreSessionDescription[] =
     "Enable instant session restoration by synthesizing WKWebView session "
     "restoration data (iOS15 only).";
 
-const char kSyntheticCrashReportsForUteName[] =
-    "Generate synthetic crash reports for UTE";
-const char kSyntheticCrashReportsForUteDescription[] =
-    "When enabled the app will create synthetic crash report when chrome "
-    "starts up after Unexplained Termination Event (UTE).";
-
 const char kSyncEnableHistoryDataTypeName[] = "Enable History sync data type";
 const char kSyncEnableHistoryDataTypeDescription[] =
     "Enables the History sync data type instead of TypedURLs";
@@ -836,6 +826,11 @@ const char kUseLoadSimulatedRequestForOfflinePageDescription[] =
 const char kUseSFSymbolsName[] = "Replace Image by SFSymbols";
 const char kUseSFSymbolsDescription[] =
     "When enabled, images are replaced by SFSymbols";
+
+const char kUseSFSymbolsInOmniboxName[] =
+    "Replace Image by SFSymbols in Omnibox";
+const char kUseSFSymbolsInOmniboxDescription[] =
+    "When enabled, images are replaced by SFSymbols in the omnibox";
 
 const char kWaitThresholdMillisecondsForCapabilitiesApiName[] =
     "Maximum wait time (in seconds) for a response from the Account "

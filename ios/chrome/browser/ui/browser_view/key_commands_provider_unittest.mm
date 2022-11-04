@@ -4,15 +4,18 @@
 
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 
+#import "base/test/metrics/user_action_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
+#import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -59,12 +62,22 @@ class KeyCommandsProviderTest : public PlatformTest {
         web_state_list_->GetWebStateAt(insertedIndex));
   }
 
+  void ExpectUMA(NSString* selector, const std::string& user_action) {
+    ASSERT_EQ(user_action_tester_.GetActionCount(user_action), 0);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    [provider_ performSelector:NSSelectorFromString(selector)];
+#pragma clang diagnostic pop
+    EXPECT_EQ(user_action_tester_.GetActionCount(user_action), 1);
+  }
+
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_;
   WebStateList* web_state_list_;
   SceneState* scene_state_;
   base::test::ScopedFeatureList feature_list_;
+  base::UserActionTester user_action_tester_;
   KeyCommandsProvider* provider_;
 };
 
@@ -106,33 +119,33 @@ TEST_F(KeyCommandsProviderTest, ImplementsActions) {
   [provider_ keyCommand_openNewWindow];
   [provider_ keyCommand_openNewIncognitoWindow];
   [provider_ keyCommand_reopenLastClosedTab];
-  [provider_ keyCommand_openFindInPage];
-  [provider_ keyCommand_findNextStringInPage];
-  [provider_ keyCommand_findPreviousStringInPage];
-  [provider_ keyCommand_focusOmnibox];
+  [provider_ keyCommand_find];
+  [provider_ keyCommand_findNext];
+  [provider_ keyCommand_findPrevious];
+  [provider_ keyCommand_openLocation];
   [provider_ keyCommand_closeTab];
   [provider_ keyCommand_showNextTab];
   [provider_ keyCommand_showPreviousTab];
   [provider_ keyCommand_showBookmarks];
   [provider_ keyCommand_addToBookmarks];
   [provider_ keyCommand_reload];
-  [provider_ keyCommand_goBack];
-  [provider_ keyCommand_goForward];
+  [provider_ keyCommand_back];
+  [provider_ keyCommand_forward];
   [provider_ keyCommand_showHistory];
-  [provider_ keyCommand_startVoiceSearch];
+  [provider_ keyCommand_voiceSearch];
   [provider_ keyCommand_close];
   [provider_ keyCommand_showSettings];
   [provider_ keyCommand_stop];
   [provider_ keyCommand_showHelp];
-  [provider_ keyCommand_showDownloadsFolder];
-  [provider_ keyCommand_showTab0];
-  [provider_ keyCommand_showTab1];
+  [provider_ keyCommand_showDownloads];
+  [provider_ keyCommand_showFirstTab];
   [provider_ keyCommand_showTab2];
   [provider_ keyCommand_showTab3];
   [provider_ keyCommand_showTab4];
   [provider_ keyCommand_showTab5];
   [provider_ keyCommand_showTab6];
   [provider_ keyCommand_showTab7];
+  [provider_ keyCommand_showTab8];
   [provider_ keyCommand_showLastTab];
   [provider_ keyCommand_reportAnIssue];
   [provider_ keyCommand_addToReadingList];
@@ -141,7 +154,56 @@ TEST_F(KeyCommandsProviderTest, ImplementsActions) {
   [provider_ keyCommand_clearBrowsingData];
 }
 
-// Verifies the next/previous tab actions work OK.
+// Checks that metrics are correctly reported.
+TEST_F(KeyCommandsProviderTest, Metrics) {
+  ExpectUMA(@"keyCommand_openNewTab", "MobileKeyCommandOpenNewTab");
+  ExpectUMA(@"keyCommand_openNewRegularTab",
+            "MobileKeyCommandOpenNewRegularTab");
+  ExpectUMA(@"keyCommand_openNewIncognitoTab",
+            "MobileKeyCommandOpenNewIncognitoTab");
+  ExpectUMA(@"keyCommand_openNewWindow", "MobileKeyCommandOpenNewWindow");
+  ExpectUMA(@"keyCommand_openNewIncognitoWindow",
+            "MobileKeyCommandOpenNewIncognitoWindow");
+  ExpectUMA(@"keyCommand_reopenLastClosedTab",
+            "MobileKeyCommandReopenLastClosedTab");
+  ExpectUMA(@"keyCommand_find", "MobileKeyCommandFind");
+  ExpectUMA(@"keyCommand_findNext", "MobileKeyCommandFindNext");
+  ExpectUMA(@"keyCommand_findPrevious", "MobileKeyCommandFindPrevious");
+  ExpectUMA(@"keyCommand_openLocation", "MobileKeyCommandOpenLocation");
+  ExpectUMA(@"keyCommand_closeTab", "MobileKeyCommandCloseTab");
+  ExpectUMA(@"keyCommand_showNextTab", "MobileKeyCommandShowNextTab");
+  ExpectUMA(@"keyCommand_showPreviousTab", "MobileKeyCommandShowPreviousTab");
+  ExpectUMA(@"keyCommand_showBookmarks", "MobileKeyCommandShowBookmarks");
+  ExpectUMA(@"keyCommand_addToBookmarks", "MobileKeyCommandAddToBookmarks");
+  ExpectUMA(@"keyCommand_reload", "MobileKeyCommandReload");
+  ExpectUMA(@"keyCommand_back", "MobileKeyCommandBack");
+  ExpectUMA(@"keyCommand_forward", "MobileKeyCommandForward");
+  ExpectUMA(@"keyCommand_showHistory", "MobileKeyCommandShowHistory");
+  ExpectUMA(@"keyCommand_voiceSearch", "MobileKeyCommandVoiceSearch");
+  ExpectUMA(@"keyCommand_close", "MobileKeyCommandClose");
+  ExpectUMA(@"keyCommand_showSettings", "MobileKeyCommandShowSettings");
+  ExpectUMA(@"keyCommand_stop", "MobileKeyCommandStop");
+  ExpectUMA(@"keyCommand_showHelp", "MobileKeyCommandShowHelp");
+  ExpectUMA(@"keyCommand_showDownloads", "MobileKeyCommandShowDownloads");
+  ExpectUMA(@"keyCommand_showFirstTab", "MobileKeyCommandShowFirstTab");
+  ExpectUMA(@"keyCommand_showTab2", "MobileKeyCommandShowTab2");
+  ExpectUMA(@"keyCommand_showTab3", "MobileKeyCommandShowTab3");
+  ExpectUMA(@"keyCommand_showTab4", "MobileKeyCommandShowTab4");
+  ExpectUMA(@"keyCommand_showTab5", "MobileKeyCommandShowTab5");
+  ExpectUMA(@"keyCommand_showTab6", "MobileKeyCommandShowTab6");
+  ExpectUMA(@"keyCommand_showTab7", "MobileKeyCommandShowTab7");
+  ExpectUMA(@"keyCommand_showTab8", "MobileKeyCommandShowTab8");
+  ExpectUMA(@"keyCommand_showLastTab", "MobileKeyCommandShowLastTab");
+  ExpectUMA(@"keyCommand_reportAnIssue", "MobileKeyCommandReportAnIssue");
+  ;
+  ExpectUMA(@"keyCommand_addToReadingList", "MobileKeyCommandAddToReadingList");
+  ExpectUMA(@"keyCommand_showReadingList", "MobileKeyCommandShowReadingList");
+  ExpectUMA(@"keyCommand_goToTabGrid", "MobileKeyCommandGoToTabGrid");
+  ExpectUMA(@"keyCommand_clearBrowsingData",
+            "MobileKeyCommandClearBrowsingData");
+}
+
+// Checks the next/previous tab actions work OK.
 TEST_F(KeyCommandsProviderTest, NextPreviousTab) {
   InsertNewWebState(0);
   InsertNewWebState(1);
@@ -162,6 +224,38 @@ TEST_F(KeyCommandsProviderTest, NextPreviousTab) {
   EXPECT_EQ(web_state_list_->active_index(), 1);
   [provider_ keyCommand_showPreviousTab];
   EXPECT_EQ(web_state_list_->active_index(), 0);
+}
+
+// Verifies that nothing is added to Reading List when there is no tab.
+TEST_F(KeyCommandsProviderTest, AddToReadingList_DoesntAddWhenNoTab) {
+  provider_.dispatcher = OCMStrictProtocolMock(@protocol(ApplicationCommands));
+
+  [provider_ keyCommand_addToReadingList];
+}
+
+// Verifies that nothing is added to Reading List when on the NTP.
+TEST_F(KeyCommandsProviderTest, AddToReadingList_DoesntAddWhenNTP) {
+  provider_.dispatcher = OCMStrictProtocolMock(@protocol(ApplicationCommands));
+  InsertNewWebState(0);
+
+  [provider_ keyCommand_addToReadingList];
+}
+
+// Verifies that the correct URL is added to Reading List.
+TEST_F(KeyCommandsProviderTest, AddToReadingList_AddURL) {
+  id handler = OCMStrictProtocolMock(@protocol(BrowserCommands));
+  provider_.dispatcher = handler;
+  GURL url = GURL("https://e.test");
+  id addCommand = [OCMArg checkWithBlock:^BOOL(ReadingListAddCommand* command) {
+    return command.URLs.count == 1 && command.URLs.firstObject.URL == url;
+  }];
+  OCMExpect([provider_.dispatcher addToReadingList:addCommand]);
+  web::FakeWebState* web_state = InsertNewWebState(0);
+  web_state->SetCurrentURL(url);
+
+  [provider_ keyCommand_addToReadingList];
+
+  [handler verify];
 }
 
 #pragma mark - KeyCommandsProvider Tests with Keyboard Shortcuts Menu disabled

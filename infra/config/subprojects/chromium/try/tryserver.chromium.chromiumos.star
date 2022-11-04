@@ -301,9 +301,6 @@ try_.compilator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     goma_jobs = goma.jobs.J300,
-    # TODO (crbug.com/1287228): Set correct values once bots are set up
-    ssd = None,
-    cores = None,
 )
 
 try_.builder(

@@ -87,23 +87,6 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
   }
 }
 
-// Whether the shelf background type indicates that shelf has rounded corners.
-bool IsShelfBackgroundTypeWithRoundedCorners(
-    ShelfBackgroundType background_type) {
-  switch (background_type) {
-    case ShelfBackgroundType::kDefaultBg:
-    case ShelfBackgroundType::kOverview:
-      return true;
-    case ShelfBackgroundType::kMaximized:
-    case ShelfBackgroundType::kOobe:
-    case ShelfBackgroundType::kHomeLauncher:
-    case ShelfBackgroundType::kLogin:
-    case ShelfBackgroundType::kLoginNonBlurredWallpaper:
-    case ShelfBackgroundType::kInApp:
-      return false;
-  }
-}
-
 // Invokes `complete_callback_` at the end of animation.
 class FullscreenLauncherAnimationObserver
     : public ui::ImplicitAnimationObserver,
@@ -217,14 +200,8 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
                                 int64_t display_id,
                                 base::TimeTicks event_time_stamp,
                                 absl::optional<AppListShowSource> show_source) {
-  if (is_target_visibility_show_) {
-    // Launcher is always visible on the internal display when home launcher is
-    // enabled in tablet mode.
-    if (Shell::Get()->IsInTabletMode() || display_id == GetDisplayId())
-      return;
-
-    Dismiss(event_time_stamp);
-  }
+  if (is_target_visibility_show_)
+    return;
 
   if (!Shell::Get()->GetRootWindowForDisplayId(display_id)) {
     LOG(ERROR) << "Root window does not exist for display: " << display_id;
@@ -256,7 +233,6 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
       Shelf::ForWindow(view_->GetWidget()->GetNativeView()->GetRootWindow());
   shelf->shelf_layout_manager()->UpdateAutoHideState();
 
-  // Observe the shelf for changes to rounded corners.
   // If presenter is observing a shelf instance different than `shelf`, it's
   // because the app list view on the associated display is closing. It's safe
   // to remove this observation (given that shelf background changes should not
@@ -270,8 +246,6 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
   // ScrollableShelfView are deleted. https://crbug.com/1163332
   view_->SetDragAndDropHostOfCurrentAppList(
       shelf->shelf_widget()->GetDragAndDropHostForAppList());
-  view_->SetShelfHasRoundedCorners(
-      IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
   std::unique_ptr<AppListView::ScopedAccessibilityAnnouncementLock>
       scoped_accessibility_lock;
 
@@ -283,11 +257,6 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
         std::make_unique<AppListView::ScopedAccessibilityAnnouncementLock>(
             view_);
   }
-
-  // Save data about how and when we opened the app list for metrics when we
-  // close it.
-  last_open_source_ = show_source;
-  last_open_time_ = base::Time::Now();
 
   auto* layer = view_->GetWidget()->GetNativeWindow()->layer();
 
@@ -396,12 +365,6 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   controller_->ViewClosing();
 
   OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
-  if (!Shell::Get()->IsInTabletMode() && last_open_source_.has_value() &&
-      last_open_time_.has_value())
-    RecordAppListUserJourneyTime(last_open_source_.value(),
-                                 base::Time::Now() - last_open_time_.value());
-  last_open_source_.reset();
-  last_open_time_.reset();
 
   if (!view_->GetWidget()->GetNativeWindow()->is_destroying()) {
     auto* const layer = view_->GetWidget()->GetNativeWindow()->layer();
@@ -662,25 +625,20 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
   const bool visible = app_list_gained_focus ||
                        (IsAtLeastPartiallyVisible() && !app_list_lost_focus);
 
-  if (Shell::Get()->IsInTabletMode()) {
-    if (visible != controller_->IsVisible(GetDisplayId())) {
-      if (app_list_gained_focus)
-        view_->OnHomeLauncherGainingFocusWithoutAnimation();
+  if (visible != controller_->IsVisible(GetDisplayId())) {
+    if (app_list_gained_focus)
+      view_->OnHomeLauncherGainingFocusWithoutAnimation();
 
-      OnVisibilityChanged(visible, GetDisplayId());
-    } else {
-      // In tablet mode, when Assistant UI lost focus after other new App window
-      // opened, we should reset the view.
-      if (app_list_lost_focus && IsShowingEmbeddedAssistantUI())
-        view_->Back();
-    }
+    OnVisibilityChanged(visible, GetDisplayId());
+  } else {
+    // In tablet mode, when Assistant UI lost focus after other new App window
+    // opened, we should reset the view.
+    if (app_list_lost_focus && IsShowingEmbeddedAssistantUI())
+      view_->Back();
   }
 
   if (app_list_gained_focus)
     base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
-
-  if (app_list_lost_focus && !Shell::Get()->IsInTabletMode())
-    Dismiss(base::TimeTicks());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -766,13 +724,6 @@ void AppListPresenterImpl::OnShelfShuttingDown() {
   shelf_observer_.Reset();
   if (view_)
     view_->SetDragAndDropHostOfCurrentAppList(nullptr);
-}
-
-void AppListPresenterImpl::OnBackgroundTypeChanged(
-    ShelfBackgroundType background_type,
-    AnimationChangeType change_type) {
-  view_->SetShelfHasRoundedCorners(
-      IsShelfBackgroundTypeWithRoundedCorners(background_type));
 }
 
 void AppListPresenterImpl::SnapAppListBoundsToDisplayEdge() {

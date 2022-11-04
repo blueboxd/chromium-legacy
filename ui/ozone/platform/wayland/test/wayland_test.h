@@ -20,6 +20,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/test/mock_wayland_platform_window_delegate.h"
+#include "ui/ozone/platform/wayland/test/scoped_wl_array.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -64,8 +65,6 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
 
   void Sync();
 
-  void FlushServer();
-
   // Posts 'callback' or 'closure' to run on the client thread; blocks till the
   // callable is run and all pending Wayland requests and events are delivered.
   void PostToServerAndWait(
@@ -92,6 +91,12 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
                           const gfx::Size& size,
                           uint32_t serial,
                           struct wl_array* states);
+  // Sends configure event for the |surface_id|. Please note that |surface_id|
+  // must be an id of the wl_surface that has xdg_surface role.
+  void SendConfigureEvent(uint32_t surface_id,
+                          const gfx::Size& size,
+                          uint32_t serial,
+                          const wl::ScopedWlArray& states);
 
   // Sends XDG_TOPLEVEL_STATE_ACTIVATED to the |xdg_surface| with width and
   // height set to 0, which results in asking the client to set the width and
@@ -100,6 +105,12 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
 
   // Initializes SurfaceAugmenter in |server_|.
   void InitializeSurfaceAugmenter();
+
+  // Sets up a sync callback via wl_display.sync and waits until it's received.
+  // Requests are handled in-order and events are delivered in-order, thus sync
+  // is used as a barrier to ensure all previous requests and the resulting
+  // events have been handled.
+  void SyncDisplay();
 
   base::test::TaskEnvironment task_environment_;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/ash/printing_section.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/settings/ash/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
@@ -118,7 +119,6 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"cupsPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTERS},
       {"cupsPrintersLearnMoreLabel",
        IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL},
-      {"cupsPrintersLearnMoreButtonTitle", IDS_SETTINGS_LEARN_MORE},
       {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
       {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
       {"viewPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_VIEW},
@@ -205,6 +205,8 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE},
       {"printerManufacturer", IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER},
       {"selectDriver", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER},
+      {"advancedConfigSelectDriver",
+       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_CONFIG_SELECT_DRIVER},
       {"selectDriverButtonText",
        IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
       {"selectDriverButtonAriaLabel",
@@ -282,6 +284,7 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "printingCUPSPrintPpdLearnMoreUrl",
       GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
+  html_source->AddBoolean("isViewPpdEnabled", features::IsViewPpdEnabled());
 }
 
 void PrintingSection::AddHandlers(content::WebUI* web_ui) {

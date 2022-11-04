@@ -21,6 +21,8 @@ try_.defaults.set(
     compilator_goma_jobs = goma.jobs.J300,
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 
     # TODO(crbug.com/1362440): remove this.
@@ -282,6 +284,7 @@ try_.compilator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
     main_list_view = "try",
+    cores = 64 if settings.is_main else 32,
 )
 
 # b/236070074: Experimental builder to test reclient migration

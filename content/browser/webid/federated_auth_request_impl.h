@@ -58,7 +58,6 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   // blink::mojom::FederatedAuthRequest:
   void RequestToken(std::vector<blink::mojom::IdentityProviderPtr> idp_ptrs,
                     bool prefer_auto_sign_in,
-                    bool show_iframe_requester,
                     RequestTokenCallback) override;
   void CancelTokenRequest() override;
   void LogoutRps(std::vector<blink::mojom::LogoutRpsRequestPtr> logout_requests,
@@ -263,9 +262,6 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   std::vector<GURL> idp_order_;
   // Map of processed IDPs' data keyed by IDP config URL to display on the UI.
   base::flat_map<GURL, IdentityProviderData> idp_data_;
-
-  // Whether to show the iframe requester on the FedCM UI.
-  bool show_iframe_requester_ = false;
 
   base::WeakPtrFactory<FederatedAuthRequestImpl> weak_ptr_factory_{this};
 };

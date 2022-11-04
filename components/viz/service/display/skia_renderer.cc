@@ -1556,7 +1556,7 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
       GetSampling(quad), draw_region);
 
   params.content_device_transform.PostConcat(target_to_device);
-  params.content_device_transform.FlattenTo2d();
+  params.content_device_transform.Flatten();
 
   // Respect per-quad setting overrides as highest priority setting
   if (!IsAAForcedOff(quad)) {
@@ -2449,7 +2449,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     DCHECK(SkColorSpace::Equals(image->colorSpace(),
                                 CurrentRenderPassSkColorSpace().get()));
     sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
-        src_color_space, quad->hdr_metadata, dst_color_space);
+        src_color_space, absl::nullopt, quad->hdr_metadata, dst_color_space);
     paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
   }
 
@@ -2603,8 +2603,8 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
       quad->ya_tex_coord_rect(), gfx::RectF(quad->rect), params->visible_rect);
 
   sk_sp<SkColorFilter> color_filter = GetColorSpaceConversionFilter(
-      src_color_space, quad->hdr_metadata, dst_color_space,
-      quad->resource_offset, quad->resource_multiplier);
+      src_color_space, quad->bits_per_channel, quad->hdr_metadata,
+      dst_color_space, quad->resource_offset, quad->resource_multiplier);
 
   auto content_color_filter = GetContentColorFilter();
   if (content_color_filter)
@@ -2768,12 +2768,14 @@ void SkiaRenderer::ScheduleOverlays() {
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
     const gfx::ColorSpace& src,
+    absl::optional<uint32_t> src_bit_depth,
     absl::optional<gfx::HDRMetadata> src_hdr_metadata,
     const gfx::ColorSpace& dst,
     float resource_offset,
     float resource_multiplier) {
   return color_filter_cache_.Get(
-      src, dst, resource_offset, resource_multiplier, src_hdr_metadata,
+      src, dst, resource_offset, resource_multiplier, src_bit_depth,
+      src_hdr_metadata,
       current_frame()->display_color_spaces.GetSDRMaxLuminanceNits(),
       current_frame()->display_color_spaces.GetHDRMaxLuminanceRelative());
 }
@@ -2889,7 +2891,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
           quad->shared_quad_state->clip_rect.value_or(current_draw_rect_);
       gfx::Transform transform =
           quad->shared_quad_state->quad_to_target_transform;
-      transform.FlattenTo2d();
+      transform.Flatten();
       if (!transform.IsInvertible()) {
         return rpdq_params;
       }
@@ -3384,7 +3386,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
     // rect at z=0 in device space maps to some other z in local space.
     gfx::Transform flat_quad_to_target_transform(
         shared_quad_state->quad_to_target_transform);
-    flat_quad_to_target_transform.FlattenTo2d();
+    flat_quad_to_target_transform.Flatten();
     quad_to_target_transform_inverse =
         flat_quad_to_target_transform.GetCheckedInverse();
   }

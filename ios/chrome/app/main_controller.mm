@@ -109,7 +109,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
@@ -985,16 +984,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)scheduleStartupCleanupTasks {
-  static bool limit_set_upload_consent_calls =
-      base::FeatureList::IsEnabled(crash_helper::kLimitSetUploadConsentCalls);
-  // TODO(crbug.com/1361334): Safety for cherry-pick. Remove feature check and
-  // keep prefs observer initialization after speculative fix is confirmed to be
-  // safe.
-  if (limit_set_upload_consent_calls) {
-    // Schedule the prefs observer init first to ensure kMetricsReportingEnabled
-    // is synced before starting uploads.
-    [self schedulePrefObserverInitialization];
-  }
+  // Schedule the prefs observer init first to ensure kMetricsReportingEnabled
+  // is synced before starting uploads.
+  [self schedulePrefObserverInitialization];
   [self scheduleCrashReportUpload];
 
   // ClearSessionCookies() is not synchronous.
@@ -1153,13 +1145,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [_startupTasks initializeOmaha];
 
   // Deferred tasks.
-  static bool limit_set_upload_consent_calls =
-      base::FeatureList::IsEnabled(crash_helper::kLimitSetUploadConsentCalls);
-  // TODO(crbug.com/1361334): Safety for cherry-pick.  Remove entire block after
-  // speculative fix is confirmed to be safe.
-  if (!limit_set_upload_consent_calls) {
-    [self schedulePrefObserverInitialization];
-  }
   [self scheduleMemoryDebuggingTools];
   [StartupTasks
       scheduleDeferredBrowserStateInitialization:self.appState

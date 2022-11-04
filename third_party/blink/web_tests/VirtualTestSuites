@@ -460,14 +460,6 @@
     "args": ["--js-flags=--allow-natives-syntax"]
   },
   {
-    "prefix": "wasm-csp",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "wasm",
-      "external/wpt/content-security-policy/wasm-unsafe-eval"],
-    "args": ["--disable-blink-features=WebAssemblyCSP"]
-  },
-  {
     "prefix": "split-http-cache-not-site-per-process",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/devtools/isolated-code-cache"],
@@ -963,10 +955,10 @@
              "--force-color-profile=display-p3-d65"]
   },
   {
-    "prefix": "popup-disabled",
+    "prefix": "popover-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
-    "args": ["--disable-blink-features=HTMLSelectMenuElement,HTMLPopupAttribute"]
+    "args": ["--disable-blink-features=HTMLSelectMenuElement,HTMLPopoverAttribute"]
   },
   {
     "prefix": "object-param-url",
@@ -1095,6 +1087,7 @@
       "wpt_internal/shared_storage",
       "external/wpt/shared-storage",
       "http/tests/inspector-protocol/storage/shared-storage.js",
+      "http/tests/inspector-protocol/storage/shared-storage-delete.js",
       "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride"]
@@ -1106,6 +1099,7 @@
       "wpt_internal/shared_storage",
       "external/wpt/shared-storage",
       "http/tests/inspector-protocol/storage/shared-storage.js",
+      "http/tests/inspector-protocol/storage/shared-storage-delete.js",
       "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride"]
@@ -1392,7 +1386,7 @@
   {
     "prefix": "devtools-tab-target",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/devtools/extensions", "http/tests/devtools/tracing"],
+    "bases": ["http/tests/devtools/extensions", "http/tests/devtools/tracing", "http/tests/devtools/coverage"],
     "args": ["--content-shell-devtools-tab-target"]
   }
 ]

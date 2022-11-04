@@ -55,8 +55,6 @@ if (is_win || is_mac || is_linux) {
       "activity.cc",
       "activity.h",
       "activity_impl.h",
-      "app/app.cc",
-      "app/app.h",
       "app/app_install.cc",
       "app/app_install.h",
       "app/app_recover.cc",
@@ -92,10 +90,6 @@ if (is_win || is_mac || is_linux) {
       "device_management/dm_response_validator.h",
       "device_management/dm_storage.cc",
       "device_management/dm_storage.h",
-      "external_constants.cc",
-      "external_constants.h",
-      "external_constants_default.cc",
-      "external_constants_default.h",
       "installer.cc",
       "installer.h",
       "persisted_data.cc",
@@ -151,6 +145,7 @@ if (is_win || is_mac || is_linux) {
       "//components/policy/proto",
       "//components/prefs",
       "//components/update_client",
+      "//components/update_client:buildflags",
       "//components/update_client:in_process_patcher",
       "//components/update_client:in_process_unzipper",
       "//components/version_info",
@@ -161,7 +156,10 @@ if (is_win || is_mac || is_linux) {
       "//url",
     ]
 
-    public_deps = [ ":public_sources" ]
+    public_deps = [
+      ":base_app",
+      ":external_constants",
+    ]
 
     if (is_posix) {
       sources += [ "remove_uninstalled_apps_task_posix.cc" ]
@@ -187,8 +185,6 @@ if (is_win || is_mac || is_linux) {
         "mac/net/network_fetcher.mm",
         "mac/setup/keystone.h",
         "mac/setup/keystone.mm",
-        "mac/setup/ks_tickets.h",
-        "mac/setup/ks_tickets.mm",
         "mac/setup/setup.h",
         "mac/setup/setup.mm",
         "mac/update_service_internal_proxy.h",
@@ -203,6 +199,7 @@ if (is_win || is_mac || is_linux) {
       ]
 
       deps += [
+        ":ks_ticket",
         "//chrome/common/mac:launchd",
         "//mojo/public/cpp/platform",
         "//net",
@@ -232,8 +229,6 @@ if (is_win || is_mac || is_linux) {
         "app/server/win/updater_legacy_idl.h",
         "app/server/win/wrl_classes.cc",
         "device_management/dm_storage_win.cc",
-        "ipc/update_service_proxy_win.cc",
-        "ipc/update_service_proxy_win.h",
         "policy/win/group_policy_manager.cc",
         "policy/win/group_policy_manager.h",
         "prefs_win.cc",
@@ -257,7 +252,6 @@ if (is_win || is_mac || is_linux) {
         "win/net/network_fetcher.h",
         "win/protocol_parser_xml.cc",
         "win/protocol_parser_xml.h",
-        "win/proxy_impl_base.h",
         "win/scoped_impersonation.cc",
         "win/scoped_impersonation.h",
         "win/setup/setup.cc",
@@ -291,7 +285,6 @@ if (is_win || is_mac || is_linux) {
         "win/ui/yes_no_dialog.h",
         "win/update_service_internal_proxy.cc",
         "win/update_service_internal_proxy.h",
-        "win/wrl_module_initializer.h",
       ]
       deps += [
         "//build:branding_buildflags",
@@ -351,12 +344,55 @@ if (is_win || is_mac || is_linux) {
     }
   }
 
+  if (is_mac) {
+    source_set("ks_ticket") {
+      sources = [
+        "mac/setup/ks_tickets.h",
+        "mac/setup/ks_tickets.mm",
+      ]
+
+      deps = [ "//base" ]
+    }
+  }
+
+  # Set of sources that are required to create an executable based on `App`.
+  source_set("base_app") {
+    sources = [
+      "app/app.cc",
+      "app/app.h",
+    ]
+
+    deps = [
+      ":constants_header",
+      "//base",
+    ]
+
+    public_deps = [ ":public_sources" ]
+  }
+
   source_set("constants_header") {
     sources = [ "constants.h" ]
 
     deps = [
       "//base",
       "//components/update_client",
+    ]
+  }
+
+  source_set("external_constants") {
+    sources = [
+      "external_constants.cc",
+      "external_constants.h",
+      "external_constants_default.cc",
+      "external_constants_default.h",
+    ]
+
+    deps = [
+      ":branding_header",
+      ":constants_header",
+      "//base",
+      "//components/crx_file",
+      "//url",
     ]
   }
 
@@ -367,8 +403,8 @@ if (is_win || is_mac || is_linux) {
     ]
 
     deps = [
-      ":base",
       ":constants_header",
+      ":external_constants",
       "//base",
     ]
   }
@@ -381,9 +417,10 @@ if (is_win || is_mac || is_linux) {
     ]
 
     deps = [
-      ":base",
       ":branding_header",
       ":constants_header",
+      ":external_constants",
+      ":public_sources",
       ":version_header",
       "//base",
       "//components/crx_file",
@@ -484,7 +521,10 @@ if (is_win || is_mac || is_linux) {
 
     if (is_win) {
       sources += [
+        "ipc/update_service_proxy_win.cc",
+        "ipc/update_service_proxy_win.h",
         "util_win.cc",
+        "win/proxy_impl_base.h",
         "win/scoped_handle.h",
         "win/user_info.cc",
         "win/user_info.h",
@@ -741,6 +781,7 @@ if (is_win || is_mac || is_linux) {
       ]
 
       deps += [
+        ":ks_ticket",
         "//chrome/common/mac:launchd",
         "//chrome/updater/mac:ksadmin_lib",
         "//chrome/updater/mac:privileged_helper_sources",

@@ -1062,8 +1062,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
   }
-  if (url.host_piece() == chrome::kChromeUISysInternalsHost)
-    return &NewWebUI<ash::SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
     return &NewWebUI<chromeos::AssistantOptInUI>;
   if (url.host_piece() == chrome::kChromeUINearbyInternalsHost)
@@ -1080,9 +1078,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (url.host_piece() == chrome::kChromeUIArcPowerControlHost) {
       return &NewWebUI<ash::ArcPowerControlUI>;
     }
-  }
-  if (url.host_piece() == chrome::kChromeUIEmojiPickerHost) {
-    return &NewWebUI<ash::EmojiUI>;
   }
   if (url.host_piece() == ash::eche_app::kChromeUIEcheAppHost &&
       base::FeatureList::IsEnabled(ash::features::kEcheSWA)) {

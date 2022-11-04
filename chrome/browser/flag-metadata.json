@@ -155,7 +155,7 @@
   {
     "name": "android-force-app-language-prompt",
     "owners": [ "perrier", "chrome-language@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 115
   },
   {
     "name": "android-media-picker",
@@ -1327,7 +1327,7 @@
   {
     "name": "desktop-detailed-language-settings",
     "owners": [ "perrier", "chrome-language@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 115
   },
   {
     "name": "desktop-partial-translate",
@@ -1410,11 +1410,6 @@
     // This flag is used for QA & debugging on ChromeOS, which has no way to
     // customize switches.
     "expiry_milestone": -1
-  },
-  {
-    "name": "disable-feed-ios14",
-    "owners": [ "justincohen", "adamta" ],
-    "expiry_milestone": 108
   },
   {
     "name": "disable-idle-sockets-close-on-memory-pressure",
@@ -2369,11 +2364,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "enable-fre-ui-module-ios-with-options",
-    "owners": [ "gambard", "veronguyen", "vincb", "ginnyhuang" ],
-    "expiry_milestone": 110
-  },
-  {
     "name": "enable-fullscreen-api",
     "owners": [ "ajuma", "bling-flags@google.com" ],
     "expiry_milestone": 110
@@ -3219,7 +3209,7 @@
   {
     "name": "enable-unsafe-webgpu",
     "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 115
   },
   {
     "name": "enable-user-cloud-signin-restriction-policy",
@@ -3260,6 +3250,11 @@
     "name": "enable-vbr-encode-acceleration",
     "owners": [ "chromeos-gfx-video@google.com" ],
     "expiry_milestone": 120
+  },
+  {
+    "name": "enable-view-ppd",
+    "owners": [ "nmuggli@google.com", "project-bolton-eng@google.com" ],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-virtual-keyboard",
@@ -4292,11 +4287,6 @@
     "expiry_milestone": 109
   },
   {
-    "name": "ios-synthetic-crash-reports",
-    "owners": [ "olivierrobin", "justincohen", "bling-flags@google.com" ],
-    "expiry_milestone": 108
-  },
-  {
     "name": "ios-webpage-intent-annotations",
     "owners": [ "djean", "bling-flags@google.com" ],
     "expiry_milestone": 112
@@ -4951,7 +4941,7 @@
   },
   {
     "name": "ntp-safe-browsing-module",
-    "owners": [ "bhatiarohit", "tiborg" ],
+    "owners": [ "tiborg" ],
     "expiry_milestone": 105
   },
   {
@@ -5368,7 +5358,7 @@
   {
     "name": "origin-agent-cluster-default",
     "owners": [ "vogelheim", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 112
   },
   {
     "name": "os-settings-app-badging-toggle",
@@ -5487,6 +5477,11 @@
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "chrome-fdt@google.com" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "paint-preview-startup",
+    "owners": [ "ckitagawa", "fredmello", "chrome-fdt@google.com" ],
+    "expiry_milestone": 109
   },
   {
     "name": "partial-split",
@@ -6210,11 +6205,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "shelf-focus-order-v1",
-    "owners": [ "etuck", "//ash/shelf/OWNERS" ],
-    "expiry_milestone": 111
-  },
-  {
     "name": "shelf-gestures-with-vk",
     "owners": ["tbarzic", "//ash/shelf/OWNERS"],
     "expiry_milestone": 105
@@ -6352,7 +6342,7 @@
       "sauski@google.com",
       "chrome-friendly-settings@google.com"
     ],
-    "expiry_milestone": 109
+    "expiry_milestone": 117
   },
   {
     "_comment1": "Shipping some form of Site Isolation to Android is tracked",
@@ -6885,7 +6875,12 @@
   {
     "name": "use-sf-symbols",
     "owners": [ "ewannpv", "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 112
+  },
+  {
+    "name": "use-sf-symbols-omnibox",
+    "owners": [ "ewannpv", "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 114
   },
   {
     "name": "use-stork-smds-server-address",

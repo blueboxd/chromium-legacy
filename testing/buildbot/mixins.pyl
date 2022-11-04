@@ -228,7 +228,7 @@
   'android_t': {
     'swarming': {
       'dimensions': {
-        'device_os': 'T',
+        'device_os': 'TP1A.220624.021',
       },
     },
   },
@@ -570,8 +570,7 @@
   'ios_output_disabled_tests': {
     '$mixin_append': {
       'args': [
-        '--args-json',
-        '{"test_args": ["--write-compiled-tests-json-to-writable-path"]}'
+        '--output-disabled-tests',
       ],
     },
   },

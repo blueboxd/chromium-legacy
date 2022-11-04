@@ -96,6 +96,9 @@ CAGradientLayer* CarouselBackgroundGradientLayer() {
 
 }  // namespace
 
+const CGFloat kOmniboxPopupCarouselControlWidth =
+    kBackgroundViewSize + 2 * kBackgroundViewMargin;
+
 @interface OmniboxPopupCarouselControl ()
 
 // View containing the background.
@@ -126,6 +129,7 @@ CAGradientLayer* CarouselBackgroundGradientLayer() {
 - (void)setSelected:(BOOL)selected {
   [super setSelected:selected];
   if (selected) {
+    [self.delegate carouselControlDidBecomeFocused:self];
     [self.backgroundView.layer addSublayer:self.gradientLayer];
   } else {
     [self.gradientLayer removeFromSuperlayer];
@@ -192,6 +196,35 @@ CAGradientLayer* CarouselBackgroundGradientLayer() {
                                      fromView:self];
 }
 
+- (void)contextMenuInteraction:(UIContextMenuInteraction*)interaction
+    willDisplayMenuForConfiguration:(UIContextMenuConfiguration*)configuration
+                           animator:
+                               (id<UIContextMenuInteractionAnimating>)animator {
+  if (self.isSelected) {
+    __weak CAGradientLayer* weakHighlightLayer = self.gradientLayer;
+    [animator addAnimations:^{
+      [weakHighlightLayer removeFromSuperlayer];
+    }];
+  }
+  [super contextMenuInteraction:interaction
+      willDisplayMenuForConfiguration:configuration
+                             animator:animator];
+}
+
+- (void)contextMenuInteraction:(UIContextMenuInteraction*)interaction
+       willEndForConfiguration:(UIContextMenuConfiguration*)configuration
+                      animator:(id<UIContextMenuInteractionAnimating>)animator {
+  if (self.isSelected) {
+    __weak __typeof(self) weakSelf = self;
+    [animator addAnimations:^{
+      [weakSelf.backgroundView.layer addSublayer:weakSelf.gradientLayer];
+    }];
+  }
+  [super contextMenuInteraction:interaction
+        willEndForConfiguration:configuration
+                       animator:animator];
+}
+
 - (UITargetedPreview*)contextMenuInteraction:
                           (UIContextMenuInteraction*)interaction
                                configuration:
@@ -205,6 +238,14 @@ CAGradientLayer* CarouselBackgroundGradientLayer() {
                                  cornerRadius:kPreviewCornerRadius];
   return [[UITargetedPreview alloc] initWithView:self
                                       parameters:previewParameters];
+}
+
+#pragma mark - UIAccessibilityFocus
+
+- (void)accessibilityElementDidBecomeFocused {
+  // Element is focused by VoiceOver, informs its delegate so it can make it
+  // visible, in case it's hidden in the scroll view.
+  [self.delegate carouselControlDidBecomeFocused:self];
 }
 
 @end

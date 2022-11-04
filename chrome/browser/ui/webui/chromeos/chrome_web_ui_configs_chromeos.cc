@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/browser/ui/webui/ash/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/ash/drive_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
 #include "chrome/browser/ui/webui/ash/human_presence_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/webui/ash/slow_ui.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
+#include "chrome/browser/ui/webui/ash/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
 #if !defined(OFFICIAL_BUILD)
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
@@ -76,6 +78,7 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<ash::CrostiniUpgraderUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::CryptohomeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::DriveInternalsUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::EmojiUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::HumanPresenceInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::InternetConfigDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::InternetDetailDialogUIConfig>());
@@ -94,6 +97,7 @@ void RegisterAshChromeWebUIConfigs() {
       std::make_unique<ash::smb_dialog::SmbCredentialsDialogUIConfig>());
   map.AddWebUIConfig(
       std::make_unique<ash::smb_dialog::SmbShareDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::SysInternalsUIConfig>());
 #if !defined(OFFICIAL_BUILD)
   map.AddWebUIConfig(std::make_unique<ash::SampleSystemWebAppUIConfig>());
 #endif  // !defined(OFFICIAL_BUILD)

@@ -265,10 +265,6 @@ extern const char kEnableFeedAblationDescription[];
 extern const char kEnableFREDefaultBrowserPromoScreenName[];
 extern const char kEnableFREDefaultBrowserPromoScreenDescription[];
 
-// Title and description for the flag to enable FRE UI module.
-extern const char kEnableFREUIModuleIOSName[];
-extern const char kEnableFREUIModuleIOSDescription[];
-
 // Title and description for the flag to enable the Fullscreen API.
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
@@ -649,11 +645,6 @@ extern const char kStartSurfaceDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
-// Title and description for the flag that controls synthetic crash reports
-// generation for Unexplained Termination Events.
-extern const char kSyntheticCrashReportsForUteName[];
-extern const char kSyntheticCrashReportsForUteDescription[];
-
 // Title and description for the flag to synthesize native restore web states.
 extern const char kSynthesizedRestoreSessionName[];
 extern const char kSynthesizedRestoreSessionDescription[];
@@ -739,6 +730,11 @@ extern const char kUseLoadSimulatedRequestForOfflinePageDescription[];
 // by SFSymbols.
 extern const char kUseSFSymbolsName[];
 extern const char kUseSFSymbolsDescription[];
+
+// Title and description for the flag to enable the replacement of images
+// by SFSymbols in omnibox.
+extern const char kUseSFSymbolsInOmniboxName[];
+extern const char kUseSFSymbolsInOmniboxDescription[];
 
 // Title and description for the flag to control the maximum wait time (in
 // seconds) for a response from the Account Capabilities API.

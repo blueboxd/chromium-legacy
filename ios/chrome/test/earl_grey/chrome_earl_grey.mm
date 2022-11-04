@@ -273,14 +273,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
       [ChromeEarlGreyAppInterface simulateTabsBackgrounding]);
 }
 
-- (void)saveSessionImmediately {
-  [ChromeEarlGreyAppInterface saveSessionImmediately];
-
-  // Saving is always performed on a separate thread, so spin the run loop a
-  // bit to ensure save.
-  base::test::ios::SpinRunLoopWithMaxDelay(base::Seconds(1));
-}
-
 - (void)setCurrentTabsToBeColdStartTabs {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface setCurrentTabsToBeColdStartTabs]);
@@ -661,11 +653,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
                   }];
   bool containsText = [waitForText waitWithTimeout:timeout.InSecondsF()];
   EG_TEST_HELPER_ASSERT_TRUE(containsText, errorString);
-}
-
-- (void)waitForWebStateContainingText:(const std::string&)UTF8Text
-                     timeoutInSeconds:(NSTimeInterval)timeout {
-  [self waitForWebStateContainingText:UTF8Text timeout:base::Seconds(timeout)];
 }
 
 - (void)waitForWebStateNotContainingText:(const std::string&)UTF8Text {

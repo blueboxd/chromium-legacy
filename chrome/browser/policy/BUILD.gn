@@ -433,10 +433,7 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos_ash) {
-    sources += [
-      "networking/network_configuration_updater_ash_unittest.cc",
-      "networking/policy_cert_service_factory_ash_unittest.cc",
-    ]
+    sources += [ "networking/network_configuration_updater_ash_unittest.cc" ]
   }
 
   deps = []
@@ -454,8 +451,8 @@ source_set("unit_tests") {
   if (is_chromeos_ash) {
     deps += [
       "//chrome/browser/ash",
-      "//chrome/browser/chromeos:test_support",
-      "//chromeos/system:system",
+      "//chrome/browser/ash:test_support",
+      "//chromeos/system",
     ]
   }
 }

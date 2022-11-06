@@ -2,6 +2,12 @@ specific_include_rules = {
   "ad_tracker_test\.cc": [
     "+base/run_loop.h",
   ],
+  "attribution_response_parsing\.cc": [
+    "+components/attribution_reporting/constants.h",
+  ],
+  "attribution_response_parsing_test\.cc": [
+    "+components/attribution_reporting/constants.h",
+  ],
   "child_frame_compositing_helper\.h": [
     "+components/viz/common/surfaces/surface_id.h",
   ],
@@ -38,7 +44,7 @@ specific_include_rules = {
   ],
   "local_frame_view\.cc": [
     "+base/timer/lap_timer.h",
-    "+cc/document_transition/document_transition_request.h",
+    "+cc/view_transition/view_transition_request.h",
     "+cc/tiles/frame_viewer_instrumentation.h",
     "+components/paint_preview/common/paint_preview_tracker.h",
   ],

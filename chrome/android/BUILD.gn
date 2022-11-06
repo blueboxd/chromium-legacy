@@ -136,6 +136,7 @@ if (current_toolchain == default_toolchain) {
 
   _use_stable_package_name_for_trichrome =
       use_stable_package_name_for_trichrome && android_channel == "beta"
+  _use_high_package_name_for_64bit_only_trichrome = is_high_end_android
 
   jinja_template("trichrome_library_android_manifest") {
     input = "java/AndroidManifest_trichrome_library.xml"
@@ -169,10 +170,18 @@ if (current_toolchain == default_toolchain) {
     jinja_template("trichrome_library_64_android_manifest") {
       input = "java/AndroidManifest_trichrome_library.xml"
       output = trichrome_library_64_android_manifest
-      if (_use_stable_package_name_for_trichrome) {
-        _version_code = trichrome_64_beta_version_code
+      if (_use_high_package_name_for_64bit_only_trichrome) {
+        if (_use_stable_package_name_for_trichrome) {
+          _version_code = trichrome_64_high_beta_version_code
+        } else {
+          _version_code = trichrome_64_high_version_code
+        }
       } else {
-        _version_code = trichrome_64_version_code
+        if (_use_stable_package_name_for_trichrome) {
+          _version_code = trichrome_64_beta_version_code
+        } else {
+          _version_code = trichrome_64_version_code
+        }
       }
       variables = trichrome_jinja_variables + [
                     "trichrome_version=$_version_code",
@@ -484,7 +493,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/ui/android/favicon:java",
       "//chrome/browser/ui/android/layouts:java",
       "//chrome/browser/ui/android/layouts/glue:java",
-      "//chrome/browser/ui/android/layouts/third_party/float_property:java",
       "//chrome/browser/ui/android/logo:java",
       "//chrome/browser/ui/android/management:java",
       "//chrome/browser/ui/android/multiwindow:java",
@@ -1632,7 +1640,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/ui/android/favicon:java",
       "//chrome/browser/ui/android/layouts:java",
       "//chrome/browser/ui/android/layouts/test:java",
-      "//chrome/browser/ui/android/layouts/third_party/float_property:java",
       "//chrome/browser/ui/android/logo:java",
       "//chrome/browser/ui/android/multiwindow:javatests",
       "//chrome/browser/ui/android/native_page:java",
@@ -2762,10 +2769,18 @@ if (current_toolchain == default_toolchain) {
                 _version_code = trichrome_64_32_version_code
               }
             } else {
-              if (_use_stable_package_name_for_trichrome) {
-                _version_code = trichrome_64_beta_version_code
+              if (_use_high_package_name_for_64bit_only_trichrome) {
+                if (_use_stable_package_name_for_trichrome) {
+                  _version_code = trichrome_64_high_beta_version_code
+                } else {
+                  _version_code = trichrome_64_high_version_code
+                }
               } else {
-                _version_code = trichrome_64_version_code
+                if (_use_stable_package_name_for_trichrome) {
+                  _version_code = trichrome_64_beta_version_code
+                } else {
+                  _version_code = trichrome_64_version_code
+                }
               }
             }
           } else {
@@ -3607,10 +3622,18 @@ if (current_toolchain == default_toolchain) {
               _version_code = trichrome_64_32_version_code
             }
           } else {
-            if (_use_stable_package_name_for_trichrome) {
-              _version_code = trichrome_64_beta_version_code
+            if (_use_high_package_name_for_64bit_only_trichrome) {
+              if (_use_stable_package_name_for_trichrome) {
+                _version_code = trichrome_64_high_beta_version_code
+              } else {
+                _version_code = trichrome_64_high_version_code
+              }
             } else {
-              _version_code = trichrome_64_version_code
+              if (_use_stable_package_name_for_trichrome) {
+                _version_code = trichrome_64_beta_version_code
+              } else {
+                _version_code = trichrome_64_version_code
+              }
             }
           }
         } else {
@@ -4026,7 +4049,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/device_dialog/ChromeBluetoothChooserAndroidDelegate.java",
     "java/src/org/chromium/chrome/browser/device_dialog/ChromeBluetoothScanningPromptAndroidDelegate.java",
     "java/src/org/chromium/chrome/browser/device_dialog/UsbChooserDialog.java",
-    "java/src/org/chromium/chrome/browser/document/DocumentWebContentsDelegate.java",
     "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerServiceFactory.java",
     "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerTabUtils.java",
     "java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerUIUtils.java",

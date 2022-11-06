@@ -91,6 +91,11 @@
           'shards': 3,
         },
       },
+      'android-nougat-x86-rel': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
    },
   },
   'android_webview_unittests': {
@@ -1325,7 +1330,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
         ],
         'swarming': {
-          'shards': 25,
+          'shards': 35,
           'dimension_sets': [
             {
               'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
@@ -1591,7 +1596,7 @@
       },
       'Linux ASan LSan Tests (1)': {
         'swarming': {
-          'shards': 12,
+          'shards': 24,
           'quickrun_shards': 24,
         },
       },
@@ -1709,7 +1714,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_browsertests.filter',
         ],
         'swarming': {
-          'shards': 25,
+          'shards': 50,
           'dimension_sets': [
             {
               'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
@@ -2359,7 +2364,7 @@
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASan trybot for some reason, crbug.com/1257927
         'swarming': {
-          'shards': 6,
+          'shards': 12,
           'quickrun_shards': 12,
         },
       },
@@ -3157,6 +3162,9 @@
           # TODO(crbug.com/1264654): Fix the failed tests
           '--gtest_filter=-PacLibraryTest.ActualPacMyIpAddress*'
         ],
+        'swarming': {
+          'shards': 2,
+        },
       },
       'fuchsia-code-coverage': {
         'swarming': {

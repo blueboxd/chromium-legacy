@@ -34,6 +34,7 @@ _CONFIG = [
             # TODO(dcheng): Should these be in a more specific config?
             'gfx::ColorSpace',
             'gfx::CubicBezier',
+            'gfx::HDRMode',
             'gfx::HDRMetadata',
             'gfx::ICCProfile',
             'gfx::RadToDeg',
@@ -508,10 +509,10 @@ _CONFIG = [
             'ui::ScrollGranularity',
 
             # Document transitions
-            'cc::DocumentTransitionRequest',
-            'cc::DocumentTransitionContentLayer',
+            'cc::ViewTransitionRequest',
+            'cc::ViewTransitionContentLayer',
             'viz::NavigationID'
-            'viz::SharedElementResourceId',
+            'viz::ViewTransitionElementResourceId',
 
             # base/types/strong_alias.h
             'base::StrongAlias',
@@ -1756,9 +1757,9 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h'
+            'third_party/blink/renderer/platform/graphics/view_transition_shared_element_id.h'
         ],
-        'allowed': ['cc::DocumentTransitionSharedElementId'],
+        'allowed': ['cc::ViewTransitionElementId'],
     },
     {
         'paths': [
@@ -1841,6 +1842,14 @@ _CONFIG = [
         ],
         'allowed': [
             'browsing_topics::ApiAccessFailureReason',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/frame/attribution_response_parsing.cc',
+        ],
+        'allowed': [
+            'attribution_reporting:.*',
         ]
     },
 ]

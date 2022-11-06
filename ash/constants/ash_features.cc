@@ -569,8 +569,6 @@ BASE_FEATURE(kDarkLightModeKMeansColor,
              "DarkLightModeKMeansColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDemoModeSWA, "DemoModeSWA", base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables or disables Assistant stylus features, including the
 // Assistant option in the stylus palette tool and the Assistant screen
 // selection flow triggered by the stylus long press action.
@@ -976,6 +974,16 @@ BASE_FEATURE(kFuseBox, "FuseBox", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Debugging UI for ChromeOS FuseBox service.
 BASE_FEATURE(kFuseBoxDebug, "FuseBoxDebug", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable a notification to provide an option to open Gallery app for a
+// downloaded pdf file.
+BASE_FEATURE(kGalleryAppPdfEditNotification,
+             "GalleryAppPdfEditNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Button label text used for the above kGalleryAppPdfEditNotification.
+const base::FeatureParam<std::string> kGalleryAppPdfEditNotificationText{
+    &kGalleryAppPdfEditNotification, "text", ""};
 
 // Enable glanceables on login.
 BASE_FEATURE(kGlanceables, "Glanceables", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -2386,10 +2394,6 @@ bool IsDarkLightModeKMeansColorEnabled() {
          base::FeatureList::IsEnabled(kDarkLightModeKMeansColor);
 }
 
-bool IsDemoModeSWAEnabled() {
-  return base::FeatureList::IsEnabled(kDemoModeSWA);
-}
-
 bool IsDeprecateAssistantStylusFeaturesEnabled() {
   return base::FeatureList::IsEnabled(kDeprecateAssistantStylusFeatures);
 }
@@ -2527,6 +2531,10 @@ bool IsFullscreenAlertBubbleEnabled() {
 
 bool IsGaiaReauthEndpointEnabled() {
   return base::FeatureList::IsEnabled(kGaiaReauthEndpoint);
+}
+
+bool IsGalleryAppPdfEditNotificationEnabled() {
+  return base::FeatureList::IsEnabled(kGalleryAppPdfEditNotification);
 }
 
 bool AreGlanceablesEnabled() {

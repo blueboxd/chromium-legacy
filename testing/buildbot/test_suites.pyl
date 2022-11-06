@@ -4942,6 +4942,7 @@
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
           '--ui-test-action-timeout=40000',
+          '--exclude-paths-from-win-defender',
         ],
         'swarming': {
           'dimension_sets': [
@@ -6997,6 +6998,14 @@
         'variants': [
           'SIM_IPHONE_X_14_5',
           'SIM_IPAD_AIR_3RD_GEN_14_5',
+        ]
+      },
+    },
+
+    'lacros_amd64_generic_rel_skylab': {
+      'lacros_skylab_poc': {
+        'variants': [
+          'CROS_EVE_PUBLIC_LKGM',
         ]
       },
     },

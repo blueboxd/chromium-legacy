@@ -20,6 +20,7 @@ namespace extensions {
 class Extension;
 class ExtensionPrefs;
 class PermissionSet;
+class PermissionsManager;
 
 // Responsible for managing the majority of click-to-script features, including
 // granting, withholding, and querying host permissions, and determining if an
@@ -39,14 +40,6 @@ class ScriptingPermissionsModifier {
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   void SetWithholdHostPermissions(bool withhold);
-
-  // Returns whether Chrome has withheld host permissions from the extension.
-  // This may only be called for extensions that can be affected (i.e., for
-  // which CanAffectExtension() returns true). Anything else will DCHECK.
-  // TODO(emiliapaz): Prefer using
-  // `PermissionsManager::HasWithheldHostPermissions(extension)`. Remove after
-  // all callers are migrated.
-  bool HasWithheldHostPermissions() const;
 
   // Returns true if the associated extension can be affected by
   // runtime host permissions.
@@ -105,12 +98,6 @@ class ScriptingPermissionsModifier {
   // Returns the subset of active permissions which can be withheld.
   std::unique_ptr<const PermissionSet> GetRevokablePermissions() const;
 
-  // TODO(emiliapaz): Prefer using
-  // `PermissionsManager::GetRuntimePermissionFromPrefs(extension)`. Remove
-  // after all callers are migrated. Returns the effective list of
-  // runtime-granted permissions for a given `extension` from its prefs.
-  std::unique_ptr<const PermissionSet> GetRuntimePermissionsFromPrefs() const;
-
  private:
   // Grants any withheld host permissions.
   void GrantWithheldHostPermissions();
@@ -123,6 +110,7 @@ class ScriptingPermissionsModifier {
   scoped_refptr<const Extension> extension_;
 
   raw_ptr<ExtensionPrefs> extension_prefs_;
+  raw_ptr<PermissionsManager> permissions_manager_;
 };
 
 }  // namespace extensions

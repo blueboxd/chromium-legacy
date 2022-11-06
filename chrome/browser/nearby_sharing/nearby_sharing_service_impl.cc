@@ -38,10 +38,10 @@
 #include "chrome/browser/nearby_sharing/fast_initiation/fast_initiation_scanner.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
-#include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_feature_status.h"
 #include "chrome/browser/nearby_sharing/nearby_share_metrics_logger.h"
 #include "chrome/browser/nearby_sharing/paired_key_verification_runner.h"
+#include "chrome/browser/nearby_sharing/public/cpp/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
@@ -3855,11 +3855,10 @@ void NearbySharingServiceImpl::OnPayloadTransferUpdate(
     if (share_target.has_attachments() &&
         share_target.file_attachments.size()) {
       // For file payloads, the |PayloadTracker| callback for updates is
-      // |OnTransferUpdate| which will set status |kComplete| and progress at
-      // 100% if payload reading is successful.
+      // |OnTransferUpdate| which will set status |kComplete| if payload reading
+      // is successful.
       const bool files_read_success =
-          ((metadata.status() == TransferMetadata::Status::kComplete) &&
-           metadata.progress() == 100.0);
+          (metadata.status() == TransferMetadata::Status::kComplete);
       RecordNearbySharePayloadFileOperationMetrics(profile_, share_target,
                                                    PayloadFileOperation::kRead,
                                                    files_read_success);

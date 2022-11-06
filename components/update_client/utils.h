@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "components/update_client/update_client.h"
 
 class GURL;
@@ -97,11 +96,6 @@ CrxInstaller::Result ToInstallerResult(const T& error, int extended_error = 0) {
           static_cast<int>(error),
       extended_error);
 }
-
-// Creates a unique temporary directory. For Windows, the directory is created
-// under %ProgramFiles% if the caller is admin, so it is secure.
-bool CreateSecureTempDirectory(const base::FilePath::StringType& prefix,
-                               base::FilePath* temp_dir);
 
 // Returns a string representation of the processor architecture. Uses
 // `base::win::OSInfo::IsWowX86OnARM64` and

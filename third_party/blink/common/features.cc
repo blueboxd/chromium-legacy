@@ -324,7 +324,7 @@ const base::FeatureParam<int>
 
 BASE_FEATURE(kSameSiteCrossOriginForSpeculationRulesPrerender,
              "SameSiteCrossOriginForSpeculationRulesPrerender",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPrerender2SequentialPrerendering,
              "Prerender2SequentialPrerendering",
@@ -1588,10 +1588,6 @@ BASE_FEATURE(kWebRtcThreadsUseResourceEfficientType,
              "WebRtcThreadsUseResourceEfficientType",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kThrottleIntersectionObserverUMA,
-             "ThrottleIntersectionObserverUMA",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kWebRtcMetronome,
              "WebRtcMetronome",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1632,6 +1628,10 @@ BASE_FEATURE(kDocumentEventNodePathCaching,
 
 BASE_FEATURE(kNewBaseUrlInheritanceBehavior,
              "NewBaseUrlInheritanceBehavior",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNewGetDisplayMediaPickerOrder,
+             "NewGetDisplayMediaPickerOrder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsNewBaseUrlInheritanceBehaviorEnabled() {

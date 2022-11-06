@@ -22,11 +22,13 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
+#include "components/attribution_reporting/test_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
-#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
@@ -50,7 +52,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/origin.h"
@@ -460,7 +461,7 @@ class SourceBuilder {
   SourceBuilder& SetDedupKeys(std::vector<uint64_t> dedup_keys);
 
   SourceBuilder& SetAggregationKeys(
-      AttributionAggregationKeys aggregation_keys);
+      attribution_reporting::AggregationKeys aggregation_keys);
 
   SourceBuilder& SetAggregatableBudgetConsumed(
       int64_t aggregatable_budget_consumed);
@@ -498,7 +499,7 @@ class SourceBuilder {
   // Ensure that we don't use uninitialized memory.
   StoredSource::Id source_id_{0};
   std::vector<uint64_t> dedup_keys_;
-  AttributionAggregationKeys aggregation_keys_;
+  attribution_reporting::AggregationKeys aggregation_keys_;
   int64_t aggregatable_budget_consumed_ = 0;
   std::vector<uint64_t> aggregatable_dedup_keys_;
   bool is_within_fenced_frame_ = false;
@@ -729,12 +730,6 @@ std::ostream& operator<<(
 
 std::ostream& operator<<(std::ostream& out,
                          const AttributionAggregatableValues& values);
-
-bool operator==(const AttributionAggregationKeys& a,
-                const AttributionAggregationKeys& b);
-
-std::ostream& operator<<(std::ostream& out,
-                         const AttributionAggregationKeys& aggregation_keys);
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(
     AttributionManager* manager);
@@ -968,20 +963,20 @@ struct AttributionFilterSizeTestCase {
 
 constexpr AttributionFilterSizeTestCase kAttributionFilterSizeTestCases[] = {
     {"empty", true, 0, 0, 0, 0},
-    {"max_filters", true, blink::kMaxAttributionFiltersPerSource, 1, 0, 0},
-    {"too_many_filters", false, blink::kMaxAttributionFiltersPerSource + 1, 1,
-     0, 0},
-    {"max_filter_size", true, 1, blink::kMaxBytesPerAttributionFilterString, 0,
-     0},
+    {"max_filters", true, attribution_reporting::kMaxFiltersPerSource, 1, 0, 0},
+    {"too_many_filters", false, attribution_reporting::kMaxFiltersPerSource + 1,
+     1, 0, 0},
+    {"max_filter_size", true, 1,
+     attribution_reporting::kMaxBytesPerFilterString, 0, 0},
     {"excessive_filter_size", false, 1,
-     blink::kMaxBytesPerAttributionFilterString + 1, 0, 0},
-    {"max_values", true, 1, 0, blink::kMaxValuesPerAttributionFilter, 0},
-    {"too_many_values", false, 1, 0, blink::kMaxValuesPerAttributionFilter + 1,
-     0},
+     attribution_reporting::kMaxBytesPerFilterString + 1, 0, 0},
+    {"max_values", true, 1, 0, attribution_reporting::kMaxValuesPerFilter, 0},
+    {"too_many_values", false, 1, 0,
+     attribution_reporting::kMaxValuesPerFilter + 1, 0},
     {"max_value_size", true, 1, 0, 1,
-     blink::kMaxBytesPerAttributionFilterString},
+     attribution_reporting::kMaxBytesPerFilterString},
     {"excessive_value_size", false, 1, 0, 1,
-     blink::kMaxBytesPerAttributionFilterString + 1},
+     attribution_reporting::kMaxBytesPerFilterString + 1},
 };
 
 class TestAggregatableSourceProvider {
@@ -992,7 +987,7 @@ class TestAggregatableSourceProvider {
   SourceBuilder GetBuilder(base::Time source_time = base::Time::Now()) const;
 
  private:
-  AttributionAggregationKeys source_;
+  attribution_reporting::AggregationKeys source_;
 };
 
 TriggerBuilder DefaultAggregatableTriggerBuilder(

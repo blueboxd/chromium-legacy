@@ -4,10 +4,7 @@
 
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 
-#include "base/callback_helpers.h"
 #include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/common/webui_url_constants.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
@@ -40,18 +37,21 @@ ScriptingPermissionsModifier::ScriptingPermissionsModifier(
     const scoped_refptr<const Extension>& extension)
     : browser_context_(browser_context),
       extension_(extension),
-      extension_prefs_(ExtensionPrefs::Get(browser_context_)) {
+      extension_prefs_(ExtensionPrefs::Get(browser_context_)),
+      permissions_manager_(PermissionsManager::Get(browser_context_)) {
   DCHECK(extension_);
 }
 
-ScriptingPermissionsModifier::~ScriptingPermissionsModifier() {}
+ScriptingPermissionsModifier::~ScriptingPermissionsModifier() = default;
 
 void ScriptingPermissionsModifier::SetWithholdHostPermissions(
     bool should_withhold) {
   DCHECK(CanAffectExtension());
 
-  if (HasWithheldHostPermissions() == should_withhold)
+  if (permissions_manager_->HasWithheldHostPermissions(extension_->id()) ==
+      should_withhold) {
     return;
+  }
 
   // Set the pref first, so that listeners for permission changes get the proper
   // value if they query HasWithheldHostPermissions().
@@ -62,13 +62,6 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
     WithholdHostPermissions();
   else
     GrantWithheldHostPermissions();
-}
-
-bool ScriptingPermissionsModifier::HasWithheldHostPermissions() const {
-  DCHECK(CanAffectExtension());
-
-  return PermissionsManager::Get(browser_context_)
-      ->HasWithheldHostPermissions(extension_->id());
 }
 
 bool ScriptingPermissionsModifier::CanAffectExtension() const {
@@ -111,18 +104,16 @@ bool ScriptingPermissionsModifier::HasGrantedHostPermission(
     const GURL& url) const {
   DCHECK(CanAffectExtension());
 
-  return GetRuntimePermissionsFromPrefs()
+  return permissions_manager_->GetRuntimePermissionsFromPrefs(*extension_)
       ->effective_hosts()
       .MatchesSecurityOrigin(url);
 }
 
 bool ScriptingPermissionsModifier::HasBroadGrantedHostPermissions() {
-  std::unique_ptr<const PermissionSet> runtime_permissions =
-      GetRuntimePermissionsFromPrefs();
-
   // Don't consider API permissions in this case.
   constexpr bool kIncludeApiPermissions = false;
-  return runtime_permissions->ShouldWarnAllHosts(kIncludeApiPermissions);
+  return permissions_manager_->GetRuntimePermissionsFromPrefs(*extension_)
+      ->ShouldWarnAllHosts(kIncludeApiPermissions);
 }
 
 void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
@@ -131,7 +122,7 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
   DCHECK(HasGrantedHostPermission(url));
 
   std::unique_ptr<const PermissionSet> runtime_permissions =
-      GetRuntimePermissionsFromPrefs();
+      permissions_manager_->GetRuntimePermissionsFromPrefs(*extension_);
 
   URLPatternSet explicit_hosts;
   for (const auto& pattern : runtime_permissions->explicit_hosts()) {
@@ -156,7 +147,7 @@ void ScriptingPermissionsModifier::RemoveBroadGrantedHostPermissions() {
   DCHECK(CanAffectExtension());
 
   std::unique_ptr<const PermissionSet> runtime_permissions =
-      GetRuntimePermissionsFromPrefs();
+      permissions_manager_->GetRuntimePermissionsFromPrefs(*extension_);
 
   URLPatternSet explicit_hosts;
   for (const auto& pattern : runtime_permissions->explicit_hosts()) {
@@ -200,7 +191,7 @@ ScriptingPermissionsModifier::GetRevokablePermissions() const {
   // host permissions.
   const PermissionSet* current_granted_permissions = nullptr;
   std::unique_ptr<const PermissionSet> runtime_granted_permissions =
-      GetRuntimePermissionsFromPrefs();
+      permissions_manager_->GetRuntimePermissionsFromPrefs(*extension_);
   std::unique_ptr<const PermissionSet> union_set;
   if (runtime_granted_permissions) {
     union_set = PermissionSet::CreateUnion(
@@ -253,12 +244,6 @@ void ScriptingPermissionsModifier::WithholdHostPermissions() {
   PermissionsUpdater(browser_context_)
       .RevokeRuntimePermissions(*extension_, *revokable_permissions,
                                 base::DoNothing());
-}
-
-std::unique_ptr<const PermissionSet>
-ScriptingPermissionsModifier::GetRuntimePermissionsFromPrefs() const {
-  return PermissionsManager::Get(browser_context_)
-      ->GetRuntimePermissionsFromPrefs(*extension_);
 }
 
 }  // namespace extensions

@@ -1516,11 +1516,6 @@
     "owners": [ "steimel", "media-dev" ],
     "expiry_milestone": 120
   },
-   {
-    "name": "document-transition",
-    "owners": [ "khushalsagar", "vmpstr", "chrishtr" ],
-    "expiry_milestone" : 110
-  },
   {
     "name": "double-buffer-compositing",
     "owners": [ "hob", "chromeos-gfx@google.com" ],
@@ -5479,11 +5474,6 @@
     "expiry_milestone": 111
   },
   {
-    "name": "paint-preview-startup",
-    "owners": [ "ckitagawa", "fredmello", "chrome-fdt@google.com" ],
-    "expiry_milestone": 109
-  },
-  {
     "name": "partial-split",
     "owners": [ "sophiewen", "chromeos-wmp-eng@google.com" ],
     "expiry_milestone": 110
@@ -6967,6 +6957,11 @@
     "name": "video-tutorials-instant-fetch",
     "owners": [ "shaktisahu"],
     "expiry_milestone": 102
+  },
+  {
+    "name": "view-transition",
+    "owners": [ "khushalsagar", "vmpstr", "chrishtr" ],
+    "expiry_milestone" : 110
   },
   {
     "name": "vm-per-boot-shader-cache",

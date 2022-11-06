@@ -743,8 +743,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Returns true if this is a shadow host, and its ShadowRoot has
   // delegatesFocus flag.
   bool DelegatesFocus() const;
-  Element* GetFocusableArea() const;
-  Element* GetAutofocusDelegate() const;
+  // in_descendant_traversal is used in GetFocusableArea and GetFocusDelegate to
+  // indicate that GetFocusDelegate is currently iterating over all descendants
+  // in a DOM subtree. Since GetFocusDelegate calls GetFocusableArea and
+  // GetFocusableArea calls GetFocusDelegate, this allows us to skip redundant
+  // recursive calls to the same descendants.
+  Element* GetFocusableArea(bool in_descendant_traversal = false) const;
+  Element* GetFocusDelegate(bool in_descendant_traversal = false) const;
   // Element focus function called through IDL (i.e. element.focus() in JS)
   // Delegates to Focus() with focus type set to kScript
   void focusForBindings(const FocusOptions*);
@@ -854,14 +859,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual void BeginParsingChildren() { SetIsFinishedParsingChildren(false); }
 
   // Returns the pseudo element for the given PseudoId type.
-  // |document_transition_tag| is used to uniquely identify a pseudo element
+  // |view_transition_tag| is used to uniquely identify a pseudo element
   // from a set of pseudo elements which share the same |pseudo_id|. The current
   // usage of this ID is limited to pseudo elements generated for a
-  // DocumentTransition. See
-  // third_party/blink/renderer/core/document_transition/README.md
+  // ViewTransition. See
+  // third_party/blink/renderer/core/view_transition/README.md
   PseudoElement* GetPseudoElement(
       PseudoId,
-      const AtomicString& document_transition_tag = g_null_atom) const;
+      const AtomicString& view_transition_tag = g_null_atom) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
   bool PseudoElementStylesDependOnFontMetrics() const;
@@ -1136,17 +1141,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   const ResizeObserverSize* LastIntrinsicSize() const;
 
   // Returns a unique pseudo element for the given |pseudo_id| and
-  // |document_transition_tag| originating from this DOM element.
+  // |view_transition_tag| originating from this DOM element.
   // This pseudo element may be directly associated with this element or nested
   // inside a hierarchy of pseudo elements.
   PseudoElement* GetNestedPseudoElement(
       PseudoId pseudo_id,
-      const AtomicString& document_transition_tag) const;
+      const AtomicString& view_transition_tag) const;
 
   void RecalcTransitionPseudoTreeStyle(
-      const Vector<AtomicString>& document_transition_tags);
+      const Vector<AtomicString>& view_transition_tags);
   void RebuildTransitionPseudoLayoutTree(
-      const Vector<AtomicString>& document_transition_tags);
+      const Vector<AtomicString>& view_transition_tags);
 
   // Returns true if the element has the 'inert' attribute, forcing itself and
   // all its subtree to be inert.
@@ -1339,7 +1344,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       PseudoId,
       const StyleRecalcChange,
       const StyleRecalcContext&,
-      const AtomicString& document_transition_tag = g_null_atom);
+      const AtomicString& view_transition_tag = g_null_atom);
 
   enum class StyleUpdatePhase {
     kRecalc,
@@ -1357,7 +1362,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   inline PseudoElement* CreatePseudoElementIfNeeded(
       PseudoId,
       const StyleRecalcContext&,
-      const AtomicString& document_transition_tag = g_null_atom);
+      const AtomicString& view_transition_tag = g_null_atom);
   void AttachPseudoElement(PseudoId, AttachContext&);
   void DetachPseudoElement(PseudoId, bool performing_reattach);
 

@@ -25,7 +25,7 @@ void rust_gtest_add_test(GtestFactoryFunction gtest_factory,
 
 void rust_gtest_add_failure_at(const unsigned char* file,
                                int32_t line,
-                               rust::Str message) {
+                               const unsigned char* message) {
   ADD_FAILURE_AT(reinterpret_cast<const char*>(file), line) << message;
 }
 

@@ -4687,6 +4687,11 @@ fuzzer_test("base64_encode_fuzzer") {
   deps = [ "//base" ]
 }
 
+fuzzer_test("base64url_fuzzer") {
+  sources = [ "base64url_fuzzer.cc" ]
+  deps = [ "//base" ]
+}
+
 fuzzer_test("base_json_correctness_fuzzer") {
   sources = [ "json/json_correctness_fuzzer.cc" ]
   deps = [ ":base" ]
@@ -4746,8 +4751,18 @@ fuzzer_test("string_number_conversions_fuzzer") {
   deps = [ "//base" ]
 }
 
+fuzzer_test("string_pattern_fuzzer") {
+  sources = [ "strings/pattern_fuzzer.cc" ]
+  deps = [ "//base" ]
+}
+
 fuzzer_test("string_tokenizer_fuzzer") {
   sources = [ "strings/string_tokenizer_fuzzer.cc" ]
+  deps = [ "//base" ]
+}
+
+fuzzer_test("substring_set_matcher_fuzzer") {
+  sources = [ "substring_set_matcher/substring_set_matcher_fuzzer.cc" ]
   deps = [ "//base" ]
 }
 

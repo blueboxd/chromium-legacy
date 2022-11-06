@@ -14,6 +14,73 @@
 #include "chromecast/cast_core/runtime/browser/url_rewrite/url_request_rewrite_type_converters.h"
 
 namespace chromecast {
+namespace {
+
+class CastContentWindowControls : public cast_receiver::ContentWindowControls,
+                                  public CastContentWindow::Observer {
+ public:
+  CastContentWindowControls(CastContentWindow& content_window)
+      : content_window_(content_window) {
+    content_window_->AddObserver(this);
+  }
+
+  ~CastContentWindowControls() override {
+    content_window_->RemoveObserver(this);
+  }
+
+  // cast_receiver::ContentWindowControls implementation.
+  void ShowWindow() override {
+    if (!was_window_created_) {
+      content_window_->GrantScreenAccess();
+      content_window_->CreateWindow(mojom::ZOrder::APP,
+                                    VisibilityPriority::STICKY_ACTIVITY);
+      was_window_created_ = true;
+      return;
+    }
+
+    content_window_->RequestVisibility(VisibilityPriority::STICKY_ACTIVITY);
+    content_window_->GrantScreenAccess();
+  }
+
+  void HideWindow() override {
+    if (!was_window_created_) {
+      content_window_->CreateWindow(mojom::ZOrder::APP,
+                                    VisibilityPriority::HIDDEN);
+      was_window_created_ = true;
+      return;
+    }
+
+    content_window_->RequestVisibility(VisibilityPriority::HIDDEN);
+    content_window_->RevokeScreenAccess();
+  }
+
+  void EnableTouchInput() override { content_window_->EnableTouchInput(true); }
+
+  void DisableTouchInput() override {
+    content_window_->EnableTouchInput(false);
+  }
+
+ private:
+  // CastContentWindow::Observer implementation.
+  void OnVisibilityChange(VisibilityType visibility_type) override {
+    switch (visibility_type) {
+      case VisibilityType::FULL_SCREEN:
+      case VisibilityType::PARTIAL_OUT:
+      case VisibilityType::TRANSIENTLY_HIDDEN:
+        OnWindowShown();
+        break;
+      default:
+        OnWindowHidden();
+        break;
+    }
+  }
+
+  bool was_window_created_ = false;
+
+  base::raw_ref<CastContentWindow> content_window_;
+};
+
+}  // namespace
 
 RuntimeApplicationServiceImpl::RuntimeApplicationServiceImpl(
     std::unique_ptr<RuntimeApplicationBase> runtime_application,
@@ -37,7 +104,9 @@ void RuntimeApplicationServiceImpl::Load(
   DCHECK(!grpc_server_);
 
   if (request.runtime_application_service_info().grpc_endpoint().empty()) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(
+        cast_receiver::Status(cast_receiver::StatusCode::kInvalidArgument,
+                              "RuntimeApplication service info missing"));
     return;
   }
 
@@ -99,12 +168,16 @@ void RuntimeApplicationServiceImpl::Launch(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (request.core_application_service_info().grpc_endpoint().empty()) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(
+        cast_receiver::Status(cast_receiver::StatusCode::kInvalidArgument,
+                              "CoreApplication service info missing"));
     return;
   }
 
   if (request.cast_media_service_info().grpc_endpoint().empty()) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(
+        cast_receiver::Status(cast_receiver::StatusCode::kInvalidArgument,
+                              "CastMedia service info missing"));
     return;
   }
 
@@ -323,12 +396,18 @@ content::WebContents* RuntimeApplicationServiceImpl::GetWebContents() {
   return cast_web_view_->web_contents();
 }
 
-CastContentWindow* RuntimeApplicationServiceImpl::GetCastContentWindow() {
-  if (!cast_web_view_) {
+cast_receiver::ContentWindowControls*
+RuntimeApplicationServiceImpl::GetContentWindowControls() {
+  if (!cast_web_view_ || !cast_web_view_->window()) {
     return nullptr;
   }
 
-  return cast_web_view_->window();
+  if (!content_window_controls_) {
+    content_window_controls_ =
+        std::make_unique<CastContentWindowControls>(*cast_web_view_->window());
+  }
+
+  return content_window_controls_.get();
 }
 
 void RuntimeApplicationServiceImpl::OnAllBindingsReceived(
@@ -336,7 +415,10 @@ void RuntimeApplicationServiceImpl::OnAllBindingsReceived(
     cast::utils::GrpcStatusOr<cast::bindings::GetAllResponse> response_or) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!response_or.ok()) {
-    std::move(callback).Run(false, std::vector<std::string>());
+    std::move(callback).Run(
+        cast_receiver::Status(cast_receiver::StatusCode::kCancelled,
+                              "Bad GrpcStatus: " + response_or.ToString()),
+        std::vector<std::string>());
     return;
   }
 
@@ -347,7 +429,7 @@ void RuntimeApplicationServiceImpl::OnAllBindingsReceived(
     bindings.emplace_back(response.bindings(i).before_load_script());
   }
 
-  std::move(callback).Run(true, std::move(bindings));
+  std::move(callback).Run(cast_receiver::OkStatus(), std::move(bindings));
 }
 
 }  // namespace chromecast

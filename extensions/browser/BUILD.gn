@@ -333,6 +333,8 @@ source_set("browser_sources") {
     "extension_prefs_factory.h",
     "extension_prefs_helper.cc",
     "extension_prefs_helper.h",
+    "extension_prefs_helper_factory.cc",
+    "extension_prefs_helper_factory.h",
     "extension_prefs_observer.h",
     "extension_prefs_scope.h",
     "extension_protocols.cc",
@@ -1019,5 +1021,15 @@ fuzzer_test("extension_web_request_form_data_parser_fuzzer") {
     ":browser",
     "//base",
     "//net",
+  ]
+}
+
+fuzzer_test("extension_declarative_net_request_indexed_rule_fuzzer") {
+  sources = [ "api/declarative_net_request/indexed_rule_fuzzer.cc" ]
+  deps = [
+    ":browser",
+    "//base",
+    "//third_party/abseil-cpp:absl",
+    "//url",
   ]
 }

@@ -358,7 +358,8 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
       return YES;
     case OmniboxKeyboardActionLeftArrow:
     case OmniboxKeyboardActionRightArrow:
-      if (self.carouselCell.isHighlighted) {
+      if (base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles) &&
+          self.carouselCell.isHighlighted) {
         return [self.carouselCell canPerformKeyboardAction:keyboardAction];
       }
       return NO;
@@ -561,26 +562,25 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
 
 - (BOOL)tableView:(UITableView*)tableView
     shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  // TODO(crbug.com/1365374): Handle Carousel's highlight.
   return YES;
 }
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_LT((NSUInteger)indexPath.row,
-            self.currentResult[indexPath.section].suggestions.count);
   NSUInteger row = indexPath.row;
+  NSUInteger section = indexPath.section;
+  DCHECK_LT(section, self.currentResult.count);
+  DCHECK_LT(row, self.currentResult[indexPath.section].suggestions.count);
 
-  // Crash reports tell us that `row` is sometimes indexed past the end of
-  // the results array. In those cases, just ignore the request and return
-  // early. See b/5813291.
-  if (row >= self.currentResult[indexPath.section].suggestions.count)
+  // Crash reports tell us that `section` and `row` are sometimes indexed past
+  // the end of the results array. In those cases, just ignore the request and
+  // return early. See crbug.com/1378590.
+  if (section >= self.currentResult.count ||
+      row >= self.currentResult[indexPath.section].suggestions.count)
     return;
-  // TODO(crbug.com/1365374): Handle Carousel's selection.
   [self.delegate
       autocompleteResultConsumer:self
-             didSelectSuggestion:self.currentResult[indexPath.section]
-                                     .suggestions[row]
+             didSelectSuggestion:[self suggestionAtIndexPath:indexPath]
                            inRow:row];
 }
 

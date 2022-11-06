@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 250 tests; 226 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 248 tests; 228 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS getStats succeeds
 PASS Validating stats
 PASS codec's payloadType
@@ -205,12 +205,12 @@ PASS candidate-pair's packetsSent
 PASS candidate-pair's packetsReceived
 PASS candidate-pair's bytesSent
 PASS candidate-pair's bytesReceived
-FAIL candidate-pair's lastPacketSentTimestamp assert_true: Is lastPacketSentTimestamp present expected true got false
-FAIL candidate-pair's lastPacketReceivedTimestamp assert_true: Is lastPacketReceivedTimestamp present expected true got false
+PASS candidate-pair's lastPacketSentTimestamp
+PASS candidate-pair's lastPacketReceivedTimestamp
 PASS candidate-pair's totalRoundTripTime
 PASS candidate-pair's currentRoundTripTime
 PASS candidate-pair's availableOutgoingBitrate
-FAIL candidate-pair's availableIncomingBitrate assert_true: Is availableIncomingBitrate present expected true got false
+NOTRUN candidate-pair's availableIncomingBitrate candidate-pair.availableIncomingBitrate marked as not testable.
 PASS candidate-pair's requestsReceived
 PASS candidate-pair's requestsSent
 PASS candidate-pair's responsesReceived
@@ -256,7 +256,7 @@ PASS remote-candidate's id
 PASS certificate's fingerprint
 PASS certificate's fingerprintAlgorithm
 PASS certificate's base64Certificate
-FAIL certificate's issuerCertificateId assert_true: Is issuerCertificateId present expected true got false
+NOTRUN certificate's issuerCertificateId certificate.issuerCertificateId marked as not testable.
 PASS certificate's timestamp
 PASS certificate's type
 PASS certificate's id

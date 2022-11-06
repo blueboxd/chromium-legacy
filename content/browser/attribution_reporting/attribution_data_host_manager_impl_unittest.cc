@@ -20,8 +20,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
-#include "content/browser/attribution_reporting/attribution_aggregation_keys.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -34,7 +35,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -141,7 +141,7 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
           DestinationOriginIs(destination_origin),
           ImpressionOriginIs(page_origin), SourcePriorityIs(20),
           SourceDebugKeyIs(789),
-          AggregationKeysAre(*AttributionAggregationKeys::FromKeys(
+          AggregationKeysAre(*attribution_reporting::AggregationKeys::FromKeys(
               {{"key", absl::MakeUint128(/*high=*/5, /*low=*/345)}})),
           SourceIsWithinFencedFrameIs(false), SourceDebugReportingIs(true))));
   {
@@ -429,12 +429,13 @@ TEST_F(AttributionDataHostManagerImplTest,
   const AggregatableSourceizeTestCase kTestCases[] = {
       {"empty", true, 0, 0},
       {"max_keys", true,
-       blink::kMaxAttributionAggregationKeysPerSourceOrTrigger, 1},
+       attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger, 1},
       {"too_many_keys", false,
-       blink::kMaxAttributionAggregationKeysPerSourceOrTrigger + 1, 1},
-      {"max_key_size", true, 1, blink::kMaxBytesPerAttributionAggregationKeyId},
+       attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger + 1, 1},
+      {"max_key_size", true, 1,
+       attribution_reporting::kMaxBytesPerAggregationKeyId},
       {"excessive_key_size", false, 1,
-       blink::kMaxBytesPerAttributionAggregationKeyId + 1},
+       attribution_reporting::kMaxBytesPerAggregationKeyId + 1},
   };
 
   for (auto& test_case : kTestCases) {
@@ -758,8 +759,8 @@ TEST_F(AttributionDataHostManagerImplTest,
     size_t size;
     bool expected;
   } kTestCases[] = {
-      {blink::kMaxAttributionEventTriggerData, true},
-      {blink::kMaxAttributionEventTriggerData + 1, false},
+      {attribution_reporting::kMaxEventTriggerData, true},
+      {attribution_reporting::kMaxEventTriggerData + 1, false},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -816,8 +817,8 @@ TEST_F(AttributionDataHostManagerImplTest,
     size_t size;
     bool expected;
   } kTestCases[] = {
-      {blink::kMaxAttributionAggregatableTriggerDataPerTrigger, true},
-      {blink::kMaxAttributionAggregatableTriggerDataPerTrigger + 1, false},
+      {attribution_reporting::kMaxAggregatableTriggerDataPerTrigger, true},
+      {attribution_reporting::kMaxAggregatableTriggerDataPerTrigger + 1, false},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -872,8 +873,8 @@ TEST_F(AttributionDataHostManagerImplTest,
     size_t size;
     bool expected;
   } kTestCases[] = {
-      {blink::kMaxAttributionAggregationKeysPerSourceOrTrigger, true},
-      {blink::kMaxAttributionAggregationKeysPerSourceOrTrigger + 1, false},
+      {attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger, true},
+      {attribution_reporting::kMaxAggregationKeysPerSourceOrTrigger + 1, false},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -1086,8 +1087,9 @@ TEST_F(AttributionDataHostManagerImplTest,
             SourceEventIdIs(10), DestinationOriginIs(destination_origin),
             ImpressionOriginIs(page_origin), SourcePriorityIs(20),
             SourceDebugKeyIs(789),
-            AggregationKeysAre(*AttributionAggregationKeys::FromKeys(
-                {{"key", absl::MakeUint128(/*high=*/5, /*low=*/345)}})),
+            AggregationKeysAre(
+                *attribution_reporting::AggregationKeys::FromKeys(
+                    {{"key", absl::MakeUint128(/*high=*/5, /*low=*/345)}})),
             SourceIsWithinFencedFrameIs(false), SourceDebugReportingIs(true))));
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(mock_manager_, HandleSource);

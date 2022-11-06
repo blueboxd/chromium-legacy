@@ -456,10 +456,7 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
   const viz::ResourceFormat plane_format =
       viz::GetResourceFormat(GetPlaneBufferFormat(plane, format));
   auto si_format = viz::SharedImageFormat::SinglePlane(plane_format);
-  // TODO(sunnyps): Use GL_TEXTURE_2D for all cases since it's allowed by ANGLE.
-  const GLenum texture_target = plane == gfx::BufferPlane::DEFAULT
-                                    ? GL_TEXTURE_2D
-                                    : GL_TEXTURE_EXTERNAL_OES;
+  const GLenum texture_target = GL_TEXTURE_2D;
   const size_t plane_index = plane == gfx::BufferPlane::UV ? 1 : 0;
 
   auto backing = D3DImageBacking::Create(
@@ -499,6 +496,10 @@ bool D3DImageBackingFactory::IsSupported(uint32_t usage,
                                          GrContextType gr_context_type,
                                          base::span<const uint8_t> pixel_data) {
   if (!pixel_data.empty()) {
+    return false;
+  }
+
+  if (usage & SHARED_IMAGE_USAGE_SCANOUT_DCOMP_SURFACE) {
     return false;
   }
 

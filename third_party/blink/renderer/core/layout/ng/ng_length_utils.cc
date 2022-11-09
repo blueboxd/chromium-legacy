@@ -1165,18 +1165,20 @@ LogicalSize ComputeReplacedSize(
   }
 
   const LayoutSVGRoot* svg_root = To<LayoutSVGRoot>(node.GetLayoutBox());
-  bool is_horizontal = node.Style().IsHorizontalWritingMode();
-  LayoutSize container_size = svg_root->GetContainerSize();
+  PhysicalSize container_size(svg_root->GetContainerSize());
   if (!container_size.IsEmpty()) {
-    if (is_horizontal)
-      return {container_size.Width(), container_size.Height()};
-    return {container_size.Height(), container_size.Width()};
+    LogicalSize size =
+        container_size.ConvertToLogical(node.Style().GetWritingMode());
+    size.inline_size += border_padding.InlineSum();
+    size.block_size += border_padding.BlockSum();
+    return size;
   }
 
   if (svg_root->IsEmbeddedThroughFrameContainingSVGDocument()) {
     LogicalSize size = space.AvailableSize();
-    size.block_size = is_horizontal ? node.InitialContainingBlockSize().height
-                                    : node.InitialContainingBlockSize().width;
+    size.block_size = node.Style().IsHorizontalWritingMode()
+                          ? node.InitialContainingBlockSize().height
+                          : node.InitialContainingBlockSize().width;
     return size;
   }
 
@@ -1455,7 +1457,7 @@ LayoutUnit CalculateDefaultBlockSize(
     const NGBoxStrut& border_scrollbar_padding) {
   // In quirks mode, html and body elements will completely fill the ICB, block
   // percentages should resolve against this size.
-  if (node.IsQuirkyAndFillsViewport() && !IsResumingLayout(break_token)) {
+  if (node.IsQuirkyAndFillsViewport() && !IsBreakInside(break_token)) {
     LayoutUnit block_size = space.AvailableSize().block_size;
     block_size -= ComputeMarginsForSelf(space, node.Style()).BlockSum();
     return std::max(block_size.ClampNegativeToZero(),
@@ -1695,7 +1697,7 @@ LayoutUnit ClampIntrinsicBlockSize(
     return border_scrollbar_padding.BlockSum();
 
   // Apply the "fills viewport" quirk if needed.
-  if (!IsResumingLayout(break_token) && node.IsQuirkyAndFillsViewport() &&
+  if (!IsBreakInside(break_token) && node.IsQuirkyAndFillsViewport() &&
       style.LogicalHeight().IsAuto() &&
       space.AvailableSize().block_size != kIndefiniteSize) {
     DCHECK_EQ(node.IsBody() && !node.CreatesNewFormattingContext(),

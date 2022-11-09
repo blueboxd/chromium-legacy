@@ -62,6 +62,7 @@
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -372,13 +373,13 @@ void ChromeAutofillClient::OnUnmaskOtpVerificationResult(
 
 void ChromeAutofillClient::ShowUnmaskPrompt(
     const CreditCard& card,
-    UnmaskCardReason reason,
-    base::WeakPtr<CardUnmaskDelegate> delegate) {
+    const CardUnmaskPromptOptions& card_unmask_prompt_options,
+        base::WeakPtr<CardUnmaskDelegate> delegate) {
   unmask_controller_.ShowPrompt(
       base::BindOnce(&CreateCardUnmaskPromptView,
                      base::Unretained(&unmask_controller_),
                      base::Unretained(web_contents())),
-      card, reason, delegate);
+      card, card_unmask_prompt_options, delegate);
 }
 
 // TODO(crbug.com/1220990): Refactor this for both CVC and Biometrics flows.
@@ -902,15 +903,16 @@ bool ChromeAutofillClient::IsTouchToFillCreditCardSupported() {
 }
 
 bool ChromeAutofillClient::ShowTouchToFillCreditCard(
-    base::WeakPtr<TouchToFillDelegate> delegate) {
+    base::WeakPtr<TouchToFillDelegate> delegate,
+    base::span<const autofill::CreditCard* const> cards_to_suggest) {
 #if BUILDFLAG(IS_ANDROID)
   // Don't show TTF surface while Autofill Assistant's UI is shown.
   if (IsAutofillAssistantShowing())
     return false;
 
   return touch_to_fill_credit_card_controller_.Show(
-      std::make_unique<TouchToFillCreditCardViewImpl>(web_contents()),
-      delegate);
+      std::make_unique<TouchToFillCreditCardViewImpl>(web_contents()), delegate,
+      std::move(cards_to_suggest));
 #else
   // Touch To Fill is not supported on Desktop.
   NOTREACHED();
@@ -1075,14 +1077,9 @@ void ChromeAutofillClient::DismissOfferNotification() {
 }
 
 void ChromeAutofillClient::OnVirtualCardDataAvailable(
-    const std::u16string& masked_card_identifier_string,
-    const CreditCard* credit_card,
-    const std::u16string& cvc,
-    const gfx::Image& card_image) {
-  DCHECK(credit_card);
-  DCHECK(!cvc.empty());
-
-  GetFormDataImporter()->CacheFetchedVirtualCard(credit_card->LastFourDigits());
+    const VirtualCardManualFallbackBubbleOptions& options) {
+  GetFormDataImporter()->CacheFetchedVirtualCard(
+      options.virtual_card.LastFourDigits());
 #if BUILDFLAG(IS_ANDROID)
   // Show the virtual card snackbar only if the ManualFillingComponent component
   // is enabled for credit cards.
@@ -1097,8 +1094,7 @@ void ChromeAutofillClient::OnVirtualCardDataAvailable(
   VirtualCardManualFallbackBubbleControllerImpl* controller =
       VirtualCardManualFallbackBubbleControllerImpl::FromWebContents(
           web_contents());
-  controller->ShowBubble(masked_card_identifier_string, credit_card, cvc,
-                         card_image);
+  controller->ShowBubble(options);
 #endif
 }
 

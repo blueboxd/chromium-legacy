@@ -622,6 +622,28 @@ TEST_F(WindowFloatTest, FloatWindowActivationActivatesBelongingDesk) {
   EXPECT_TRUE(desk_1->is_active());
 }
 
+// Test when we combine desks, floated window is updated on overview.
+TEST_F(WindowFloatTest, FloatWindowUpdatedOnOverview) {
+  auto* desks_controller = DesksController::Get();
+  auto* desk_1 = desks_controller->desks()[0].get();
+  // Float `window` at `desk_1`.
+  std::unique_ptr<aura::Window> window(CreateFloatedWindow());
+  // Verify `window` belongs to `desk_1`.
+  auto* float_controller = Shell::Get()->float_controller();
+  ASSERT_EQ(float_controller->FindDeskOfFloatedWindow(window.get()), desk_1);
+  NewDesk();
+  ASSERT_EQ(desks_controller->desks().size(), 2u);
+  EnterOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  RemoveDesk(desk_1, DeskCloseType::kCombineDesks);
+  ASSERT_EQ(desks_controller->desks().size(), 1u);
+  // Floated window should be appended to overview items.
+  const std::vector<std::unique_ptr<OverviewItem>>& overview_items =
+      GetOverviewItemsForRoot(0);
+  ASSERT_EQ(overview_items.size(), 1u);
+  EXPECT_EQ(window.get(), overview_items[0]->GetWindow());
+}
+
 class TabletWindowFloatTest : public WindowFloatTest {
  public:
   TabletWindowFloatTest() = default;
@@ -1055,7 +1077,7 @@ TEST_F(TabletWindowFloatTest, UntuckWindowOnActivation) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
   ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 
-  // Tests that after we activate the window, ihe window is untucked and fully
+  // Tests that after we activate the window, the window is untucked and fully
   // visible, but is still floated.
   wm::ActivateWindow(window.get());
   EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
@@ -1092,12 +1114,30 @@ TEST_F(TabletWindowFloatTest, WindowActivationAfterTuckingUntucking) {
       float_controller->IsFloatedWindowTuckedForTablet(float_window.get()));
   ASSERT_EQ(float_window.get(), window_util::GetActiveWindow());
 
-  // Tests that if tuck the floated window, the window underneath gets
-  // activation.
+  // Tests that tucking the floated window activates the window underneath.
   FlingWindow(float_window.get(), /*left=*/false, /*up=*/false);
   ASSERT_TRUE(
       float_controller->IsFloatedWindowTuckedForTablet(float_window.get()));
   EXPECT_EQ(window2.get(), window_util::GetActiveWindow());
+
+  // Untuck the floated window and minimize the other window.
+  tuck_handle_widget =
+      float_controller->GetTuckHandleWidget(float_window.get());
+  ASSERT_TRUE(tuck_handle_widget);
+  GetEventGenerator()->GestureTapAt(
+      tuck_handle_widget->GetWindowBoundsInScreen().CenterPoint());
+  ASSERT_FALSE(
+      float_controller->IsFloatedWindowTuckedForTablet(float_window.get()));
+  WindowState::Get(window2.get())->Minimize();
+  ASSERT_EQ(float_window.get(), window_util::GetActiveWindow());
+
+  // Tests that tucking the floated window activates the app list instead of
+  // activating and unminimizing the minimized window.
+  FlingWindow(float_window.get(), /*left=*/false, /*up=*/false);
+  ASSERT_TRUE(
+      float_controller->IsFloatedWindowTuckedForTablet(float_window.get()));
+  EXPECT_EQ(Shell::Get()->app_list_controller()->GetWindow(),
+            window_util::GetActiveWindow());
 }
 
 // Tests the functionality of tucking a window in tablet mode.
@@ -1216,33 +1256,6 @@ TEST_F(TabletWindowFloatTest, TuckToMagnetismCorner) {
   const int padding = chromeos::wm::kFloatedWindowPaddingDp;
   EXPECT_EQ(gfx::Point(0, work_area.bottom() - padding),
             window->bounds().bottom_right());
-}
-
-TEST_F(TabletWindowFloatTest, UntuckExtendedHitBounds) {
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-
-  // Tuck the floated window in the bottom right.
-  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
-  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
-  auto* float_controller = Shell::Get()->float_controller();
-  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
-
-  const int padding = chromeos::wm::kFloatedWindowPaddingDp;
-  const gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
-                                  ->user_work_area_bounds();
-  EXPECT_EQ(gfx::Point(work_area.right(), work_area.bottom() - padding),
-            window->bounds().bottom_left());
-
-  views::Widget* tuck_handle_widget =
-      float_controller->GetTuckHandleWidget(window.get());
-
-  // Tap slightly outside the tap handle. Expect the window to untuck.
-  gfx::Point point =
-      tuck_handle_widget->GetWindowBoundsInScreen().left_center();
-  point.Offset(-4, 4);
-  GetEventGenerator()->GestureTapAt(point);
-
-  EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 }
 
 TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {

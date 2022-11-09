@@ -60,8 +60,7 @@ static void EmpiricallyTestBounds(const TransformOperations& from,
     TransformOperations operations = from.Blend(to, t);
     TransformationMatrix matrix;
     operations.Apply(gfx::SizeF(0, 0), matrix);
-    gfx::BoxF transformed = box;
-    matrix.TransformBox(transformed);
+    gfx::BoxF transformed = matrix.MapBox(box);
 
     if (first_time)
       empirical_bounds = transformed;
@@ -456,6 +455,20 @@ TEST(TransformOperationsTest, NonCommutativeRotations) {
   EXPECT_BOXF_EQ(bounds, expanded_bounds);
 }
 
+TEST(TransformOperationsTest, NonInvertibleBlendTest) {
+  TransformOperations from_ops;
+  TransformOperations to_ops;
+
+  from_ops.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Fixed(5), Length::Fixed(-5), TransformOperation::kTranslate));
+  to_ops.Operations().push_back(
+      MatrixTransformOperation::Create(0, 0, 0, 0, 0, 0));
+
+  EXPECT_EQ(from_ops, to_ops.Blend(from_ops, 0.25));
+  EXPECT_EQ(to_ops, to_ops.Blend(from_ops, 0.5));
+  EXPECT_EQ(to_ops, to_ops.Blend(from_ops, 0.75));
+}
+
 TEST(TransformOperationsTest, AbsoluteSequenceBoundsTest) {
   TransformOperations from_ops;
   TransformOperations to_ops;
@@ -525,7 +538,7 @@ TEST(TransformOperationsTest, ZoomTest) {
   zoomed_ops.Apply(gfx::SizeF(0, 0), zoomed_matrix);
   gfx::Point3F result2 = zoomed_matrix.MapPoint(zoomed_point);
 
-  EXPECT_EQ(result1, result2);
+  EXPECT_POINT3F_EQ(result1, result2);
 }
 
 TEST(TransformOperationsTest, PerspectiveOpsTest) {
@@ -729,7 +742,7 @@ TEST(TransformOperationsTest, OutOfRangePercentage) {
 
   // There should not be inf or nan in the transformation result.
   for (int i = 0; i < 16; i++)
-    EXPECT_TRUE(std::isfinite(mat.ColMajorData()[i]));
+    EXPECT_TRUE(std::isfinite(mat.ColMajorData(i)));
 }
 
 }  // namespace blink

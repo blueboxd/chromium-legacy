@@ -175,9 +175,9 @@ xcode = struct(
     # A newer Xcode 13 version used on beta bots.
     x13betabots = xcode_enum("13f17a"),
     # Xcode14 RC will be used to build Main iOS
-    x14main = xcode_enum("14a309"),
+    x14main = xcode_enum("14b47b"),
     # A newer Xcode 14 RC  used on beta bots.
-    x14betabots = xcode_enum("14b5024i"),
+    x14betabots = xcode_enum("14b47b"),
     # in use by ios-webkit-tot
     x13wk = xcode_enum("13a1030dwk"),
 )
@@ -286,6 +286,8 @@ def _code_coverage_property(
 
     return code_coverage or None
 
+_VALID_REPROXY_ENV_PREFIX_LIST = ["RBE_", "GLOG_", "GOMA_"]
+
 def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service, publish_trace, cache_silo, ensure_verified, bootstrap_env):
     reclient = {}
     instance = defaults.get_value("reclient_instance", instance)
@@ -309,9 +311,10 @@ def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_servi
     bootstrap_env = defaults.get_value("reclient_bootstrap_env", bootstrap_env)
     if bootstrap_env:
         for k in bootstrap_env:
-            if not (k.startswith("RBE_") or k.startswith("GLOG_")):
-                fail("Environment variables in bootstrap_env must start with " +
-                     "'RBE_' or 'GLOG_', got '%s'" % k)
+            if not any([k.startswith(prefix) for prefix in _VALID_REPROXY_ENV_PREFIX_LIST]):
+                fail("Environment variables in bootstrap_env must start with one of (" +
+                     ", ".join(_VALID_REPROXY_ENV_PREFIX_LIST) +
+                     "), got '%s'" % k)
         reclient["bootstrap_env"] = bootstrap_env
     profiler_service = defaults.get_value("reclient_profiler_service", profiler_service)
     if profiler_service:

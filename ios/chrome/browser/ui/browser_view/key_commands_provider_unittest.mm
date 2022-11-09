@@ -62,11 +62,15 @@ class KeyCommandsProviderTest : public PlatformTest {
         0, WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
   }
 
+  // Checks that `view_controller_` can perform the `action` with the given
+  // `sender`.
   bool CanPerform(NSString* action, id sender) {
     return [provider_ canPerformAction:NSSelectorFromString(action)
                             withSender:sender];
   }
 
+  // Checks that `view_controller_` can perform the `action`. The sender is set
+  // to nil when performing this check.
   bool CanPerform(NSString* action) { return CanPerform(action, nil); }
 
   void ExpectUMA(NSString* action, const std::string& user_action) {
@@ -158,7 +162,6 @@ TEST_F(KeyCommandsProviderTest, CanPerform_TabsActions) {
   ASSERT_EQ(web_state_list_->count(), 0);
   NSArray<NSString*>* actions = @[
     @"keyCommand_openLocation",  @"keyCommand_closeTab",
-    @"keyCommand_showNextTab",   @"keyCommand_showPreviousTab",
     @"keyCommand_showBookmarks", @"keyCommand_addToBookmarks",
     @"keyCommand_reload",        @"keyCommand_back",
     @"keyCommand_forward",       @"keyCommand_showHistory",
@@ -429,6 +432,38 @@ TEST_F(KeyCommandsProviderTest, AddToReadingList_AddURL) {
   [provider_ keyCommand_addToReadingList];
 
   [handler verify];
+}
+
+// Checks whether KeyCommandsProvider can perform the actions that are only
+// available when there are at least two tabs.
+TEST_F(KeyCommandsProviderTest, CanPerform_ShowPreviousAndNextTab) {
+  // No tabs.
+  ASSERT_EQ(web_state_list_->count(), 0);
+  NSArray<NSString*>* actions = @[
+    @"keyCommand_showNextTab",
+    @"keyCommand_showPreviousTab",
+  ];
+  for (NSString* action in actions) {
+    EXPECT_FALSE(CanPerform(action));
+  }
+
+  // Open a tab.
+  InsertNewWebState(0);
+  for (NSString* action in actions) {
+    EXPECT_FALSE(CanPerform(action));
+  }
+
+  // Open a second tab.
+  InsertNewWebState(1);
+  for (NSString* action in actions) {
+    EXPECT_TRUE(CanPerform(action));
+  }
+
+  // Close the one tab.
+  CloseWebState(0);
+  for (NSString* action in actions) {
+    EXPECT_FALSE(CanPerform(action));
+  }
 }
 
 }  // namespace

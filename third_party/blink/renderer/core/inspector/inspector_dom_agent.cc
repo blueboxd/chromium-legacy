@@ -229,16 +229,16 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::Resizer;
     case kPseudoIdInputListButton:
       return protocol::DOM::PseudoTypeEnum::InputListButton;
-    case kPseudoIdPageTransition:
-      return protocol::DOM::PseudoTypeEnum::PageTransition;
-    case kPseudoIdPageTransitionContainer:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionContainer;
-    case kPseudoIdPageTransitionImageWrapper:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionImageWrapper;
-    case kPseudoIdPageTransitionIncomingImage:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionIncomingImage;
-    case kPseudoIdPageTransitionOutgoingImage:
-      return protocol::DOM::PseudoTypeEnum::PageTransitionOutgoingImage;
+    case kPseudoIdViewTransition:
+      return protocol::DOM::PseudoTypeEnum::ViewTransition;
+    case kPseudoIdViewTransitionGroup:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionGroup;
+    case kPseudoIdViewTransitionImagePair:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionImagePair;
+    case kPseudoIdViewTransitionNew:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionNew;
+    case kPseudoIdViewTransitionOld:
+      return protocol::DOM::PseudoTypeEnum::ViewTransitionOld;
     case kAfterLastInternalPseudoId:
     case kPseudoIdNone:
       CHECK(false);
@@ -1620,21 +1620,40 @@ Response InspectorDOMAgent::requestNode(const String& object_id, int* node_id) {
 Response InspectorDOMAgent::getContainerForNode(
     int node_id,
     protocol::Maybe<String> container_name,
+    protocol::Maybe<protocol::DOM::PhysicalAxes> physical_axes,
+    protocol::Maybe<protocol::DOM::LogicalAxes> logical_axes,
     Maybe<int>* container_node_id) {
   Element* element = nullptr;
   Response response = AssertElement(node_id, element);
   if (!response.IsSuccess())
     return response;
 
-  // TODO(https://crbug.com/1378237): We currently find the closest container
-  // which at least queries the inline axis. Instead we should pass the required
-  // axes, both physical and logical, from
-  // InspectorCSSAgent::BuildContainerQueryObject().
-  //
-  // It also might be that we want to look up style() query containers. In which
-  // case both physical and logical axes are 'None'.
-  const PhysicalAxes physical = kPhysicalAxisNone;
-  const LogicalAxes logical = kLogicalAxisInline;
+  PhysicalAxes physical = kPhysicalAxisNone;
+  LogicalAxes logical = kLogicalAxisNone;
+
+  if (physical_axes.isJust()) {
+    if (physical_axes.fromJust() ==
+        protocol::DOM::PhysicalAxesEnum::Horizontal) {
+      physical = kPhysicalAxisHorizontal;
+    } else if (physical_axes.fromJust() ==
+               protocol::DOM::PhysicalAxesEnum::Vertical) {
+      physical = kPhysicalAxisVertical;
+    } else if (physical_axes.fromJust() ==
+               protocol::DOM::PhysicalAxesEnum::Both) {
+      physical = kPhysicalAxisBoth;
+    }
+  }
+  if (logical_axes.isJust()) {
+    if (logical_axes.fromJust() == protocol::DOM::LogicalAxesEnum::Inline) {
+      logical = kLogicalAxisInline;
+    } else if (logical_axes.fromJust() ==
+               protocol::DOM::LogicalAxesEnum::Block) {
+      logical = kLogicalAxisBlock;
+    } else if (logical_axes.fromJust() ==
+               protocol::DOM::LogicalAxesEnum::Both) {
+      logical = kLogicalAxisBoth;
+    }
+  }
 
   element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
   StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
@@ -1836,7 +1855,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
 
     if (element->GetPseudoId()) {
       value->setPseudoType(ProtocolPseudoElementType(element->GetPseudoId()));
-      if (auto tag = To<PseudoElement>(element)->view_transition_tag())
+      if (auto tag = To<PseudoElement>(element)->view_transition_name())
         value->setPseudoIdentifier(tag);
     } else {
       if (!element->ownerDocument()->xmlVersion().empty())
@@ -2379,9 +2398,9 @@ void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
   DCHECK(parent);
   int parent_id = BoundNodeId(parent);
   // Since the pseudo element tree created for a view transition is destroyed
-  // with in-order traversal, the parent node (::page-transition) are destroyed
+  // with in-order traversal, the parent node (::view-transition) are destroyed
   // before its children
-  // (::page-transition-container).
+  // (::view-transition-group).
   DCHECK(parent_id || IsTransitionPseudoElement(pseudo_element->GetPseudoId()));
 
   Unbind(pseudo_element);

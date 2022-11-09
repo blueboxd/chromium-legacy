@@ -36,6 +36,9 @@ const char kAcceleratedVideoEncodeDescription[] =
 const char kAccessiblePDFFormName[] = "Accessible PDF Forms";
 const char kAccessiblePDFFormDescription[] =
     "Enables accessibility support for PDF forms.";
+
+const char kPdfUseSkiaRendererName[] = "Use Skia Renderer";
+const char kPdfUseSkiaRendererDescription[] = "Use Skia as the PDF renderer.";
 #endif
 
 const char kAccountIdMigrationName[] = "Account ID migration";
@@ -171,6 +174,11 @@ const char kPasswordViewPageInSettingsName[] = "Password view page in settings";
 const char kPasswordViewPageInSettingsDescription[] =
     "Enables a new password details subpage in the settings password "
     "management UI.";
+
+extern const char kPPAPISharedImagesSwapChainName[] =
+    "Use SharedImages for PPAPI swapchain";
+extern const char kPPAPISharedImagesSwapChainDescription[] =
+    "Switches legacy swap chain code to SharedImages";
 
 const char kPrivacyIndicatorsName[] = "Enable Privacy Indicators";
 const char kPrivacyIndicatorsDescription[] =
@@ -919,8 +927,8 @@ const char kDesktopPWAsLaunchHandlerDescription[] =
 
 const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
 const char kDesktopPWAsTabStripDescription[] =
-    "Experimental UI for exploring what PWA windows would look like with a tab "
-    "strip.";
+    "Experimental UI for tabbed application mode - exploring what PWA windows "
+    "would look like with a tab strip.";
 
 const char kDesktopPWAsTabStripSettingsName[] =
     "Desktop PWA tab strips settings";
@@ -1790,6 +1798,11 @@ const char kLensRegionSearchStaticPageDescription[] =
     "Enables use of a static page in a new tab when using the Lens region "
     "search feature.";
 
+const char kLensImageFormatOptimizationsName[] = "Lens Optimized Image Formats";
+const char kLensImageFormatOptimizationsDescription[] =
+    "Enables the use of either WebP or JPEG on all Lens quries to reduce "
+    "network load and improve latency";
+
 const char kLogJsConsoleMessagesName[] =
     "Log JS console messages in system logs";
 const char kLogJsConsoleMessagesDescription[] =
@@ -2555,12 +2568,6 @@ const char kSafetyCheckUnusedSitePermissionsDescription[] =
 const char kPartitionedCookiesName[] = "Partitioned cookies";
 const char kPartitionedCookiesDescription[] =
     "Controls if the Partitioned cookie attribute is enabled.";
-const char kPartitionedCookiesBypassOriginTrialName[] =
-    "Partitioned cookies: bypass origin trial";
-const char kPartitionedCookiesBypassOriginTrialDescription[] =
-    "If this flag is enabled, Chrome will not require a site to opt into the "
-    "origin trial in order to send or receive cookies set with the Partitioned "
-    "attribute.";
 
 const char kNoncedPartitionedCookiesName[] = "Nonced partitioned cookies only";
 const char kNoncedPartitionedCookiesDescription[] =
@@ -3752,10 +3759,6 @@ const char kMessagesForAndroidReaderModeName[] = "Reader Mode Messages UI";
 const char kMessagesForAndroidReaderModeDescription[] =
     "When enabled, reader mode prompt will use the new Messages UI.";
 
-const char kMessagesForAndroidSafetyTipName[] = "Safety Tip Messages UI";
-const char kMessagesForAndroidSafetyTipDescription[] =
-    "When enabled, safety tip prompt will use the new Messages UI.";
-
 const char kMessagesForAndroidSaveCardName[] = "Save Card Messages UI";
 const char kMessagesForAndroidSaveCardDescription[] =
     "When enabled, save card prompt will use the new Messages UI.";
@@ -3906,12 +3909,6 @@ const char kRelatedSearchesName[] =
 const char kRelatedSearchesDescription[] =
     "Enables requesting related searches suggestions. These will be requested "
     "but not shown unless the UI flag is also enabled.";
-
-const char kRelatedSearchesAlternateUxName[] =
-    "Enables showing Related Searches in an alternate user experience.";
-const char kRelatedSearchesAlternateUxDescription[] =
-    "Enables showing related searches with an alternative from the normal "
-    "user experience treatment.";
 
 const char kRelatedSearchesInBarName[] =
     "Enables showing Related Searches in the peeking bar.";
@@ -4443,6 +4440,12 @@ const char kCalculateNativeWinOcclusionDescription[] =
     "Calculate window occlusion on Windows will be used in the future "
     "to throttle and potentially unload foreground tabs in occluded windows";
 
+const char kCloudApAuthName[] = "CloudAP authentication";
+const char kCloudApAuthDescription[] =
+    "Enables ambient authentication into supported identity providers using "
+    "the CloudAP framework. Credentials are retrieved from accounts signed "
+    "into the operating system.";
+
 const char kEnableMediaFoundationVideoCaptureName[] =
     "MediaFoundation Video Capture";
 const char kEnableMediaFoundationVideoCaptureDescription[] =
@@ -4743,6 +4746,12 @@ const char kArcGameModeName[] = "Enable Game Mode for ARC";
 const char kArcGameModeDescription[] =
     "ARC Fullscreen Games will request accomodation from ChromeOS for "
     "sustained performance.";
+
+extern const char kArcInstantResponseWindowOpenName[] =
+    "Enable Instance Response for ARC app window open";
+extern const char kArcInstantResponseWindowOpenDescription[] =
+    "In some devices the placeholder window will popup immediately after the "
+    "user attempts to launch apps.";
 
 const char kArcKeyboardShortcutHelperIntegrationName[] =
     "Enable keyboard shortcut helper integration for ARC";
@@ -5174,6 +5183,12 @@ const char kEnableAppReinstallZeroStateDescription[] =
     "Enable Zero State App Reinstall Suggestions feature in launcher, which "
     "will show app reinstall recommendations at end of zero state list.";
 
+const char kEnableArcHostVpnName[] =
+    "Enable ArcHostVpn for builtin VPN clients";
+const char kEnableArcHostVpnDescription[] =
+    "When a builtin VPN client is started, also start the ArcHostVpn service "
+    "to reflect the builtin VPN config and VPN network inside ARC.";
+
 const char kEnableAssistantRoutinesName[] = "Assistant Routines";
 const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
 
@@ -5417,6 +5432,11 @@ const char kExperimentalAccessibilityDictationMoreCommandsName[] =
     "Additional experimental accessibility dictation commands.";
 const char kExperimentalAccessibilityDictationMoreCommandsDescription[] =
     "Enables experimental dictation commands.";
+
+const char kExperimentalAccessibilityDictationContextCheckingName[] =
+    "Experimental accessibility dictation using context checking.";
+const char kExperimentalAccessibilityDictationContextCheckingDescription[] =
+    "Enables experimental dictation context checking.";
 
 const char kExperimentalAccessibilitySelectToSpeakVoiceSwitchingName[] =
     "Experimental accessibility Select-to-Speak voice switching.";

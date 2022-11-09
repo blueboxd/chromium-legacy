@@ -242,6 +242,10 @@
     "owners": [ "cuicuiruan@google.com", "arc-gaming@google.com" ],
     "expiry_milestone": 120
   },
+  { "name": "arc-instant-response-window-open",
+    "owners": [ "sstan", "mduggan" ],
+    "expiry_milestone": 120
+  },
   {
     "name": "arc-keyboard-shortcut-helper-integration",
     "owners": [ "yhanada", "mduggan" ],
@@ -1046,6 +1050,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "cloud-ap-auth",
+    "owners": [ "igorruvinov", "zmin" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "color-provider-redirection-for-theme-provider",
     "owners": [ "//ui/color/OWNERS" ],
     "expiry_milestone": 110
@@ -1188,7 +1197,7 @@
   {
     "name": "crostini-container-install",
     "owners": [ "davidmunro@google.com", "clumptini@google.com" ],
-    "expiry_milestone": 109
+    "expiry_milestone": 130
   },
   {
     "name": "crostini-disk-resizing",
@@ -1208,7 +1217,7 @@
   {
     "name": "crostini-multi-container",
     "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 130
   },
   {
     "name": "crostini-reset-lxd-db",
@@ -1693,6 +1702,11 @@
     "name": "enable-app-service-in-kiosk",
     "owners": ["yixie", "chromeos-kiosk-eng@google.com"],
     "expiry_milestone": 130
+  },
+  {
+    "name": "enable-arc-host-vpn",
+    "owners": [ "cassiewang", "cros-networking@google.com" ],
+    "expiry_milestone": 111
   },
   {
     "name": "enable-aria-element-reflection",
@@ -2216,14 +2230,19 @@
     "expiry_milestone": 120
   },
   {
+    "name": "enable-experimental-accessibility-dictation-context-checking",
+    "owners": [ "jeevam","akihiroota"],
+    "expiry_milestone": 115
+  },
+  {
     "name": "enable-experimental-accessibility-dictation-more-commands",
     "owners": [ "jeevam","akihiroota"],
-    "expiry_milestone": 110
+    "expiry_milestone": 111
   },
   {
     "name": "enable-experimental-accessibility-dictation-with-pumpkin",
     "owners": [ "akihiroota"],
-    "expiry_milestone": 109
+    "expiry_milestone": 111
   },
   {
     "name": "enable-experimental-accessibility-google-tts-language-packs",
@@ -2569,6 +2588,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "enable-lens-image-format-optimizations",
+    "owners": ["mercerd@google.com", "stanfield@google.com", "lens-chrome@google.com"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-lens-in-home-screen-widget",
     "owners": [ "schechter", "hujasonx" ],
     "expiry_milestone": 120
@@ -2596,7 +2620,7 @@
   {
     "name": "enable-lens-standalone",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 120
   },
   {
     "name": "enable-libinput-to-handle-touchpad",
@@ -4617,11 +4641,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "messages-for-android-safety-tip",
-    "owners": [ "pavely", "lazzzis" ],
-    "expiry_milestone": 98
-  },
-  {
     "name": "messages-for-android-save-card",
     "owners": [ "lazzzis", "aishwaryarj" ],
     "expiry_milestone": 112
@@ -4677,8 +4696,9 @@
   },
   {
     "name": "minutes-delay-to-restore-gaia-cookies-if-deleted",
-    "owners": ["fernandex", "chrome-signin-team"],
-    "expiry_milestone": 99
+    "owners": ["jlebel", "chrome-signin-team"],
+    // Used for automated testing of Gaia cookie restoration in iOS.
+    "expiry_milestone": -1
   },
   {
     "name": "modern-tab-strip",
@@ -5422,11 +5442,6 @@
     "expiry_milestone": 112
   },
   {
-    "name": "page-info-about-this-site",
-    "owners": [ "eokoyomon", "dullweber", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 102
-  },
-  {
     "name": "page-info-cookies-subpage",
     "owners": [ "zsalata@google.com", "olesiamarukhno@google.com", "dullweber" ],
     "expiry_milestone": 112
@@ -5438,11 +5453,6 @@
       "olesiamarukhno@google.com"
     ],
     "expiry_milestone": 109
-  },
-  {
-    "name": "page-info-history",
-    "owners": [ "eokoyomon", "dullweber" ],
-    "expiry_milestone": 97
   },
   {
     "name": "page-info-history-desktop",
@@ -5480,11 +5490,6 @@
   },
   {
     "name": "partitioned-cookies",
-    "owners": [ "dylancutler@google.com" ],
-    "expiry_milestone": 110
-  },
-  {
-    "name": "partitioned-cookies-bypass-origin-trial",
     "owners": [ "dylancutler@google.com" ],
     "expiry_milestone": 110
   },
@@ -5556,6 +5561,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "pdf-use-skia-renderer",
+    "owners": [ "nigi", "//pdf/OWNERS" ],
+    "expiry_milestone": 122
+  },
+  {
     "name": "pdf-xfa-forms",
     "owners": [ "thestig", "//pdf/OWNERS" ],
     "expiry_milestone": 115
@@ -5614,6 +5624,11 @@
     "name": "post-quantum-cecpq2",
     "owners": [ "agl" ],
     "expiry_milestone": 116
+  },
+  {
+    "name": "ppapi-shared-images-swapchain",
+    "owners": [ "vasilyt" ],
+    "expiry_milestone": 128
   },
   {
     "name": "prefer-constant-frame-rate",
@@ -6525,14 +6540,19 @@
     "expiry_milestone": -1
   },
   {
+    "name": "tab-grid-recency-sort",
+    "owners": [ "gambard", "bling-flags@google.com" ],
+    "expiry_milestone": 114
+  },
+  {
     "name": "tab-groups-new-badge-promo",
     "owners": [ "chrome-desktop-ui-sea@google.com", "dfried" ],
     "expiry_milestone": 110
   },
   {
     "name": "tab-groups-save",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 110
+    "owners": [ "chrome-desktop-ui-sea@google.com", "dpenning" ],
+    "expiry_milestone": 115
   },
   {
     "name": "tab-hover-card-images",
@@ -6979,8 +6999,9 @@
   },
   {
     "name": "wait-threshold-seconds-for-capabilities-api",
-    "owners": [ "fernandex", "chrome-signin-team" ],
-    "expiry_milestone": 99
+    "owners": [ "jlebel", "chrome-signin-team" ],
+    // Used for manual testing to extend the wait time for capabilities fetching on iOS devices.
+    "expiry_milestone": -1
   },
   {
     "name": "wake-on-wifi-allowed",
@@ -6997,7 +7018,7 @@
   {
     "name": "wallpaper-fast-refresh",
     "owners": ["ckincaid@google.com", "assistive-eng@google.com"],
-    "expiry_milestone": 105
+    "expiry_milestone": 120
   },
   {
     "name": "wallpaper-fullscreen-preview",

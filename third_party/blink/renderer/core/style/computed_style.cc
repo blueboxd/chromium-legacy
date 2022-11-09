@@ -1182,13 +1182,6 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   }
 }
 
-void ComputedStyle::AddPaintImage(StyleImage* image) {
-  if (!MutablePaintImagesInternal()) {
-    SetPaintImagesInternal(std::make_unique<PaintImages>());
-  }
-  MutablePaintImagesInternal()->push_back(image);
-}
-
 bool ComputedStyle::HasCSSPaintImagesUsingCustomProperty(
     const AtomicString& custom_property_name,
     const Document& document) const {
@@ -1271,11 +1264,6 @@ void ComputedStyle::UpdateIsStackingContextWithoutContainment(
       ShouldCompositeForCurrentAnimations()) {
     SetIsStackingContextWithoutContainment(true);
   }
-}
-
-void ComputedStyle::AddCallbackSelector(const String& selector) {
-  if (!CallbackSelectors().Contains(selector))
-    MutableCallbackSelectorsInternal().push_back(selector);
 }
 
 static bool IsWillChangeTransformHintProperty(CSSPropertyID property) {
@@ -1551,14 +1539,6 @@ const CounterDirectiveMap* ComputedStyle::GetCounterDirectives() const {
   return CounterDirectivesInternal().get();
 }
 
-CounterDirectiveMap& ComputedStyle::AccessCounterDirectives() {
-  std::unique_ptr<CounterDirectiveMap>& map =
-      MutableCounterDirectivesInternal();
-  if (!map)
-    map = std::make_unique<CounterDirectiveMap>();
-  return *map;
-}
-
 const CounterDirectives ComputedStyle::GetCounterDirectives(
     const AtomicString& identifier) const {
   if (GetCounterDirectives()) {
@@ -1567,41 +1547,6 @@ const CounterDirectives ComputedStyle::GetCounterDirectives(
       return it->value;
   }
   return CounterDirectives();
-}
-
-void ComputedStyle::ClearIncrementDirectives() {
-  if (!GetCounterDirectives())
-    return;
-
-  // This makes us copy even if we may not be removing any items.
-  CounterDirectiveMap& map = AccessCounterDirectives();
-  typedef CounterDirectiveMap::iterator Iterator;
-
-  Iterator end = map.end();
-  for (Iterator it = map.begin(); it != end; ++it)
-    it->value.ClearIncrement();
-}
-
-void ComputedStyle::ClearResetDirectives() {
-  if (!GetCounterDirectives())
-    return;
-
-  // This makes us copy even if we may not be removing any items.
-  CounterDirectiveMap& map = AccessCounterDirectives();
-  typedef CounterDirectiveMap::iterator Iterator;
-
-  Iterator end = map.end();
-  for (Iterator it = map.begin(); it != end; ++it)
-    it->value.ClearReset();
-}
-
-void ComputedStyle::ClearSetDirectives() {
-  if (!GetCounterDirectives())
-    return;
-
-  auto& map = AccessCounterDirectives();
-  for (auto& value_pair : map)
-    value_pair.value.ClearSet();
 }
 
 AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
@@ -1837,21 +1782,6 @@ LineLogicalSide ComputedStyle::GetTextEmphasisLineLogicalSide() const {
   if (GetWritingMode() != WritingMode::kSidewaysLr)
     return IsRight(position) ? LineLogicalSide::kOver : LineLogicalSide::kUnder;
   return IsLeft(position) ? LineLogicalSide::kOver : LineLogicalSide::kUnder;
-}
-
-CSSAnimationData& ComputedStyle::AccessAnimations() {
-  std::unique_ptr<CSSAnimationData>& animations = MutableAnimationsInternal();
-  if (!animations)
-    animations = std::make_unique<CSSAnimationData>();
-  return *animations;
-}
-
-CSSTransitionData& ComputedStyle::AccessTransitions() {
-  std::unique_ptr<CSSTransitionData>& transitions =
-      MutableTransitionsInternal();
-  if (!transitions)
-    transitions = std::make_unique<CSSTransitionData>();
-  return *transitions;
 }
 
 FontBaseline ComputedStyle::GetFontBaseline() const {
@@ -2486,36 +2416,6 @@ LayoutRectOutsets ComputedStyle::ImageOutsets(
                                     BorderLeftWidth().ToInt()));
 }
 
-void ComputedStyle::SetBorderImageSource(StyleImage* image) {
-  if (BorderImage().GetImage() == image)
-    return;
-  MutableBorderImageInternal().SetImage(image);
-}
-
-void ComputedStyle::SetBorderImageSlices(const LengthBox& slices) {
-  if (BorderImage().ImageSlices() == slices)
-    return;
-  MutableBorderImageInternal().SetImageSlices(slices);
-}
-
-void ComputedStyle::SetBorderImageSlicesFill(bool fill) {
-  if (BorderImage().Fill() == fill)
-    return;
-  MutableBorderImageInternal().SetFill(fill);
-}
-
-void ComputedStyle::SetBorderImageWidth(const BorderImageLengthBox& slices) {
-  if (BorderImage().BorderSlices() == slices)
-    return;
-  MutableBorderImageInternal().SetBorderSlices(slices);
-}
-
-void ComputedStyle::SetBorderImageOutset(const BorderImageLengthBox& outset) {
-  if (BorderImage().Outset() == outset)
-    return;
-  MutableBorderImageInternal().SetOutset(outset);
-}
-
 bool ComputedStyle::BorderObscuresBackground() const {
   if (!HasBorder())
     return false;
@@ -2625,15 +2525,6 @@ bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
                               });
 }
 
-void ComputedStyle::ClearBackgroundImage() {
-  FillLayer* curr_child = &AccessBackgroundLayers();
-  curr_child->SetImage(
-      FillLayer::InitialFillImage(EFillLayerType::kBackground));
-  for (curr_child = curr_child->Next(); curr_child;
-       curr_child = curr_child->Next())
-    curr_child->ClearImage();
-}
-
 const AtomicString& ComputedStyle::ListStyleStringValue() const {
   if (!ListStyleType() || !ListStyleType()->IsString())
     return g_null_atom;
@@ -2723,7 +2614,33 @@ bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
   return unensured && unensured->IsContainerForSizeContainerQueries();
 }
 
-void ComputedStyle::SetUsedColorScheme(
+void ComputedStyleBuilder::ClearBackgroundImage() {
+  FillLayer* curr_child = &AccessBackgroundLayers();
+  curr_child->SetImage(
+      FillLayer::InitialFillImage(EFillLayerType::kBackground));
+  for (curr_child = curr_child->Next(); curr_child;
+       curr_child = curr_child->Next())
+    curr_child->ClearImage();
+}
+
+bool ComputedStyleBuilder::SetEffectiveZoom(float f) {
+  // Clamp the effective zoom value to a smaller (but hopeful still large
+  // enough) range, to avoid overflow in derived computations.
+  float clamped_effective_zoom = ClampTo<float>(f, 1e-6, 1e6);
+  if (EffectiveZoom() == clamped_effective_zoom)
+    return false;
+  SetEffectiveZoomInternal(clamped_effective_zoom);
+  // Record UMA for the effective zoom in order to assess the relative
+  // importance of sub-pixel behavior, and related features and bugs.
+  // Clamp to a max of 400%, to make the histogram behave better at no
+  // real cost to our understanding of the zooms in use.
+  base::UmaHistogramSparse(
+      "Blink.EffectiveZoom",
+      base::clamp<float>(clamped_effective_zoom * 100, 0, 400));
+  return true;
+}
+
+void ComputedStyleBuilder::SetUsedColorScheme(
     ColorSchemeFlags flags,
     mojom::blink::PreferredColorScheme preferred_color_scheme,
     bool force_dark) {
@@ -2762,23 +2679,6 @@ void ComputedStyle::SetUsedColorScheme(
       (force_dark && !prefers_dark);
 
   SetColorSchemeForced(forced_scheme);
-}
-
-bool ComputedStyleBuilder::SetEffectiveZoom(float f) {
-  // Clamp the effective zoom value to a smaller (but hopeful still large
-  // enough) range, to avoid overflow in derived computations.
-  float clamped_effective_zoom = ClampTo<float>(f, 1e-6, 1e6);
-  if (EffectiveZoom() == clamped_effective_zoom)
-    return false;
-  SetEffectiveZoomInternal(clamped_effective_zoom);
-  // Record UMA for the effective zoom in order to assess the relative
-  // importance of sub-pixel behavior, and related features and bugs.
-  // Clamp to a max of 400%, to make the histogram behave better at no
-  // real cost to our understanding of the zooms in use.
-  base::UmaHistogramSparse(
-      "Blink.EffectiveZoom",
-      base::clamp<float>(clamped_effective_zoom * 100, 0, 400));
-  return true;
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

@@ -2123,8 +2123,7 @@ const AtomicString& Element::computedRole() {
   Document& document = GetDocument();
   if (!document.IsActive() || !document.View())
     return g_null_atom;
-  if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
-      document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
+  if (document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
     document.View()->UpdateAllLifecyclePhasesExceptPaint(
         DocumentUpdateReason::kJavaScript);
   }
@@ -2137,8 +2136,7 @@ String Element::computedName() {
   Document& document = GetDocument();
   if (!document.IsActive() || !document.View())
     return String();
-  if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
-      document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
+  if (document.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean) {
     document.View()->UpdateAllLifecyclePhasesExceptPaint(
         DocumentUpdateReason::kJavaScript);
   }
@@ -6265,11 +6263,11 @@ PseudoElement* Element::UpdatePseudoElement(
     PseudoId pseudo_id,
     const StyleRecalcChange change,
     const StyleRecalcContext& style_recalc_context,
-    const AtomicString& view_transition_tag) {
-  PseudoElement* element = GetPseudoElement(pseudo_id, view_transition_tag);
+    const AtomicString& view_transition_name) {
+  PseudoElement* element = GetPseudoElement(pseudo_id, view_transition_name);
   if (!element) {
     if ((element = CreatePseudoElementIfNeeded(pseudo_id, style_recalc_context,
-                                               view_transition_tag))) {
+                                               view_transition_name))) {
       // ::before and ::after can have a nested ::marker
       element->CreatePseudoElementIfNeeded(kPseudoIdMarker,
                                            style_recalc_context);
@@ -6290,7 +6288,7 @@ PseudoElement* Element::UpdatePseudoElement(
     }
     if (!generate_pseudo) {
       GetElementRareData()->SetPseudoElement(pseudo_id, nullptr,
-                                             view_transition_tag);
+                                             view_transition_name);
       GetDocument().GetStyleEngine().PseudoElementRemoved(*this);
       element = nullptr;
     }
@@ -6302,7 +6300,7 @@ PseudoElement* Element::UpdatePseudoElement(
 PseudoElement* Element::CreatePseudoElementIfNeeded(
     PseudoId pseudo_id,
     const StyleRecalcContext& style_recalc_context,
-    const AtomicString& view_transition_tag) {
+    const AtomicString& view_transition_name) {
   if (!CanGeneratePseudoElement(pseudo_id))
     return nullptr;
   if (pseudo_id == kPseudoIdFirstLetter) {
@@ -6311,22 +6309,22 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(
   }
 
   PseudoElement* pseudo_element =
-      PseudoElement::Create(this, pseudo_id, view_transition_tag);
+      PseudoElement::Create(this, pseudo_id, view_transition_name);
   EnsureElementRareData().SetPseudoElement(pseudo_id, pseudo_element,
-                                           view_transition_tag);
+                                           view_transition_name);
   pseudo_element->InsertedInto(*this);
 
   scoped_refptr<ComputedStyle> pseudo_style =
       pseudo_element->StyleForLayoutObject(style_recalc_context);
   if (!PseudoElementLayoutObjectIsNeeded(pseudo_style.get(), this)) {
     GetElementRareData()->SetPseudoElement(pseudo_id, nullptr,
-                                           view_transition_tag);
+                                           view_transition_name);
     return nullptr;
   }
 
   if (pseudo_id == kPseudoIdBackdrop)
     GetDocument().AddToTopLayer(pseudo_element, this);
-  else if (pseudo_id == kPseudoIdPageTransition)
+  else if (pseudo_id == kPseudoIdViewTransition)
     GetDocument().AddToTopLayer(pseudo_element);
 
   pseudo_element->SetComputedStyle(pseudo_style);
@@ -6356,41 +6354,41 @@ void Element::DetachPseudoElement(PseudoId pseudo_id,
 
 PseudoElement* Element::GetPseudoElement(
     PseudoId pseudo_id,
-    const AtomicString& view_transition_tag) const {
+    const AtomicString& view_transition_name) const {
   return HasRareData() ? GetElementRareData()->GetPseudoElement(
-                             pseudo_id, view_transition_tag)
+                             pseudo_id, view_transition_name)
                        : nullptr;
 }
 
 PseudoElement* Element::GetNestedPseudoElement(
     PseudoId pseudo_id,
-    const AtomicString& view_transition_tag) const {
+    const AtomicString& view_transition_name) const {
   if (!IsTransitionPseudoElement(pseudo_id))
-    return GetPseudoElement(pseudo_id, view_transition_tag);
+    return GetPseudoElement(pseudo_id, view_transition_name);
 
   // The transition pseudos can currently only exist on the document element.
   if (!IsDocumentElement())
     return nullptr;
 
   // This traverses the pseudo element hierarchy generated in
-  // RecalcTransitionPseudoTreeStyle to query nested ::page-transition-container
-  // ::page-transition-image-wrapper and
-  // ::page-transition-{incoming,outgoing}-image pseudo elements.
-  auto* transition_pseudo = GetPseudoElement(kPseudoIdPageTransition);
-  if (!transition_pseudo || pseudo_id == kPseudoIdPageTransition)
+  // RecalcTransitionPseudoTreeStyle to query nested ::view-transition-group
+  // ::view-transition-image-pair and
+  // ::view-transition-{old,new} pseudo elements.
+  auto* transition_pseudo = GetPseudoElement(kPseudoIdViewTransition);
+  if (!transition_pseudo || pseudo_id == kPseudoIdViewTransition)
     return transition_pseudo;
 
   auto* container_pseudo = transition_pseudo->GetPseudoElement(
-      kPseudoIdPageTransitionContainer, view_transition_tag);
-  if (!container_pseudo || pseudo_id == kPseudoIdPageTransitionContainer)
+      kPseudoIdViewTransitionGroup, view_transition_name);
+  if (!container_pseudo || pseudo_id == kPseudoIdViewTransitionGroup)
     return container_pseudo;
 
   auto* wrapper_pseudo = container_pseudo->GetPseudoElement(
-      kPseudoIdPageTransitionImageWrapper, view_transition_tag);
-  if (!wrapper_pseudo || pseudo_id == kPseudoIdPageTransitionImageWrapper)
+      kPseudoIdViewTransitionImagePair, view_transition_name);
+  if (!wrapper_pseudo || pseudo_id == kPseudoIdViewTransitionImagePair)
     return wrapper_pseudo;
 
-  return wrapper_pseudo->GetPseudoElement(pseudo_id, view_transition_tag);
+  return wrapper_pseudo->GetPseudoElement(pseudo_id, view_transition_name);
 }
 
 LayoutObject* Element::PseudoElementLayoutObject(PseudoId pseudo_id) const {
@@ -6529,7 +6527,7 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
 }
 
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
-  if (pseudo_id == kPseudoIdPageTransition) {
+  if (pseudo_id == kPseudoIdViewTransition) {
     DCHECK_EQ(this, GetDocument().documentElement());
     return !GetDocument().GetStyleEngine().ViewTransitionTags().empty();
   }
@@ -7755,11 +7753,11 @@ void Element::InvalidateStyleAttribute(
 }
 
 void Element::RecalcTransitionPseudoTreeStyle(
-    const Vector<AtomicString>& view_transition_tags) {
+    const Vector<AtomicString>& view_transition_names) {
   DCHECK_EQ(this, GetDocument().documentElement());
 
-  auto* old_transition_pseudo = GetPseudoElement(kPseudoIdPageTransition);
-  if (view_transition_tags.empty() && !old_transition_pseudo)
+  auto* old_transition_pseudo = GetPseudoElement(kPseudoIdViewTransition);
+  if (view_transition_names.empty() && !old_transition_pseudo)
     return;
 
   const StyleRecalcChange style_recalc_change;
@@ -7768,30 +7766,30 @@ void Element::RecalcTransitionPseudoTreeStyle(
           *GetDocument().documentElement());
 
   auto* transition_pseudo =
-      UpdatePseudoElement(kPseudoIdPageTransition, style_recalc_change,
+      UpdatePseudoElement(kPseudoIdViewTransition, style_recalc_change,
                           style_recalc_context, g_null_atom);
   if (!transition_pseudo)
     return;
 
-  for (const auto& view_transition_tag : view_transition_tags) {
+  for (const auto& view_transition_name : view_transition_names) {
     auto* container_pseudo = transition_pseudo->UpdatePseudoElement(
-        kPseudoIdPageTransitionContainer, style_recalc_change,
-        style_recalc_context, view_transition_tag);
+        kPseudoIdViewTransitionGroup, style_recalc_change, style_recalc_context,
+        view_transition_name);
     if (!container_pseudo)
       continue;
 
     auto* wrapper_pseudo = container_pseudo->UpdatePseudoElement(
-        kPseudoIdPageTransitionImageWrapper, style_recalc_change,
-        style_recalc_context, view_transition_tag);
+        kPseudoIdViewTransitionImagePair, style_recalc_change,
+        style_recalc_context, view_transition_name);
     if (!wrapper_pseudo)
       continue;
 
     wrapper_pseudo->UpdatePseudoElement(
-        kPseudoIdPageTransitionOutgoingImage, style_recalc_change,
-        style_recalc_context, view_transition_tag);
+        kPseudoIdViewTransitionOld, style_recalc_change, style_recalc_context,
+        view_transition_name);
     wrapper_pseudo->UpdatePseudoElement(
-        kPseudoIdPageTransitionIncomingImage, style_recalc_change,
-        style_recalc_context, view_transition_tag);
+        kPseudoIdViewTransitionNew, style_recalc_change, style_recalc_context,
+        view_transition_name);
 
     container_pseudo->ClearChildNeedsStyleRecalc();
     wrapper_pseudo->ClearChildNeedsStyleRecalc();
@@ -7804,11 +7802,11 @@ void Element::RecalcTransitionPseudoTreeStyle(
 }
 
 void Element::RebuildTransitionPseudoLayoutTree(
-    const Vector<AtomicString>& view_transition_tags) {
+    const Vector<AtomicString>& view_transition_names) {
   DCHECK_EQ(this, GetDocument().documentElement());
 
-  if (view_transition_tags.empty()) {
-    DCHECK(!GetPseudoElement(kPseudoIdPageTransition));
+  if (view_transition_names.empty()) {
+    DCHECK(!GetPseudoElement(kPseudoIdViewTransition));
     return;
   }
 
@@ -8176,8 +8174,8 @@ bool Element::IsDocumentElement() const {
 bool Element::IsReplacedElementRespectingCSSOverflow() const {
   // See https://github.com/w3c/csswg-drafts/issues/7144 for details on enabling
   // ink overflow for replaced elements.
-  if (GetPseudoId() == kPseudoIdPageTransitionIncomingImage ||
-      GetPseudoId() == kPseudoIdPageTransitionOutgoingImage)
+  if (GetPseudoId() == kPseudoIdViewTransitionNew ||
+      GetPseudoId() == kPseudoIdViewTransitionOld)
     return true;
 
   if (!RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled())

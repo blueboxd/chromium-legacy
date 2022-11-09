@@ -83,6 +83,13 @@ BASE_DECLARE_FEATURE(kEnhancedProtection);
 // Phase 2 of Enhanced Safe Browsing changes.
 BASE_DECLARE_FEATURE(kEnhancedProtectionPhase2IOS);
 
+// Enables instructional improvements when users are directed to the security
+// settings page to enable Enhanced Safe Browsing. Enables the In-page help
+// (IPH) Bubble to be shown when the user is referred from an ESB promotion.
+// The ESB option will also be collapsed on page load. If not enabled,
+// no IPH bubble will appear and the ESB option will be expanded on page load.
+BASE_DECLARE_FEATURE(kEsbIphBubbleAndCollapseSettings);
+
 // Enables collection of signals related to extension activity and uploads
 // of telemetry reports to SB servers.
 BASE_DECLARE_FEATURE(kExtensionTelemetry);
@@ -135,6 +142,11 @@ BASE_DECLARE_FEATURE(kNestedArchives);
 
 // Enable omitting non-user gesture from referrer chain.
 BASE_DECLARE_FEATURE(kOmitNonUserGesturesFromReferrerChain);
+
+// Controls whether we are using admin rules for filtering URLs, showing warn or
+// block intersitial and reporting the interstitial shown event on enterprise
+// managed browsers.
+BASE_DECLARE_FEATURE(kRealTimeUrlFilteringForEnterprise);
 
 // Bypass RealTime URL Lookup allowlist for enterprise users.
 BASE_DECLARE_FEATURE(kRealTimeUrlLookupForEnterpriseAllowlistBypass);

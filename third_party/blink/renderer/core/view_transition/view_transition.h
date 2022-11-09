@@ -139,7 +139,7 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   // Creates a pseudo element for the given |pseudo_id|.
   PseudoElement* CreatePseudoElement(Element* parent,
                                      PseudoId pseudo_id,
-                                     const AtomicString& view_transition_tag);
+                                     const AtomicString& view_transition_name);
 
   // Returns the UA style sheet for the pseudo element tree generated during a
   // transition.
@@ -171,10 +171,9 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
     return creation_type_ == CreationType::kForSnapshot;
   }
 
-  // Notifies when all render blocking resources for a newly loaded Document
-  // have been fetched. This is called before frame updates on this Document are
-  // restarted.
-  void OnRenderBlockingFinished();
+  // Notifies before the compositor associated with this frame will initiate a
+  // lifecycle update.
+  void WillBeginMainFrame();
 
   // Notifies when this Document will be detached from the associated
   // LocalFrameView and will no longer be visible to the user.

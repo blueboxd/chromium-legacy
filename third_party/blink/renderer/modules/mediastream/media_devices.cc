@@ -18,12 +18,15 @@
 #include "third_party/blink/public/mojom/media/capture_handle_config.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_display_media_stream_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_supported_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_boolean_mediatrackconstraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_domexception_overconstrainederror.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_user_media_stream_constraints.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -66,9 +69,8 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
   PromiseResolverCallbacks(
       UserMediaRequestType media_type,
       ScriptPromiseResolver* resolver,
-      base::OnceCallback<void(const String&,
-                              MediaStreamTrack*,
-                              CaptureController*)> on_success_follow_up)
+      base::OnceCallback<void(const String&, CaptureController*)>
+          on_success_follow_up)
       : media_type_(media_type),
         resolver_(resolver),
         on_success_follow_up_(std::move(on_success_follow_up)) {}
@@ -84,18 +86,17 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
     DCHECK_EQ(streams.size(), 1u);
     MediaStream* stream = streams[0];
 
-    MediaStreamTrack* video_track = nullptr;
-
     if (on_success_follow_up_) {
       // Only getDisplayMedia() calls set |on_success_follow_up_|.
       // Successful invocations of getDisplayMedia() always have exactly
       // one video track.
-      DCHECK_EQ(UserMediaRequestType::kDisplayMedia, media_type_);
+      //
+      // Extension API calls that are followed by a getUserMedia() call with
+      // chromeMediaSourceId are treated liked getDisplayMedia() calls.
       MediaStreamTrackVector video_tracks = stream->getVideoTracks();
       DCHECK_EQ(video_tracks.size(), 1u);
-      video_track = video_tracks[0];
       if (capture_controller) {
-        capture_controller->SetVideoTrack(video_track, stream->id().Utf8());
+        capture_controller->SetVideoTrack(video_tracks[0], stream->id().Utf8());
       }
     }
 
@@ -103,14 +104,17 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
     resolver_->Resolve(stream);
 
     // Enqueue the follow-up microtask, if any is intended.
-    if (on_success_follow_up_ && video_track) {
-      std::move(on_success_follow_up_)
-          .Run(stream->id(), video_track, capture_controller);
+    if (on_success_follow_up_) {
+      std::move(on_success_follow_up_).Run(stream->id(), capture_controller);
     }
   }
 
   void OnError(ScriptWrappable* callback_this_value,
-               const V8MediaStreamError* error) override {
+               const V8MediaStreamError* error,
+               CaptureController* capture_controller) override {
+    if (capture_controller) {
+      capture_controller->FinalizeFocusDecision();
+    }
     resolver_->Reject(error);
   }
 
@@ -129,7 +133,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
   const UserMediaRequestType media_type_;
 
   Member<ScriptPromiseResolver> resolver_;
-  base::OnceCallback<void(const String&, MediaStreamTrack*, CaptureController*)>
+  base::OnceCallback<void(const String&, CaptureController*)>
       on_success_follow_up_;
 };
 
@@ -177,6 +181,48 @@ void RecordEnumerateDevicesLatency(base::TimeTicks start_time) {
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   base::UmaHistogramTimes("WebRTC.EnumerateDevices.Latency", elapsed);
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+// Killswitch for remotely shutting off new functionality in case
+// anything goes wrong.
+// TODO(crbug.com/1382329): Remove this flag.
+BASE_FEATURE(kAllowCaptureControllerForGetUserMediaScreenCapture,
+             "AllowCaptureControllerForGetUserMediaScreenCapture",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+bool IsExtensionScreenSharingFunctionCall(const MediaStreamConstraints* options,
+                                          ExceptionState& exception_state) {
+  DCHECK(!exception_state.HadException());
+
+  if (!base::FeatureList::IsEnabled(
+          kAllowCaptureControllerForGetUserMediaScreenCapture)) {
+    return false;
+  }
+
+  if (!options) {
+    return false;
+  }
+
+  const V8UnionBooleanOrMediaTrackConstraints* const video = options->video();
+  if (!video || video->GetContentType() !=
+                    V8UnionBooleanOrMediaTrackConstraints::ContentType::
+                        kMediaTrackConstraints) {
+    return false;
+  }
+
+  const MediaTrackConstraints* const constraints =
+      video->GetAsMediaTrackConstraints();
+  if (!constraints || !constraints->hasMandatory()) {
+    return false;
+  }
+
+  const HashMap<String, String> map =
+      blink::Dictionary(constraints->mandatory())
+          .GetOwnPropertiesAsStringHashMap(exception_state);
+
+  return !exception_state.HadException() && map.Contains("chromeMediaSourceId");
+}
+#endif
 
 MediaStreamConstraints* ToMediaStreamConstraints(
     const UserMediaStreamConstraints* source) {
@@ -275,6 +321,8 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
     UserMediaRequestType media_type,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
+  DCHECK(!exception_state.HadException());
+
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "No media device client available; "
@@ -284,15 +332,26 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
-  base::OnceCallback<void(const String&, MediaStreamTrack*, CaptureController*)>
+  base::OnceCallback<void(const String&, CaptureController*)>
       on_success_follow_up;
 #if !BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1215480): Don't set on_success_follow_up if no
-  // capture_controller.
-  if (media_type == UserMediaRequestType::kDisplayMedia) {
-    on_success_follow_up = WTF::BindOnce(
-        &MediaDevices::EnqueueMicrotaskToCloseFocusWindowOfOpportunity,
-        WrapWeakPersistent(this));
+  if (media_type == UserMediaRequestType::kDisplayMedia ||
+      IsExtensionScreenSharingFunctionCall(options, exception_state)) {
+    if (options->hasController()) {
+      on_success_follow_up = WTF::BindOnce(
+          &MediaDevices::EnqueueMicrotaskToCloseFocusWindowOfOpportunity,
+          WrapWeakPersistent(this));
+    } else {
+      // TODO(crbug.com/1381949): Don't wait until the IPC round-trip and have
+      // the browser process focus-switch upon starting the capture.
+      on_success_follow_up =
+          WTF::BindOnce(&MediaDevices::CloseFocusWindowOfOpportunity,
+                        WrapWeakPersistent(this));
+    }
+  }
+
+  if (exception_state.HadException()) {
+    return ScriptPromise();
   }
 #endif
 
@@ -837,7 +896,6 @@ void MediaDevices::Trace(Visitor* visitor) const {
 #if !BUILDFLAG(IS_ANDROID)
 void MediaDevices::EnqueueMicrotaskToCloseFocusWindowOfOpportunity(
     const String& id,
-    MediaStreamTrack* track,
     CaptureController* capture_controller) {
   ExecutionContext* const context = GetExecutionContext();
   if (!context)
@@ -845,17 +903,12 @@ void MediaDevices::EnqueueMicrotaskToCloseFocusWindowOfOpportunity(
 
   context->GetAgent()->event_loop()->EnqueueMicrotask(WTF::BindOnce(
       &MediaDevices::CloseFocusWindowOfOpportunity, WrapWeakPersistent(this),
-      id, WrapWeakPersistent(track), WrapWeakPersistent(capture_controller)));
+      id, WrapWeakPersistent(capture_controller)));
 }
 
 void MediaDevices::CloseFocusWindowOfOpportunity(
     const String& id,
-    MediaStreamTrack* track,
     CaptureController* capture_controller) {
-  if (!track) {
-    return;
-  }
-
   ExecutionContext* const context = GetExecutionContext();
   if (!context) {
     return;  // Note: We're still back by the browser-side timer.
@@ -866,14 +919,10 @@ void MediaDevices::CloseFocusWindowOfOpportunity(
     return;
   }
 
-  DCHECK(!capture_controller ||
-         RuntimeEnabledFeatures::ConditionalFocusEnabled(context));
   if (capture_controller) {
+    DCHECK(RuntimeEnabledFeatures::ConditionalFocusEnabled(context));
     capture_controller->FinalizeFocusDecision();
   }
-
-  // Inform the track that further calls to focus() should raise an exception.
-  track->CloseFocusWindowOfOpportunity();
 
   GetDispatcherHost(window->GetFrame()).CloseFocusWindowOfOpportunity(id);
 }

@@ -25,13 +25,6 @@ const std::string Token2() {
   return "token2";
 }
 
-std::deque<uint32_t> ContentHashRange(int start, int size) {
-  std::deque<uint32_t> content_hashes;
-  for (int i = start; i < start + size; ++i)
-    content_hashes.push_back(i);
-  return content_hashes;
-}
-
 TEST(feedstore_util_test, SetSessionId) {
   Metadata metadata;
 
@@ -82,87 +75,22 @@ using feed::StreamType;
 TEST(feedstore_util_test, StreamTypeFromId) {
   StreamType for_you = StreamType(StreamKind::kForYou);
   StreamType following = StreamType(StreamKind::kFollowing);
-  StreamType channel = StreamType(StreamKind::kChannel);
-  StreamType channel_a = StreamType(StreamKind::kChannel, "A");
+  StreamType single_web_feed = StreamType(StreamKind::kSingleWebFeed);
+  StreamType single_web_feed_a = StreamType(StreamKind::kSingleWebFeed, "A");
   StreamType unknown = StreamType();
 
   EXPECT_EQ(StreamKey(for_you), kForYouStreamKey);
   EXPECT_EQ(StreamKey(following), kFollowStreamKey);
   EXPECT_DCHECK_DEATH(StreamKey(unknown));
 
-  EXPECT_TRUE(StreamTypeFromId(StreamKey(channel)).IsChannelFeed());
-  EXPECT_TRUE(StreamTypeFromId(StreamKey(channel_a)).IsChannelFeed());
+  EXPECT_TRUE(StreamTypeFromId(StreamKey(single_web_feed)).IsSingleWebFeed());
+  EXPECT_TRUE(StreamTypeFromId(StreamKey(single_web_feed_a)).IsSingleWebFeed());
 
-  EXPECT_EQ(StreamTypeFromId(StreamKey(channel_a)).GetWebFeedId(), "A");
+  EXPECT_EQ(StreamTypeFromId(StreamKey(single_web_feed_a)).GetWebFeedId(), "A");
 
   EXPECT_TRUE(StreamTypeFromId(StreamKey(following)).IsWebFeed());
   EXPECT_TRUE(StreamTypeFromId(StreamKey(for_you)).IsForYou());
   EXPECT_EQ(StreamTypeFromId("z"), StreamType());
-}
-
-TEST(feedstore_util_test, AddMostRecentContentHashes_NotExceedingCap) {
-  Metadata metadata;
-
-  // Add an empty list.
-  std::deque<uint32_t> content_hashes;
-  AddMostRecentContentHashes(metadata, std::move(content_hashes));
-  EXPECT_EQ(0, metadata.most_recent_content_hashes_size());
-
-  // Add some contents.
-  int offset = 0;
-  int size = kMaxMostRecentContentHashes / 2;
-  AddMostRecentContentHashes(metadata, ContentHashRange(offset, size));
-  EXPECT_THAT(metadata.most_recent_content_hashes(),
-              ElementsAreArray(ContentHashRange(offset, size)));
-
-  // Add more contents. The combination of existing and new contents do not
-  // exceed the max capacity of the most recent list.
-  offset += size;
-  size = kMaxMostRecentContentHashes / 4;
-  AddMostRecentContentHashes(metadata, ContentHashRange(offset, size));
-  EXPECT_THAT(metadata.most_recent_content_hashes(),
-              ElementsAreArray(
-                  ContentHashRange(0, kMaxMostRecentContentHashes / 2 + size)));
-}
-
-TEST(feedstore_util_test, AddMostRecentContentHashes_ExceedingCap) {
-  Metadata metadata;
-
-  // Add some content.
-  int offset = 0;
-  int size = kMaxMostRecentContentHashes * 0.75;
-  AddMostRecentContentHashes(metadata, ContentHashRange(offset, size));
-  EXPECT_THAT(metadata.most_recent_content_hashes(),
-              ElementsAreArray(ContentHashRange(offset, size)));
-
-  // Add more contents. The combination of existing and new contents exceed
-  // the max capacity of the most recent list.
-  offset += size;
-  size = kMaxMostRecentContentHashes / 2;
-  AddMostRecentContentHashes(metadata, ContentHashRange(offset, size));
-  EXPECT_THAT(metadata.most_recent_content_hashes(),
-              ElementsAreArray(
-                  ContentHashRange(offset + size - kMaxMostRecentContentHashes,
-                                   kMaxMostRecentContentHashes)));
-
-  // Continue to add more contents.
-  offset += size;
-  size = kMaxMostRecentContentHashes / 3;
-  AddMostRecentContentHashes(metadata, ContentHashRange(offset, size));
-  EXPECT_THAT(metadata.most_recent_content_hashes(),
-              ElementsAreArray(
-                  ContentHashRange(offset + size - kMaxMostRecentContentHashes,
-                                   kMaxMostRecentContentHashes)));
-
-  // Continue to add a lot more contents which exceeds the max capacity of the
-  // most recent list.
-  offset += size;
-  size = kMaxMostRecentContentHashes + 10;
-  AddMostRecentContentHashes(metadata, ContentHashRange(offset, size));
-  EXPECT_THAT(metadata.most_recent_content_hashes(),
-              ElementsAreArray(ContentHashRange(
-                  offset + size - kMaxMostRecentContentHashes - 10,
-                  kMaxMostRecentContentHashes)));
 }
 
 }  // namespace

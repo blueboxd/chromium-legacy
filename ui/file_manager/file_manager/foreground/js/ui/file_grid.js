@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
-import {dispatchSimpleEvent} from 'chrome://resources/js/cr_deprecated.js';
+import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
 import {isRTL} from 'chrome://resources/js/util.js';
 
 import {RateLimiter} from '../../../common/js/async_util.js';
@@ -891,7 +891,7 @@ export class FileGrid extends Grid {
         this.metadataModel_.getCache([entry], ['syncStatus'])[0].syncStatus;
     if (frame && syncStatus) {
       frame.setAttribute('data-sync-status', syncStatus);
-      // TODO(msalomao): set sync status aria-label.
+      // TODO(b/255474670): set sync status aria-label.
     }
   }
 

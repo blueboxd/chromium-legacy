@@ -14,6 +14,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ref.h"
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -44,6 +45,8 @@ namespace content {
 namespace {
 
 using ::attribution_reporting::mojom::SourceRegistrationError;
+
+using AttributionFilters = ::attribution_reporting::Filters;
 
 using ::testing::_;
 using ::testing::AllOf;
@@ -95,13 +98,13 @@ void CheckTriggerQueueHistograms(const base::HistogramTester& histograms,
 }
 
 struct RemoteDataHost {
-  BrowserTaskEnvironment& task_environment;
+  const raw_ref<BrowserTaskEnvironment> task_environment;
   mojo::Remote<blink::mojom::AttributionDataHost> data_host;
 
   ~RemoteDataHost() {
     // Disconnect the data host.
     data_host.reset();
-    task_environment.RunUntilIdle();
+    task_environment->RunUntilIdle();
   }
 };
 
@@ -145,7 +148,8 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
               {{"key", absl::MakeUint128(/*high=*/5, /*low=*/345)}})),
           SourceIsWithinFencedFrameIs(false), SourceDebugReportingIs(true))));
   {
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(), page_origin,
         /*is_within_fenced_frame=*/false);
@@ -218,7 +222,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     mojo::test::BadMessageObserver bad_message_observer;
 
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(),
         url::Origin::Create(GURL(test_case.source_origin)),
@@ -373,7 +378,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   auto reporting_origin = url::Origin::Create(GURL("https://reporter.example"));
 
   {
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(), page_origin,
         /*is_within_fenced_frame=*/false);
@@ -506,7 +512,8 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
           Optional(123)))));
 
   {
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(),
         destination_origin, /*is_within_fenced_frame=*/false);
@@ -516,7 +523,7 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
     trigger_data->debug_key = 789;
 
     trigger_data->filters = blink::mojom::AttributionFilterData::New(
-        AttributionFilterValues({{"a", {"b"}}}));
+        attribution_reporting::FilterValues({{"a", {"b"}}}));
     trigger_data->not_filters = blink::mojom::AttributionFilterData::New();
 
     trigger_data->event_triggers.push_back(blink::mojom::EventTriggerData::New(
@@ -524,10 +531,10 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
         /*priority=*/2, /*dedup_key=*/3,
         /*filters=*/
         blink::mojom::AttributionFilterData::New(
-            AttributionFilterValues({{"c", {"d"}}})),
+            attribution_reporting::FilterValues({{"c", {"d"}}})),
         /*not_filters=*/
         blink::mojom::AttributionFilterData::New(
-            AttributionFilterValues({{"e", {"f"}}}))));
+            attribution_reporting::FilterValues({{"e", {"f"}}}))));
 
     trigger_data->event_triggers.push_back(blink::mojom::EventTriggerData::New(
         /*data=*/4,
@@ -580,7 +587,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     mojo::test::BadMessageObserver bad_message_observer;
 
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(),
         url::Origin::Create(GURL(test_case.destination_origin)),
@@ -941,7 +949,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   auto reporting_origin = url::Origin::Create(GURL("https://reporter.example"));
 
   {
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(),
         destination_origin, /*is_within_fenced_frame=*/false);
@@ -1015,7 +1024,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   auto reporting_origin = url::Origin::Create(GURL("https://reporter.example"));
 
   {
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(), page_origin,
         /*is_within_fenced_frame=*/false);
@@ -1098,7 +1108,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   const blink::AttributionSrcToken attribution_src_token;
 
   {
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterNavigationDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(),
         attribution_src_token);
@@ -1153,7 +1164,8 @@ TEST_F(AttributionDataHostManagerImplTest, NoSourceOrTrigger) {
   auto page_origin = url::Origin::Create(GURL("https://page.example"));
 
   {
-    RemoteDataHost data_host_remote{.task_environment = task_environment_};
+    RemoteDataHost data_host_remote{.task_environment =
+                                        raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(), page_origin,
         /*is_within_fenced_frame=*/false);
@@ -1178,7 +1190,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   {
     RemoteDataHost source_data_host_remote{.task_environment =
-                                               task_environment_};
+                                               raw_ref(task_environment_)};
     data_host_manager_.RegisterDataHost(
         source_data_host_remote.data_host.BindNewPipeAndPassReceiver(),
         url::Origin::Create(GURL("https://page1.example")),
@@ -2098,7 +2110,8 @@ TEST_F(AttributionDataHostManagerImplTest,
           DestinationOriginIs(destination_origin),
           ImpressionOriginIs(page_origin), SourceIsWithinFencedFrameIs(true))));
 
-  RemoteDataHost data_host_remote{.task_environment = task_environment_};
+  RemoteDataHost data_host_remote{.task_environment =
+                                      raw_ref(task_environment_)};
   data_host_manager_.RegisterDataHost(
       data_host_remote.data_host.BindNewPipeAndPassReceiver(), page_origin,
       /*is_within_fenced_frame=*/true);

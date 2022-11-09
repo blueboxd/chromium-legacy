@@ -145,7 +145,9 @@ TransformOperations::BlendRemainingByUsingMatrixInterpolation(
     return nullptr;
   }
 
-  to_transform.Blend(from_transform, progress);
+  if (!to_transform.Blend(from_transform, progress) && progress < 0.5)
+    to_transform = from_transform;
+
   return Matrix3DTransformOperation::Create(to_transform);
 }
 
@@ -425,10 +427,8 @@ bool TransformOperations::BlendedBoundsForBox(const gfx::BoxF& box,
         TransformationMatrix to_matrix;
         from_transform->Apply(from_matrix, gfx::SizeF());
         to_transform->Apply(to_matrix, gfx::SizeF());
-        gfx::BoxF from_box = *bounds;
-        gfx::BoxF to_box = *bounds;
-        from_matrix.TransformBox(from_box);
-        to_matrix.TransformBox(to_box);
+        gfx::BoxF from_box = from_matrix.MapBox(*bounds);
+        gfx::BoxF to_box = to_matrix.MapBox(*bounds);
         *bounds = from_box;
         bounds->ExpandTo(to_box);
         continue;

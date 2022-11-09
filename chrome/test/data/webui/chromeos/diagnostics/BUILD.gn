@@ -48,6 +48,7 @@ js_type_check("closure_compile") {
     ":system_page_test",
     ":test_diagnostics_browser_proxy",
     ":text_badge_test",
+    ":touchpad_tester_test",
     ":wifi_info_test",
   ]
 }
@@ -277,8 +278,8 @@ js_library("ip_config_info_drawer_test") {
 
 js_library("keyboard_tester_test") {
   deps = [
+    "..:mock_controller.m",
     "../..:chai_assert",
-    "../..:mock_controller",
     "../..:test_util",
     "//ash/webui/diagnostics_ui/mojom:mojom_webui_js",
     "//ash/webui/diagnostics_ui/resources:keyboard_tester",
@@ -498,6 +499,16 @@ js_library("touchscreen_tester_test") {
     "//ash/webui/diagnostics_ui/mojom:mojom_webui_js",
     "//ash/webui/diagnostics_ui/resources:touchscreen_tester",
   ]
+}
+
+js_library("touchpad_tester_test") {
+  deps = [
+    "../..:chai_assert",
+    "../..:test_util",
+    "//ash/webui/diagnostics_ui/mojom:mojom_webui_js",
+    "//ash/webui/diagnostics_ui/resources:touchpad_tester",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("wifi_info_test") {

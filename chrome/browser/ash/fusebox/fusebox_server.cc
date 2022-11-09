@@ -13,6 +13,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -162,6 +163,66 @@ ParseResult ParseFileSystemURL(fusebox::MonikerMap& moniker_map,
 // looks unused, but we need to keep the storage::FileSystemContext reference
 // alive until the callbacks are run.
 
+void RunMkDirAndThenStatCallback(
+    Server::MkDirCallback callback,
+    scoped_refptr<storage::FileSystemContext> fs_context,  // See § above.
+    bool read_only,
+    base::File::Error error_code,
+    const base::File::Info& info) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  int posix_error_code = FileErrorToErrno(error_code);
+  if (posix_error_code) {
+    fusebox_staging::MkDirResponseProto response_proto;
+    response_proto.set_posix_error_code(posix_error_code);
+    std::move(callback).Run(response_proto);
+    return;
+  }
+
+  fusebox_staging::MkDirResponseProto response_proto;
+  fusebox_staging::DirEntryProto* stat = response_proto.mutable_stat();
+  stat->set_mode_bits(Server::MakeModeBits(info.is_directory, read_only));
+  stat->set_size(info.size);
+  stat->set_mtime(
+      info.last_modified.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  std::move(callback).Run(response_proto);
+}
+
+void RunMkDirCallback(
+    Server::MkDirCallback callback,
+    scoped_refptr<storage::FileSystemContext> fs_context,  // See § above.
+    storage::FileSystemURL fs_url,
+    bool read_only,
+    base::File::Error error_code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  int posix_error_code = FileErrorToErrno(error_code);
+  if (posix_error_code) {
+    fusebox_staging::MkDirResponseProto response_proto;
+    response_proto.set_posix_error_code(posix_error_code);
+    std::move(callback).Run(response_proto);
+    return;
+  }
+
+  constexpr auto metadata_fields =
+      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+      storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
+      storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED;
+
+  auto outer_callback = base::BindPostTask(
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(&RunMkDirAndThenStatCallback, std::move(callback),
+                     fs_context, read_only));
+
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          base::IgnoreResult(&storage::FileSystemOperationRunner::GetMetadata),
+          // Unretained is safe: fs_context owns its operation_runner.
+          base::Unretained(fs_context->operation_runner()), fs_url,
+          metadata_fields, std::move(outer_callback)));
+}
+
 void RunReadCallbackFailure(Server::ReadCallback callback,
                             base::File::Error error_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -187,6 +248,24 @@ void RunReadCallbackTypical(
   auto task_runner = content::GetIOThreadTaskRunner({});
   task_runner->DeleteSoon(FROM_HERE, fs_reader.release());
   task_runner->ReleaseSoon(FROM_HERE, std::move(buffer));
+}
+
+void RunRmDirCallback(
+    Server::RmDirCallback callback,
+    scoped_refptr<storage::FileSystemContext> fs_context,  // See § above.
+    base::File::Error error_code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  int posix_error_code = FileErrorToErrno(error_code);
+  if (posix_error_code) {
+    fusebox_staging::RmDirResponseProto response_proto;
+    response_proto.set_posix_error_code(posix_error_code);
+    std::move(callback).Run(response_proto);
+    return;
+  }
+
+  fusebox_staging::RmDirResponseProto response_proto;
+  std::move(callback).Run(response_proto);
 }
 
 void ReadOnIOThread(scoped_refptr<storage::FileSystemContext> fs_context,
@@ -309,7 +388,7 @@ Server::~Server() {
   g_server_instance = nullptr;
 }
 
-fusebox::Moniker Server::CreateMoniker(storage::FileSystemURL target,
+fusebox::Moniker Server::CreateMoniker(const storage::FileSystemURL& target,
                                        bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -384,7 +463,8 @@ base::Value Server::GetDebugJSON() {
   return base::Value(std::move(dict));
 }
 
-void Server::Close(std::string fs_url_as_string, CloseCallback callback) {
+void Server::Close(const std::string& fs_url_as_string,
+                   CloseCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto common = ParseFileSystemURL(moniker_map_, prefix_map_, fs_url_as_string);
@@ -398,7 +478,45 @@ void Server::Close(std::string fs_url_as_string, CloseCallback callback) {
   std::move(callback).Run(ENOTSUP);
 }
 
-void Server::Open(std::string fs_url_as_string, OpenCallback callback) {
+void Server::MkDir(const fusebox_staging::MkDirRequestProto& request_proto,
+                   MkDirCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::string fs_url_as_string = request_proto.has_file_system_url()
+                                     ? request_proto.file_system_url()
+                                     : std::string();
+
+  auto common = ParseFileSystemURL(moniker_map_, prefix_map_, fs_url_as_string);
+  if (common.error_code != base::File::Error::FILE_OK) {
+    fusebox_staging::MkDirResponseProto response_proto;
+    response_proto.set_posix_error_code(FileErrorToErrno(common.error_code));
+    std::move(callback).Run(response_proto);
+    return;
+  } else if (common.read_only) {
+    fusebox_staging::MkDirResponseProto response_proto;
+    response_proto.set_posix_error_code(EACCES);
+    std::move(callback).Run(response_proto);
+    return;
+  }
+
+  auto outer_callback = base::BindPostTask(
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(&RunMkDirCallback, std::move(callback), common.fs_context,
+                     common.fs_url, common.read_only));
+
+  constexpr bool exclusive = true;
+  constexpr bool recursive = false;
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(
+                         &storage::FileSystemOperationRunner::CreateDirectory),
+                     // Unretained is safe: context owns operation runner.
+                     base::Unretained(common.fs_context->operation_runner()),
+                     common.fs_url, exclusive, recursive,
+                     std::move(outer_callback)));
+}
+
+void Server::Open(const std::string& fs_url_as_string, OpenCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto common = ParseFileSystemURL(moniker_map_, prefix_map_, fs_url_as_string);
@@ -412,7 +530,7 @@ void Server::Open(std::string fs_url_as_string, OpenCallback callback) {
   std::move(callback).Run(ENOTSUP);
 }
 
-void Server::Read(std::string fs_url_as_string,
+void Server::Read(const std::string& fs_url_as_string,
                   int64_t offset,
                   int32_t length,
                   ReadCallback callback) {
@@ -430,7 +548,7 @@ void Server::Read(std::string fs_url_as_string,
                      static_cast<int64_t>(length), std::move(callback)));
 }
 
-void Server::ReadDir2(ReadDir2RequestProto request_proto,
+void Server::ReadDir2(const ReadDir2RequestProto& request_proto,
                       ReadDir2Callback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -477,7 +595,7 @@ void Server::ReadDir2(ReadDir2RequestProto request_proto,
   read_dir_2_map_.insert({cookie, ReadDir2MapEntry(std::move(callback))});
 
   auto outer_callback = base::BindPostTask(
-      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindRepeating(&Server::OnReadDirectory,
                           weak_ptr_factory_.GetWeakPtr(), common.fs_context,
                           common.read_only, cookie));
@@ -492,7 +610,42 @@ void Server::ReadDir2(ReadDir2RequestProto request_proto,
           common.fs_url, std::move(outer_callback)));
 }
 
-void Server::Stat(std::string fs_url_as_string, StatCallback callback) {
+void Server::RmDir(const fusebox_staging::RmDirRequestProto& request_proto,
+                   RmDirCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::string fs_url_as_string = request_proto.has_file_system_url()
+                                     ? request_proto.file_system_url()
+                                     : std::string();
+
+  auto common = ParseFileSystemURL(moniker_map_, prefix_map_, fs_url_as_string);
+  if (common.error_code != base::File::Error::FILE_OK) {
+    fusebox_staging::RmDirResponseProto response_proto;
+    response_proto.set_posix_error_code(FileErrorToErrno(common.error_code));
+    std::move(callback).Run(response_proto);
+    return;
+  } else if (common.read_only) {
+    fusebox_staging::RmDirResponseProto response_proto;
+    response_proto.set_posix_error_code(EACCES);
+    std::move(callback).Run(response_proto);
+    return;
+  }
+
+  auto outer_callback =
+      base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
+                         base::BindOnce(&RunRmDirCallback, std::move(callback),
+                                        common.fs_context));
+
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(
+                         &storage::FileSystemOperationRunner::RemoveDirectory),
+                     // Unretained is safe: context owns operation runner.
+                     base::Unretained(common.fs_context->operation_runner()),
+                     common.fs_url, std::move(outer_callback)));
+}
+
+void Server::Stat(const std::string& fs_url_as_string, StatCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto common = ParseFileSystemURL(moniker_map_, prefix_map_, fs_url_as_string);
@@ -513,7 +666,7 @@ void Server::Stat(std::string fs_url_as_string, StatCallback callback) {
       storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED;
 
   auto outer_callback =
-      base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
+      base::BindPostTask(base::SequencedTaskRunner::GetCurrentDefault(),
                          base::BindOnce(&RunStatCallback, std::move(callback),
                                         common.fs_context, common.read_only));
 
@@ -526,7 +679,7 @@ void Server::Stat(std::string fs_url_as_string, StatCallback callback) {
           common.fs_url, metadata_fields, std::move(outer_callback)));
 }
 
-void Server::ListStorages(ListStoragesRequestProto request,
+void Server::ListStorages(const ListStoragesRequestProto& request,
                           ListStoragesCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -603,7 +756,7 @@ void Server::ReplyToMakeTempDir(base::ScopedTempDir scoped_temp_dir,
                           underlying_file_path.AsUTF8Unsafe());
 }
 
-void Server::RemoveTempDir(std::string fusebox_file_path) {
+void Server::RemoveTempDir(const std::string& fusebox_file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto iter = temp_subdir_map_.find(fusebox_file_path);

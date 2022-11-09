@@ -28,11 +28,22 @@ BASE_FEATURE(kDocumentsProviderUnknownSizeFeature,
              "ArcDocumentsProviderUnknownSize",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether an Android VPN (ArcHostVpn) should be started when a host
+// VPN is started.
+BASE_FEATURE(kEnableArcHostVpn,
+             "ArcHostVpn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether files shared to ARC Nearby Share are shared through the
 // FuseBox filesystem, instead of the default method (through a temporary path
 // managed by file manager).
 BASE_FEATURE(kEnableArcNearbyShareFuseBox,
              "ArcNearbyShareFuseBox",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether WebView Zygote is lazily initialized in ARC.
+BASE_FEATURE(kEnableLazyWebViewInit,
+             "LazyWebViewInit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether crosvm for ARCVM does per-VM core scheduling on devices with
@@ -128,6 +139,12 @@ const base::FeatureParam<int> kGuestZramSize{&kGuestZram, "size", 0};
 // Controls swappiness for the ARCVM guest.
 const base::FeatureParam<int> kGuestZramSwappiness{&kGuestZram, "swappiness",
                                                    0};
+
+// Enables/disables ghost when user launch ARC app from shelf/launcher when
+// App already ready for launch.
+BASE_FEATURE(kInstantResponseWindowOpen,
+             "ArcInstantResponseWindowOpen",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables/disables mlock() of guest memory for ARCVM.
 // Often used in combination with kGuestZram.

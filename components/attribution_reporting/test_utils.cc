@@ -5,10 +5,47 @@
 #include "components/attribution_reporting/test_utils.h"
 
 #include <ostream>
+#include <tuple>
 
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/source_registration.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace attribution_reporting {
+
+namespace {
+
+std::ostream& WriteFilterValues(std::ostream& out,
+                                const FilterValues& filter_values) {
+  out << "{";
+
+  const char* outer_separator = "";
+  for (const auto& [filter, values] : filter_values) {
+    out << outer_separator << filter << "=[";
+
+    const char* inner_separator = "";
+    for (const auto& value : values) {
+      out << inner_separator << value;
+      inner_separator = ", ";
+    }
+
+    out << "]";
+    outer_separator = ", ";
+  }
+
+  return out << "}";
+}
+
+template <typename T>
+std::ostream& WriteOptional(std::ostream& out, const absl::optional<T>& value) {
+  if (value)
+    return out << *value;
+
+  return out << "null";
+}
+
+}  // namespace
 
 bool operator==(const AggregationKeys& a, const AggregationKeys& b) {
   return a.keys() == b.keys();
@@ -24,6 +61,48 @@ std::ostream& operator<<(std::ostream& out,
     separator = ", ";
   }
   return out << "}";
+}
+
+bool operator==(const FilterData& a, const FilterData& b) {
+  return a.filter_values() == b.filter_values();
+}
+
+std::ostream& operator<<(std::ostream& out, const FilterData& filter_data) {
+  return WriteFilterValues(out, filter_data.filter_values());
+}
+
+bool operator==(const Filters& a, const Filters& b) {
+  return a.filter_values() == b.filter_values();
+}
+
+std::ostream& operator<<(std::ostream& out, const Filters& filters) {
+  return WriteFilterValues(out, filters.filter_values());
+}
+
+bool operator==(const SourceRegistration& a, const SourceRegistration& b) {
+  auto tie = [](const SourceRegistration& s) {
+    return std::make_tuple(
+        s.source_event_id(), s.destination(), s.reporting_origin(), s.expiry(),
+        s.event_report_window(), s.aggregatable_report_window(), s.priority(),
+        s.filter_data(), s.debug_key(), s.aggregation_keys(),
+        s.debug_reporting());
+  };
+  return tie(a) == tie(b);
+}
+
+std::ostream& operator<<(std::ostream& out, const SourceRegistration& s) {
+  out << "{source_event_id=" << s.source_event_id()
+      << ",destination=" << s.destination()
+      << ",reporting_origin=" << s.reporting_origin() << ",expiry=";
+  WriteOptional(out, s.expiry()) << ",event_report_window=";
+  WriteOptional(out, s.event_report_window()) << ",aggregatable_report_window=";
+  WriteOptional(out, s.aggregatable_report_window())
+      << ",priority=" << s.priority() << ",filter_data=" << s.filter_data()
+      << ",debug_key=";
+  WriteOptional(out, s.debug_key())
+      << ",aggregation_keys=" << s.aggregation_keys()
+      << ",debug_reporting=" << s.debug_reporting() << "}";
+  return out;
 }
 
 }  // namespace attribution_reporting

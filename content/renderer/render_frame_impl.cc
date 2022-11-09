@@ -55,6 +55,7 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/debug_utils.h"
+#include "content/common/features.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.mojom.h"
 #include "content/common/main_frame_counter.h"
@@ -160,6 +161,7 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/frame/view_transition_state.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
@@ -2571,6 +2573,8 @@ void RenderFrameImpl::CommitNavigation(
   DCHECK(navigation_client_impl_);
   DCHECK(!blink::IsRendererDebugURL(common_params->url));
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
+  // `origin_to_commit` must only be set on failed navigations.
+  CHECK(!commit_params->origin_to_commit);
   LogCommitHistograms(commit_params->commit_sent, is_main_frame_);
 
   AssertNavigationCommits assert_navigation_commits(
@@ -2606,6 +2610,8 @@ void RenderFrameImpl::CommitNavigation(
                            navigation_params.get());
   navigation_params->policy_container =
       ToWebPolicyContainer(std::move(policy_container));
+  navigation_params->view_transition_state =
+      std::move(commit_params->view_transition_state);
 
   if (frame_->IsOutermostMainFrame() && permissions_policy) {
     navigation_params->permissions_policy_override = permissions_policy;
@@ -2858,6 +2864,8 @@ void RenderFrameImpl::CommitFailedNavigation(
                "RenderFrameImpl::CommitFailedNavigation", "id", routing_id_);
   DCHECK(navigation_client_impl_);
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
+  // `origin_to_commit` must be set on failed navigations.
+  CHECK(commit_params->origin_to_commit);
 
   AssertNavigationCommits assert_navigation_commits(
       this, kMayReplaceInitialEmptyDocument);
@@ -2975,6 +2983,9 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   navigation_params->policy_container =
       ToWebPolicyContainer(std::move(policy_container));
+
+  navigation_params->view_transition_state =
+      std::move(commit_params->view_transition_state);
 
   // The error page load (not to confuse with a failed load of original page)
   // was not initiated through BeginNavigation, therefore
@@ -5132,6 +5143,12 @@ void RenderFrameImpl::BeginNavigation(
       OpenURL(std::move(info));
       return;  // Suppress the load here.
     }
+  }
+
+  if (IsTopLevelNavigation(frame_) && url.SchemeIsHTTPOrHTTPS() &&
+      !url.is_empty() &&
+      base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
+    frame_->WillPotentiallyStartNavigation(url);
   }
 
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab) {

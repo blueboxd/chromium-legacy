@@ -175,7 +175,7 @@ export class SearchPageElement extends SearchPageElementBase {
      * set its value.
      * @type {number}
      */
-    this.searchTimoutInMs_ = 500;
+    this.searchTimoutInMs_ = 250;
   }
 
   ready() {
@@ -189,6 +189,14 @@ export class SearchPageElement extends SearchPageElementBase {
     this.shadowRoot.querySelector('#descriptionText')
         .addEventListener(
             'input', (event) => this.checkForShowQuestionnaire_(event));
+
+    window.addEventListener('message', (e) => {
+      const message = e.data;
+      if (message.iframeHeight) {
+        this.style.setProperty(
+            '--iframe-height', message.iframeHeight.toString() + 'px');
+      }
+    }, false);
   }
 
   /**

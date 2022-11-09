@@ -65,8 +65,8 @@ CardUnmaskPromptViews::~CardUnmaskPromptViews() {
 }
 
 void CardUnmaskPromptViews::Show() {
-  // Don't show the bubble if the web contents are or will soon be destroyed. 
-  // (e.g. when closing the platform authentication tab that usually triggers 
+  // Don't show the bubble if the web contents are or will soon be destroyed.
+  // (e.g. when closing the platform authentication tab that usually triggers
   // the unmask flow as a fallback).
   if (!web_contents_ || web_contents_->IsBeingDestroyed()) {
     delete this;
@@ -123,23 +123,28 @@ void CardUnmaskPromptViews::GotVerificationResult(
       SetRetriableErrorMessage(error_message);
     } else {
       SetRetriableErrorMessage(std::u16string());
+
+      // Remove all child views. Since this is a permanent error we do not
+      // intend to return to a previous state.
       overlay_->RemoveAllChildViews();
 
-      // The label of the overlay will now show the error in red.
+      // Create and add the error icon.
+      overlay_->AddChildView(
+          std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
+              kBrowserToolsErrorIcon, ui::kColorAlertHighSeverity)));
+
+      // Create and add the label of the overlay, and show the error in red.
       auto error_label = std::make_unique<views::Label>(error_message);
       views::SetCascadingColorProviderColor(error_label.get(),
                                             views::kCascadingLabelEnabledColor,
                                             ui::kColorAlertHighSeverity);
+      error_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
       error_label->SetMultiLine(true);
 
-      // Replace the throbber with a warning icon. Since this is a permanent
-      // error we do not intend to return to a previous state.
-      auto error_icon =
-          std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-              kBrowserToolsErrorIcon, ui::kColorAlertHighSeverity));
-
-      overlay_->AddChildView(std::move(error_icon));
       overlay_->AddChildView(std::move(error_label));
+
+      // Re-layout to correctly format the views on the overlay.
+      overlay_->Layout();
 
       // If it is a virtual card retrieval failure, we will need to update the
       // window title.
@@ -347,7 +352,19 @@ void CardUnmaskPromptViews::InitIfNecessary() {
     year_input_->SetVisible(false);
   }
 
-  std::unique_ptr<views::Textfield> cvc_input = CreateCvcTextfield();
+  std::unique_ptr<views::Textfield> cvc_input =
+      std::make_unique<views::Textfield>();
+  // Only put a placeholder text if there is no challenge option present. A
+  // challenge option being present indicates we are unmasking a virtual card
+  // CVC.
+  if (!controller_->IsChallengeOptionPresent()) {
+    cvc_input->SetPlaceholderText(
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
+  }
+  cvc_input->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_DIALOG_ACCESSIBLE_NAME_SECURITY_CODE));
+  cvc_input->SetDefaultWidthInChars(8);
+  cvc_input->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
   cvc_input->set_controller(this);
   cvc_input_ = input_row->AddChildView(std::move(cvc_input));
 

@@ -14,6 +14,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -45,6 +46,8 @@ namespace autofill {
 class AutofillField;
 class CreditCard;
 class FormEventLoggerBase;
+
+struct FormGroupFillingStats;
 
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
@@ -872,6 +875,33 @@ class AutofillMetrics {
     kMaxValue = kOtpMismatchError,
   };
 
+  // The filling status of an autofilled field.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class FieldFillingStatus {
+    // The field was filled and accepted.
+    kAccepted = 0,
+    // The field was filled and corrected to a value of the same type.
+    kCorrectedToSameType = 1,
+    // The field was filled and corrected to a value of a different type.
+    kCorrectedToDifferentType = 2,
+    // The field was filled and corrected to a value of an unknown type.
+    kCorrectedToUnknownType = 3,
+    // The field was filled and the value was cleared afterwards.
+    kCorrectedToEmpty = 4,
+    // The field was manually filled to a value of the same type as the
+    // field was predicted to.
+    kManuallyFilledToSameType = 5,
+    // The field was manually filled to a value of a different type as the field
+    // was predicted to.
+    kManuallyFilledToDifferentType = 6,
+    // The field was manually filled to a value of an unknown type.
+    kManuallyFilledToUnknownType = 7,
+    // The field was left empty.
+    kLeftEmpty = 8,
+    kMaxValue = kLeftEmpty
+  };
+
   // Utility class for determining the seamlessness of a credit card fill.
   class CreditCardSeamlessness {
    public:
@@ -1397,6 +1427,12 @@ class AutofillMetrics {
       size_t num_edited_autofilled_fields,
       bool observed_submission);
 
+  // Logs the `filling_stats` of the fields within a `form_type`. The filling
+  // status consistent of the number of accepted, corrected or and unfilled
+  // fields.
+  static void LogFieldFillingStats(FormType form_type,
+                                   const FormGroupFillingStats& filling_stats);
+
   // This should be called each time a server response is parsed for a form.
   static void LogServerResponseHasDataForForm(bool has_data);
 
@@ -1429,12 +1465,12 @@ class AutofillMetrics {
       size_t num_frames);
 
   struct LogCreditCardSeamlessnessParam {
-    const FormEventLoggerBase& event_logger;
-    const FormStructure& form;
-    const AutofillField& field;
-    const base::flat_set<FieldGlobalId>& newly_filled_fields;
-    const base::flat_set<FieldGlobalId>& safe_fields;
-    ukm::builders::Autofill_CreditCardFill& builder;
+    const raw_ref<const FormEventLoggerBase> event_logger;
+    const raw_ref<const FormStructure> form;
+    const raw_ref<const AutofillField> field;
+    const raw_ref<const base::flat_set<FieldGlobalId>> newly_filled_fields;
+    const raw_ref<const base::flat_set<FieldGlobalId>> safe_fields;
+    const raw_ref<ukm::builders::Autofill_CreditCardFill> builder;
   };
 
   // Logs several metrics about seamlessness. These are qualitative and bitmask

@@ -40,6 +40,12 @@ if (is_fuchsia) {
   }
 }
 
+if (enable_pkeys && is_debug) {
+  config("no_stack_protector") {
+    cflags = [ "-fno-stack-protector" ]
+  }
+}
+
 component("partition_alloc") {
   sources = [
     "address_pool_manager.cc",
@@ -110,8 +116,6 @@ component("partition_alloc") {
     "partition_alloc_base/numerics/safe_math_arm_impl.h",
     "partition_alloc_base/numerics/safe_math_clang_gcc_impl.h",
     "partition_alloc_base/numerics/safe_math_shared_impl.h",
-    "partition_alloc_base/pkey.cc",
-    "partition_alloc_base/pkey.h",
     "partition_alloc_base/posix/eintr_wrapper.h",
     "partition_alloc_base/rand_util.cc",
     "partition_alloc_base/rand_util.h",
@@ -158,6 +162,8 @@ component("partition_alloc") {
     "partition_tag_bitmap.h",
     "partition_tag_types.h",
     "partition_tls.h",
+    "pkey.cc",
+    "pkey.h",
     "random.cc",
     "random.h",
     "reservation_offset_table.cc",
@@ -351,6 +357,12 @@ component("partition_alloc") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_speed" ]
   }
+
+  # We want to be able to test pkey mode without access to the default pkey.
+  # This is incompatible with stack protectors since the TLS won't be pkey-tagged.
+  if (enable_pkeys && is_debug) {
+    configs += [ ":no_stack_protector" ]
+  }
 }
 
 buildflag_header("partition_alloc_buildflags") {
@@ -364,6 +376,8 @@ buildflag_header("partition_alloc_buildflags") {
       enable_backup_ref_ptr_slow_checks && _enable_backup_ref_ptr_support
   _enable_dangling_raw_ptr_checks =
       enable_dangling_raw_ptr_checks && _enable_backup_ref_ptr_support
+  _enable_dangling_raw_ptr_perf_experiment =
+      enable_dangling_raw_ptr_perf_experiment && _enable_dangling_raw_ptr_checks
 
   # MTECheckedPtr is exclusive against BRP (asserted at declaration).
   # MTECheckedPtr requires 64-bit pointers (not available in NaCl).
@@ -395,6 +409,7 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_BACKUP_REF_PTR_SUPPORT=$_enable_backup_ref_ptr_support",
     "ENABLE_BACKUP_REF_PTR_SLOW_CHECKS=$_enable_backup_ref_ptr_slow_checks",
     "ENABLE_DANGLING_RAW_PTR_CHECKS=$_enable_dangling_raw_ptr_checks",
+    "ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT=$_enable_dangling_raw_ptr_perf_experiment",
     "PUT_REF_COUNT_IN_PREVIOUS_SLOT=$_put_ref_count_in_previous_slot",
     "ENABLE_GWP_ASAN_SUPPORT=$_enable_gwp_asan_support",
 

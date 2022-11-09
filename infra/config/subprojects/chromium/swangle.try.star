@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//lib/builders.star", "cpu", "goma", "os")
+load("//lib/builders.star", "cpu", "goma", "os", "reclient")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
 
@@ -27,6 +27,8 @@ try_.defaults.set(
     goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_DEFAULT,
     pool = "luci.chromium.try",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
     subproject_list_view = "luci.chromium.try",
     task_template_canary_percentage = 5,
@@ -55,17 +57,20 @@ swangle_linux_builder(
     pool = "luci.chromium.swangle.chromium.linux.x64.try",
     executable = "recipe:chromium_trybot",
     execution_timeout = 6 * time.hour,
+    goma_backend = None,
 )
 
 swangle_linux_builder(
     name = "linux-swangle-try-tot-swiftshader-x64",
     pool = "luci.chromium.swangle.sws.linux.x64.try",
+    goma_backend = None,
 )
 
 swangle_linux_builder(
     name = "linux-swangle-try-x64",
     pool = "luci.chromium.swangle.deps.linux.x64.try",
     executable = "recipe:chromium_trybot",
+    goma_backend = None,
 )
 
 swangle_mac_builder(

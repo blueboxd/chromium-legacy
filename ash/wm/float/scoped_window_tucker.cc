@@ -22,7 +22,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -30,13 +29,8 @@ namespace ash {
 
 namespace {
 
-// The size of the tuck handle.
 constexpr int kTuckHandleWidth = 20;
 constexpr int kTuckHandleHeight = 92;
-
-// Extended hit-target region to make the tuck handle easier to tap.
-constexpr int kHorizontalTouchExtend = 16;
-constexpr int kVerticalTouchExtend = 8;
 
 // The distance from the edge of the tucked window to the edge of the screen
 // during the bounce.
@@ -175,24 +169,21 @@ ScopedWindowTucker::ScopedWindowTucker(aura::Window* window, bool left)
                           base::Unretained(this)),
       left));
   tuck_handle_widget_->Show();
-  tuck_handle_widget_->GetNativeWindow()->SetEventTargeter(
-      std::make_unique<wm::EasyResizeWindowTargeter>(
-          gfx::Insets(),
-          gfx::Insets::VH(-kHorizontalTouchExtend, -kVerticalTouchExtend)));
 
-  // Activate the second most recent window if there is one, otherwise activate
-  // the app list.
+  // Activate the most recent window that is not minimized and not the tucked
+  // `window_`, otherwise activate the app list.
   auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-  aura::Window* window_to_activate;
-  if (mru_windows.size() > 1u) {
-    DCHECK_EQ(window_, mru_windows.front());
-    window_to_activate = mru_windows[1];
-  } else {
-    window_to_activate = Shell::Get()->app_list_controller()->GetWindow();
-    DCHECK(window_to_activate);
-  }
-
+  auto app_window_it =
+      base::ranges::find_if(mru_windows, [this](aura::Window* w) {
+        DCHECK(WindowState::Get(w));
+        return w != window_ && !WindowState::Get(w)->IsMinimized();
+      });
+  aura::Window* window_to_activate =
+      app_window_it == mru_windows.end()
+          ? Shell::Get()->app_list_controller()->GetWindow()
+          : *app_window_it;
+  DCHECK(window_to_activate);
   wm::ActivateWindow(window_to_activate);
 
   Shell::Get()->activation_client()->AddObserver(this);

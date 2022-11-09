@@ -182,7 +182,9 @@ const char kDisableBackgroundNetworking[] = "disable-background-networking";
 const char kDisableComponentExtensionsWithBackgroundPages[] =
     "disable-component-extensions-with-background-pages";
 
+#if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 const char kDisableComponentUpdate[] = "disable-component-update";
+#endif
 
 // Disables installation of default apps on first run. This is used during
 // automated testing.
@@ -500,6 +502,11 @@ const char kRestoreLastSession[] = "restore-last-session";
 // (with a directory of sub-resources). Enable only saving pages as MHTML.
 // See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[] = "save-page-as-mhtml";
+
+// This flag sets the checkboxes for sharing audio during screen capture to off
+// by default. It is primarily intended to be used for tests.
+const char kScreenCaptureAudioDefaultUnchecked[] =
+    "screen-capture-audio-default-unchecked";
 
 // Does not show an infobar when an extension attaches to a page using
 // chrome.debugger page. Required to attach to extension background pages.

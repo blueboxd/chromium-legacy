@@ -74,7 +74,9 @@ extern const char kDisableAutoMaximizeForTests[];
 extern const char kDisableBackgroundNetworking[];
 extern const char kDisableClientSidePhishingDetection[];
 extern const char kDisableComponentExtensionsWithBackgroundPages[];
+#if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 extern const char kDisableComponentUpdate[];
+#endif
 extern const char kDisableDefaultApps[];
 extern const char kDisableDomainReliability[];
 extern const char kDisableExtensions[];
@@ -155,6 +157,7 @@ extern const char kRemoteDebuggingTargets[];
 extern const char kRestart[];
 extern const char kRestoreLastSession[];
 extern const char kSavePageAsMHTML[];
+extern const char kScreenCaptureAudioDefaultUnchecked[];
 extern const char kSilentDebuggerExtensionAPI[];
 extern const char kSilentLaunch[];
 extern const char kSimulateCriticalUpdate[];

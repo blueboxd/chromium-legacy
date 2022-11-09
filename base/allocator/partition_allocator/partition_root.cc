@@ -24,6 +24,7 @@
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
+#include "base/allocator/partition_allocator/pkey.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
@@ -635,6 +636,16 @@ void DCheckIfManagedByPartitionAllocBRPPool(uintptr_t address) {
 }
 #endif
 
+#if BUILDFLAG(ENABLE_PKEYS)
+void PartitionAllocPkeyInit(int pkey) {
+  PkeySettings::settings.enabled = true;
+  PartitionAddressSpace::InitPkeyPool(pkey);
+  // Call TagGlobalsWithPkey last since we might not have write permissions to
+  // to memory tagged with `pkey` at this point.
+  TagGlobalsWithPkey(pkey);
+}
+#endif  // BUILDFLAG(ENABLE_PKEYS)
+
 }  // namespace internal
 
 template <bool thread_safe>
@@ -712,9 +723,15 @@ void PartitionRoot<thread_safe>::DestructForTesting() {
   auto* curr = first_extent;
   while (curr != nullptr) {
     auto* next = curr->next;
+    uintptr_t address = SuperPagesBeginFromExtent(curr);
+    size_t size =
+        internal::kSuperPageSize * curr->number_of_consecutive_super_pages;
+#if !defined(PA_HAS_64_BITS_POINTERS)
+    internal::AddressPoolManager::GetInstance().MarkUnused(pool_handle, address,
+                                                           size);
+#endif
     internal::AddressPoolManager::GetInstance().UnreserveAndDecommit(
-        pool_handle, SuperPagesBeginFromExtent(curr),
-        internal::kSuperPageSize * curr->number_of_consecutive_super_pages);
+        pool_handle, address, size);
     curr = next;
   }
 }
@@ -754,7 +771,8 @@ void ReserveBackupRefPtrGuardRegionIfNeeded() {
   for (size_t i = 0; i < 4; ++i) {
     [[maybe_unused]] uintptr_t allocated_address =
         AllocPages(requested_address, alignment, alignment,
-                   PageAccessibilityConfiguration::kInaccessible,
+                   PageAccessibilityConfiguration(
+                       PageAccessibilityConfiguration::kInaccessible),
                    PageTag::kPartitionAlloc);
     requested_address += alignment;
   }
@@ -825,6 +843,14 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     // brp_enabled() is not supported in the configurable pool because
     // BRP requires objects to be in a different Pool.
     PA_CHECK(!(flags.use_configurable_pool && brp_enabled()));
+
+#if BUILDFLAG(ENABLE_PKEYS)
+    // BRP and pkey mode use different pools, so they can't be enabled at the
+    // same time.
+    PA_CHECK(opts.pkey == internal::kDefaultPkey ||
+             opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kDisabled);
+    flags.pkey = opts.pkey;
+#endif
 
     // Ref-count messes up alignment needed for AlignedAlloc, making this
     // option incompatible. However, except in the
@@ -921,6 +947,12 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
 #if BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT)
   PartitionAllocMallocInitOnce();
 #endif
+
+#if BUILDFLAG(ENABLE_PKEYS)
+  if (flags.pkey != internal::kDefaultPkey) {
+    internal::PartitionAllocPkeyInit(flags.pkey);
+  }
+#endif
 }
 
 template <bool thread_safe>
@@ -1002,6 +1034,7 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
 
   // bucket->slot_size is the currently committed size of the allocation.
   size_t current_slot_size = slot_span->bucket->slot_size;
+  size_t current_usable_size = slot_span->GetUsableSize(this);
   uintptr_t slot_start = SlotSpan::ToSlotSpanStart(slot_span);
   // This is the available part of the reservation up to which the new
   // allocation can grow.
@@ -1055,6 +1088,16 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
   IncreaseTotalSizeOfAllocatedBytes(reinterpret_cast<uintptr_t>(slot_span),
                                     slot_span->bucket->slot_size, raw_size);
 
+  // Always record in-place realloc() as free()+malloc() pair.
+  //
+  // The early returns above (`return false`) will fall back to free()+malloc(),
+  // so this is consistent.
+  auto* thread_cache = GetOrCreateThreadCache();
+  if (ThreadCache::IsValid(thread_cache)) {
+    thread_cache->RecordDeallocation(current_usable_size);
+    thread_cache->RecordAllocation(slot_span->GetUsableSize(this));
+  }
+
 #if BUILDFLAG(PA_DCHECK_IS_ON)
   // Write a new trailing cookie.
   if (flags.allow_cookie) {
@@ -1079,8 +1122,10 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
   // new size is a significant percentage smaller. We could do the same if we
   // determine it is a win.
   if (AllocationCapacityFromRequestedSize(new_size) !=
-      AllocationCapacityFromSlotStart(slot_start))
+      AllocationCapacityFromSlotStart(slot_start)) {
     return false;
+  }
+  size_t current_usable_size = slot_span->GetUsableSize(this);
 
   // Trying to allocate |new_size| would use the same amount of underlying
   // memory as we're already using, so re-use the allocation after updating
@@ -1112,6 +1157,16 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
     }
 #endif  // BUILDFLAG(PA_DCHECK_IS_ON)
   }
+
+  // Always record a realloc() as a free() + malloc(), even if it's in
+  // place. When we cannot do it in place (`return false` above), the allocator
+  // falls back to free()+malloc(), so this is consistent.
+  ThreadCache* thread_cache = GetOrCreateThreadCache();
+  if (PA_LIKELY(ThreadCache::IsValid(thread_cache))) {
+    thread_cache->RecordDeallocation(current_usable_size);
+    thread_cache->RecordAllocation(slot_span->GetUsableSize(this));
+  }
+
   return object;
 }
 
@@ -1411,9 +1466,7 @@ void PartitionRoot<thread_safe>::ResetBookkeepingForTesting() {
 }
 
 template <>
-uintptr_t PartitionRoot<internal::ThreadSafe>::MaybeInitThreadCacheAndAlloc(
-    uint16_t bucket_index,
-    size_t* slot_size) {
+ThreadCache* PartitionRoot<internal::ThreadSafe>::MaybeInitThreadCache() {
   auto* tcache = ThreadCache::Get();
   // See comment in `EnableThreadCacheIfSupport()` for why this is an acquire
   // load.
@@ -1426,7 +1479,7 @@ uintptr_t PartitionRoot<internal::ThreadSafe>::MaybeInitThreadCacheAndAlloc(
     //    be us, in which case we are re-entering and should not create a thread
     //    cache. If it is not us, then this merely delays thread cache
     //    construction a bit, which is not an issue.
-    return 0;
+    return nullptr;
   }
 
   // There is no per-thread ThreadCache allocated here yet, and this partition
@@ -1449,10 +1502,7 @@ uintptr_t PartitionRoot<internal::ThreadSafe>::MaybeInitThreadCacheAndAlloc(
   tcache = ThreadCache::Create(this);
   thread_caches_being_constructed_.fetch_sub(1, std::memory_order_relaxed);
 
-  // Cache is created empty, but at least this will trigger batch fill, which
-  // may be useful, and we are already in a slow path anyway (first small
-  // allocation of this thread).
-  return tcache->GetFromCache(bucket_index, slot_size);
+  return tcache;
 }
 
 template <>

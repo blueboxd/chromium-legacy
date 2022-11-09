@@ -26,4 +26,10 @@ GURL DataSource::GetUrlAfterRedirects() const {
   return GURL();
 }
 
+void DataSource::OnBufferingHaveEnough(bool must_cancel_netops) {}
+
+void DataSource::OnMediaPlaybackRateChanged(double playback_rate) {}
+
+void DataSource::OnMediaIsPlaying() {}
+
 }  // namespace media

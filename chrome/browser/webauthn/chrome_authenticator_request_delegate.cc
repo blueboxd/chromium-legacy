@@ -25,6 +25,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -43,6 +44,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/core/security_state.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,6 +56,8 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
+#include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "extensions/common/constants.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -325,6 +329,22 @@ bool ChromeWebAuthenticationDelegate::OriginMayUseRemoteDesktopClientOverride(
       GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           webauthn::switches::kRemoteProxiedRequestsAllowedAdditionalOrigin)));
   return caller_origin == cmdline_allowed_origin;
+}
+
+bool ChromeWebAuthenticationDelegate::IsSecurityLevelAcceptableForWebAuthn(
+    content::RenderFrameHost* rfh) {
+  if (!base::FeatureList::IsEnabled(device::kDisableWebAuthnWithBrokenCerts)) {
+    return true;
+  }
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  SecurityStateTabHelper::CreateForWebContents(web_contents);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  security_state::SecurityLevel security_level = helper->GetSecurityLevel();
+  return security_level == security_state::SecurityLevel::SECURE ||
+         security_level ==
+             security_state::SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT;
 }
 
 absl::optional<std::string>
@@ -810,6 +830,11 @@ void ChromeAuthenticatorRequestDelegate::SetConditionalRequest(
   is_conditional_ = is_conditional;
 }
 
+void ChromeAuthenticatorRequestDelegate::SetCredentialIdFilter(
+    std::vector<device::PublicKeyCredentialDescriptor> credential_list) {
+  credential_filter_ = std::move(credential_list);
+}
+
 void ChromeAuthenticatorRequestDelegate::SetUserEntityForMakeCredentialRequest(
     const device::PublicKeyCredentialUserEntity& user_entity) {
   dialog_model()->set_user_entity(user_entity);
@@ -817,6 +842,21 @@ void ChromeAuthenticatorRequestDelegate::SetUserEntityForMakeCredentialRequest(
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
+  if (is_conditional_ && !credential_filter_.empty()) {
+    std::vector<device::DiscoverableCredentialMetadata> filtered_list;
+    for (auto& platform_credential :
+         data.recognized_platform_authenticator_credentials) {
+      for (auto& filter_credential : credential_filter_) {
+        if (platform_credential.cred_id == filter_credential.id) {
+          filtered_list.push_back(platform_credential);
+          break;
+        }
+      }
+    }
+    data.recognized_platform_authenticator_credentials =
+        std::move(filtered_list);
+  }
+
   if (g_observer) {
     g_observer->OnTransportAvailabilityEnumerated(this, &data);
   }

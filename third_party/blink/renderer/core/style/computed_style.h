@@ -546,23 +546,19 @@ class ComputedStyle : public ComputedStyleBase,
   const LengthBox& BorderImageSlices() const {
     return BorderImage().ImageSlices();
   }
-  void SetBorderImageSlices(const LengthBox&);
 
   // border-image-source
   StyleImage* BorderImageSource() const { return BorderImage().GetImage(); }
-  CORE_EXPORT void SetBorderImageSource(StyleImage*);
 
   // border-image-width
   const BorderImageLengthBox& BorderImageWidth() const {
     return BorderImage().BorderSlices();
   }
-  void SetBorderImageWidth(const BorderImageLengthBox&);
 
   // border-image-outset
   const BorderImageLengthBox& BorderImageOutset() const {
     return BorderImage().Outset();
   }
-  void SetBorderImageOutset(const BorderImageLengthBox&);
 
   // Border width properties.
   LayoutUnit BorderTopWidth() const {
@@ -764,32 +760,20 @@ class ComputedStyle : public ComputedStyleBase,
   const BorderImageLengthBox& MaskBoxImageOutset() const {
     return MaskBoxImageInternal().Outset();
   }
-  void SetMaskBoxImageOutset(const BorderImageLengthBox& outset) {
-    MutableMaskBoxImageInternal().SetOutset(outset);
-  }
 
   // -webkit-mask-box-image-slice
   const LengthBox& MaskBoxImageSlices() const {
     return MaskBoxImageInternal().ImageSlices();
-  }
-  void SetMaskBoxImageSlices(const LengthBox& slices) {
-    MutableMaskBoxImageInternal().SetImageSlices(slices);
   }
 
   // -webkit-mask-box-image-source
   StyleImage* MaskBoxImageSource() const {
     return MaskBoxImageInternal().GetImage();
   }
-  void SetMaskBoxImageSource(StyleImage* v) {
-    MutableMaskBoxImageInternal().SetImage(v);
-  }
 
   // -webkit-mask-box-image-width
   const BorderImageLengthBox& MaskBoxImageWidth() const {
     return MaskBoxImageInternal().BorderSlices();
-  }
-  void SetMaskBoxImageWidth(const BorderImageLengthBox& slices) {
-    MutableMaskBoxImageInternal().SetBorderSlices(slices);
   }
 
   // Inherited properties.
@@ -954,7 +938,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Counters.
   const CounterDirectiveMap* GetCounterDirectives() const;
-  CounterDirectiveMap& AccessCounterDirectives();
   const CounterDirectives GetCounterDirectives(
       const AtomicString& identifier) const;
   bool CounterDirectivesEqual(const ComputedStyle& other) const {
@@ -963,9 +946,6 @@ class ComputedStyle : public ComputedStyleBase,
     return base::ValuesEquivalent(CounterDirectivesInternal().get(),
                                   other.CounterDirectivesInternal().get());
   }
-  void ClearIncrementDirectives();
-  void ClearResetDirectives();
-  void ClearSetDirectives();
 
   bool IsDeprecatedWebkitBox() const {
     return Display() == EDisplay::kWebkitBox ||
@@ -1004,7 +984,6 @@ class ComputedStyle : public ComputedStyleBase,
                                    bool is_inherited_property) const;
 
   // Animations.
-  CORE_EXPORT CSSAnimationData& AccessAnimations();
   const CSSAnimationData* Animations() const {
     return AnimationsInternal().get();
   }
@@ -1013,10 +992,6 @@ class ComputedStyle : public ComputedStyleBase,
   const CSSTransitionData* Transitions() const {
     return TransitionsInternal().get();
   }
-  CORE_EXPORT CSSTransitionData& AccessTransitions();
-
-  // Callback selectors.
-  void AddCallbackSelector(const String& selector);
 
   // Non-property flags.
   CORE_EXPORT void SetTextAutosizingMultiplier(float);
@@ -1086,20 +1061,9 @@ class ComputedStyle : public ComputedStyleBase,
            MaskBoxImageInternal().HasImage();
   }
   StyleImage* MaskImage() const { return MaskInternal().GetImage(); }
-  FillLayer& AccessMaskLayers() { return MutableMaskInternal(); }
   const FillLayer& MaskLayers() const { return MaskInternal(); }
   const NinePieceImage& MaskBoxImage() const { return MaskBoxImageInternal(); }
   bool MaskBoxImageSlicesFill() const { return MaskBoxImageInternal().Fill(); }
-  void AdjustMaskLayers() {
-    if (MaskLayers().Next()) {
-      AccessMaskLayers().CullEmptyLayers();
-      AccessMaskLayers().FillUnsetProperties();
-    }
-  }
-  void SetMaskBoxImage(const NinePieceImage& b) { SetMaskBoxImageInternal(b); }
-  void SetMaskBoxImageSlicesFill(bool fill) {
-    MutableMaskBoxImageInternal().SetFill(fill);
-  }
 
   // Text-combine utility functions.
   bool HasTextCombine() const { return TextCombine() != ETextCombine::kNone; }
@@ -1291,7 +1255,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool BorderImageSlicesFill() const { return BorderImage().Fill(); }
 
-  void SetBorderImageSlicesFill(bool);
   const BorderValue BorderLeft() const {
     return BorderValue(BorderLeftStyle(), BorderLeftColor(),
                        BorderLeftWidthInternal());
@@ -2123,9 +2086,6 @@ class ComputedStyle : public ComputedStyleBase,
     return HasFilter() || HasClipPath() || MaskerResource();
   }
 
-  // Paint utility functions.
-  CORE_EXPORT void AddPaintImage(StyleImage*);
-
   // Returns true if any property has an <image> value that is a CSS paint
   // function that is using a given custom property.
   bool HasCSSPaintImagesUsingCustomProperty(
@@ -2259,14 +2219,7 @@ class ComputedStyle : public ComputedStyleBase,
   LayoutRectOutsets BoxDecorationOutsets() const;
 
   // Background utility functions.
-  FillLayer& AccessBackgroundLayers() { return MutableBackgroundInternal(); }
   const FillLayer& BackgroundLayers() const { return BackgroundInternal(); }
-  void AdjustBackgroundLayers() {
-    if (BackgroundLayers().Next()) {
-      AccessBackgroundLayers().CullEmptyLayers();
-      AccessBackgroundLayers().FillUnsetProperties();
-    }
-  }
   bool HasBackgroundRelatedColorReferencingCurrentColor() const {
     if (BackgroundColor().IsCurrentColor() ||
         InternalVisitedBackgroundColor().IsCurrentColor() ||
@@ -2334,15 +2287,6 @@ class ComputedStyle : public ComputedStyleBase,
     return DarkColorScheme() ? mojom::blink::ColorScheme::kDark
                              : mojom::blink::ColorScheme::kLight;
   }
-
-  // Helper method to adjust used values for color-scheme on the current
-  // computed color-scheme passed in as flags. The computed value should already
-  // have been set by the Apply* methods on the ColorScheme class, or as the
-  // initial value.
-  void SetUsedColorScheme(
-      ColorSchemeFlags flags,
-      mojom::blink::PreferredColorScheme preferred_color_scheme,
-      bool force_dark);
 
   bool GeneratesMarkerImage() const {
     return Display() == EDisplay::kListItem && ListStyleImage() &&
@@ -2682,8 +2626,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool ShouldForceColor(const StyleColor& unforced_color) const;
 
-  void ClearBackgroundImage();
-
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,
       UpdatePropertySpecificDifferencesRespectsTransformAnimation);
@@ -2787,6 +2729,17 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   }
 #endif  // DCHECK_IS_ON()
 
+  // animations
+  const CSSAnimationData* Animations() const {
+    return AnimationsInternal().get();
+  }
+  CORE_EXPORT CSSAnimationData& AccessAnimations() {
+    std::unique_ptr<CSSAnimationData>& animations = MutableAnimationsInternal();
+    if (!animations)
+      animations = std::make_unique<CSSAnimationData>();
+    return *animations;
+  }
+
   // backdrop-filter
   FilterOperations& MutableBackdropFilter() {
     DCHECK(BackdropFilterInternal().Get());
@@ -2796,6 +2749,43 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     DCHECK(BackdropFilterInternal().Get());
     if (BackdropFilterInternal()->operations_ != ops)
       MutableBackdropFilterInternal()->operations_ = ops;
+  }
+
+  // background
+  FillLayer& AccessBackgroundLayers() { return MutableBackgroundInternal(); }
+  void AdjustBackgroundLayers() {
+    if (BackgroundInternal().Next()) {
+      AccessBackgroundLayers().CullEmptyLayers();
+      AccessBackgroundLayers().FillUnsetProperties();
+    }
+  }
+  void ClearBackgroundImage();
+
+  // border-image-*
+  void SetBorderImageOutset(const BorderImageLengthBox& outset) {
+    if (BorderImage().Outset() == outset)
+      return;
+    MutableBorderImageInternal().SetOutset(outset);
+  }
+  void SetBorderImageSlices(const LengthBox& slices) {
+    if (BorderImage().ImageSlices() == slices)
+      return;
+    MutableBorderImageInternal().SetImageSlices(slices);
+  }
+  void SetBorderImageSlicesFill(bool fill) {
+    if (BorderImage().Fill() == fill)
+      return;
+    MutableBorderImageInternal().SetFill(fill);
+  }
+  void SetBorderImageSource(StyleImage* image) {
+    if (BorderImage().GetImage() == image)
+      return;
+    MutableBorderImageInternal().SetImage(image);
+  }
+  void SetBorderImageWidth(const BorderImageLengthBox& slices) {
+    if (BorderImage().BorderSlices() == slices)
+      return;
+    MutableBorderImageInternal().SetBorderSlices(slices);
   }
 
   // clip
@@ -2837,6 +2827,33 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   void SetHasAutoColumnWidth() {
     SetHasAutoColumnWidthInternal(true);
     SetColumnWidthInternal(0);
+  }
+
+  // counter-*
+  CounterDirectiveMap& AccessCounterDirectives() {
+    std::unique_ptr<CounterDirectiveMap>& map =
+        MutableCounterDirectivesInternal();
+    if (!map)
+      map = std::make_unique<CounterDirectiveMap>();
+    return *map;
+  }
+  void ClearIncrementDirectives() {
+    if (const auto& map = MutableCounterDirectivesInternal()) {
+      for (auto& value_pair : *map)
+        value_pair.value.ClearIncrement();
+    }
+  }
+  void ClearResetDirectives() {
+    if (const auto& map = MutableCounterDirectivesInternal()) {
+      for (auto& value_pair : *map)
+        value_pair.value.ClearReset();
+    }
+  }
+  void ClearSetDirectives() {
+    if (const auto& map = MutableCounterDirectivesInternal()) {
+      for (auto& value_pair : *map)
+        value_pair.value.ClearSet();
+    }
   }
 
   // cursor
@@ -2893,6 +2910,34 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
         SetMayHaveMargin();
       MutableMarginLeftInternal() = v;
     }
+  }
+
+  // mask
+  FillLayer& AccessMaskLayers() { return MutableMaskInternal(); }
+  void AdjustMaskLayers() {
+    if (MaskInternal().Next()) {
+      AccessMaskLayers().CullEmptyLayers();
+      AccessMaskLayers().FillUnsetProperties();
+    }
+  }
+
+  // mask-box-image-*
+  const NinePieceImage& MaskBoxImage() const { return MaskBoxImageInternal(); }
+  void SetMaskBoxImage(const NinePieceImage& b) { SetMaskBoxImageInternal(b); }
+  void SetMaskBoxImageOutset(const BorderImageLengthBox& outset) {
+    MutableMaskBoxImageInternal().SetOutset(outset);
+  }
+  void SetMaskBoxImageSlices(const LengthBox& slices) {
+    MutableMaskBoxImageInternal().SetImageSlices(slices);
+  }
+  void SetMaskBoxImageSlicesFill(bool fill) {
+    MutableMaskBoxImageInternal().SetFill(fill);
+  }
+  void SetMaskBoxImageSource(StyleImage* v) {
+    MutableMaskBoxImageInternal().SetImage(v);
+  }
+  void SetMaskBoxImageWidth(const BorderImageLengthBox& slices) {
+    MutableMaskBoxImageInternal().SetBorderSlices(slices);
   }
 
   // opacity
@@ -2983,6 +3028,18 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
         TransformOrigin(GetTransformOrigin().X(), GetTransformOrigin().Y(), f));
   }
 
+  // transitions
+  const CSSTransitionData* Transitions() const {
+    return TransitionsInternal().get();
+  }
+  CORE_EXPORT CSSTransitionData& AccessTransitions() {
+    std::unique_ptr<CSSTransitionData>& transitions =
+        MutableTransitionsInternal();
+    if (!transitions)
+      transitions = std::make_unique<CSSTransitionData>();
+    return *transitions;
+  }
+
   // -webkit-box-ordinal-group
   void SetBoxOrdinalGroup(unsigned ordinal_group) {
     SetBoxOrdinalGroupInternal(
@@ -3005,6 +3062,20 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   // zoom
   CORE_EXPORT bool SetEffectiveZoom(float);
 
+  /// CallbackSelector
+  void AddCallbackSelector(const String& selector) {
+    if (!CallbackSelectors().Contains(selector))
+      MutableCallbackSelectorsInternal().push_back(selector);
+  }
+
+  // PaintImage
+  void AddPaintImage(StyleImage* image) {
+    if (!PaintImagesInternal())
+      SetPaintImagesInternal(std::make_unique<PaintImages>());
+    MutablePaintImagesInternal()->push_back(image);
+  }
+
+  // ColorScheme and ForcedColors
   bool ShouldPreserveParentColor() const {
     return InForcedColorsMode() &&
            ForcedColorAdjust() == EForcedColorAdjust::kPreserveParentColor;
@@ -3017,6 +3088,15 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     // by default_value:"canvastext" in css_properties.json5.
     return StyleColor(DarkColorScheme() ? Color::kWhite : Color::kBlack);
   }
+
+  // Helper method to adjust used values for color-scheme on the current
+  // computed color-scheme passed in as flags. The computed value should
+  // already have been set by the Apply* methods on the ColorScheme class, or
+  // as the initial value.
+  void SetUsedColorScheme(
+      ColorSchemeFlags flags,
+      mojom::blink::PreferredColorScheme preferred_color_scheme,
+      bool force_dark);
 
  private:
   friend class ColorPropertyFunctions;

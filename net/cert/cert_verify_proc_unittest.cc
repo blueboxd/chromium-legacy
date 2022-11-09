@@ -482,6 +482,36 @@ class CertVerifyProcInternalTest
            verify_proc_type() == CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS;
   }
 
+  bool VerifyProcTypeIsMacAtMostOS10_14() const {
+#if BUILDFLAG(IS_MAC)
+    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
+        base::mac::IsAtMostOS10_14()) {
+      return true;
+    }
+#endif
+    return false;
+  }
+
+  bool VerifyProcTypeIsMacAtMostOS11() const {
+#if BUILDFLAG(IS_MAC)
+    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
+        base::mac::IsAtMostOS11()) {
+      return true;
+    }
+#endif
+    return false;
+  }
+
+  bool VerifyProcTypeIsIOSAtMostOS14() const {
+#if BUILDFLAG(IS_IOS)
+    if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
+        !base::ios::IsRunningOnIOS15OrLater()) {
+      return true;
+    }
+#endif
+    return false;
+  }
+
   CertVerifyProc* verify_proc() const { return verify_proc_.get(); }
 
  private:
@@ -4313,14 +4343,6 @@ class CertVerifyProcConstraintsTest : public CertVerifyProcInternalTest {
         &verify_result);
   }
 
-  int ExpectedRootConstraintError() {
-    if (VerifyProcTypeIsBuiltin() ||
-        verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
-      return OK;
-    }
-    return ERR_CERT_INVALID;
-  }
-
   int ExpectedIntermediateConstraintError() {
     if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID)
       return ERR_CERT_AUTHORITY_INVALID;
@@ -4345,7 +4367,12 @@ TEST_P(CertVerifyProcConstraintsTest, BaseCase) {
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotCaRoot) {
   chain_[3]->SetBasicConstraints(/*is_ca=*/false, /*path_len=*/-1);
 
-  EXPECT_THAT(Verify(), IsError(ExpectedRootConstraintError()));
+  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotCaIntermediate) {
@@ -4357,13 +4384,25 @@ TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotCaIntermediate) {
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen0Root) {
   chain_[3]->SetBasicConstraints(/*is_ca=*/true, /*path_len=*/0);
 
-  EXPECT_THAT(Verify(), IsError(ExpectedRootConstraintError()));
+  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS11() ||
+      VerifyProcTypeIsIOSAtMostOS14() ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen1Root) {
   chain_[3]->SetBasicConstraints(/*is_ca=*/true, /*path_len=*/1);
 
-  EXPECT_THAT(Verify(), IsError(ExpectedRootConstraintError()));
+  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS11() ||
+      VerifyProcTypeIsIOSAtMostOS14() ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen2Root) {
@@ -4397,7 +4436,12 @@ TEST_P(CertVerifyProcConstraintsTest, NameConstraintsNotMatchingRoot) {
   chain_[3]->SetNameConstraintsDnsNames(/*permitted_dns_names=*/{"example.org"},
                                         /*excluded_dns_names=*/{});
 
-  EXPECT_THAT(Verify(), IsError(ExpectedRootConstraintError()));
+  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, NameConstraintsNotMatchingIntermediate) {
@@ -4420,7 +4464,13 @@ TEST_P(CertVerifyProcConstraintsTest, NameConstraintsMatchingIntermediate) {
       /*permitted_dns_names=*/{"example.com"},
       /*excluded_dns_names=*/{});
 
-  EXPECT_THAT(Verify(), IsOk());
+  if (VerifyProcTypeIsMacAtMostOS10_14()) {
+    // It appears that Mac OS <= 10.14 does not implement Name Constraints, and
+    // this probably is failing due to unhandled critical extension.
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  } else {
+    EXPECT_THAT(Verify(), IsOk());
+  }
 }
 
 TEST(CertVerifyProcTest, RejectsPublicSHA1Leaves) {

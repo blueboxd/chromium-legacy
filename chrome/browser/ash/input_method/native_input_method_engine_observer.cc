@@ -662,6 +662,7 @@ void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
   UpdateCandidatesWindowSync(nullptr);
   ui::ime::InputMethodMenuManager::GetInstance()
       ->SetCurrentInputMethodMenuItemList({});
+  autocorrect_manager_->OnActivate(engine_id);
   assistive_suggester_->OnActivate(engine_id);
 
   // TODO(b/181077907): Always launch the IME service and let IME service decide
@@ -681,11 +682,12 @@ void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
 
   if (ShouldRouteToRuleBasedEngine(engine_id)) {
     const auto new_engine_id = NormalizeRuleBasedEngineId(engine_id);
-    ConnectToImeService(mojom::ConnectionTarget::kImeService, new_engine_id);
+    ConnectToImeService(mojom::ConnectionTarget::kRulebasedEngine,
+                        new_engine_id);
     // Notify the virtual keyboard extension that the IME has changed.
     ime_base_observer_->OnActivate(engine_id);
   } else if (ShouldRouteToNativeMojoEngine(engine_id)) {
-    ConnectToImeService(mojom::ConnectionTarget::kDecoder, engine_id);
+    ConnectToImeService(mojom::ConnectionTarget::kImeServiceLib, engine_id);
   } else {
     // Release the IME service.
     // TODO(b/147709499): A better way to cleanup all.

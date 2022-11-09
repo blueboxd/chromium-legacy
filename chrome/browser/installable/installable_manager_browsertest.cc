@@ -15,9 +15,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -148,20 +148,21 @@ class CallbackTester {
 
   void OnDidFinishInstallableCheck(const InstallableData& data) {
     errors_ = data.errors;
-    manifest_url_ = data.manifest_url;
-    manifest_ = data.manifest.Clone();
-    primary_icon_url_ = data.primary_icon_url;
+    manifest_url_ = *data.manifest_url;
+    manifest_ = data.manifest->Clone();
+    primary_icon_url_ = *data.primary_icon_url;
     if (data.primary_icon)
       primary_icon_ = std::make_unique<SkBitmap>(*data.primary_icon);
     has_maskable_primary_icon_ = data.has_maskable_primary_icon;
-    splash_icon_url_ = data.splash_icon_url;
+    splash_icon_url_ = *data.splash_icon_url;
     if (data.splash_icon)
       splash_icon_ = std::make_unique<SkBitmap>(*data.splash_icon);
     has_maskable_splash_icon_ = data.has_maskable_splash_icon;
     valid_manifest_ = data.valid_manifest;
     worker_check_passed_ = data.worker_check_passed;
-    screenshots_ = data.screenshots;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+    screenshots_ = *data.screenshots;
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                             quit_closure_);
   }
 
   const std::vector<InstallableStatusCode>& errors() const { return errors_; }
@@ -213,9 +214,9 @@ class NestedCallbackTester {
 
   void OnDidFinishFirstCheck(const InstallableData& data) {
     errors_ = data.errors;
-    manifest_url_ = data.manifest_url;
-    manifest_ = data.manifest.Clone();
-    primary_icon_url_ = data.primary_icon_url;
+    manifest_url_ = *data.manifest_url;
+    manifest_ = data.manifest->Clone();
+    primary_icon_url_ = *data.primary_icon_url;
     if (data.primary_icon)
       primary_icon_ = std::make_unique<SkBitmap>(*data.primary_icon);
     valid_manifest_ = data.valid_manifest;
@@ -228,18 +229,18 @@ class NestedCallbackTester {
 
   void OnDidFinishSecondCheck(const InstallableData& data) {
     EXPECT_EQ(errors_, data.errors);
-    EXPECT_EQ(manifest_url_, data.manifest_url);
-    EXPECT_EQ(primary_icon_url_, data.primary_icon_url);
+    EXPECT_EQ(manifest_url_, *data.manifest_url);
+    EXPECT_EQ(primary_icon_url_, *data.primary_icon_url);
     EXPECT_EQ(primary_icon_.get(), data.primary_icon);
     EXPECT_EQ(valid_manifest_, data.valid_manifest);
     EXPECT_EQ(worker_check_passed_, data.worker_check_passed);
     EXPECT_EQ(blink::IsEmptyManifest(*manifest_),
-              blink::IsEmptyManifest(data.manifest));
-    EXPECT_EQ(manifest_->start_url, data.manifest.start_url);
-    EXPECT_EQ(manifest_->display, data.manifest.display);
-    EXPECT_EQ(manifest_->name, data.manifest.name);
-    EXPECT_EQ(manifest_->short_name, data.manifest.short_name);
-    EXPECT_EQ(manifest_->display_override, data.manifest.display_override);
+              blink::IsEmptyManifest(*data.manifest));
+    EXPECT_EQ(manifest_->start_url, data.manifest->start_url);
+    EXPECT_EQ(manifest_->display, data.manifest->display);
+    EXPECT_EQ(manifest_->name, data.manifest->name);
+    EXPECT_EQ(manifest_->short_name, data.manifest->short_name);
+    EXPECT_EQ(manifest_->display_override, data.manifest->display_override);
 
     std::move(quit_closure_).Run();
   }

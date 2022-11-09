@@ -175,7 +175,7 @@
     'modifications': {
       'android-bfcache-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_browsertests.filter;../../testing/buildbot/filters/android.emulator.bf_cache_content_browsertests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_browsertests.filter',
         ],
         'swarming': {
           'shards': 15,
@@ -361,12 +361,6 @@
           'io_timeout': 3600,
           'shards': 8,
         },
-      },
-      'WebKit Win10': {
-        'args': [
-	  '--exit-after-n-crashes-or-timeouts',
-	  '150',
-        ],
       },
       'Win10 Tests x64': {
         'args': [
@@ -923,6 +917,7 @@
       },
       'Linux Tests': {
         'swarming': {
+          'shards': 20,
           'quickrun_shards': 15,
         },
       },
@@ -932,6 +927,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter',
         ],
         'swarming': {
+          'shards': 20,
           'quickrun_shards': 24,
         },
       },
@@ -1081,6 +1077,7 @@
       },
       'linux-lacros-tester-rel': {
         'swarming': {
+          'shards': 20,
           'quickrun_shards': 20,
         },
       },
@@ -1201,6 +1198,17 @@
           # This bot sets symbol_level=2, which doesn't fit inside a normal VM.
           '--strip-chrome',
         ],
+      },
+      'chromeos-betty-pi-arc-chrome': {
+        'swarming': {
+          'shards': 15,
+        },
+      },
+      'chromeos-eve-chrome': {
+        'swarming': {
+          # Increased timeout to 2 hours due to shard timeout.
+          'hard_timeout': 7200,
+        }
       },
       # TODO(crbug.com/1141234): Move out of experimental if/when the bots are
       # stable.
@@ -1330,7 +1338,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
         ],
         'swarming': {
-          'shards': 35,
+          'shards': 50,
           'dimension_sets': [
             {
               'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
@@ -1524,7 +1532,7 @@
       },
       'android-nougat-x86-rel': {
         'swarming': {
-          'shards': 2,
+          'shards': 4,
         },
       },
     },
@@ -1582,6 +1590,12 @@
   'content_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      # TODO(crbug.com/1371630): Enable on Fuchsia dbg/asan/clang builders.
+      'fuchsia-fyi-arm64-dbg',
+      'fuchsia-fyi-x64-asan',
+      'fuchsia-fyi-x64-dbg',
+      'ToTFuchsia x64',
+      'ToTFuchsiaOfficial arm64',
     ],
     'modifications': {
       'Cast Audio Linux': {
@@ -1737,6 +1751,19 @@
           'shards': 30,
         },
       },
+      'fuchsia-x64-cast-receiver-rel': {
+        # Temporarily only run this on CI due to resource requirements.
+        # TODO(crbug.com/1374125): Remove this once resources are available.
+        'ci_only': True,
+        'swarming': {
+          'shards': 41,
+        },
+      },
+      'fuchsia-x64-rel': {
+        'swarming': {
+          'shards': 41,
+        },
+      },
       'linux-chromeos-code-coverage': {
         'swarming': {
           'shards': 12,
@@ -1834,6 +1861,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter',
         ],
         'swarming': {
+          'shards': 6,
           'dimension_sets': [
             {
               'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
@@ -2623,7 +2651,7 @@
     },
   },
   'mediapipe_validating_tests': {
-    'modifications': { 
+    'modifications': {
       # TODO(crbug.com/1372213): Remove once tests are stable.
       'fuchsia-x64-chrome-rel': {
         'experiment_percentage': 100,

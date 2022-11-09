@@ -130,13 +130,6 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {"1000", autofill::switches::kAutofillIOSDelayBetweenFields, "1000"},
 };
 
-const FeatureEntry::Choice kDelayThresholdMinutesToUpdateGaiaCookieChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"0", signin::kDelayThresholdMinutesToUpdateGaiaCookie, "0"},
-    {"10", signin::kDelayThresholdMinutesToUpdateGaiaCookie, "10"},
-    {"60", signin::kDelayThresholdMinutesToUpdateGaiaCookie, "60"},
-};
-
 const FeatureEntry::Choice
     kWaitThresholdMillisecondsForCapabilitiesApiChoices[] = {
         {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -492,6 +485,15 @@ const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncC[] = {
 const FeatureEntry::FeatureParam kNewMICEFREWithTwoSteps[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamTwoSteps}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncD[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncD}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncE[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncE}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncF[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTangibleSyncF}};
 const FeatureEntry::FeatureVariation
     kNewMobileIdentityConsistencyFREVariations[] = {
         {"new FRE with tangible sync A", kNewMICEFREWithTangibleSyncA,
@@ -500,6 +502,12 @@ const FeatureEntry::FeatureVariation
          std::size(kNewMICEFREWithTangibleSyncB), nullptr},
         {"new FRE with tangible sync C", kNewMICEFREWithTangibleSyncC,
          std::size(kNewMICEFREWithTangibleSyncC), nullptr},
+        {"new FRE with tangible sync D", kNewMICEFREWithTangibleSyncD,
+         std::size(kNewMICEFREWithTangibleSyncD), nullptr},
+        {"new FRE with tangible sync E", kNewMICEFREWithTangibleSyncE,
+         std::size(kNewMICEFREWithTangibleSyncE), nullptr},
+        {"new FRE with tangible sync F", kNewMICEFREWithTangibleSyncF,
+         std::size(kNewMICEFREWithTangibleSyncF), nullptr},
         {"new FRE with 2 steps", kNewMICEFREWithTwoSteps,
          std::size(kNewMICEFREWithTwoSteps), nullptr}};
 
@@ -746,11 +754,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"modern-tab-strip", flag_descriptions::kModernTabStripName,
      flag_descriptions::kModernTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kModernTabStrip)},
-    {"minutes-delay-to-restore-gaia-cookies-if-deleted",
-     flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieName,
-     flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieDescription,
-     flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kDelayThresholdMinutesToUpdateGaiaCookieChoices)},
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
@@ -1307,6 +1310,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-sf-symbols-omnibox", flag_descriptions::kUseSFSymbolsInOmniboxName,
      flag_descriptions::kUseSFSymbolsInOmniboxDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseSFSymbolsInOmnibox)},
+    {"tab-grid-recency-sort", flag_descriptions::kTabGridRecencySortName,
+     flag_descriptions::kTabGridRecencySortDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabGridRecencySort)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

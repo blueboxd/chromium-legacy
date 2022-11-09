@@ -340,6 +340,11 @@ public class FeedSurfaceCoordinator
         mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
                 .addObserver(mSectionHeaderListModelChangeProcessor);
 
+        FeedOptionsCoordinator optionsCoordinator = new FeedOptionsCoordinator(mActivity);
+
+        mSectionHeaderModel.set(SectionHeaderListProperties.EXPANDING_DRAWER_VIEW_KEY,
+                optionsCoordinator.getView());
+
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_STICK_TO_TOP)) {
             mStickySectionHeaderView =
@@ -354,13 +359,9 @@ public class FeedSurfaceCoordinator
                     mStickySectionHeaderView, binder);
             mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
                     .addObserver(mStickySectionHeaderListModelChangeProcessor);
-        }
-
-        FeedOptionsCoordinator optionsCoordinator = new FeedOptionsCoordinator(mActivity);
-
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_STICK_TO_TOP)) {
-            mSectionHeaderModel.set(SectionHeaderListProperties.EXPANDING_DRAWER_VIEW_KEY,
-                    optionsCoordinator.getView());
+            mSectionHeaderModel.set(
+                    SectionHeaderListProperties.STICKY_HEADER_EXPANDING_DRAWER_VIEW_KEY,
+                    optionsCoordinator.getStickyHeaderOptionsView());
         }
 
         // Mediator should be created before any Stream changes.
@@ -373,12 +374,15 @@ public class FeedSurfaceCoordinator
         mMediator.updateContent();
     }
 
-    /**
-     * TODO(b/241271058): update toolbar height by calling delegate instead of passing it as a
-     * parameter.
-     */
-    public int getToolbarHeight() {
+    int getToolbarHeight() {
         return mToolbarHeight;
+    }
+
+    void setToolbarHairlineVisibility(boolean isVisible) {
+        Toolbar toolbar = mToolbarSupplier.get();
+        if(toolbar != null){
+            toolbar.setHairlineVisibility(isVisible);
+        }
     }
 
     /** @return the position of the in-feed header. */

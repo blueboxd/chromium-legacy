@@ -22,6 +22,8 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "chrome/browser/enterprise/connectors/device_trust/common/device_trust_constants.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands/metrics_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/shared_command_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -120,11 +122,13 @@ void LinuxKeyRotationCommand::Trigger(const Params& params, Callback callback) {
 
             base::ScopedAllowBaseSyncPrimitives allow_wait;
             int exit_code = -1;
-            if (!process.WaitForExitWithTimeout(base::Minutes(5), &exit_code)) {
+            if (!process.WaitForExitWithTimeout(timeouts::kProcessWaitTimeout,
+                                                &exit_code)) {
               SYSLOG(ERROR) << "Device trust key rotation timed out.";
               return KeyRotationCommand::Status::TIMED_OUT;
             }
 
+            LogManagementServiceExitCode(exit_code);
             if (exit_code == kSuccess) {
               return KeyRotationCommand::Status::SUCCEEDED;
             } else if (exit_code != kFailure) {

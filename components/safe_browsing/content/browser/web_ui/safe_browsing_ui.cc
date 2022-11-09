@@ -455,7 +455,7 @@ namespace {
 std::string UserReadableTimeFromMillisSinceEpoch(int64_t time_in_milliseconds) {
   base::Time time =
       base::Time::UnixEpoch() + base::Milliseconds(time_in_milliseconds);
-  return base::UTF16ToASCII(base::TimeFormatShortDateAndTime(time));
+  return base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(time));
 }
 
 void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
@@ -1808,6 +1808,9 @@ base::Value::Dict SerializeRTThreatInfo(
     case RTLookupResponse::ThreatInfo::UNCLEAR_BILLING:
       threat_type = "UNCLEAR_BILLING";
       break;
+    case RTLookupResponse::ThreatInfo::MANAGED_POLICY:
+      threat_type = "MANAGED_POLICY";
+      break;
   }
   threat_info_dict.Set("threat_type", threat_type);
 
@@ -1821,6 +1824,9 @@ base::Value::Dict SerializeRTThreatInfo(
       break;
     case RTLookupResponse::ThreatInfo::SAFE:
       verdict_type = "SAFE";
+      break;
+    case RTLookupResponse::ThreatInfo::WARN:
+      verdict_type = "WARN";
       break;
     case RTLookupResponse::ThreatInfo::DANGEROUS:
       verdict_type = "DANGEROUS";

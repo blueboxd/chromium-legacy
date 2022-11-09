@@ -4,13 +4,28 @@
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 
-import {Accelerator, AcceleratorConfig, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorType, LayoutInfo, LayoutInfoList} from './shortcut_types.js';
+import {mojoString16ToString} from './mojo_utils.js';
+import {Accelerator, AcceleratorCategory, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, LayoutInfo, LayoutInfoList, MojoAcceleratorConfig, MojoAcceleratorInfo} from './shortcut_types.js';
 import {areAcceleratorsEqual} from './shortcut_utils.js';
 
-type AcceleratorLookupMap = Map<string, AcceleratorInfo[]>;
-type AcceleratorLayoutLookupMap = Map<number, Map<number, LayoutInfo[]>>;
-type AcceleratorNameLookupMap = Map<string, string>;
-type ReverseAcceleratorLookupMap = Map<string, string>;
+/**
+ * A string of the form `{source}-{action_id}`.
+ * This concatenation uniquely identifies one {@link Accelerator}.
+ */
+type AcceleratorId = string;
+/** The name of an {@link Accelerator}, e.g. "Snap Window Left". */
+type AcceleratorName = string;
+/**
+ * The key used to lookup {@link AcceleratorId}s from a
+ * {@link ReverseAcceleratorLookupMap}.
+ * See getKeyForLookup() in this file for the implementation details.
+ */
+type AcceleratorLookupKey = string;
+type AcceleratorLookupMap = Map<AcceleratorId, AcceleratorInfo[]>;
+type AcceleratorLayoutLookupMap =
+    Map<AcceleratorCategory, Map<AcceleratorSubcategory, LayoutInfo[]>>;
+type AcceleratorNameLookupMap = Map<AcceleratorId, AcceleratorName>;
+type ReverseAcceleratorLookupMap = Map<AcceleratorLookupKey, AcceleratorId>;
 
 /**
  * A singleton class that manages the fetched accelerators and layout
@@ -20,7 +35,7 @@ type ReverseAcceleratorLookupMap = Map<string, string>;
 export class AcceleratorLookupManager {
   /**
    * A map with the key set to a concatenated string of the accelerator's
-   * '{source} - {action_id}', this concatenation uniquely identifies one
+   * '{source}-{action_id}', this concatenation uniquely identifies one
    * accelerator. The value is an array of AcceleratorInfo's associated to one
    * accelerator. This map serves as a way to quickly look up all
    * AcceleratorInfos for one accelerator.
@@ -56,20 +71,22 @@ export class AcceleratorLookupManager {
   /**
    * Used to generate the keys for the ReverseAcceleratorLookupMap.
    */
-  private getKeyForLookup(accelerator: Accelerator): string {
+  private getKeyForLookup(accelerator: Accelerator): AcceleratorLookupKey {
     return JSON.stringify(
         {keyCode: accelerator.keyCode, modifiers: accelerator.modifiers});
   }
 
   getAcceleratorInfos(source: number|string, action: number|string):
       AcceleratorInfo[] {
-    const uuid = `${source}-${action}`;
+    const uuid: AcceleratorId = `${source}-${action}`;
     const acceleratorInfos = this.acceleratorLookup_.get(uuid);
     assert(acceleratorInfos);
     return acceleratorInfos;
   }
 
-  getAcceleratorLayout(category: number, subCategory: number): LayoutInfo[] {
+  getAcceleratorLayout(
+      category: AcceleratorCategory,
+      subCategory: AcceleratorSubcategory): LayoutInfo[] {
     const categoryMap = this.acceleratorLayoutLookup_.get(category);
     assert(categoryMap);
     const subCategoryMap = categoryMap.get(subCategory);
@@ -77,12 +94,14 @@ export class AcceleratorLookupManager {
     return subCategoryMap;
   }
 
-  getSubcategories(category: number): Map<number, LayoutInfo[]>|undefined {
+  getSubcategories(category: AcceleratorCategory):
+      Map<AcceleratorSubcategory, LayoutInfo[]>|undefined {
     return this.acceleratorLayoutLookup_.get(category);
   }
 
-  getAcceleratorName(source: number|string, action: number|string): string {
-    const uuid = `${source}-${action}`;
+  getAcceleratorName(source: number|string, action: number|string):
+      AcceleratorName {
+    const uuid: AcceleratorId = `${source}-${action}`;
     const acceleratorName = this.acceleratorNameLookup_.get(uuid);
     assert(acceleratorName);
     return acceleratorName;
@@ -92,13 +111,13 @@ export class AcceleratorLookupManager {
    * Returns the uuid of an accelerator if the
    * accelerator exists. Otherwise returns `undefined`.
    */
-  getAcceleratorIdFromReverseLookup(accelerator: Accelerator): string
+  getAcceleratorIdFromReverseLookup(accelerator: Accelerator): AcceleratorId
       |undefined {
     return this.reverseAcceleratorLookup_.get(
         this.getKeyForLookup(accelerator));
   }
 
-  setAcceleratorLookup(acceleratorConfig: AcceleratorConfig) {
+  setAcceleratorLookup(acceleratorConfig: MojoAcceleratorConfig) {
     for (const [source, accelInfoMap] of Object.entries(acceleratorConfig)) {
       // When calling Object.entries on an object with optional enum keys,
       // TypeScript considers the values to be possibly undefined.
@@ -111,9 +130,23 @@ export class AcceleratorLookupManager {
         if (!this.acceleratorLookup_.has(id)) {
           this.acceleratorLookup_.set(id, []);
         }
-        accelInfos.forEach((info: AcceleratorInfo) => {
+        accelInfos.forEach((info: MojoAcceleratorInfo) => {
+          // Convert from Mojo types to the app types.
+          const sanitizedAccelerator: Accelerator = {
+            keyCode: info.accelerator.keyCode,
+            modifiers: info.accelerator.modifiers,
+          };
+          const sanitizedAccelInfo: AcceleratorInfo = {
+            accelerator: sanitizedAccelerator,
+            hasKeyEvent: info.hasKeyEvent,
+            keyDisplay: mojoString16ToString(info.keyDisplay),
+            locked: info.locked,
+            state: info.state,
+            type: info.type,
+          };
+
           this.getAcceleratorInfos(source, actionId)
-              .push(Object.assign({}, info));
+              .push(Object.assign({}, sanitizedAccelInfo));
           this.reverseAcceleratorLookup_.set(
               this.getKeyForLookup(info.accelerator), id);
         });

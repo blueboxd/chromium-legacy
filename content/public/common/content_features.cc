@@ -5,6 +5,7 @@
 #include "content/public/common/content_features.h"
 
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/common/buildflags.h"
@@ -407,6 +408,15 @@ const base::FeatureParam<bool> kFirstPartySetsIsDogfooder{
 const base::FeatureParam<int> kFirstPartySetsMaxAssociatedSites{
     &kFirstPartySets, "FirstPartySetsMaxAssociatedSites", 3};
 
+// Controls the maximum time duration an outermost frame navigation should be
+// deferred by FPS initialization.
+// Using 2s as the starting default timeout. This is based on the UMA metric
+// `History.ClearBrowsingData.Duration.OriginDeletion`.
+const base::FeatureParam<base::TimeDelta>
+    kFirstPartySetsNavigationThrottleTimeout{
+        &kFirstPartySets, "FirstPartySetsNavigationThrottleTimeout",
+        base::Seconds(2)};
+
 // Whether to initialize the font manager when the renderer starts on a
 // background thread.
 BASE_FEATURE(kFontManagerEarlyInit,
@@ -533,7 +543,7 @@ const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 // Enables the TC39 Array grouping proposal.
 BASE_FEATURE(kJavaScriptArrayGrouping,
              "JavaScriptArrayGrouping",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables experimental JavaScript shared memory features.
 BASE_FEATURE(kJavaScriptExperimentalSharedMemory,
@@ -917,12 +927,11 @@ BASE_FEATURE(kSavePageAsWebBundle,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Browser-side feature flag for Secure Payment Confirmation (SPC) that also
-// controls the render side feature state. SPC initial launch is intended
-// only for Mac devices with Touch ID and and Windows devices with
-// Windows Hello authentication available and setup.
+// controls the render side feature state. SPC is not currently available on
+// Linux or ChromeOS, as it requires platform authenticator support.
 BASE_FEATURE(kSecurePaymentConfirmation,
              "SecurePaymentConfirmationBrowser",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT

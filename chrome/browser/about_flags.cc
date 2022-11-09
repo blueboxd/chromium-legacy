@@ -300,6 +300,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/browser/enterprise/platform_auth/platform_auth_features.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "ui/color/color_switches.h"  // nogncheck
 #endif
@@ -697,6 +698,9 @@ const FeatureEntry::FeatureParam kForceDark_SelectiveGeneralInversion[] = {
     {"foreground_lightness_threshold", "150"},
     {"background_lightness_threshold", "205"}};
 
+const FeatureEntry::FeatureParam kForceDark_TransparencyAndNumColors[] = {
+    {"classifier_policy", "transparency_and_num_colors"}};
+
 const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
     {"with simple HSL-based inversion", kForceDark_SimpleHsl,
      std::size(kForceDark_SimpleHsl), nullptr},
@@ -711,7 +715,11 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
      std::size(kForceDark_SelectiveElementInversion), nullptr},
     {"with selective inversion of everything",
      kForceDark_SelectiveGeneralInversion,
-     std::size(kForceDark_SelectiveGeneralInversion), nullptr}};
+     std::size(kForceDark_SelectiveGeneralInversion), nullptr},
+    {"with selective image inversion based on transparency and number of "
+     "colors",
+     kForceDark_TransparencyAndNumColors,
+     std::size(kForceDark_TransparencyAndNumColors), nullptr}};
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 const FeatureEntry::FeatureParam kMBIModeLegacy[] = {{"mode", "legacy"}};
@@ -1346,6 +1354,14 @@ const FeatureEntry::FeatureParam kJourneysVisitDedupingUseHostParams[] = {
 const FeatureEntry::FeatureVariation kJourneysVisitDedupingVariations[] = {
     {"Use host", kJourneysVisitDedupingUseHostParams,
      std::size(kJourneysVisitDedupingUseHostParams), nullptr},
+};
+
+const FeatureEntry::FeatureParam kTabGroupsSaveWithSyncIntegration[] = {
+    {"sync_integration", "true"},
+};
+const FeatureEntry::FeatureVariation kTabGroupsSaveVariations[] = {
+    {" with sync integration", kTabGroupsSaveWithSyncIntegration,
+     std::size(kTabGroupsSaveWithSyncIntegration), nullptr},
 };
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
@@ -1999,41 +2015,6 @@ const FeatureEntry::FeatureVariation kRelatedSearchesInBarVariations[] = {
     {"with 120sp ellipsized default query chip",
      kRelatedSearchesInBarShowDefaultChipWith120SpEllipsis,
      std::size(kRelatedSearchesInBarShowDefaultChipWith120SpEllipsis), nullptr},
-};
-
-const FeatureEntry::FeatureParam kRelatedSearchesAlternateUxNoShowDefaultChip =
-    {"default_query_chip", "false"};
-const FeatureEntry::FeatureParam kRelatedSearchesAlternateUxShowDefaultChip = {
-    "default_query_chip", "true"};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesAlternateUxShowDefaultChipWith110SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "110"}};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesAlternateUxShowDefaultChipWith115SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "115"}};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesAlternateUxShowDefaultChipWith120SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "120"}};
-const FeatureEntry::FeatureVariation kRelatedSearchesAlternateUxVariations[] = {
-    {"without default query chip",
-     &kRelatedSearchesAlternateUxNoShowDefaultChip, 1, nullptr},
-    {"with default query chip", &kRelatedSearchesAlternateUxShowDefaultChip, 1,
-     nullptr},
-    {"with 110sp ellipsized default query chip",
-     kRelatedSearchesAlternateUxShowDefaultChipWith110SpEllipsis,
-     std::size(kRelatedSearchesAlternateUxShowDefaultChipWith110SpEllipsis),
-     nullptr},
-    {"with 115sp ellipsized default query chip",
-     kRelatedSearchesAlternateUxShowDefaultChipWith115SpEllipsis,
-     std::size(kRelatedSearchesAlternateUxShowDefaultChipWith115SpEllipsis),
-     nullptr},
-    {"with 120sp ellipsized default query chip",
-     kRelatedSearchesAlternateUxShowDefaultChipWith120SpEllipsis,
-     std::size(kRelatedSearchesAlternateUxShowDefaultChipWith120SpEllipsis),
-     nullptr},
 };
 
 const FeatureEntry::FeatureParam kContextualSearchSuppressShortViewWith300Dp[] =
@@ -2975,6 +2956,7 @@ constexpr char kBorealisStorageBallooningInternalName[] =
 constexpr char kVmPerBootShaderCacheName[] = "vm-per-boot-shader-cache";
 constexpr char kClipboardHistoryReorderInternalName[] =
     "clipboard-history-reorder";
+constexpr char kQsRevampInternalName[] = "qs-revamp";
 constexpr char kWelcomeScreenInternalName[] = "welcome-screen";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -3446,6 +3428,15 @@ constexpr FeatureEntry::FeatureVariation kLensInstructionChipVariations[] = {
      std::size(kLensInstructionChipWithAltString), nullptr},
 };
 
+constexpr FeatureEntry::FeatureParam kLensFormatOptimizationJPEG[] = {
+    {"use-webp-image-search", "false"},
+    {"use-webp-region-search", "false"},
+    {"use-jpeg-region-search", "true"}};
+constexpr FeatureEntry::FeatureVariation kLensImageFormatVariations[] = {
+    {"use JPEG", kLensFormatOptimizationJPEG,
+     std::size(kLensFormatOptimizationJPEG), nullptr},
+};
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::Choice kAlwaysEnableHdcpChoices[] = {
     {flag_descriptions::kAlwaysEnableHdcpDefault, "", ""},
@@ -3769,13 +3760,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kRelatedSearchesInBar,
                                     kRelatedSearchesInBarVariations,
                                     "RelatedSearchesInBar")},
-    {"related-searches-alternate-ux",
-     flag_descriptions::kRelatedSearchesAlternateUxName,
-     flag_descriptions::kRelatedSearchesAlternateUxDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kRelatedSearchesAlternateUx,
-         kRelatedSearchesAlternateUxVariations,
-         "RelatedSearchesAlternateUx")},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
@@ -4017,7 +4001,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOsSettingsSearchFeedbackName,
      flag_descriptions::kOsSettingsSearchFeedbackDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kOsSettingsSearchFeedback)},
-    {"qs-revamp", flag_descriptions::kQsRevampName,
+    {kQsRevampInternalName, flag_descriptions::kQsRevampName,
      flag_descriptions::kQsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQsRevamp)},
     {"quick-settings-network-revamp",
@@ -5215,7 +5199,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          features::kExperimentalAccessibilityDictationWithPumpkin)},
-
     {"enable-experimental-accessibility-dictation-more-commands",
      flag_descriptions::kExperimentalAccessibilityDictationMoreCommandsName,
      flag_descriptions::
@@ -5223,7 +5206,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          features::kExperimentalAccessibilityDictationMoreCommands)},
-
+    {"enable-experimental-accessibility-dictation-context-checking",
+     flag_descriptions::kExperimentalAccessibilityDictationContextCheckingName,
+     flag_descriptions::
+         kExperimentalAccessibilityDictationContextCheckingDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilityDictationContextChecking)},
     {"enable-experimental-accessibility-google-tts-language-packs",
      flag_descriptions::kExperimentalAccessibilityGoogleTtsLanguagePacksName,
      flag_descriptions::
@@ -5325,6 +5314,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcGhostWindowNewStyleName,
      flag_descriptions::kArcGhostWindowNewStyleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kGhostWindowNewStyle)},
+    {"arc-instant-response-window-open",
+     flag_descriptions::kArcInstantResponseWindowOpenName,
+     flag_descriptions::kArcInstantResponseWindowOpenDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kInstantResponseWindowOpen)},
     {"arc-keyboard-shortcut-helper-integration",
      flag_descriptions::kArcKeyboardShortcutHelperIntegrationName,
      flag_descriptions::kArcKeyboardShortcutHelperIntegrationDescription,
@@ -5355,6 +5348,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSecondaryGoogleAccountUsageName,
      flag_descriptions::kSecondaryGoogleAccountUsageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSecondaryGoogleAccountUsage)},
+    {"enable-arc-host-vpn", flag_descriptions::kEnableArcHostVpnName,
+     flag_descriptions::kEnableArcHostVpnDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kEnableArcHostVpn)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-generic-sensor-extra-classes",
      flag_descriptions::kEnableGenericSensorExtraClassesName,
@@ -6058,7 +6054,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"tab-groups-save", flag_descriptions::kTabGroupsSaveName,
      flag_descriptions::kTabGroupsSaveDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabGroupsSave)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabGroupsSave,
+                                    kTabGroupsSaveVariations,
+                                    "TabGroupsSave")},
 
     {flag_descriptions::kScrollableTabStripFlagId,
      flag_descriptions::kScrollableTabStripName,
@@ -6390,6 +6388,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"accessible-pdf-form", flag_descriptions::kAccessiblePDFFormName,
      flag_descriptions::kAccessiblePDFFormDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kAccessiblePDFForm)},
+
+    {"pdf-use-skia-renderer", flag_descriptions::kPdfUseSkiaRendererName,
+     flag_descriptions::kPdfUseSkiaRendererDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfUseSkiaRenderer)},
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -7740,9 +7742,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
-    {"page-info-history", flag_descriptions::kPageInfoHistoryName,
-     flag_descriptions::kPageInfoHistoryDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(page_info::kPageInfoHistory)},
     {"page-info-store-info", flag_descriptions::kPageInfoStoreInfoName,
      flag_descriptions::kPageInfoStoreInfoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoStoreInfo)},
@@ -7754,11 +7753,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPageInfoHistoryDesktopDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(page_info::kPageInfoHistoryDesktop)},
 #endif  // !BUILDFLAG(IS_ANDROID)
-
-    {"page-info-about-this-site", flag_descriptions::kPageInfoAboutThisSiteName,
-     flag_descriptions::kPageInfoAboutThisSiteDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(page_info::kPageInfoAboutThisSiteEn)},
 
     {"page-info-more-about-this-page",
      flag_descriptions::kPageInfoMoreAboutThisPageName,
@@ -8120,10 +8114,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMessagesForAndroidReaderModeName,
      flag_descriptions::kMessagesForAndroidReaderModeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(messages::kMessagesForAndroidReaderMode)},
-    {"messages-for-android-safety-tip",
-     flag_descriptions::kMessagesForAndroidSafetyTipName,
-     flag_descriptions::kMessagesForAndroidSafetyTipDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(messages::kMessagesForAndroidSafetyTip)},
     {"messages-for-android-save-card",
      flag_descriptions::kMessagesForAndroidSaveCardName,
      flag_descriptions::kMessagesForAndroidSaveCardDescription, kOsAndroid,
@@ -8591,6 +8581,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLensRegionSearchStaticPageDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(lens::features::kLensRegionSearchStaticPage)},
 
+    {"enable-lens-image-format-optimizations",
+     flag_descriptions::kLensImageFormatOptimizationsName,
+     flag_descriptions::kLensImageFormatOptimizationsDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         lens::features::kLensImageFormatOptimizations,
+         kLensImageFormatVariations,
+         "LensImageFormatOptimizations")},
+
     {"enable-region-search-on-pdf-viewer",
      flag_descriptions::kEnableRegionSearchOnPdfViewerName,
      flag_descriptions::kEnableRegionSearchOnPdfViewerDescription, kOsDesktop,
@@ -8674,11 +8672,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kEnableInputInDiagnosticsApp)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if !defined(PASSTHROUGH_COMMAND_DECODER_LAUNCHED)
     {"use-passthrough-command-decoder",
      flag_descriptions::kUsePassthroughCommandDecoderName,
-     flag_descriptions::kUsePassthroughCommandDecoderDescription,
-     kOsMac | kOsLinux | kOsLacros | kOsCrOS | kOsAndroid | kOsFuchsia,
+     flag_descriptions::kUsePassthroughCommandDecoderDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDefaultPassthroughCommandDecoder)},
+#endif  // !defined(PASSTHROUGH_COMMAND_DECODER_LAUNCHED)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"focus-follows-cursor", flag_descriptions::kFocusFollowsCursorName,
@@ -8821,11 +8820,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"partitioned-cookies", flag_descriptions::kPartitionedCookiesName,
      flag_descriptions::kPartitionedCookiesDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kPartitionedCookies)},
-    // TODO(crbug.com/1296161): Remove this flag when the CHIPS OT ends.
-    {"partitioned-cookies-bypass-origin-trial",
-     flag_descriptions::kPartitionedCookiesBypassOriginTrialName,
-     flag_descriptions::kPartitionedCookiesBypassOriginTrialDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kPartitionedCookiesBypassOriginTrial)},
 
     {"nonced-partitioned-cookies",
      flag_descriptions::kNoncedPartitionedCookiesName,
@@ -9905,6 +9899,19 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(browser_ui::kHighlightManagedPrefDisclaimerAndroid)},
 #endif
 
+#if BUILDFLAG(ENABLE_NACL)
+    {"ppapi-shared-images-swapchain",
+     flag_descriptions::kPPAPISharedImagesSwapChainName,
+     flag_descriptions::kPPAPISharedImagesSwapChainDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPPAPISharedImagesSwapChain)},
+#endif
+
+#if BUILDFLAG(IS_WIN)
+    {"cloud-ap-auth", flag_descriptions::kCloudApAuthName,
+     flag_descriptions::kCloudApAuthDescription, kOsWin,
+     FEATURE_VALUE_TYPE(enterprise_auth::kCloudApAuth)},
+#endif  // BUILDFLAG(IS_WIN)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -10049,6 +10056,11 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
 
   // Skip glanceables flag on stable channel.
   if (!strcmp(kWelcomeScreenInternalName, entry.internal_name)) {
+    return channel == version_info::Channel::STABLE;
+  }
+
+  // Skip quick-settings revamp flag on stable channel.
+  if (!strcmp(kQsRevampInternalName, entry.internal_name)) {
     return channel == version_info::Channel::STABLE;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

@@ -44,7 +44,7 @@ constexpr ui::ColorId kActiveButtonBackgroundColorId =
 constexpr ui::ColorId kActiveButtonTextColorId = cros_tokens::kCrosSysOnPrimary;
 // The background color id of inactive component button.
 constexpr ui::ColorId kInactiveButtonBackgroundColorId =
-    cros_tokens::kCrosSysSysOnBase;
+    cros_tokens::kCrosSysSystemOnBase;
 // The text color id of inactive component button.
 constexpr ui::ColorId kInactiveButtonTextColorId =
     cros_tokens::kCrosSysOnSurface;
@@ -155,6 +155,16 @@ void SystemUIComponentsStyleViewerView::CreateAndShowWidget() {
       u"IconButton", base::BindRepeating(&CreateIconButtonInstancesGridView));
   viewer_view->AddComponent(
       u"IconSwitch", base::BindRepeating(&CreateIconSwitchInstancesGridView));
+  viewer_view->AddComponent(
+      u"Checkbox", base::BindRepeating(&CreateCheckboxInstancesGridView));
+  viewer_view->AddComponent(
+      u"CheckboxGroup",
+      base::BindRepeating(&CreateCheckboxGroupInstancesGridView));
+  viewer_view->AddComponent(
+      u"RadioButton", base::BindRepeating(&CreateRadioButtonInstancesGridView));
+  viewer_view->AddComponent(
+      u"RadioButtonGroup",
+      base::BindRepeating(&CreateRadioButtonGroupInstancesGridView));
 
   // Show PillButton on start.
   viewer_view->ShowComponentInstances(u"PillButton");

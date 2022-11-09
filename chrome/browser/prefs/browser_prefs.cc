@@ -1045,6 +1045,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   language::GeoLanguageProvider::RegisterLocalStatePrefs(registry);
   language::UlpLanguageCodeLocator::RegisterLocalStatePrefs(registry);
   memory::EnterpriseMemoryLimitPrefObserver::RegisterPrefs(registry);
+  metrics::RegisterDemographicsLocalStatePrefs(registry);
   network_time::NetworkTimeTracker::RegisterPrefs(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
@@ -1762,12 +1763,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   chrome_browser_net::secure_dns::MigrateProbesSettingToOrFromBackup(
       profile_prefs);
 
-  // Added 10/2021.
-  // TODO(crbug.com/1303963): Remove once number of clients migrating is
-  // negligible.
-  translate::TranslatePrefs::MigrateObsoleteProfilePrefs(profile_prefs);
-  translate::TranslatePrefs::ClearObsoleteProfilePrefs(profile_prefs);
-
   // Added 11/2021.
   syncer::ClearObsoleteKeystoreBootstrapTokenPref(profile_prefs);
   profile_prefs->ClearPref(kWasPreviouslySetUpPrefName);
@@ -1998,6 +1993,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if BUILDFLAG(IS_ANDROID)
   feed::MigrateObsoleteProfilePrefsOct_2022(profile_prefs);
 #endif  // BUILDFLAG(IS_ANDROID)
+  profile_prefs->ClearPref(origin_trials::kOriginTrialPrefKey);
 
   // Once this migration is complete, the tracked preference
   // `kGoogleServicesLastAccountIdDeprecated` can be removed.

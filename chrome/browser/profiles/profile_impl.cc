@@ -262,6 +262,8 @@ using bookmarks::BookmarkModel;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 
+class ScopedAllowBlockingForProfile : public base::ScopedAllowBlocking {};
+
 namespace {
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -291,7 +293,7 @@ base::Time CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
   // base::CreateDirectory() should be lightweight I/O operations and avoiding
   // the headache of sequencing all otherwise unrelated I/O after these
   // justifies running them on the main thread.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_to_create_directory;
+  ScopedAllowBlockingForProfile allow_io_to_create_directory;
 
   // If the readme exists, the profile directory must also already exist.
   if (base::PathExists(path.Append(chrome::kReadmeFilename)))
@@ -838,6 +840,9 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   if (breadcrumbs::IsEnabled())
     BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+
+  // Request an OriginTrialsControllerDelegate to ensure it is initialized.
+  GetOriginTrialsControllerDelegate();
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -1546,7 +1551,7 @@ GURL ProfileImpl::GetHomePage() {
     // TODO(evanm): clean up usage of DIR_CURRENT.
     //   http://code.google.com/p/chromium/issues/detail?id=60630
     // For now, allow this code to call getcwd().
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlocking allow_blocking;
 
     base::FilePath browser_directory;
     base::PathService::Get(base::DIR_CURRENT, &browser_directory);

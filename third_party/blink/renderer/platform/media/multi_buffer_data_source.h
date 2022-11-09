@@ -83,24 +83,21 @@ class PLATFORM_EXPORT MultiBufferDataSource : public media::DataSource {
 
   bool PassedTimingAllowOriginCheck() override;
 
+  bool WouldTaintOrigin() override;
+
   // Returns the CorsMode of the underlying UrlData.
   UrlData::CorsMode cors_mode() const;
 
   // Notifies changes in playback state for controlling media buffering
   // behavior.
-  void MediaPlaybackRateChanged(double playback_rate);
-  void MediaIsPlaying();
+  void OnMediaPlaybackRateChanged(double playback_rate) override;
+  void OnMediaIsPlaying() override;
   bool media_has_played() const;
 
   // Returns true if the resource is local.
   bool AssumeFullyBuffered() const override;
 
-  // Cancels any open network connections once reaching the deferred state. If
-  // |always_cancel| is false this is done only for preload=metadata, non-
-  // streaming resources that have not started playback. If |always_cancel| is
-  // true, all resource types will have their connections canceled. If already
-  // deferred, connections will be immediately closed.
-  void OnBufferingHaveEnough(bool always_cancel);
+  void OnBufferingHaveEnough(bool must_cancel_netops) override;
 
   int64_t GetMemoryUsage() override;
 

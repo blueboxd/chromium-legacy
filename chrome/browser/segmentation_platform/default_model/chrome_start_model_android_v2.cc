@@ -7,7 +7,7 @@
 #include <array>
 
 #include "base/metrics/field_trial_params.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/start_surface/start_surface_android.h"
 #include "components/segmentation_platform/internal/metadata/metadata_writer.h"
@@ -82,17 +82,18 @@ void ChromeStartModelV2::InitAndFetchModel(
                         kChromeStartUMAFeatures.size());
 
   constexpr int kModelVersion = 1;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindRepeating(model_updated_callback, kChromeStartSegmentId,
                           std::move(chrome_start_metadata), kModelVersion));
 }
 
-void ChromeStartModelV2::ExecuteModelWithInput(const std::vector<float>& inputs,
-                                               ExecutionCallback callback) {
+void ChromeStartModelV2::ExecuteModelWithInput(
+    const ModelProvider::Request& inputs,
+    ExecutionCallback callback) {
   // Invalid inputs.
   if (inputs.size() != kChromeStartUMAFeatures.size()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
     return;
   }
@@ -102,8 +103,10 @@ void ChromeStartModelV2::ExecuteModelWithInput(const std::vector<float>& inputs,
   // TODO(ssid): Consider getting the param value from field trials and use it
   // here instead.
   float return_time_in_seconds = 28800;  // 8 hours
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), return_time_in_seconds));
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback),
+                     ModelProvider::Response(1, return_time_in_seconds)));
 }
 
 bool ChromeStartModelV2::ModelAvailable() {

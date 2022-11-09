@@ -41,12 +41,12 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
+#include "chrome/browser/ash/fileapi/recent_file.h"
+#include "chrome/browser/ash/fileapi/recent_model.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/fileapi/recent_file.h"
-#include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/file_util_service.h"
@@ -221,19 +221,6 @@ std::string Redact(const base::FilePath& path) {
 }
 
 }  // namespace
-
-ExtensionFunction::ResponseAction
-FileManagerPrivateLogoutUserForReauthenticationFunction::Run() {
-  const user_manager::User* user = ash::ProfileHelper::Get()->GetUserByProfile(
-      Profile::FromBrowserContext(browser_context()));
-  if (user) {
-    user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        user->GetAccountId(), user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
-  }
-
-  chrome::AttemptUserExit();
-  return RespondNow(WithArguments());
-}
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetPreferencesFunction::Run() {

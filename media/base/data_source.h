@@ -73,6 +73,10 @@ class MEDIA_EXPORT DataSource {
   // check.
   virtual bool PassedTimingAllowOriginCheck() = 0;
 
+  // DataSource implementations that might make requests must ensure the value
+  // is accurate for cross origin resources.
+  virtual bool WouldTaintOrigin() = 0;
+
   // Assume fully buffered by default.
   virtual bool AssumeFullyBuffered() const;
 
@@ -86,6 +90,20 @@ class MEDIA_EXPORT DataSource {
   // Gets the url for this data source, if it exists. By default this returns
   // an empty GURL.
   virtual GURL GetUrlAfterRedirects() const;
+
+  // Cancels any open network connections once reaching the deferred state. If
+  // |must_cancel_netops| is false this is done only for preload=metadata, non-
+  // streaming resources that have not started playback. If |must_cancel_netops|
+  // is true, all resource types will have their connections canceled. If
+  // already deferred, connections will be immediately closed. Most data source
+  // implementations do not need to override this, as they do not open other
+  // network connections.
+  virtual void OnBufferingHaveEnough(bool must_cancel_netops);
+
+  // Allows a holder to notify certain events to the data source. Most data
+  // sources won't care too much about these events though.
+  virtual void OnMediaPlaybackRateChanged(double playback_rate);
+  virtual void OnMediaIsPlaying();
 };
 
 }  // namespace media

@@ -15,9 +15,9 @@
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/debug/debugging_buildflags.h"
-#include "base/allocator/partition_allocator/partition_alloc_base/pkey.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/posix/eintr_wrapper.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/pkey.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_APPLE)
@@ -208,9 +208,9 @@ bool TrySetSystemPagesAccessInternal(
     size_t length,
     PageAccessibilityConfiguration accessibility) {
 #if BUILDFLAG(ENABLE_PKEYS)
-  return 0 == base::PkeyMprotect(reinterpret_cast<void*>(address), length,
-                                 GetAccessFlags(accessibility),
-                                 accessibility.pkey);
+  return 0 == PkeyMprotectIfEnabled(reinterpret_cast<void*>(address), length,
+                                    GetAccessFlags(accessibility),
+                                    accessibility.pkey);
 #else
   return 0 == PA_HANDLE_EINTR(mprotect(reinterpret_cast<void*>(address), length,
                                        GetAccessFlags(accessibility)));
@@ -224,8 +224,8 @@ void SetSystemPagesAccessInternal(
   int access_flags = GetAccessFlags(accessibility);
 #if BUILDFLAG(ENABLE_PKEYS)
   int ret =
-      base::PkeyMprotect(reinterpret_cast<void*>(address), length,
-                         GetAccessFlags(accessibility), accessibility.pkey);
+      PkeyMprotectIfEnabled(reinterpret_cast<void*>(address), length,
+                            GetAccessFlags(accessibility), accessibility.pkey);
 #else
   int ret = PA_HANDLE_EINTR(mprotect(reinterpret_cast<void*>(address), length,
                                      GetAccessFlags(accessibility)));
@@ -312,7 +312,8 @@ void DecommitSystemPagesInternal(
   // crbug.com/1153021).
   if (change_permissions) {
     SetSystemPagesAccess(address, length,
-                         PageAccessibilityConfiguration::kInaccessible);
+                         PageAccessibilityConfiguration(
+                             PageAccessibilityConfiguration::kInaccessible));
   }
 }
 

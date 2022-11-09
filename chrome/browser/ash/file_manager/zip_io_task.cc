@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
@@ -27,7 +28,7 @@
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/file_util_service.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -172,7 +173,7 @@ void ZipIOTask::Complete(State state) {
     base::UmaHistogramTimes("FileBrowser.ZipTask.Time",
                             base::TimeTicks::Now() - start_time_);
   }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(complete_callback_), std::move(progress_)));
 }
@@ -210,7 +211,7 @@ void ZipIOTask::ZipItems(
   zip_file_creator_->SetProgressCallback(base::BindOnce(
       &ZipIOTask::OnZipProgress, weak_ptr_factory_.GetWeakPtr()));
   zip_file_creator_->SetCompletionCallback(
-      BindPostTask(base::SequencedTaskRunnerHandle::Get(),
+      BindPostTask(base::SequencedTaskRunner::GetCurrentDefault(),
                    base::BindOnce(&ZipIOTask::OnZipComplete,
                                   weak_ptr_factory_.GetWeakPtr())));
   zip_file_creator_->Start(LaunchFileUtilService());

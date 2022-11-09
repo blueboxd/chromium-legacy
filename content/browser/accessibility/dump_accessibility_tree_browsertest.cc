@@ -28,6 +28,10 @@
 #include "content/shell/browser/shell.h"
 #include "ui/accessibility/platform/inspect/ax_api_type.h"
 
+#if BUILDFLAG(IS_MAC)
+#include "base/mac/mac_util.h"
+#endif
+
 // TODO(aboxhall): Create expectations on Android for these
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE(x) DISABLED_##x
@@ -3507,6 +3511,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapMoveImageToTop) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapChangeUsemap) {
   RunRegressionTest(FILE_PATH_LITERAL("reused-map-change-usemap.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, RootBecomesLeaf) {
+  RunRegressionTest(FILE_PATH_LITERAL("root-becomes-leaf.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,

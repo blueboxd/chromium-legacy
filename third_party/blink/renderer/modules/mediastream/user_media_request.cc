@@ -88,6 +88,15 @@ enum class GetDisplayMediaConstraintsDisplaySurface {
   kMaxValue = kMonitor
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GetDisplayMediaBooleanConstraint {
+  kNotSpecified = 0,
+  kTrue = 1,
+  kFalse = 2,
+  kMaxValue = kFalse
+};
+
 void RecordUma(GetDisplayMediaConstraintsDisplaySurface value) {
   base::UmaHistogramEnumeration(
       "Media.GetDisplayMedia.Constraints.DisplaySurface", value);
@@ -366,6 +375,18 @@ void RecordSurfaceSwitchingConstraintUma(
       "Media.GetDisplayMedia.Constraints.SurfaceSwitching", value);
 }
 
+void RecordSuppressLocalAudioPlaybackConstraintUma(
+    absl::optional<bool> suppress_local_audio_playback) {
+  const GetDisplayMediaBooleanConstraint value =
+      (!suppress_local_audio_playback.has_value()
+           ? GetDisplayMediaBooleanConstraint::kNotSpecified
+       : suppress_local_audio_playback.value()
+           ? GetDisplayMediaBooleanConstraint::kTrue
+           : GetDisplayMediaBooleanConstraint::kFalse);
+  base::UmaHistogramEnumeration(
+      "Media.GetDisplayMedia.Constraints.SuppressLocalAudioPlayback", value);
+}
+
 MediaConstraints ParseOptions(
     ExecutionContext* execution_context,
     const V8UnionBooleanOrMediaTrackConstraints* options,
@@ -407,7 +428,7 @@ UserMediaRequest* UserMediaRequest::Create(
     return nullptr;
 
   std::string display_surface_constraint;
-  bool suppress_local_audio_playback = false;
+  absl::optional<bool> suppress_local_audio_playback;
 
   if (media_type == UserMediaRequestType::kUserMedia) {
     if (audio.IsNull() && video.IsNull()) {
@@ -538,7 +559,12 @@ UserMediaRequest* UserMediaRequest::Create(
   if (media_type == UserMediaRequestType::kDisplayMedia)
     RecordSurfaceSwitchingConstraintUma(options);
 
-  result->set_suppress_local_audio_playback(suppress_local_audio_playback);
+  result->set_suppress_local_audio_playback(
+      suppress_local_audio_playback.value_or(false));
+  if (media_type == UserMediaRequestType::kDisplayMedia) {
+    RecordSuppressLocalAudioPlaybackConstraintUma(
+        suppress_local_audio_playback);
+  }
 
   return result;
 }
@@ -745,11 +771,11 @@ void UserMediaRequest::OnMediaStreamsInitialized(MediaStreamVector streams) {
   for (const Member<MediaStream>& stream : streams) {
     MediaStreamTrackVector audio_tracks = stream->getAudioTracks();
     for (const auto& audio_track : audio_tracks)
-      audio_track->SetConstraints(audio_);
+      audio_track->SetInitialConstraints(audio_);
 
     MediaStreamTrackVector video_tracks = stream->getVideoTracks();
     for (const auto& video_track : video_tracks)
-      video_track->SetConstraints(video_);
+      video_track->SetInitialConstraints(video_);
 
     RecordIdentifiabilityMetric(
         surface_, GetExecutionContext(),
@@ -778,8 +804,10 @@ void UserMediaRequest::FailConstraint(const String& constraint_name,
   }
   // After this call, the execution context may be invalid.
   callbacks_->OnError(
-      nullptr, MakeGarbageCollected<V8MediaStreamError>(
-                   OverconstrainedError::Create(constraint_name, message)));
+      nullptr,
+      MakeGarbageCollected<V8MediaStreamError>(
+          OverconstrainedError::Create(constraint_name, message)),
+      capture_controller_);
   is_resolved_ = true;
 }
 
@@ -828,9 +856,11 @@ void UserMediaRequest::Fail(Error name, const String& message) {
   }
 
   // After this call, the execution context may be invalid.
-  callbacks_->OnError(nullptr, MakeGarbageCollected<V8MediaStreamError>(
-                                   MakeGarbageCollected<DOMException>(
-                                       exception_code, message)));
+  callbacks_->OnError(
+      nullptr,
+      MakeGarbageCollected<V8MediaStreamError>(
+          MakeGarbageCollected<DOMException>(exception_code, message)),
+      capture_controller_);
   is_resolved_ = true;
 }
 
@@ -845,10 +875,12 @@ void UserMediaRequest::ContextDestroyed() {
           "audio constraints=%s, video constraints=%s",
           AudioConstraints().ToString().Utf8().c_str(),
           VideoConstraints().ToString().Utf8().c_str()));
-      callbacks_->OnError(nullptr, MakeGarbageCollected<V8MediaStreamError>(
-                                       MakeGarbageCollected<DOMException>(
-                                           DOMExceptionCode::kAbortError,
-                                           "Context destroyed")));
+      callbacks_->OnError(
+          nullptr,
+          MakeGarbageCollected<V8MediaStreamError>(
+              MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                                 "Context destroyed")),
+          capture_controller_);
     }
     client_ = nullptr;
   }

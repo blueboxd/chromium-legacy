@@ -6,10 +6,12 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/device_trust/common/common_types.h"
+#include "chrome/browser/enterprise/connectors/device_trust/common/device_trust_constants.h"
 #include "chrome/browser/enterprise/connectors/device_trust/common/metrics_utils.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
@@ -35,8 +37,6 @@ namespace {
 
 constexpr char kErrorPropertyName[] = "error";
 constexpr char kSpecificErrorCodePropertyName[] = "code";
-
-constexpr base::TimeDelta kDeviceTrustTimeout = base::Minutes(1);
 
 const std::string CreateErrorJsonString(
     const DeviceTrustResponse& dt_response) {
@@ -175,7 +175,7 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
       // Because BuildChallengeResponse() may run the resume callback
       // synchronously, this call is deferred to ensure that this method returns
       // DEFER before `resume_navigation_callback` is invoked.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               [](base::WeakPtr<DeviceTrustNavigationThrottle> throttler,
@@ -189,11 +189,11 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
               weak_ptr_factory_.GetWeakPtr(), challenge,
               std::move(resume_navigation_callback)));
 
-      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&DeviceTrustNavigationThrottle::OnResponseTimedOut,
                          weak_ptr_factory_.GetWeakPtr(), start_time),
-          kDeviceTrustTimeout);
+          timeouts::kHandshakeTimeout);
 
       is_resumed_ = false;
       return DEFER;

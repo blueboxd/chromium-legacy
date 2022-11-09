@@ -211,7 +211,6 @@ class Range;
 class RenderBlockingResourceManager;
 class ResizeObserver;
 class ResourceFetcher;
-class ResourceResponse;
 class RootScrollerController;
 class SVGDocumentExtensions;
 class SVGUseElement;
@@ -1925,9 +1924,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
-  // TODO(https://crbug.com/1296161): Delete this function.
-  void CheckPartitionedCookiesOriginTrial(const ResourceResponse& response);
-
   void IncrementIgnoreDestructiveWriteModuleScriptCount() {
     ignore_destructive_write_module_script_count_++;
   }
@@ -1966,6 +1962,7 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class CheckPseudoHasCacheScope;
   friend class CanvasRenderingAPIUkmMetricsTest;
   friend class OffscreenCanvasRenderingAPIUkmMetricsTest;
+  friend class TapFriendlinessCheckerTest;
   FRIEND_TEST_ALL_PREFIXES(LazyLoadAutomaticImagesTest,
                            LoadAllImagesIfPrinting);
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,

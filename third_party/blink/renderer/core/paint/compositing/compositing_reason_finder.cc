@@ -116,7 +116,7 @@ CompositingReasons CompositingReasonsFor3DTransform(
 
     // We want to track whether (a) this element is in a preserve-3d scene and
     // (b) has a matrix that puts it into the third dimension in some way.
-    if (matrix.Creates3D()) {
+    if (matrix.Creates3d()) {
       LayoutObject* parent_for_element =
           layout_object.NearestAncestorForElement();
       if (parent_for_element && parent_for_element->Preserves3D()) {
@@ -333,11 +333,11 @@ CompositingReasonFinder::DirectReasonsForPaintPropertiesExceptScrolling(
   reasons |= BackfaceInvisibility3DAncestorReason(*layer);
 
   switch (style.StyleType()) {
-    case kPseudoIdPageTransition:
-    case kPseudoIdPageTransitionContainer:
-    case kPseudoIdPageTransitionImageWrapper:
-    case kPseudoIdPageTransitionIncomingImage:
-    case kPseudoIdPageTransitionOutgoingImage:
+    case kPseudoIdViewTransition:
+    case kPseudoIdViewTransitionGroup:
+    case kPseudoIdViewTransitionImagePair:
+    case kPseudoIdViewTransitionNew:
+    case kPseudoIdViewTransitionOld:
       reasons |= CompositingReason::kViewTransitionPseudoElement;
       break;
     default:

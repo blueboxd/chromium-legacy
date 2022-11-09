@@ -92,6 +92,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetFetchPriorityHint(original->FetchPriorityHint());
   request->SetPriority(original->Priority());
   request->SetKeepalive(original->Keepalive());
+  request->SetBrowsingTopics(original->BrowsingTopics());
   request->SetIsHistoryNavigation(original->IsHistoryNavigation());
   if (original->URLLoaderFactory()) {
     mojo::PendingRemote<network::mojom::blink::URLLoaderFactory> factory_clone;
@@ -121,8 +122,9 @@ static bool AreAnyMembersPresent(const RequestInit* init) {
          init->hasReferrer() || init->hasReferrerPolicy() || init->hasMode() ||
          init->hasTargetAddressSpace() || init->hasCredentials() ||
          init->hasCache() || init->hasRedirect() || init->hasIntegrity() ||
-         init->hasKeepalive() || init->hasPriority() || init->hasSignal() ||
-         init->hasDuplex() || init->hasTrustToken();
+         init->hasKeepalive() || init->hasBrowsingTopics() ||
+         init->hasPriority() || init->hasSignal() || init->hasDuplex() ||
+         init->hasTrustToken();
 }
 
 static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
@@ -529,6 +531,17 @@ Request* Request::CreateRequestWithRequestOrString(
 
   if (init->hasKeepalive())
     request->SetKeepalive(init->keepalive());
+
+  if (init->hasBrowsingTopics()) {
+    if (!execution_context->IsSecureContext()) {
+      exception_state.ThrowTypeError(
+          "browsingTopics: Topics operations are only available in secure "
+          "contexts.");
+      return nullptr;
+    }
+
+    request->SetBrowsingTopics(init->browsingTopics());
+  }
 
   // "If |init|'s method member is present, let |method| be it and run these
   // substeps:"
@@ -1020,13 +1033,7 @@ mojom::blink::FetchAPIRequestPtr Request::CreateFetchAPIRequest() const {
   fetch_api_request->is_history_navigation = request_->IsHistoryNavigation();
   fetch_api_request->destination = request_->Destination();
   fetch_api_request->request_initiator = request_->Origin();
-
-  // Strip off the fragment part of URL. So far, all callers expect the fragment
-  // to be excluded.
-  KURL url(request_->Url());
-  if (request_->Url().HasFragmentIdentifier())
-    url.RemoveFragmentIdentifier();
-  fetch_api_request->url = url;
+  fetch_api_request->url = KURL(request_->Url());
 
   HTTPHeaderMap headers;
   for (const auto& header : headers_->HeaderList()->List()) {

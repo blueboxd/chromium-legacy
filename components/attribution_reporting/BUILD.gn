@@ -15,8 +15,12 @@ component("attribution_reporting") {
     "aggregation_keys.cc",
     "aggregation_keys.h",
     "constants.h",
+    "filters.cc",
+    "filters.h",
     "parse.cc",
     "parse.h",
+    "source_registration.cc",
+    "source_registration.h",
   ]
 
   public_deps = [
@@ -36,10 +40,18 @@ component("attribution_reporting") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "parse_unittest.cc" ]
+  sources = [
+    "aggregation_keys_unittest.cc",
+    "filters_unittest.cc",
+    "parse_unittest.cc",
+    "source_registration_unittest.cc",
+  ]
 
   deps = [
     ":attribution_reporting",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }
@@ -77,4 +89,19 @@ fuzzer_test("os_trigger_parse_fuzzer") {
   ]
 
   seed_corpus = "//components/attribution_reporting/os_trigger_fuzzer_corpus/"
+}
+
+fuzzer_test("source_registration_fuzzer") {
+  sources = [ "source_registration_fuzzer.cc" ]
+  deps = [
+    ":attribution_reporting",
+    "//base",
+    "//base:i18n",
+    "//testing/libfuzzer/proto:json_proto",
+    "//testing/libfuzzer/proto:json_proto_converter",
+    "//third_party/libprotobuf-mutator",
+    "//url",
+  ]
+  seed_corpus =
+      "//testing/libfuzzer/fuzzers/attribution_source_registration_corpus/"
 }

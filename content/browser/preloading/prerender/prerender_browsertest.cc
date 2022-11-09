@@ -190,6 +190,12 @@ class PrerenderBrowserTest : public ContentBrowserTest,
  public:
   using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
 
+  enum class OriginType {
+    kSameOrigin,
+    kSameSiteCrossOrigin,
+    kCrossSite,
+  };
+
   PrerenderBrowserTest() {
     prerender_helper_ =
         std::make_unique<test::PrerenderTestHelper>(base::BindRepeating(
@@ -399,6 +405,9 @@ class PrerenderBrowserTest : public ContentBrowserTest,
           EXPECT_TRUE(ExecJs(rfhi, kMojoScript));
         });
   }
+
+  void TestPrerenderAllowedOnIframeWithStatusCode(OriginType origin_type,
+                                                  std::string status_code);
 
   test::PrerenderTestHelper* prerender_helper() {
     return prerender_helper_.get();
@@ -908,7 +917,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelledOn205Page) {
       PrerenderFinalStatus::kNavigationBadHttpStatus);
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAllowedOn204Iframe) {
+namespace {
+
+// Tests that an iframe navigation whose response has either 204 or 205 doesn't
+// cancel prerendering.
+// This is also a regression test for https://crbug.com/1362818.
+void PrerenderBrowserTest::TestPrerenderAllowedOnIframeWithStatusCode(
+    OriginType origin_type,
+    std::string status_code) {
+  // This test is designed for 204 and 205 status codes.
+  ASSERT_TRUE(status_code == "204" || status_code == "205");
+
   // Navigate to an initial page.
   const GURL kInitialUrl = GetUrl("/title1.html");
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -919,18 +938,89 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAllowedOn204Iframe) {
   test::PrerenderHostObserver host_observer(*web_contents_impl(), host_id);
   WaitForPrerenderLoadCompletion(kPrerenderingUrl);
 
-  // Fetch a subframe that responses 204 status code.
-  const GURL kIFrameUrl = GetUrl("/echo?status=204");
-  RenderFrameHost* prerender_rfh = GetPrerenderedMainFrameHost(host_id);
-  std::ignore =
-      ExecJs(prerender_rfh,
-             "const i = document.createElement('iframe'); i.src = '" +
-                 kIFrameUrl.spec() + "'; document.body.appendChild(i);");
+  // Construct an iframe URL whose response has 204/205.
+  GURL iframe_url;
+  std::string file_path = "/echo?status=" + status_code;
+  switch (origin_type) {
+    case OriginType::kSameOrigin:
+      iframe_url = GetUrl(file_path);
+      break;
+    case OriginType::kSameSiteCrossOrigin:
+      iframe_url = GetSameSiteCrossOriginUrl(file_path);
+      break;
+    case OriginType::kCrossSite:
+      iframe_url = GetCrossSiteUrl(file_path);
+      break;
+  }
 
-  // Fetching a subframe that response 204 status code shouldn't cancel
-  // prerendering unlike the mainframe that response 204 status code.
+  // Fetch the iframe.
+  TestNavigationManager iframe_navigation_manager(web_contents(), iframe_url);
+  RenderFrameHost* prerender_rfh = GetPrerenderedMainFrameHost(host_id);
+  std::ignore = ExecJs(prerender_rfh, JsReplace(R"(
+                const i = document.createElement('iframe');
+                i.src = $1;
+                document.body.appendChild(i);
+             )",
+                                                iframe_url.spec()));
+  switch (origin_type) {
+    case OriginType::kSameOrigin:
+      // Wait for the completion of the iframe navigation.
+      iframe_navigation_manager.WaitForNavigationFinished();
+      break;
+    case OriginType::kSameSiteCrossOrigin:
+    case OriginType::kCrossSite:
+      // Cross-origin iframe navigation is deferred in WillStartRequest() before
+      // checking the status code.
+      iframe_navigation_manager.WaitForFirstYieldAfterDidStartNavigation();
+      auto* request = static_cast<NavigationRequest*>(
+          iframe_navigation_manager.GetNavigationHandle());
+      EXPECT_TRUE(request->IsDeferredForTesting());
+      NavigationThrottleRunner* throttle_runner =
+          request->GetNavigationThrottleRunnerForTesting();
+      EXPECT_STREQ(
+          "PrerenderSubframeNavigationThrottle",
+          throttle_runner->GetDeferringThrottle()->GetNameForLogging());
+      break;
+  }
+
+  // Fetching an iframe whose response has 204/205 status code shouldn't cancel
+  // prerendering unlike the mainframe whose response has 204/205 status code.
   // https://wicg.github.io/nav-speculation/prerendering.html#no-bad-navs
   EXPECT_EQ(GetHostForUrl(kPrerenderingUrl), host_id);
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderAllowedOnIframe_204_SameOrigin) {
+  TestPrerenderAllowedOnIframeWithStatusCode(OriginType::kSameOrigin, "204");
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderAllowedOnIframe_204_SameSiteCrossOrigin) {
+  TestPrerenderAllowedOnIframeWithStatusCode(OriginType::kSameSiteCrossOrigin,
+                                             "204");
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderAllowedOnIframe_204_CrossSite) {
+  TestPrerenderAllowedOnIframeWithStatusCode(OriginType::kCrossSite, "204");
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderAllowedOnIframe_205_SameOrigin) {
+  TestPrerenderAllowedOnIframeWithStatusCode(OriginType::kSameOrigin, "205");
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderAllowedOnIframe_205_SameSiteCrossOrigin) {
+  TestPrerenderAllowedOnIframeWithStatusCode(OriginType::kSameSiteCrossOrigin,
+                                             "205");
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderAllowedOnIframe_205_CrossSite) {
+  TestPrerenderAllowedOnIframeWithStatusCode(OriginType::kCrossSite, "205");
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelOnAuthRequested) {
@@ -3145,11 +3235,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CSPPrefetchSrc) {
         PrerenderFinalStatus::kNavigationRequestBlockedByCsp);
   }
 
-  // TODO(https://crbug.com/1215031): Remove this reload after fixing the issue.
-  // Now a document cannot trigger prerendering twice, even if the first started
-  // one is canceled. So we have to reload the initiator page to get a new
-  // document instance.
-  ReloadBlockUntilNavigationsComplete(shell(), 1);
   EXPECT_TRUE(ExecJs(current_frame_host(), kCSPScript));
 
   // Check what happens when prerendering isn't blocked.
@@ -3201,11 +3286,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CSPDefaultSrc) {
         PrerenderFinalStatus::kNavigationRequestBlockedByCsp);
   }
 
-  // TODO(https://crbug.com/1215031): Remove this reload after fixing the issue.
-  // Now a document cannot trigger prerendering twice, even if the first started
-  // one is canceled. So we have to reload the initiator page to get a new
-  // document instance.
-  ReloadBlockUntilNavigationsComplete(shell(), 1);
   EXPECT_TRUE(ExecJs(current_frame_host(), kCSPScript));
 
   // Check what happens when prerendering isn't blocked.
@@ -3426,11 +3506,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
       "SpeculationRule",
       InterfaceNameHasher(mojom::PepperHost::Name_), 1);
 
-  // TODO(https://crbug.com/1215031): Remove this reload after fixing the issue.
-  // Now a document cannot trigger prerendering twice, even if the first started
-  // one is canceled. So we have to reload the initiator page to get a new
-  // document instance.
-  ReloadBlockUntilNavigationsComplete(shell(), 1);
   LoadAndWaitForPrerenderDestroyed(
       web_contents(), GetUrl("/prerender/page-with-object-plugin.html"),
       prerender_helper());
@@ -7124,14 +7199,16 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester().ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
-      PrerenderFinalStatus::kEmbedderTriggeredAndCrossOriginRedirected, 1);
+      PrerenderFinalStatus::kCrossSiteRedirect, 1);
   EXPECT_FALSE(HasHostForUrl(prerendering_initial_url));
 }
 
-void PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
+std::unique_ptr<PrerenderHandle>
+PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
     WebContentsImpl& web_contents,
     const GURL& prerendering_url,
     const GURL& cross_origin_url) {
+  EXPECT_FALSE(url::IsSameOriginWith(prerendering_url, cross_origin_url));
   RedirectChainObserver redirect_chain_observer{web_contents, cross_origin_url};
 
   // Start prerendering by embedder triggered prerendering.
@@ -7145,8 +7222,8 @@ void PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
   EXPECT_TRUE(prerender_handle);
   test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(web_contents,
                                                             prerendering_url);
-
-  ASSERT_EQ(2u, redirect_chain_observer.redirect_chain().size());
+  EXPECT_EQ(2u, redirect_chain_observer.redirect_chain().size());
+  return prerender_handle;
 }
 
 namespace {
@@ -8117,6 +8194,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   ExpectFinalStatusForSpeculationRule(
       PrerenderFinalStatus::kActivationNavigationParameterMismatch);
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.ActivationHeadersMismatch.SpeculationRule",
+      -511888193, 1);
 }
 
 class PrerenderPreloaderHoldbackBrowserTest : public PrerenderBrowserTest {
@@ -8669,7 +8749,7 @@ void CheckExpectedCrossOriginMetrics(
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
-      PrerenderFinalStatus::kEmbedderTriggeredAndCrossOriginRedirected, 1);
+      PrerenderFinalStatus::kCrossSiteRedirect, 1);
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCrossOriginRedirectionMismatch.Embedder_"
       "EmbedderSuffixForTest",
@@ -8779,12 +8859,10 @@ IN_PROC_BROWSER_TEST_F(
       /*domain_change=*/absl::nullopt);
 }
 
-// Tests PrerenderCrossOriginRedirectionMismatch.kHostMismatch and
-// PrerenderCrossOriginRedirectionDomain.kRedirectToSubDomain are recorded
-// when the prerendering navigation is redirected to a subdomain URL.
+// Tests that embedder triggered prerender can be redirected to the subdomain
+// because they are same-site.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        EmbedderTrigger_CrossOriginRedirection_ToSubdomain) {
-  base::HistogramTester histogram_tester;
   GURL initial_url = GetUrl("/empty.html");
   ASSERT_TRUE(NavigateToURL(shell(), initial_url));
 
@@ -8794,20 +8872,26 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GURL redirected_url = GetUrl("/empty.html").ReplaceComponents(set_host);
   GURL prerendering_url = GetUrl("/server-redirect?" + redirected_url.spec());
 
-  PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
-      *web_contents_impl(), prerendering_url, redirected_url);
-  CheckExpectedCrossOriginMetrics(
-      histogram_tester, PrerenderCrossOriginRedirectionMismatch::kHostMismatch,
-      /*protocol_change=*/absl::nullopt,
-      PrerenderCrossOriginRedirectionDomain::kRedirectToSubDomain);
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
+          *web_contents_impl(), prerendering_url, redirected_url);
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                 prerendering_url);
+  shell()->web_contents()->OpenURL(content::OpenURLParams(
+      prerendering_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+      /*is_renderer_initiated=*/false));
+  prerender_observer.WaitForActivation();
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
+      "EmbedderSuffixForTest",
+      PrerenderFinalStatus::kActivated, 1);
 }
 
-// Tests PrerenderCrossOriginRedirectionMismatch.kHostMismatch and
-// PrerenderCrossOriginRedirectionDomain.kRedirectFromSubDomain are recorded
-// when the prerendering navigation is redirected to a subdomain URL.
+// Tests that embedder triggered prerender can be redirected to the same site.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        EmbedderTrigger_CrossOriginRedirection_FromSubdomain) {
-  base::HistogramTester histogram_tester;
   GURL initial_url = GetUrl("/empty.html");
   ASSERT_TRUE(NavigateToURL(shell(), initial_url));
 
@@ -8817,14 +8901,70 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GURL redirected_url = GetUrl("/empty.html");
   GURL prerendering_url = GetUrl("/server-redirect?" + redirected_url.spec())
                               .ReplaceComponents(set_host);
-
-  PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
-      *web_contents_impl(), prerendering_url, redirected_url);
-  CheckExpectedCrossOriginMetrics(
-      histogram_tester, PrerenderCrossOriginRedirectionMismatch::kHostMismatch,
-      /*protocol_change=*/absl::nullopt,
-      PrerenderCrossOriginRedirectionDomain::kRedirectFromSubDomain);
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
+          *web_contents_impl(), prerendering_url, redirected_url);
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                 prerendering_url);
+  shell()->web_contents()->OpenURL(content::OpenURLParams(
+      prerendering_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+      /*is_renderer_initiated=*/false));
+  prerender_observer.WaitForActivation();
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
+      "EmbedderSuffixForTest",
+      PrerenderFinalStatus::kActivated, 1);
 }
+
+namespace {
+
+class EnforceDisableSameSiteRedirectionForEmbedderTriggeredPrerenderBrowserTest
+    : public PrerenderBrowserTest {
+ public:
+  EnforceDisableSameSiteRedirectionForEmbedderTriggeredPrerenderBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{
+            blink::features::
+                kSameSiteRedirectionForEmbedderTriggeredPrerender});
+  }
+  ~EnforceDisableSameSiteRedirectionForEmbedderTriggeredPrerenderBrowserTest()
+      override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that embedder triggered prerender can be redirected to the same
+// site.
+IN_PROC_BROWSER_TEST_F(
+    EnforceDisableSameSiteRedirectionForEmbedderTriggeredPrerenderBrowserTest,
+    EmbedderTrigger_CrossOriginRedirection_FromSubdomain) {
+  GURL initial_url = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  GURL::Replacements set_host;
+  set_host.SetHostStr("www.a.test");
+
+  GURL redirected_url = GetUrl("/empty.html");
+  GURL prerendering_url = GetUrl("/server-redirect?" + redirected_url.spec())
+                              .ReplaceComponents(set_host);
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                 prerendering_url);
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
+          *web_contents_impl(), prerendering_url, redirected_url);
+
+  prerender_observer.WaitForDestroyed();
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
+      "EmbedderSuffixForTest",
+      PrerenderFinalStatus::kSameSiteCrossOriginRedirect, 1);
+}
+
+}  // namespace
 
 // Tests PrerenderCrossOriginRedirectionMismatch.kHostMismatch and
 // PrerenderCrossOriginRedirectionDomain.kCrossDomain are recorded
@@ -8842,28 +8982,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       histogram_tester, PrerenderCrossOriginRedirectionMismatch::kHostMismatch,
       /*protocol_change=*/absl::nullopt,
       PrerenderCrossOriginRedirectionDomain::kCrossDomain);
-}
-
-// Tests that a prerendering navigation is redirected to another origin whose
-// port differs from the prerendering one. The prerender should be cancelled and
-// `PrerenderCrossOriginRedirectionCase::kPortMismatch` should be recorded.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       EmbedderTrigger_CrossOriginRedirection_PortChanged) {
-  base::HistogramTester histogram_tester;
-  GURL initial_url = GetUrl("/empty.html");
-  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
-
-  std::string port_str(base::NumberToString(ssl_server().port() + 1));
-  GURL::Replacements set_port;
-  set_port.SetPortStr(port_str);
-  GURL redirected_url = initial_url.ReplaceComponents(set_port);
-  GURL prerendering_url = GetUrl("/server-redirect?" + redirected_url.spec());
-  PrerenderEmbedderTriggeredCrossOriginRedirectionPage(
-      *web_contents_impl(), prerendering_url, redirected_url);
-  CheckExpectedCrossOriginMetrics(
-      histogram_tester, PrerenderCrossOriginRedirectionMismatch::kPortMismatch,
-      /*protocol_change=*/absl::nullopt,
-      /*domain_change=*/absl::nullopt);
 }
 
 // Tests that prerender works with accessibility.

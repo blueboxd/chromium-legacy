@@ -330,6 +330,9 @@ std::vector<std::string> GenerateKernelCmdline(
   if (base::FeatureList::IsEnabled(arc::kVmBroadcastPreNotifyANR))
     result.push_back("androidboot.arc.broadcast_anr_prenotify=1");
 
+  if (base::FeatureList::IsEnabled(arc::kEnableLazyWebViewInit))
+    result.push_back("androidboot.arc.web_view_zygote.lazy_init=1");
+
   return result;
 }
 
@@ -459,7 +462,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       if (delegate->IsCrosvm32bit()) {
         // This is a workaround for ARM Chromebooks where userland including
         // crosvm is compiled in 32 bit.
-        // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
+        // TODO(khmel): Remove this once crosvm becomes 64 bit binary on ARM.
         if (vm_ram_mib > static_cast<int>(k32bitVmRamMaxMib)) {
           VLOG(1) << "VmMemorySize is enabled, but we are on a 32-bit device, "
                   << "so limit the size to " << k32bitVmRamMaxMib << " MiB.";

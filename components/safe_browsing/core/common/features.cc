@@ -92,9 +92,13 @@ BASE_FEATURE(kEnhancedProtectionPhase2IOS,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
+BASE_FEATURE(kEsbIphBubbleAndCollapseSettings,
+             "EsbIphBubbleAndCollapseSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kExtensionTelemetry,
              "SafeBrowsingExtensionTelemetry",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds{
     &kExtensionTelemetry, "UploadIntervalSeconds",
@@ -118,7 +122,7 @@ BASE_FEATURE(kExtensionTelemetryPotentialPasswordTheft,
 
 BASE_FEATURE(kExtensionTelemetryReportContactedHosts,
              "SafeBrowsingExtensionTelemetryReportContactedHosts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryReportHostsContactedViaWebSocket,
              "SafeBrowsingExtensionTelemetryReportHostsContactedViaWebsocket",
@@ -126,7 +130,7 @@ BASE_FEATURE(kExtensionTelemetryReportHostsContactedViaWebSocket,
 
 BASE_FEATURE(kExtensionTelemetryTabsExecuteScriptSignal,
              "SafeBrowsingExtensionTelemetryTabsExecuteScriptSignal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryCookiesGetSignal,
              "SafeBrowsingExtensionTelemetryCookiesGetSignal",
@@ -147,6 +151,10 @@ BASE_FEATURE(kNestedArchives,
 BASE_FEATURE(kOmitNonUserGesturesFromReferrerChain,
              "SafeBrowsingOmitNonUserGesturesFromReferrerChain",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRealTimeUrlFilteringForEnterprise,
+             "RealTimeUrlFilteringForEnterprise",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRealTimeUrlLookupForEnterpriseAllowlistBypass,
              "SafeBrowsingRealTimeUrlLookupForEnterpriseAllowlistBypass",
@@ -243,16 +251,15 @@ constexpr struct {
       {&kExtensionTelemetryTabsExecuteScriptSignal, true},
       {&kFileTypePoliciesTag, true},
       {&kLogAccountEnhancedProtectionStateInProtegoPings, true},
-      {&kNestedArchives, true},
-      {&kOmitNonUserGesturesFromReferrerChain, true},
+      {&kNestedArchives, true}, {&kOmitNonUserGesturesFromReferrerChain, true},
+      {&kRealTimeUrlFilteringForEnterprise, true},
       {&kRealTimeUrlLookupForEnterpriseAllowlistBypass, true},
       {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
       {&kSafeBrowsingCsbrrWithToken, true},
       {&kSafeBrowsingDisableConsumerCsdForEnterprise, true},
       {&kSafeBrowsingEnterpriseCsd, true},
       {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
-      {&kSevenZipEvaluationEnabled, true},
-      {&kSimplifiedUrlDisplay, true},
+      {&kSevenZipEvaluationEnabled, true}, {&kSimplifiedUrlDisplay, true},
       {&kSuspiciousSiteTriggerQuotaFeature, true},
       {&kTailoredSecurityDesktopNotice, true},
       {&kTailoredSecurityIntegration, true},

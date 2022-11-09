@@ -25,6 +25,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
@@ -255,6 +256,7 @@ class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
 class RenderFrameHostManager;
 class RenderFrameHostOrProxy;
+class RenderFrameHostOwner;
 class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
@@ -2212,6 +2214,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             RunModalPromptDialogCallback callback) override;
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
+  void WillPotentiallyStartNavigation(const GURL& url) override;
   void UpdateFaviconURL(
       std::vector<blink::mojom::FaviconURLPtr> favicon_urls) override;
   void DownloadURL(blink::mojom::DownloadURLParamsPtr params) override;
@@ -2471,6 +2474,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetFrameTreeNode(FrameTreeNode& frame_tree_node);
   void SetFrameTree(FrameTree& frame_tree);
 
+  // RenderFrameHostImpl should not directly reference its FrameTreeNode as
+  // associated FrameTreeNode can change during RenderFrameHostImpl's lifetime
+  // (crbug.com/1179502). Instead, a dedicated interface (RenderFrameHostOwner)
+  // is exposed here.
+  // TODO(crbug.com/1179502): Remove RenderFrameHostImpl::SetFrameTreeNode in
+  // favour of this method.
+  void SetRenderFrameHostOwner(RenderFrameHostOwner* owner) { owner_ = owner; }
+
   // Builds and return a ClientSecurityState based on the internal
   // RenderFrameHostImpl state. This is never null.
   network::mojom::ClientSecurityStatePtr BuildClientSecurityState() const;
@@ -2673,6 +2684,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     kIframeNestedWithinFencedFrame
   };
 
+  void SnapshotDocumentForViewTransition(
+      blink::mojom::LocalFrame::SnapshotDocumentForViewTransitionCallback
+          callback);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2853,7 +2868,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            BlockNameUpdateForPendingDelete);
   FRIEND_TEST_ALL_PREFIXES(BackForwardCacheBrowsingContextStateBrowserTest,
                            SlowUnloadHandlerInIframe);
-
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           ResetOwnerInPendingDeletion);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           SetOwnerInSpeculativeRFHOwner);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTestWithBFCache,
+                           ResetOwnerInBFCache);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplPrerenderBrowserTest,
+                           KeepPrerenderRFHOwnerAfterActivation);
   class SubresourceLoaderFactoriesConfig;
 
   FrameTreeNode* GetSibling(int relative_offset) const;
@@ -3658,7 +3680,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crashed, since using
   // SiteInstance::GetProcess()/GetOrCreateAgentSchedulingGroupHost() has the
   // side effect of creating the process again if it is gone.
-  AgentSchedulingGroupHost& agent_scheduling_group_;
+  const raw_ref<AgentSchedulingGroupHost> agent_scheduling_group_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to
@@ -3667,6 +3689,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
   raw_ptr<FrameTreeNode> frame_tree_node_ = nullptr;
+
+  // Interface for RenderFrameHost to communicate with FrameTreeNode owning it,
+  // which can be null or can change during the lifetime of RenderFrameHost.
+  // This communication is intentionally restricted to minimise the chance of
+  // mistakes when the associated FrameTreeNode changes (e.g. during prerender
+  // activations).
+  //
+  // This points to:
+  // - Parent FrameTreeNode for subframes (which stays the same for the entire
+  //   lifetime of a subframe RenderFrameHostImpl).
+  // - Owning FrameTreeNode main RenderFrameHosts in kActive, kPrerender,
+  //   kSpeculative or kPendingCommit lifecycle states.
+  // - Null for main RenderFrameHosts in kPendingDeletion lifecycle state.
+  // - Null for main RenderFrameHosts stored in BFCache.
+  raw_ptr<RenderFrameHostOwner> owner_ = nullptr;
 
   // Stores all of the state related to each browsing context +
   // BrowsingInstance. This includes proxy hosts, and replication state, and

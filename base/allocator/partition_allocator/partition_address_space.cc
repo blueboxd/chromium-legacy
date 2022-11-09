@@ -18,6 +18,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/pkey.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_IOS)
@@ -28,7 +29,7 @@
 #include <windows.h>
 #endif  // BUILDFLAG(IS_WIN)
 
-#if defined(PA_ENABLE_SHADOW_METADATA)
+#if defined(PA_ENABLE_SHADOW_METADATA) || BUILDFLAG(ENABLE_PKEYS)
 #include <sys/mman.h>
 #endif
 
@@ -102,7 +103,11 @@ PA_NOINLINE void HandlePoolAllocFailure() {
 
 }  // namespace
 
+#if BUILDFLAG(ENABLE_PKEYS)
+alignas(PA_PKEY_ALIGN_SZ)
+#else
 alignas(kPartitionCachelineSize)
+#endif
     PartitionAddressSpace::PoolSetup PartitionAddressSpace::setup_;
 
 #if defined(PA_ENABLE_SHADOW_METADATA)
@@ -184,7 +189,8 @@ void PartitionAddressSpace::Init() {
   // conveniently taken care of by the last guard page of the regular pool.
   setup_.regular_pool_base_address_ =
       AllocPages(glued_pool_sizes, glued_pool_sizes,
-                 PageAccessibilityConfiguration::kInaccessible,
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessible),
                  PageTag::kPartitionAlloc, pools_fd);
   if (!setup_.regular_pool_base_address_)
     HandlePoolAllocFailure();
@@ -198,7 +204,8 @@ void PartitionAddressSpace::Init() {
 #endif
   setup_.regular_pool_base_address_ =
       AllocPages(regular_pool_size, regular_pool_size,
-                 PageAccessibilityConfiguration::kInaccessible,
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessible),
                  PageTag::kPartitionAlloc, regular_pool_fd);
   if (!setup_.regular_pool_base_address_)
     HandlePoolAllocFailure();
@@ -218,8 +225,9 @@ void PartitionAddressSpace::Init() {
   uintptr_t base_address = AllocPagesWithAlignOffset(
       0, brp_pool_size + kForbiddenZoneSize, brp_pool_size,
       brp_pool_size - kForbiddenZoneSize,
-      PageAccessibilityConfiguration::kInaccessible, PageTag::kPartitionAlloc,
-      brp_pool_fd);
+      PageAccessibilityConfiguration(
+          PageAccessibilityConfiguration::kInaccessible),
+      PageTag::kPartitionAlloc, brp_pool_fd);
   if (!base_address)
     HandlePoolAllocFailure();
   setup_.brp_pool_base_address_ = base_address + kForbiddenZoneSize;
@@ -287,7 +295,8 @@ void PartitionAddressSpace::Init() {
   // Reserve memory for the shadow pools.
   uintptr_t regular_pool_shadow_address =
       AllocPages(regular_pool_size, regular_pool_size,
-                 PageAccessibilityConfiguration::kInaccessible,
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessible),
                  PageTag::kPartitionAlloc, regular_pool_fd);
   regular_pool_shadow_offset_ =
       regular_pool_shadow_address - setup_.regular_pool_base_address_;
@@ -295,8 +304,9 @@ void PartitionAddressSpace::Init() {
   uintptr_t brp_pool_shadow_address = AllocPagesWithAlignOffset(
       0, brp_pool_size + kForbiddenZoneSize, brp_pool_size,
       brp_pool_size - kForbiddenZoneSize,
-      PageAccessibilityConfiguration::kInaccessible, PageTag::kPartitionAlloc,
-      brp_pool_fd);
+      PageAccessibilityConfiguration(
+          PageAccessibilityConfiguration::kInaccessible),
+      PageTag::kPartitionAlloc, brp_pool_fd);
   brp_pool_shadow_offset_ =
       brp_pool_shadow_address - setup_.brp_pool_base_address_;
 #endif
@@ -306,6 +316,14 @@ void PartitionAddressSpace::InitConfigurablePool(uintptr_t pool_base,
                                                  size_t size) {
   // The ConfigurablePool must only be initialized once.
   PA_CHECK(!IsConfigurablePoolInitialized());
+
+#if BUILDFLAG(ENABLE_PKEYS)
+  // It's possible that the pkey pool has been initialized first, in which case
+  // the setup_ memory has been made read-only. Remove the protection
+  // temporarily.
+  if (IsPkeyPoolInitialized())
+    TagGlobalsWithPkey(kDefaultPkey);
+#endif
 
   PA_CHECK(pool_base);
   PA_CHECK(size <= kConfigurablePoolMaxSize);
@@ -318,7 +336,44 @@ void PartitionAddressSpace::InitConfigurablePool(uintptr_t pool_base,
 
   AddressPoolManager::GetInstance().Add(
       kConfigurablePoolHandle, setup_.configurable_pool_base_address_, size);
+
+#if BUILDFLAG(ENABLE_PKEYS)
+  // Put the pkey protection back in place.
+  if (IsPkeyPoolInitialized())
+    TagGlobalsWithPkey(setup_.pkey_);
+#endif
 }
+
+#if BUILDFLAG(ENABLE_PKEYS)
+void PartitionAddressSpace::InitPkeyPool(int pkey) {
+  // The PkeyPool can't be initialized with conflicting pkeys.
+  if (IsPkeyPoolInitialized()) {
+    PA_CHECK(setup_.pkey_ == pkey);
+    return;
+  }
+
+  size_t pool_size = PkeyPoolSize();
+  setup_.pkey_pool_base_address_ =
+      AllocPages(pool_size, pool_size,
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessible),
+                 PageTag::kPartitionAlloc);
+  if (!setup_.pkey_pool_base_address_)
+    HandlePoolAllocFailure();
+
+  PA_DCHECK(!(setup_.pkey_pool_base_address_ & (pool_size - 1)));
+  setup_.pkey_ = pkey;
+  AddressPoolManager::GetInstance().Add(
+      kPkeyPoolHandle, setup_.pkey_pool_base_address_, pool_size);
+
+  PA_DCHECK(!IsInPkeyPool(setup_.pkey_pool_base_address_ - 1));
+  PA_DCHECK(IsInPkeyPool(setup_.pkey_pool_base_address_));
+  PA_DCHECK(IsInPkeyPool(setup_.pkey_pool_base_address_ + pool_size - 1));
+  PA_DCHECK(!IsInPkeyPool(setup_.pkey_pool_base_address_ + pool_size));
+
+  // TODO(1362969): support PA_ENABLE_SHADOW_METADATA
+}
+#endif  // BUILDFLAG(ENABLE_PKEYS)
 
 void PartitionAddressSpace::UninitForTesting() {
 #if defined(PA_GLUE_CORE_POOLS)

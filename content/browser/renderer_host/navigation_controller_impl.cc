@@ -244,37 +244,6 @@ bool ShouldTreatNavigationAsReload(FrameTreeNode* node,
   return true;
 }
 
-bool DoesURLMatchOriginForNavigation(
-    const GURL& destination_url,
-    const absl::optional<url::Origin>& origin,
-    SubresourceWebBundleNavigationInfo* subresource_web_bundle_navigation_info,
-    NavigationEntry* entry,
-    bool is_main_frame) {
-  // If there is no origin supplied there is nothing to match. This can happen
-  // for navigations to a pending entry and therefore it should be allowed.
-  if (!origin)
-    return true;
-
-  // For a history navigation to a document loaded with loadDataWithBaseURL,
-  // compare the origin to the entry's base URL instead of the data: URL used to
-  // commit.
-  const GURL& base_url_for_data_url = entry->GetBaseURLForDataURL();
-  bool check_origin_against_base_url =
-      is_main_frame && !base_url_for_data_url.is_empty();
-
-  const GURL& url_for_origin =
-      check_origin_against_base_url ? base_url_for_data_url : destination_url;
-  // Uuid-in-package: subframe from WebBundle has an opaque origin derived from
-  // the Bundle's origin.
-  if (url_for_origin.SchemeIs(url::kUuidInPackageScheme) &&
-      subresource_web_bundle_navigation_info) {
-    return origin->CanBeDerivedFrom(
-        subresource_web_bundle_navigation_info->bundle_url());
-  }
-
-  return origin->CanBeDerivedFrom(url_for_origin);
-}
-
 absl::optional<url::Origin> GetCommittedOriginForFrameEntry(
     const mojom::DidCommitProvisionalLoadParams& params,
     NavigationRequest* request) {
@@ -1041,7 +1010,7 @@ NavigationEntryImpl* NavigationControllerImpl::GetLastCommittedEntry() {
 
 bool NavigationControllerImpl::CanViewSource() {
   const std::string& mime_type =
-      frame_tree_.root()->current_frame_host()->GetPage().contents_mime_type();
+      frame_tree_->root()->current_frame_host()->GetPage().contents_mime_type();
   bool is_viewable_mime_type = blink::IsSupportedNonImageMimeType(mime_type) &&
                                !media::IsSupportedMediaMimeType(mime_type);
   NavigationEntry* visible_entry = GetVisibleEntry();
@@ -1688,7 +1657,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // state and title updates from RenderFrames to apply to the latest relevant
   // NavigationEntry.
   int nav_entry_id = active_entry->GetUniqueID();
-  for (FrameTreeNode* node : frame_tree_.Nodes())
+  for (FrameTreeNode* node : frame_tree_->Nodes())
     node->current_frame_host()->set_nav_entry_id(nav_entry_id);
 
   if (navigation_request->IsPrerenderedPageActivation()) {
@@ -1946,7 +1915,7 @@ void NavigationControllerImpl::UpdateNavigationEntryDetails(
 
 void NavigationControllerImpl::CreateInitialEntry() {
   DCHECK_EQ(entries_.size(), 0u);
-  RenderFrameHostImpl* rfh = frame_tree_.root()->current_frame_host();
+  RenderFrameHostImpl* rfh = frame_tree_->root()->current_frame_host();
   auto params = mojom::DidCommitProvisionalLoadParams::New();
   // The initial NavigationEntry's URL is the empty URL. This preserves the old
   // behavior of WebContent's GetLastCommittedURL() and GetVisibleURL() from
@@ -2022,7 +1991,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
             previous_frame_entry->protect_url_in_navigation_api());
 
     new_entry = GetLastCommittedEntry()->CloneAndReplace(
-        frame_entry, true, request->frame_tree_node(), frame_tree_.root());
+        frame_entry, true, request->frame_tree_node(), frame_tree_->root());
     if (new_entry->GetURL().DeprecatedGetOriginAsURL() !=
         params.url.DeprecatedGetOriginAsURL()) {
       // TODO(jam): we had one report of this with a URL that was redirecting to
@@ -2340,7 +2309,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   std::unique_ptr<NavigationEntryImpl> new_entry =
       GetLastCommittedEntry()->CloneAndReplace(
           std::move(frame_entry), is_same_document, rfh->frame_tree_node(),
-          frame_tree_.root());
+          frame_tree_->root());
 
   SetShouldSkipOnBackForwardUIIfNeeded(
       replace_entry, previous_document_was_activated,
@@ -2612,7 +2581,7 @@ void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
   // progress, since this will cause a use-after-free.  (We only allow this
   // when the tab is being destroyed for shutdown, since it won't return to
   // NavigateToEntry in that case.)  http://crbug.com/347742.
-  CHECK(!in_navigate_to_pending_entry_ || frame_tree_.IsBeingDestroyed());
+  CHECK(!in_navigate_to_pending_entry_ || frame_tree_->IsBeingDestroyed());
 
   if (was_failure && pending_entry_) {
     failed_pending_entry_id_ = pending_entry_->GetUniqueID();
@@ -2943,7 +2912,7 @@ bool NavigationControllerImpl::IsUnmodifiedBlankTab() {
   return IsInitialNavigation() &&
          (!GetLastCommittedEntry() ||
           GetLastCommittedEntry()->IsInitialEntry()) &&
-         !frame_tree_.has_accessed_initial_main_document();
+         !frame_tree_->has_accessed_initial_main_document();
 }
 
 SessionStorageNamespace* NavigationControllerImpl::GetSessionStorageNamespace(
@@ -3138,7 +3107,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   DCHECK(!blink::IsRendererDebugURL(pending_entry_->GetURL()));
   bool is_forced_reload = needs_reload_;
   needs_reload_ = false;
-  FrameTreeNode* root = frame_tree_.root();
+  FrameTreeNode* root = frame_tree_->root();
   int nav_entry_id = pending_entry_->GetUniqueID();
   bool is_browser_initiated = !initiator_rfh;
 
@@ -3151,7 +3120,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   if (pending_entry_index_ == last_committed_entry_index_ &&
       !pending_entry_->IsRestored() &&
       pending_entry_->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) {
-    frame_tree_.StopLoading();
+    frame_tree_->StopLoading();
 
     DiscardNonCommittedEntries();
     return;
@@ -3512,14 +3481,14 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
   if (params.frame_tree_node_id != RenderFrameHost::kNoFrameTreeNodeId ||
       !params.frame_name.empty()) {
     node = params.frame_tree_node_id != RenderFrameHost::kNoFrameTreeNodeId
-               ? frame_tree_.FindByID(params.frame_tree_node_id)
-               : frame_tree_.FindByName(params.frame_name);
-    DCHECK(!node || node->frame_tree() == &frame_tree_);
+               ? frame_tree_->FindByID(params.frame_tree_node_id)
+               : frame_tree_->FindByName(params.frame_name);
+    DCHECK(!node || node->frame_tree() == &*frame_tree_);
   }
 
   // If no FrameTreeNode was specified, navigate the main frame.
   if (!node)
-    node = frame_tree_.root();
+    node = frame_tree_->root();
 
   // Compute overrides to the LoadURLParams for |override_user_agent|,
   // |should_replace_current_entry| and |has_user_gesture| that will be used
@@ -3826,8 +3795,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   GURL url_to_load;
   GURL virtual_url;
-  absl::optional<url::Origin> origin_to_commit =
-      frame_entry ? frame_entry->committed_origin() : absl::nullopt;
 
   // For main frames, rewrite the URL if necessary and compute the virtual URL
   // that should be shown in the address bar.
@@ -3874,15 +3841,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
                                url_to_load))
     return nullptr;
 
-  if (!DoesURLMatchOriginForNavigation(
-          url_to_load, origin_to_commit,
-          frame_entry->subresource_web_bundle_navigation_info(), entry,
-          node->IsOutermostMainFrame())) {
-    DCHECK(false) << " url:" << url_to_load
-                  << " origin:" << origin_to_commit.value();
-    return nullptr;
-  }
-
   // Look for a pending commit that is to another document in this
   // FrameTreeNode. If one exists, then the last committed URL will not be the
   // current URL by the time this navigation commits.
@@ -3927,7 +3885,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
-          frame_entry->committed_origin(),
+          absl::nullopt,
           // The correct storage key will be computed before committing the
           // navigation.
           blink::StorageKey(), override_user_agent, params.redirect_chain,
@@ -3972,7 +3930,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           /*ancestor_or_self_has_cspee=*/node->AncestorOrSelfHasCSPEE(),
           std::string() /* reduced_accept_language */,
           /*navigation_delivery_type=*/
-          network::mojom::NavigationDeliveryType::kDefault);
+          network::mojom::NavigationDeliveryType::kDefault,
+          /*view_transition_state=*/absl::nullopt);
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -4021,8 +3980,6 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   // document won't result in a navigation.
   // See also https://crbug.com/1277414.
   DCHECK(!entry->IsInitialEntryNotForSynchronousAboutBlank());
-  absl::optional<url::Origin> origin_to_commit =
-      frame_entry->committed_origin();
 
   Referrer dest_referrer = frame_entry->referrer();
   if (reload_type == ReloadType::ORIGINAL_REQUEST_URL &&
@@ -4033,7 +3990,6 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     // case avoids issues with sending data to the wrong page.
     dest_url = entry->GetOriginalRequestURL();
     dest_referrer = Referrer();
-    origin_to_commit.reset();
   }
 
   if (frame_tree_node->render_manager()->is_attaching_inner_delegate()) {
@@ -4044,16 +4000,6 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
 
   if (!IsValidURLForNavigation(frame_tree_node->IsOutermostMainFrame(),
                                entry->GetVirtualURL(), dest_url)) {
-    return nullptr;
-  }
-
-  if (!DoesURLMatchOriginForNavigation(
-          dest_url, origin_to_commit,
-          frame_entry->subresource_web_bundle_navigation_info(), entry,
-          frame_tree_node->IsOutermostMainFrame())) {
-    DCHECK(false) << " url:" << dest_url
-                  << " base_url_for_data_url: " << entry->GetBaseURLForDataURL()
-                  << " origin:" << origin_to_commit.value();
     return nullptr;
   }
 
@@ -4112,8 +4058,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   // of index -1.
   blink::mojom::CommitNavigationParamsPtr commit_params =
       entry->ConstructCommitNavigationParams(
-          *frame_entry, common_params->url, origin_to_commit,
-          common_params->method, entry->GetSubframeUniqueNames(frame_tree_node),
+          *frame_entry, common_params->url, common_params->method,
+          entry->GetSubframeUniqueNames(frame_tree_node),
           GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
           GetIndexOfEntry(entry), GetLastCommittedEntryIndex(), GetEntryCount(),
           frame_tree_node->pending_frame_policy(),
@@ -4144,7 +4090,7 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
   // when it wants to draw.  See http://crbug.com/11157
   ssl_manager_.DidCommitProvisionalLoad(*details);
 
-  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+  delegate_->NotifyNavigationStateChangedFromController(INVALIDATE_TYPE_ALL);
   delegate_->NotifyNavigationEntryCommitted(*details);
 
   // TODO(avi): Remove. http://crbug.com/170921
@@ -4304,7 +4250,7 @@ void NavigationControllerImpl::DiscardNonCommittedEntriesWithCommitDetails(
 
   if (!delegate_)
     return;
-  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+  delegate_->NotifyNavigationStateChangedFromController(INVALIDATE_TYPE_ALL);
 }
 
 int NavigationControllerImpl::GetEntryIndexWithUniqueID(
@@ -4425,7 +4371,7 @@ void NavigationControllerImpl::PendingEntryRefDeleted(PendingEntryRef* ref) {
     return;
 
   DiscardPendingEntry(true);
-  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
+  delegate_->NotifyNavigationStateChangedFromController(INVALIDATE_TYPE_URL);
 }
 
 std::unique_ptr<PolicyContainerPolicies>
@@ -4473,18 +4419,18 @@ void NavigationControllerImpl::BroadcastHistoryOffsetAndLength() {
         }
       },
       GetLastCommittedEntryIndex(), GetEntryCount());
-  frame_tree_.root()->render_manager()->ExecutePageBroadcastMethod(callback);
+  frame_tree_->root()->render_manager()->ExecutePageBroadcastMethod(callback);
 }
 
 void NavigationControllerImpl::DidAccessInitialMainDocument() {
   // We may have left a failed browser-initiated navigation in the address bar
   // to let the user edit it and try again.  Clear it now that content might
   // show up underneath it.
-  if (!frame_tree_.IsLoadingIncludingInnerFrameTrees() && GetPendingEntry())
+  if (!frame_tree_->IsLoadingIncludingInnerFrameTrees() && GetPendingEntry())
     DiscardPendingEntry(false);
 
   // Update the URL display.
-  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
+  delegate_->NotifyNavigationStateChangedFromController(INVALIDATE_TYPE_URL);
 }
 
 void NavigationControllerImpl::UpdateStateForFrame(
@@ -4613,11 +4559,9 @@ blink::mojom::NavigationApiHistoryEntryArraysPtr
 NavigationControllerImpl::GetNavigationApiHistoryEntryVectors(
     FrameTreeNode* node,
     NavigationRequest* request) {
-  url::Origin pending_origin =
-      request ? request->commit_params().origin_to_commit
-                    ? *request->commit_params().origin_to_commit
-                    : url::Origin::Create(request->common_params().url)
-              : url::Origin::Create(node->current_url());
+  url::Origin pending_origin = request
+                                   ? request->GetOriginToCommit()
+                                   : url::Origin::Create(node->current_url());
 
   scoped_refptr<SiteInstance> site_instance =
       node->current_frame_host()->GetSiteInstance();
@@ -4754,7 +4698,7 @@ bool NavigationControllerImpl::ShouldMaintainTrivialSessionHistory(
   // TODO(https://crbug.com/1197384): We may have to add portals in addition to
   // prerender and fenced frames. This should be kept in sync with
   // LocalFrame version, LocalFrame::ShouldMaintainTrivialSessionHistory.
-  return frame_tree_.is_prerendering() ||
+  return frame_tree_->is_prerendering() ||
          frame_tree_node->IsInFencedFrameTree();
 }
 

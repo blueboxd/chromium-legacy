@@ -41,44 +41,22 @@ static const ax::mojom::Role kRolesToSkip[]{
     ax::mojom::Role::kNavigation,
 };
 
-int32_t GetNumberOfChildParagraphs(const ui::AXNode* node) {
-  int n = 0;
-  for (auto iter = node->UnignoredChildrenBegin();
-       iter != node->UnignoredChildrenEnd(); ++iter) {
-    if (iter.get()->GetRole() == ax::mojom::Role::kParagraph)
-      n++;
-  }
-  return n;
-}
-
 // TODO(crbug.com/1266555): Replace this with a call to
 // OneShotAccessibilityTreeSearch.
-// The article node is the one which contains the most number of paragraphs.
-// TODO(crbug.com/1266555): Ensure that this also includes the header node.
-const ui::AXNode* GetArticleNode(const ui::AXNode* node) {
-  const ui::AXNode* article = nullptr;
-  int32_t max = 0;
+const ui::AXNode* GetMainNode(const ui::AXNode* root) {
   std::queue<const ui::AXNode*> queue;
-  queue.push(node);
-
+  queue.push(root);
   while (!queue.empty()) {
-    const ui::AXNode* popped = queue.front();
+    const ui::AXNode* node = queue.front();
     queue.pop();
-    int32_t n = GetNumberOfChildParagraphs(popped);
-    if (n > max) {
-      max = n;
-      article = popped;
-    }
-
-    if (!base::Contains(kContentRoles, node->GetRole())) {
-      for (auto iter = popped->UnignoredChildrenBegin();
-           iter != popped->UnignoredChildrenEnd(); ++iter) {
-        queue.push(iter.get());
-      }
+    if (node->GetRole() == ax::mojom::Role::kMain)
+      return node;
+    for (auto iter = node->UnignoredChildrenBegin();
+         iter != node->UnignoredChildrenEnd(); ++iter) {
+      queue.push(iter.get());
     }
   }
-
-  return article;
+  return nullptr;
 }
 
 // Recurse through the root node, searching for content nodes (any node whose
@@ -159,6 +137,11 @@ void AXTreeDistiller::DistillAXTree() {
 #endif
 
   // Otherwise, distill the AXTree in process using the rules-based algorithm.
+  DistillViaAlgorithm();
+  RunCallback();
+}
+
+void AXTreeDistiller::DistillViaAlgorithm() {
   content_node_ids_ = std::make_unique<std::vector<ui::AXNodeID>>();
   DCHECK(snapshot_);
   ui::AXTree tree;
@@ -168,17 +151,12 @@ void AXTreeDistiller::DistillAXTree() {
   if (!tree.Unserialize(*snapshot_))
     NOTREACHED() << tree.error();
 
-  const ui::AXNode* article_node = GetArticleNode(tree.root());
-  // If this page does not have an article node, this means it is not
-  // distillable.
-  if (!article_node) {
-    is_distillable_ = false;
-    RunCallback();
+  const ui::AXNode* main_node = GetMainNode(tree.root());
+  // If this page does not have a main node, this means it is not distillable.
+  if (!main_node)
     return;
-  }
 
-  AddContentNodesToVector(article_node, content_node_ids_.get());
-  RunCallback();
+  AddContentNodesToVector(main_node, content_node_ids_.get());
 }
 
 void AXTreeDistiller::RunCallback() {
@@ -198,7 +176,12 @@ void AXTreeDistiller::ProcessScreen2xResult(
     const std::vector<ui::AXNodeID>& content_node_ids) {
   content_node_ids_ =
       std::make_unique<std::vector<ui::AXNodeID>>(content_node_ids);
-  // TODO(https://crbug.com/1278249): Set |is_distillable_|.
+  // If no content nodes were identified, try the rules-based approach.
+  if (content_node_ids.empty())
+    DistillViaAlgorithm();
+  // TODO(crbug.com/1266555): If still no content nodes were identified, and
+  // there is a selection, try sending Screen2x a partial tree just containing
+  // the selected nodes.
   RunCallback();
 }
 #endif

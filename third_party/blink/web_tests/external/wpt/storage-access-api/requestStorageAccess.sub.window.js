@@ -3,21 +3,6 @@
 // META: script=/resources/testdriver-vendor.js
 'use strict';
 
-// Check if we were called with a query string of allowed=false. This would
-// indicate we expect the access to be denied.
-function processQueryParams() {
-  let testPrefix = "top-level-context";
-  let topLevelDocument = true;
-  for (const param of window.location.search.substring(1).split("&")) {
-    if (param.toLowerCase() === "rootdocument=false") {
-      topLevelDocument = false;
-    } else if (param.split("=")[0].toLowerCase() === "testcase") {
-      testPrefix = param.split("=")[1];
-    }
-  }
-  return {testPrefix, topLevelDocument};
-}
-
 // Document-level test config flags:
 //
 // testPrefix: Prefix each test case with an indicator so we know what context
@@ -30,12 +15,12 @@ const {testPrefix, topLevelDocument} = processQueryParams();
 // Common tests to run in all frames.
 test(() => {
   assert_not_equals(document.requestStorageAccess, undefined);
-}, "[" + testPrefix + "] document.requestStorageAccess() should be supported on the document interface");
+}, "[" + testPrefix + "] document.requestStorageAccess() should exist on the document interface");
 
 promise_test(t => {
   return promise_rejects_dom(t, "NotAllowedError", document.requestStorageAccess(),
     "document.requestStorageAccess() call without user gesture");
-}, "[" + testPrefix + "] document.requestStorageAccess() should be rejected with a NotAllowedError by default with no user gesture");
+}, "[" + testPrefix + "] document.requestStorageAccess() should be rejected in insecure context");
 
 // Logic to load test cases within combinations of iFrames.
 if (topLevelDocument) {
@@ -43,18 +28,18 @@ if (topLevelDocument) {
   // Specific requestStorageAccess() scenarios will be tested within the context
   // of various iFrames
   promise_test(t => {
-    const promise = RunRequestStorageAccessInDetachedFrame();
     const description = "document.requestStorageAccess() call in a detached frame";
     // Can't use `promise_rejects_dom` here, since the error comes from the wrong global.
-    return promise.then(t.unreached_func("Should have rejected: " + description), (e) => {
-      assert_equals(e.name, 'InvalidStateError', description);
-    });
-  }, "[non-fully-active] document.requestStorageAccess() should not resolve when run in a detached frame");
+    return RunRequestStorageAccessInDetachedFrame()
+      .then(t.unreached_func("Should have rejected: " + description), (e) => {
+        assert_equals(e.name, 'InvalidStateError', description);
+      });
+  }, "[non-fully-active] document.requestStorageAccess() should reject when run in a detached frame");
 
   promise_test(t => {
     return promise_rejects_dom(t, 'InvalidStateError', RunRequestStorageAccessViaDomParser(),
      "document.requestStorageAccess() in a detached DOMParser result");
-  }, "[non-fully-active] document.requestStorageAccess() should not resolve when run in a detached DOMParser document");
+  }, "[non-fully-active] document.requestStorageAccess() should reject when run in a detached DOMParser document");
 
   // Create a test with a single-child same-origin iframe.
   const sameOriginFramePromise = RunTestsInIFrame(
@@ -86,16 +71,14 @@ if (topLevelDocument) {
       ])
       .then(() => {
         promise_test(
-            async () => {
-              await test_driver.set_permission(
-                  {name: 'storage-access'}, 'granted');
-
-              const {clickPromise} = await ClickButtonWithGesture('b1',
-                () => document.requestStorageAccess());
-
-              await clickPromise;
+            async t => {
+              const {promise} = await RunCallbackWithGesture('b1', () => {
+                return promise_rejects_dom(t, "NotAllowedError", document.requestStorageAccess(),
+                "should reject in insecure context");
+              });
+              return promise;
             },
             '[' + testPrefix +
-                '] document.requestStorageAccess() should be resolved when called properly with a user gesture');
+                '] document.requestStorageAccess() should be rejected when called with a user gesture in insecure context');
       });
 }

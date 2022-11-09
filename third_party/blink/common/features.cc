@@ -326,6 +326,10 @@ BASE_FEATURE(kSameSiteCrossOriginForSpeculationRulesPrerender,
              "SameSiteCrossOriginForSpeculationRulesPrerender",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSameSiteRedirectionForEmbedderTriggeredPrerender,
+             "SameSiteRedirectionForEmbedderTriggeredPrerender",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPrerender2SequentialPrerendering,
              "Prerender2SequentialPrerendering",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -620,6 +624,22 @@ const base::FeatureParam<int> kForceDarkForegroundLightnessThresholdParam{
 // Can also set to -1 to let Blink's internal settings control the value
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
+
+const base::FeatureParam<ForceDarkImageClassifier>::Option
+    forcedark_image_classifier_policy_options[] = {
+        {ForceDarkImageClassifier::kUseBlinkSettings,
+         "use_blink_settings_for_image_policy"},
+        {ForceDarkImageClassifier::kNumColorsWithMlFallback,
+         "num_colors_with_ml_fallback"},
+        {ForceDarkImageClassifier::kTransparencyAndNumColors,
+         "transparency_and_num_colors"},
+};
+
+const base::FeatureParam<ForceDarkImageClassifier>
+    kForceDarkImageClassifierParam{&kForceWebContentsDarkMode,
+                                   "classifier_policy",
+                                   ForceDarkImageClassifier::kUseBlinkSettings,
+                                   &forcedark_image_classifier_policy_options};
 
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
 BASE_FEATURE(kWebRtcUseMinMaxVEADimensions,

@@ -14,7 +14,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/lock.h"
@@ -67,9 +67,23 @@ WebAppCommandManager::~WebAppCommandManager() {
   DCHECK(is_in_shutdown_);
 }
 
+void WebAppCommandManager::Start() {
+  started_ = true;
+  std::vector<std::unique_ptr<WebAppCommand>> to_schedule;
+  std::swap(commands_waiting_for_start_, to_schedule);
+
+  for (auto& command : to_schedule) {
+    ScheduleCommand(std::move(command));
+  }
+}
+
 void WebAppCommandManager::ScheduleCommand(
     std::unique_ptr<WebAppCommand> command) {
   DCHECK(command);
+  if (!started_) {
+    commands_waiting_for_start_.push_back(std::move(command));
+    return;
+  }
   if (is_in_shutdown_) {
     AddValueToLog(CreateLogValue(*command, CommandResult::kShutdown));
     return;
@@ -93,7 +107,7 @@ void WebAppCommandManager::OnLockAcquired(WebAppCommand::Id command_id,
   // calling back into Enqueue/Destroy. This can especially be an issue if
   // this task is being run in response to a call to
   // NotifySyncSourceRemoved.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebAppCommandManager::StartCommandOrPrepareForLoad,
                      weak_ptr_factory_.GetWeakPtr(), command_it->second.get(),

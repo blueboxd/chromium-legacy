@@ -18,7 +18,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/device_reauth/mock_biometric_authenticator.h"
@@ -127,7 +129,7 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(void,
               ShowUnmaskPrompt,
               (const autofill::CreditCard&,
-               UnmaskCardReason,
+               const autofill::CardUnmaskPromptOptions&,
                base::WeakPtr<autofill::CardUnmaskDelegate>),
               (override));
   MOCK_METHOD(void,
@@ -241,7 +243,8 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
-              (base::WeakPtr<autofill::TouchToFillDelegate>),
+              (base::WeakPtr<autofill::TouchToFillDelegate>,
+               base::span<const autofill::CreditCard* const>),
               (override));
   MOCK_METHOD(void, HideTouchToFillCreditCard, (), (override));
   MOCK_METHOD(void,

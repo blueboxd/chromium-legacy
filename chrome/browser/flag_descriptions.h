@@ -52,6 +52,9 @@ extern const char kAcceleratedVideoEncodeDescription[];
 #if BUILDFLAG(ENABLE_PDF)
 extern const char kAccessiblePDFFormName[];
 extern const char kAccessiblePDFFormDescription[];
+
+extern const char kPdfUseSkiaRendererName[];
+extern const char kPdfUseSkiaRendererDescription[];
 #endif
 
 extern const char kAccountIdMigrationName[];
@@ -124,6 +127,9 @@ extern const char kPasswordNotesWithBackupDescription[];
 
 extern const char kPasswordViewPageInSettingsName[];
 extern const char kPasswordViewPageInSettingsDescription[];
+
+extern const char kPPAPISharedImagesSwapChainName[];
+extern const char kPPAPISharedImagesSwapChainDescription[];
 
 extern const char kPrivacyIndicatorsName[];
 extern const char kPrivacyIndicatorsDescription[];
@@ -1010,6 +1016,9 @@ extern const char kLensCameraAssistedSearchDescription[];
 extern const char kLensRegionSearchStaticPageName[];
 extern const char kLensRegionSearchStaticPageDescription[];
 
+extern const char kLensImageFormatOptimizationsName[];
+extern const char kLensImageFormatOptimizationsDescription[];
+
 extern const char kLensOnQuickActionSearchWidgetName[];
 extern const char kLensOnQuickActionSearchWidgetDescription[];
 
@@ -1433,9 +1442,6 @@ extern const char kSafetyCheckUnusedSitePermissionsDescription[];
 
 extern const char kPartitionedCookiesName[];
 extern const char kPartitionedCookiesDescription[];
-// TODO(crbug.com/1296161): Remove this when the CHIPS OT ends.
-extern const char kPartitionedCookiesBypassOriginTrialName[];
-extern const char kPartitionedCookiesBypassOriginTrialDescription[];
 
 extern const char kNoncedPartitionedCookiesName[];
 extern const char kNoncedPartitionedCookiesDescription[];
@@ -2150,9 +2156,6 @@ extern const char kMessagesForAndroidPWAInstallDescription[];
 extern const char kMessagesForAndroidReaderModeName[];
 extern const char kMessagesForAndroidReaderModeDescription[];
 
-extern const char kMessagesForAndroidSafetyTipName[];
-extern const char kMessagesForAndroidSafetyTipDescription[];
-
 extern const char kMessagesForAndroidSaveCardName[];
 extern const char kMessagesForAndroidSaveCardDescription[];
 
@@ -2242,9 +2245,6 @@ extern const char kReengagementNotificationDescription[];
 
 extern const char kRelatedSearchesName[];
 extern const char kRelatedSearchesDescription[];
-
-extern const char kRelatedSearchesAlternateUxName[];
-extern const char kRelatedSearchesAlternateUxDescription[];
 
 extern const char kRelatedSearchesInBarName[];
 extern const char kRelatedSearchesInBarDescription[];
@@ -2549,6 +2549,9 @@ extern const char kWebAuthenticationPermitEnterpriseAttestationDescription[];
 extern const char kCalculateNativeWinOcclusionName[];
 extern const char kCalculateNativeWinOcclusionDescription[];
 
+extern const char kCloudApAuthName[];
+extern const char kCloudApAuthDescription[];
+
 extern const char kEnableMediaFoundationVideoCaptureName[];
 extern const char kEnableMediaFoundationVideoCaptureDescription[];
 
@@ -2724,6 +2727,9 @@ extern const char kArcGhostWindowNewStyleDescription[];
 
 extern const char kArcGameModeName[];
 extern const char kArcGameModeDescription[];
+
+extern const char kArcInstantResponseWindowOpenName[];
+extern const char kArcInstantResponseWindowOpenDescription[];
 
 extern const char kArcKeyboardShortcutHelperIntegrationName[];
 extern const char kArcKeyboardShortcutHelperIntegrationDescription[];
@@ -2961,6 +2967,9 @@ extern const char kDriveFsChromeNetworkingDescription[];
 extern const char kEnableAppReinstallZeroStateName[];
 extern const char kEnableAppReinstallZeroStateDescription[];
 
+extern const char kEnableArcHostVpnName[];
+extern const char kEnableArcHostVpnDescription[];
+
 extern const char kEnableAssistantRoutinesName[];
 extern const char kEnableAssistantRoutinesDescription[];
 
@@ -3101,6 +3110,9 @@ extern const char kExperimentalAccessibilityDictationWithPumpkinDescription[];
 
 extern const char kExperimentalAccessibilityDictationMoreCommandsName[];
 extern const char kExperimentalAccessibilityDictationMoreCommandsDescription[];
+
+extern const char kExperimentalAccessibilityDictationContextCheckingName[];
+extern const char kExperimentalAccessibilityDictationContextCheckingDescription[];
 
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[];
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[];

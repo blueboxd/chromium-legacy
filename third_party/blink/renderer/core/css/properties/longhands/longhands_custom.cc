@@ -1066,7 +1066,7 @@ const CSSValue* BorderImageSource::InitialValue() const {
 
 void BorderImageSource::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
-  state.Style()->SetBorderImageSource(
+  state.StyleBuilder().SetBorderImageSource(
       state.GetStyleImage(CSSPropertyID::kBorderImageSource, value));
 }
 
@@ -1757,8 +1757,7 @@ void ApplyColorSchemeValue(StyleResolverState& state,
   }
 
   state.StyleBuilder().SetColorScheme(std::move(color_schemes));
-
-  state.StyleRef().SetUsedColorScheme(
+  state.StyleBuilder().SetUsedColorScheme(
       flags, document.GetStyleEngine().GetPreferredColorScheme(),
       document.GetStyleEngine().GetForceDarkModeEnabled());
 
@@ -3552,29 +3551,30 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
 }
 
 void GridTemplateAreas::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetImplicitNamedGridColumnLines(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetImplicitNamedGridColumnLines(
       ComputedStyleInitialValues::InitialImplicitNamedGridColumnLines());
-  state.Style()->SetImplicitNamedGridRowLines(
+  builder.SetImplicitNamedGridRowLines(
       ComputedStyleInitialValues::InitialImplicitNamedGridRowLines());
 
-  state.Style()->SetNamedGridArea(
-      ComputedStyleInitialValues::InitialNamedGridArea());
-  state.Style()->SetNamedGridAreaRowCount(
+  builder.SetNamedGridArea(ComputedStyleInitialValues::InitialNamedGridArea());
+  builder.SetNamedGridAreaRowCount(
       ComputedStyleInitialValues::InitialNamedGridAreaRowCount());
-  state.Style()->SetNamedGridAreaColumnCount(
+  builder.SetNamedGridAreaColumnCount(
       ComputedStyleInitialValues::InitialNamedGridAreaColumnCount());
 }
 
 void GridTemplateAreas::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetImplicitNamedGridColumnLines(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetImplicitNamedGridColumnLines(
       state.ParentStyle()->ImplicitNamedGridColumnLines());
-  state.Style()->SetImplicitNamedGridRowLines(
+  builder.SetImplicitNamedGridRowLines(
       state.ParentStyle()->ImplicitNamedGridRowLines());
 
-  state.Style()->SetNamedGridArea(state.ParentStyle()->NamedGridArea());
-  state.Style()->SetNamedGridAreaRowCount(
+  builder.SetNamedGridArea(state.ParentStyle()->NamedGridArea());
+  builder.SetNamedGridAreaRowCount(
       state.ParentStyle()->NamedGridAreaRowCount());
-  state.Style()->SetNamedGridAreaColumnCount(
+  builder.SetNamedGridAreaColumnCount(
       state.ParentStyle()->NamedGridAreaColumnCount());
 }
 
@@ -3597,14 +3597,14 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
       new_named_grid_areas, implicit_named_grid_column_lines, kForColumns);
   StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
       new_named_grid_areas, implicit_named_grid_row_lines, kForRows);
-  state.Style()->SetImplicitNamedGridColumnLines(
-      implicit_named_grid_column_lines);
-  state.Style()->SetImplicitNamedGridRowLines(implicit_named_grid_row_lines);
 
-  state.Style()->SetNamedGridArea(new_named_grid_areas);
-  state.Style()->SetNamedGridAreaRowCount(grid_template_areas_value.RowCount());
-  state.Style()->SetNamedGridAreaColumnCount(
-      grid_template_areas_value.ColumnCount());
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetImplicitNamedGridColumnLines(implicit_named_grid_column_lines);
+  builder.SetImplicitNamedGridRowLines(implicit_named_grid_row_lines);
+
+  builder.SetNamedGridArea(new_named_grid_areas);
+  builder.SetNamedGridAreaRowCount(grid_template_areas_value.RowCount());
+  builder.SetNamedGridAreaColumnCount(grid_template_areas_value.ColumnCount());
 }
 
 const CSSValue* GridTemplateAreas::InitialValue() const {
@@ -5757,7 +5757,7 @@ const CSSValue* Page::CSSValueFromComputedStyleInternal(
   return MakeGarbageCollected<CSSCustomIdentValue>(style.Page());
 }
 
-const CSSValue* PageTransitionTag::ParseSingleValue(
+const CSSValue* ViewTransitionName::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
@@ -5766,13 +5766,13 @@ const CSSValue* PageTransitionTag::ParseSingleValue(
   return css_parsing_utils::ConsumeCustomIdent(range, context);
 }
 
-const CSSValue* PageTransitionTag::CSSValueFromComputedStyleInternal(
+const CSSValue* ViewTransitionName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.PageTransitionTag().IsNull())
+  if (style.ViewTransitionName().IsNull())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.PageTransitionTag());
+  return MakeGarbageCollected<CSSCustomIdentValue>(style.ViewTransitionName());
 }
 
 const CSSValue* PaintOrder::ParseSingleValue(
@@ -8050,7 +8050,7 @@ void WebkitBorderImage::ApplyValue(StyleResolverState& state,
   NinePieceImage image;
   CSSToStyleMap::MapNinePieceImage(state, CSSPropertyID::kWebkitBorderImage,
                                    value, image);
-  state.Style()->SetBorderImage(image);
+  state.StyleBuilder().SetBorderImage(image);
 }
 
 const CSSValue* WebkitBorderVerticalSpacing::ParseSingleValue(
@@ -8356,7 +8356,7 @@ const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
 
 void WebkitMaskBoxImageSource::ApplyValue(StyleResolverState& state,
                                           const CSSValue& value) const {
-  state.Style()->SetMaskBoxImageSource(
+  state.StyleBuilder().SetMaskBoxImageSource(
       state.GetStyleImage(CSSPropertyID::kWebkitMaskBoxImageSource, value));
 }
 

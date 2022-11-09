@@ -257,7 +257,6 @@
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "components/url_param_filter/content/url_param_filter_throttle.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -374,6 +373,9 @@
 #include "chrome/browser/ash/drive/fileapi/drivefs_file_system_backend_delegate.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_system_provider/fileapi/backend_delegate.h"
+#include "chrome/browser/ash/fileapi/external_file_url_loader_factory.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/mtp_file_system_backend_delegate.h"
 #include "chrome/browser/ash/login/signin/merge_session_navigation_throttle.h"
 #include "chrome/browser/ash/login/signin/merge_session_throttling_utils.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
@@ -384,9 +386,6 @@
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_profile_utils.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
-#include "chrome/browser/chromeos/fileapi/external_file_url_loader_factory.h"
-#include "chrome/browser/chromeos/fileapi/file_system_backend.h"
-#include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -644,8 +643,14 @@
 #include "chrome/browser/lacros/chrome_browser_main_extra_parts_lacros.h"
 #include "chrome/browser/speech/tts_lacros.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_lacros.h"
+#include "chrome/common/chrome_descriptors.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
+#include "chromeos/startup/browser_postlogin_params.h"
+#include "chromeos/startup/startup.h"           // nogncheck
+#include "chromeos/startup/startup_switches.h"  // nogncheck
+#include "mojo/core/embedder/embedder.h"
 #include "ui/base/ui_base_switches.h"
 #endif
 
@@ -2541,6 +2546,23 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Pass startup and post-login parameter FDs to child processes in Lacros.
+  if (process_type != switches::kZygoteProcess) {
+    constexpr int kStartupDataFD =
+        kCrosStartupDataDescriptor + base::GlobalDescriptors::kBaseDescriptor;
+    command_line->AppendSwitchASCII(chromeos::switches::kCrosStartupDataFD,
+                                    base::NumberToString(kStartupDataFD));
+
+    if (chromeos::IsLaunchedWithPostLoginParams()) {
+      constexpr int kPostLoginDataFD = kCrosPostLoginDataDescriptor +
+                                       base::GlobalDescriptors::kBaseDescriptor;
+      command_line->AppendSwitchASCII(chromeos::switches::kCrosPostLoginDataFD,
+                                      base::NumberToString(kPostLoginDataFD));
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   static const char* const kCommonSwitchNames[] = {
       embedder_support::kUserAgent,
       switches::kUserDataDir,  // Make logs go to the right file.
@@ -4328,8 +4350,73 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   }
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Map startup and post-login parameter files to child processes in Lacros.
+  // The FD numbers are passed via command line switches in
+  // |AppendExtraCommandLineSwitches|.
+  //
+  // NOTE: the Zygote process requires special handling.
+  // It doesn't need the post-login parameters, so it can be fully launched at
+  // login screen. Also, serializing startup data early in the initialization
+  // process requires temporarily initializing Mojo. That's handled in the
+  // |LaunchZygoteHelper| function in |content_main_runner_impl.cc|. Here, we
+  // deal with all other type of processes.
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  if (process_type != switches::kZygoteProcess) {
+    base::ScopedFD cros_startup_fd =
+        chromeos::BrowserInitParams::CreateStartupData();
+    if (cros_startup_fd.is_valid()) {
+      constexpr int kStartupDataFD =
+          kCrosStartupDataDescriptor + base::GlobalDescriptors::kBaseDescriptor;
+      mappings->Transfer(kStartupDataFD, std::move(cros_startup_fd));
+    }
+
+    if (chromeos::IsLaunchedWithPostLoginParams()) {
+      base::ScopedFD cros_postlogin_fd =
+          chromeos::BrowserPostLoginParams::CreatePostLoginData();
+      if (cros_postlogin_fd.is_valid()) {
+        constexpr int kPostLoginDataFD =
+            kCrosPostLoginDataDescriptor +
+            base::GlobalDescriptors::kBaseDescriptor;
+        mappings->Transfer(kPostLoginDataFD, std::move(cros_postlogin_fd));
+      }
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 #endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ChromeContentBrowserClient::GetAdditionalMappedFilesForZygote(
+    base::CommandLine* command_line,
+    PosixFileDescriptorInfo* mappings) {
+  // Create the file descriptor for Cros startup data and pass it.
+  // This FD will be used to obtain BrowserInitParams in Zygote process.
+  // Note that this requires Mojo, but Mojo cannot be fully initialized this
+  // due to dependencies on base::FeatureList. So we also temporarily initialize
+  // Mojo and then shut it down immediately after preparing the FD. This is
+  // inexpensive, an the features which control Mojo behavior aren't relevant
+  // for this operation.
+  //
+  // TODO(https://crbug.com/1299283): This will need to be changed before
+  // MojoIpcz experimentation can happen on Lacros, as it results in
+  // inconsistent MojoIpcz feature status across Mojo initializations.
+  mojo::core::Init();
+  base::ScopedFD cros_startup_fd =
+      chromeos::BrowserInitParams::CreateStartupData();
+  mojo::core::ShutDown();
+
+  if (cros_startup_fd.is_valid()) {
+    constexpr int kStartupDataFD =
+        kCrosStartupDataDescriptor + base::GlobalDescriptors::kBaseDescriptor;
+    command_line->AppendSwitchASCII(chromeos::switches::kCrosStartupDataFD,
+                                    base::NumberToString(kStartupDataFD));
+    mappings->Transfer(kStartupDataFD, std::move(cros_startup_fd));
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_WIN)
 std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
@@ -5105,11 +5192,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<ChromeNavigationUIData*>(navigation_ui_data);
 
-  url_param_filter::UrlParamFilterThrottle::MaybeCreateThrottle(
-      profile->GetPrefs()->GetBoolean(
-          policy::policy_prefs::kUrlParamFilterEnabled),
-      wc_getter.Run(), request, &result);
-
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   bool matches_enterprise_allowlist = safe_browsing::IsURLAllowlistedByPolicy(
       request.url, *profile->GetPrefs());
@@ -5693,8 +5775,8 @@ bool ChromeContentBrowserClient::WillInterceptWebSocket(
   // BrowserContextKeyedAPI factories for e.g. WebRequest.
   if (!web_request_api)
     return false;
-
-  return web_request_api->MayHaveProxies();
+  return (web_request_api->MayHaveProxies() ||
+          web_request_api->MayHaveWebsocketProxiesForExtensionTelemetry());
 #else
   return false;
 #endif
@@ -6937,9 +7019,13 @@ bool ChromeContentBrowserClient::ShouldDisableOriginAgentClusterDefault(
 }
 
 bool ChromeContentBrowserClient::WillProvidePublicFirstPartySets() {
+#if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableComponentUpdate) &&
          base::FeatureList::IsEnabled(features::kFirstPartySets);
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 }
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr

@@ -69,6 +69,7 @@ class AutofillProfile;
 enum class AutofillProgressDialogType;
 struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
+struct CardUnmaskPromptOptions;
 class CreditCard;
 class CreditCardCVCAuthenticator;
 enum class CreditCardFetchResult;
@@ -87,6 +88,7 @@ class StrikeDatabase;
 struct Suggestion;
 struct VirtualCardEnrollmentFields;
 class VirtualCardEnrollmentManager;
+struct VirtualCardManualFallbackBubbleOptions;
 enum class WebauthnDialogCallbackType;
 enum class WebauthnDialogState;
 
@@ -428,9 +430,10 @@ class AutofillClient : public RiskDataLoader {
 
   // A user has attempted to use a masked card. Prompt them for further
   // information to proceed.
-  virtual void ShowUnmaskPrompt(const CreditCard& card,
-                                UnmaskCardReason reason,
-                                base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
+  virtual void ShowUnmaskPrompt(
+      const CreditCard& card,
+      const CardUnmaskPromptOptions& card_unmask_prompt_options,
+      base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 
   // Shows a dialog for the user to choose/confirm the authentication
@@ -643,7 +646,8 @@ class AutofillClient : public RiskDataLoader {
   // events. Should be called only if |IsTouchToFillCreditCardSupported|
   // returns true.
   virtual bool ShowTouchToFillCreditCard(
-      base::WeakPtr<TouchToFillDelegate> delegate) = 0;
+      base::WeakPtr<TouchToFillDelegate> delegate,
+      base::span<const autofill::CreditCard* const> cards_to_suggest) = 0;
 
   // Hides the Touch To Fill surface for filling credit card information
   // if one is currently shown. Should be called only if
@@ -694,17 +698,10 @@ class AutofillClient : public RiskDataLoader {
   // Dismiss any visible offer notification on the current tab.
   virtual void DismissOfferNotification();
 
-  // Called when the virtual card has been fetched successfully.
-  // |masked_card_identifier_string| is the network + last four digits of
-  // the card number of the corresponding masked server card.
-  // |credit_card| and |cvc| include the information that allow the user to
-  // manually fill payment form. |card_image| is used for manual fallback
-  // bubble.
+  // Called when the virtual card has been fetched successfully. Uses the
+  // necessary information in `options` to show the manual fallback bubble.
   virtual void OnVirtualCardDataAvailable(
-      const std::u16string& masked_card_identifier_string,
-      const CreditCard* credit_card,
-      const std::u16string& cvc,
-      const gfx::Image& card_image = gfx::Image());
+      const VirtualCardManualFallbackBubbleOptions& options);
 
   // Called when some virtual card retrieval errors happened. Will show the
   // error dialog with virtual card related messages. The type of error dialog

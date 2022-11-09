@@ -1493,7 +1493,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ManuallyEnabled" enum="BooleanEnabled"
-    expires_after="2023-03-05">
+    expires_after="2023-05-07">
   <owner>aleventhal@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1589,7 +1589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Performance.ProcessDeferredAccessibilityEvents"
-    units="ms" expires_after="2023-03-05">
+    units="ms" expires_after="2023-05-07">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1601,7 +1601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Performance.SendPendingAccessibilityEvents"
-    units="ms" expires_after="2023-03-05">
+    units="ms" expires_after="2023-05-07">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1692,6 +1692,44 @@ chromium-metrics-reviews@google.com.
     tree. When an error in unserialization occurs, this is emitted and
     unserialization aborts. In the case of a tree with multiple issues, only the
     first error is recorded. Refer to AXTree::Unserialize for details.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.AnnotateScreenshotTime.{Result}"
+    units="ms" expires_after="2023-04-21">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the time taken to get a screenshot for ScreenAI visual annotator for
+    cases where the action {Result}. It's being emitted each time whenever it
+    gets or fails to get a screenshot for ScreenAI visual annotator. Refer to
+    AXScreenAIAnnotator::OnScreenshotReceived for details.
+  </summary>
+  <token key="Result">
+    <variant name="Failure" summary="has failed"/>
+    <variant name="Success" summary="has succeeded"/>
+  </token>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.LoadLibraryResult"
+    enum="ScreenAILoadLibraryResult" expires_after="2023-04-21">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records whether it loads or fails to load necessary Screen AI libraries.
+    It's being emitted when loading Screen AI libraries according to the
+    configuration. Refer to ScreenAIService::LoadLibrary for details.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ScreenAI.VisualAnnotator.NodesCount"
+    units="count" expires_after="2023-04-21">
+  <owner>kyungjunlee@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Records the number of annotations produced by ScreenAI visual annotator.
+    It's being emitted whenever getting annotations from ScreenAI visual
+    annotator.
   </summary>
 </histogram>
 
@@ -1942,7 +1980,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.MessageDismissalCondition"
-    enum="ReaderModeMessageDismissalCondition" expires_after="2023-03-05">
+    enum="ReaderModeMessageDismissalCondition" expires_after="2023-05-07">
   <owner>twellington@chromium.org</owner>
   <owner>aishwaryarj@google.com</owner>
   <summary>
@@ -1998,7 +2036,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.ReaderModeAccessibilitySettingSelected"
-    enum="Boolean" expires_after="2023-03-05">
+    enum="Boolean" expires_after="2023-05-07">
   <owner>twellington@chromium.org</owner>
   <owner>aishwaryarj@google.com</owner>
   <summary>
@@ -2008,7 +2046,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean"
-    expires_after="2023-03-05">
+    expires_after="2023-05-07">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the panel became visible at any point after a page was navigated.

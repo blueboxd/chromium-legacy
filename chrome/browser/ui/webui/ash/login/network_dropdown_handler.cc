@@ -23,15 +23,13 @@ const char kJsApiShowNetworkDetails[] = "showNetworkDetails";
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
 
 NetworkDropdownHandler::NetworkDropdownHandler() = default;
 NetworkDropdownHandler::~NetworkDropdownHandler() = default;
 
 void NetworkDropdownHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {}
-
-void NetworkDropdownHandler::InitializeDeprecated() {}
 
 void NetworkDropdownHandler::RegisterMessages() {
   AddCallback(kJsApiLaunchInternetDetailDialog,
@@ -84,4 +82,4 @@ void NetworkDropdownHandler::HandleShowNetworkConfig(const std::string& guid) {
       guid, LoginDisplayHost::default_host()->GetNativeWindow());
 }
 
-}  // namespace chromeos
+}  // namespace ash

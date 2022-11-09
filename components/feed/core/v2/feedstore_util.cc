@@ -21,12 +21,12 @@ std::string StreamKey(const StreamType& stream_type) {
     return kForYouStreamKey;
   if (stream_type.IsWebFeed())
     return kFollowStreamKey;
-  DCHECK(stream_type.IsChannelFeed());
+  DCHECK(stream_type.IsSingleWebFeed());
   std::string encoding;
   base::Base64UrlEncode(stream_type.GetWebFeedId(),
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &encoding);
-  return std::string(kChannelStreamKeyPrefix) + encoding;
+  return std::string(kSingleWebFeedStreamKeyPrefix) + encoding;
 }
 
 base::StringPiece StreamPrefix(feed::StreamKind stream_kind) {
@@ -34,21 +34,21 @@ base::StringPiece StreamPrefix(feed::StreamKind stream_kind) {
     return kForYouStreamKey;
   if (stream_kind == feed::StreamKind::kFollowing)
     return kFollowStreamKey;
-  DCHECK(stream_kind == feed::StreamKind::kChannel);
-  return kChannelStreamKeyPrefix;
+  DCHECK(stream_kind == feed::StreamKind::kSingleWebFeed);
+  return kSingleWebFeedStreamKeyPrefix;
 }
 StreamType StreamTypeFromId(base::StringPiece id) {
   if (id == kForYouStreamKey)
     return StreamType(feed::StreamKind::kForYou);
   if (id == kFollowStreamKey)
     return StreamType(feed::StreamKind::kFollowing);
-  if (base::StartsWith(id, kChannelStreamKeyPrefix,
+  if (base::StartsWith(id, kSingleWebFeedStreamKeyPrefix,
                        base::CompareCase::SENSITIVE)) {
-    std::string channel_key;
-    if (base::Base64UrlDecode(id.substr(kChannelStreamKeyPrefix.size()),
+    std::string single_web_feed_key;
+    if (base::Base64UrlDecode(id.substr(kSingleWebFeedStreamKeyPrefix.size()),
                               base::Base64UrlDecodePolicy::IGNORE_PADDING,
-                              &channel_key)) {
-      return StreamType(feed::StreamKind::kChannel, channel_key);
+                              &single_web_feed_key)) {
+      return StreamType(feed::StreamKind::kSingleWebFeed, single_web_feed_key);
     }
   }
   return {};
@@ -232,26 +232,6 @@ void SetLastServerResponseTime(Metadata& metadata,
 int32_t ContentHashFromPrefetchMetadata(
     const feedwire::PrefetchMetadata& prefetch_metadata) {
   return base::PersistentHash(prefetch_metadata.uri());
-}
-
-void AddMostRecentContentHashes(Metadata& metadata,
-                                std::deque<uint32_t> new_content_hashes) {
-  // Make sure the size of new contents do not exceed the cap.
-  if (new_content_hashes.size() > kMaxMostRecentContentHashes)
-    new_content_hashes.resize(kMaxMostRecentContentHashes);
-  // Combine the existing contents with the new contents.
-  new_content_hashes.insert(new_content_hashes.begin(),
-                            metadata.most_recent_content_hashes().begin(),
-                            metadata.most_recent_content_hashes().end());
-  // Remove the oldest contents to keep the combined contents within the cap.
-  if (new_content_hashes.size() > kMaxMostRecentContentHashes) {
-    auto end_iter = new_content_hashes.begin();
-    end_iter += (new_content_hashes.size() - kMaxMostRecentContentHashes);
-    new_content_hashes.erase(new_content_hashes.begin(), end_iter);
-  }
-  // Now copy over the capped combined contents.
-  metadata.mutable_most_recent_content_hashes()->Assign(
-      new_content_hashes.begin(), new_content_hashes.end());
 }
 
 base::flat_set<uint32_t> GetViewedContentHashes(const Metadata& metadata,

@@ -12,8 +12,33 @@ if (use_partition_alloc_as_malloc_default) {
 }
 
 declare_args() {
+  # Whether PartitionAlloc should be available for use or not.
+  # true makes PartitionAlloc linked to the executable or shared library and
+  # makes it available for use. It doesn't mean that the default allocator
+  # is PartitionAlloc, which is governed by |use_partition_alloc_as_malloc|.
+  #
+  # N.B. generally, embedders should look at this GN arg and at the
+  # corresponding buildflag to determine whether to interact with PA
+  # source at all (pulling the component in via GN, including headers,
+  # etc.). There is nothing stopping a lazy embedder from ignoring this
+  # and unconditionally using PA, but such a setup is inadvisable.
+  #
+  # This flag is currently set to false only on Cronet bots, because Cronet
+  # doesn't use PartitionAlloc at all, and doesn't wish to incur the library
+  # size increase (crbug.com/674570).
+  use_partition_alloc = true
+}
+
+declare_args() {
   # PartitionAlloc-Everywhere (PA-E).
-  use_partition_alloc_as_malloc = use_partition_alloc_as_malloc_default
+  use_partition_alloc_as_malloc =
+      use_partition_alloc && use_partition_alloc_as_malloc_default
+}
+
+if (!use_partition_alloc) {
+  assert(
+      !use_partition_alloc_as_malloc,
+      "Can't use PartitionAlloc-Everywhere when PartitionAlloc is wholly disabled")
 }
 
 declare_args() {
@@ -31,8 +56,10 @@ declare_args() {
   # These are effective only for memory allocated from PartitionAlloc, so it is
   # recommended to enable PA-E above, but isn't strictly necessary. Embedders
   # can create and use PA partitions explicitly.
-  enable_backup_ref_ptr_support = enable_backup_ref_ptr_support_default
-  enable_mte_checked_ptr_support = enable_mte_checked_ptr_support_default
+  enable_backup_ref_ptr_support =
+      use_partition_alloc && enable_backup_ref_ptr_support_default
+  enable_mte_checked_ptr_support =
+      use_partition_alloc && enable_mte_checked_ptr_support_default
 }
 
 assert(!(enable_backup_ref_ptr_support && enable_mte_checked_ptr_support),
@@ -51,8 +78,19 @@ declare_args() {
 
   enable_backup_ref_ptr_slow_checks =
       enable_backup_ref_ptr_slow_checks_default && enable_backup_ref_ptr_support
+
   enable_dangling_raw_ptr_checks =
       enable_dangling_raw_ptr_checks_default && enable_backup_ref_ptr_support
+
+  # Enables the dangling raw_ptr checks feature for the performance experiment.
+  # Not every dangling pointers have been fixed or annotated yet. To avoid
+  # accounting for the cost of calling the PA's embedder's callbacks when a
+  # dangling pointer has been detected, this simulates the raw_ptr to be
+  # allowed to dangle.
+  #
+  # This flag is temporary, and isn't used by PA embedders, so it doesn't need
+  # to go through build_overrides
+  enable_dangling_raw_ptr_perf_experiment = false
 }
 
 declare_args() {
@@ -75,6 +113,12 @@ assert(enable_backup_ref_ptr_support || !enable_backup_ref_ptr_slow_checks,
 assert(
     enable_backup_ref_ptr_support || !enable_dangling_raw_ptr_checks,
     "Can't enable dangling raw_ptr checks if BackupRefPtr isn't enabled at all")
+
+# To run the dangling raw_ptr detector experiment, the underlying feature must
+# be enabled too.
+assert(
+    enable_dangling_raw_ptr_checks || !enable_dangling_raw_ptr_perf_experiment,
+    "Missing dangling pointer checks feature for its performance experiment")
 
 declare_args() {
   enable_pkeys = is_linux && target_cpu == "x64"

@@ -169,7 +169,14 @@ void AddContentColors(ui::ColorMixer& mixer,
   mixer[kColorAshAppStateIndicatorColor] = {kColorAshTextColorPrimary};
   mixer[kColorAshAppStateIndicatorColorInactive] =
       ui::SetAlpha(kColorAshAppStateIndicatorColor, kDisabledColorOpacity);
-  mixer[kColorAshShelfHandleColor] = {kColorAshSeparatorColor};
+  mixer[kColorAshShelfHandleColor] = {cros_tokens::kIconColorSecondary};
+  mixer[kColorAshShelfTooltipBackgroundColor] = {
+      features::IsDarkLightModeEnabled() ? kColorAshInvertedShieldAndBase80
+                                         : kColorAshShieldAndBase80};
+  mixer[kColorAshShelfTooltipForegroundColor] = {
+      features::IsDarkLightModeEnabled()
+          ? cros_tokens::kTextColorPrimaryInverted
+          : cros_tokens::kTextColorPrimary};
   mixer[kColorAshSliderColorActive] = {kColorAshTextColorURL};
   mixer[kColorAshSliderColorInactive] = {kColorAshScrollBarColor};
   mixer[kColorAshRadioColorActive] = {kColorAshTextColorURL};

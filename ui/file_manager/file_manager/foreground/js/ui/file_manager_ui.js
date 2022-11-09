@@ -15,7 +15,6 @@ import {VolumeManager} from '../../../externs/volume_manager.js';
 import {XfConflictDialog} from '../../../widgets/xf_conflict_dialog.js';
 import {XfDlpRestrictionDetailsDialog} from '../../../widgets/xf_dlp_restriction_details_dialog.js';
 import {FilesPasswordDialog} from '../../elements/files_password_dialog.js';
-import {FilesToast} from '../../elements/files_toast.js';
 import {FilesTooltip} from '../../elements/files_tooltip.js';
 import {BannerController} from '../banner_controller.js';
 import {LaunchParam} from '../launch_param.js';
@@ -259,29 +258,11 @@ export class FileManagerUI {
     this.sortButton = queryDecoratedElement('#sort-button', MultiMenuButton);
 
     /**
-     * Ripple effect of sort button.
-     * @type {!FilesToggleRippleElement}
-     * @const
-     */
-    this.sortButtonToggleRipple =
-        /** @type {!FilesToggleRippleElement} */ (
-            queryRequiredElement('files-toggle-ripple', this.sortButton));
-
-    /**
      * The button to open gear menu.
      * @type {!MultiMenuButton}
      * @const
      */
     this.gearButton = queryDecoratedElement('#gear-button', MultiMenuButton);
-
-    /**
-     * Ripple effect of gear button.
-     * @type {!FilesToggleRippleElement}
-     * @const
-     */
-    this.gearButtonToggleRipple =
-        /** @type {!FilesToggleRippleElement} */ (
-            queryRequiredElement('files-toggle-ripple', this.gearButton));
 
     /**
      * @type {!GearMenu}

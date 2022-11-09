@@ -112,6 +112,11 @@ constexpr base::FeatureParam<bool> kAmbientModeRssPhotosEnabled{
 constexpr base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled{
     &kAmbientModeFeature, "StreetArtAlbumEnabled", false};
 
+// Controls whether to enable AutoEnrollment for Kiosk in OOBE
+BASE_FEATURE(kAutoEnrollmentKioskInOobe,
+             "AutoEnrollmentKioskInOobe",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to allow Dev channel to use Prod server feature.
 BASE_FEATURE(kAmbientModeDevUseProdFeature,
              "ChromeOSAmbientModeDevChannelUseProdServer",
@@ -408,9 +413,6 @@ BASE_FEATURE(kClipboardHistoryReorder,
 BASE_FEATURE(kConsumerAutoUpdateToggleAllowed,
              "ConsumerAutoUpdateToggleAllowed",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enable or disable the changes of WMP features for CrosNext project.
-BASE_FEATURE(kCrosNextWMP, "CrosNextWMP", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Privacy Hub for ChromeOS.
 BASE_FEATURE(kCrosPrivacyHub,
@@ -907,6 +909,21 @@ BASE_FEATURE(kFastPairSavedDevicesStrictOptIn,
              "FastPairSavedDevicesStrictOptIn",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the federated service. If enabled, launches federated service when
+// user first login.
+BASE_FEATURE(kFederatedService,
+             "FederatedService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the federated service to schedule tasks. If disabled, federated
+// service works as a simple example receiver and storage.
+// This is useful when we want to disable the federated tasks only and allow the
+// customers to report examples, because e.g. the tensorflow graphs cost too
+// much resources while example storage is supposed to be cheap and safe.
+BASE_FEATURE(kFederatedServiceScheduleTasks,
+             "FederatedServiceScheduleTasks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables experimental UI features in Files app.
 BASE_FEATURE(kFilesAppExperimental,
              "FilesAppExperimental",
@@ -1005,6 +1022,10 @@ BASE_FEATURE(kGamepadVibration,
 BASE_FEATURE(kGesturePropertiesDBusService,
              "GesturePropertiesDBusService",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the ability to record the screen into an animated GIF image from the
+// native screen capture tool.
+BASE_FEATURE(kGifRecording, "GifRecording", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables editing with handwriting gestures within the virtual keyboard.
 BASE_FEATURE(kHandwritingGestureEditing,
@@ -2194,6 +2215,10 @@ bool IsAutocompleteExtendedSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(kAutocompleteExtendedSuggestions);
 }
 
+bool IsAutoEnrollmentKioskInOobeEnabled() {
+  return base::FeatureList::IsEnabled(kAutoEnrollmentKioskInOobe);
+}
+
 bool IsAvatarsCloudMigrationEnabled() {
   return base::FeatureList::IsEnabled(kAvatarsCloudMigration);
 }
@@ -2369,10 +2394,6 @@ bool IsCrosPrivacyHubV1Enabled() {
          IsCrosPrivacyHubV2Enabled();
 }
 
-bool IsCrosNextWMPEnabled() {
-  return base::FeatureList::IsEnabled(kCrosNextWMP);
-}
-
 bool IsCryptohomeRecoveryFlowEnabled() {
   return base::FeatureList::IsEnabled(kCryptohomeRecoveryFlow);
 }
@@ -2497,6 +2518,15 @@ bool IsFastPairSavedDevicesStrictOptInEnabled() {
   return base::FeatureList::IsEnabled(kFastPairSavedDevicesStrictOptIn);
 }
 
+bool IsFederatedServiceEnabled() {
+  return base::FeatureList::IsEnabled(kFederatedService);
+}
+
+bool IsFederatedServiceScheduleTasksEnabled() {
+  return IsFederatedServiceEnabled() &&
+         base::FeatureList::IsEnabled(kFederatedServiceScheduleTasks);
+}
+
 bool IsFileManagerFuseBoxEnabled() {
   return base::FeatureList::IsEnabled(kFuseBox);
 }
@@ -2535,6 +2565,10 @@ bool IsGaiaReauthEndpointEnabled() {
 
 bool IsGalleryAppPdfEditNotificationEnabled() {
   return base::FeatureList::IsEnabled(kGalleryAppPdfEditNotification);
+}
+
+bool IsGifRecordingEnabled() {
+  return base::FeatureList::IsEnabled(kGifRecording);
 }
 
 bool AreGlanceablesEnabled() {

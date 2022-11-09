@@ -187,9 +187,11 @@ void WebViewAutofillClientIOS::ShowAutofillSettings(
 
 void WebViewAutofillClientIOS::ShowUnmaskPrompt(
     const CreditCard& card,
-    UnmaskCardReason reason,
+    const CardUnmaskPromptOptions& card_unmask_prompt_options,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
-  [bridge_ showUnmaskPromptForCard:card reason:reason delegate:delegate];
+  [bridge_ showUnmaskPromptForCard:card
+           cardUnmaskPromptOptions:card_unmask_prompt_options
+                          delegate:delegate];
 }
 
 void WebViewAutofillClientIOS::OnUnmaskVerificationResult(
@@ -290,7 +292,8 @@ bool WebViewAutofillClientIOS::IsTouchToFillCreditCardSupported() {
 }
 
 bool WebViewAutofillClientIOS::ShowTouchToFillCreditCard(
-    base::WeakPtr<TouchToFillDelegate> delegate) {
+    base::WeakPtr<TouchToFillDelegate> delegate,
+    base::span<const autofill::CreditCard* const> cards_to_suggest) {
   NOTREACHED();
   return false;
 }

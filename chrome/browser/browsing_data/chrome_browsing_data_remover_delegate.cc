@@ -37,6 +37,9 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/crash_upload_list/crash_upload_list.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/dips/dips_service.h"
+#include "chrome/browser/dips/dips_service_factory.h"
+#include "chrome/browser/dips/dips_utils.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -127,6 +130,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/origin_trials_controller_delegate.h"
 #include "content/public/browser/prefetch_service_delegate.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -674,14 +678,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       should_clear_password_account_storage_settings_ = true;
     }
 
-    // Persistent Origin Trial preferences are only saved until the next page
+    // Persistent Origin Trial tokens are only saved until the next page
     // load from the same origin. For that reason, they are not saved with
     // last-modified information, so deletion will clear all stored information.
     // Sites should omit setting the Origin-Trial header to clear their
     // individual information, so rather than filtering origins, we only perform
     // the removal if we are removing information for all origins.
-    if (filter_builder->MatchesAllOriginsAndDomains())
-      browsing_data::RemovePersistentOriginTrials(prefs);
+    if (filter_builder->MatchesAllOriginsAndDomains()) {
+      content::OriginTrialsControllerDelegate* delegate =
+          profile_->GetOriginTrialsControllerDelegate();
+      if (delegate)
+        delegate->ClearPersistedTokens();
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -798,9 +806,38 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
         ContentSettingsType::NOTIFICATION_INTERACTIONS, delete_begin_,
         delete_end_, website_settings_filter);
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::PRIVATE_NETWORK_GUARD, delete_begin_, delete_end_,
+        website_settings_filter);
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::PRIVATE_NETWORK_CHOOSER_DATA, delete_begin_,
+        delete_end_, website_settings_filter);
 
     PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
         ->RemoveEmbargoAndResetCounts(filter);
+  }
+
+  // Different types of DIPS events are cleared for DATA_TYPE_HISTORY,
+  // DATA_TYPE_COOKIES and DATA_TYPE_SITE_USAGE_DATA.
+  DIPSEventRemovalType dips_mask = DIPSEventRemovalType::kNone;
+  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) &&
+      (origin_type_mask &
+       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
+    dips_mask |= DIPSEventRemovalType::kStorage;
+  }
+  if ((remove_mask & constants::DATA_TYPE_SITE_USAGE_DATA) ||
+      ((remove_mask & constants::DATA_TYPE_HISTORY) && may_delete_history)) {
+    dips_mask |= DIPSEventRemovalType::kHistory;
+  }
+
+  if (dips_mask != DIPSEventRemovalType::kNone) {
+    auto* dips_service = DIPSServiceFactory::GetForBrowserContext(profile_);
+    if (dips_service) {
+      // TODO(crbug.com/1342228): Currently the filter is not supported and
+      // calls with a non-null filter are ignored.
+      dips_service->RemoveEvents(delete_begin_, delete_end_, nullable_filter,
+                                 dips_mask);
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////

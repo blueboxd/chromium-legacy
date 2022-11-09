@@ -970,11 +970,7 @@ if (is_win) {
     ]
 
     if (target_cpu == "x86") {
-      if (is_clang) {
-        deps += [ "//courgette(//build/toolchain/win:win_clang_x64)" ]
-      } else {
-        deps += [ "//courgette(//build/toolchain/win:x64)" ]
-      }
+      deps += [ "//courgette(//build/toolchain/win:win_clang_x64)" ]
     }
     if (is_chrome_branded) {
       deps += [ "//remoting/host:remoting_host_installation" ]
@@ -1306,10 +1302,6 @@ if (!is_ios) {
     "--no-show-results",
     "--zero-tests-executed-ok",
     "--clobber-old-results",
-    "--exit-after-n-failures",
-    "5000",
-    "--exit-after-n-crashes-or-timeouts",
-    "100",
   ]
 
   # https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_tests.md

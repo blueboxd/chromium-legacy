@@ -73,6 +73,7 @@
 #include "components/app_restore/window_properties.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/wm/core/window_animations.h"
@@ -866,7 +867,7 @@ bool DesksController::MoveWindowFromActiveDeskTo(
   // handles its desk-window relationship.
   if (is_floated) {
     Shell::Get()->float_controller()->OnMovingFloatedWindowToDesk(
-        window, target_desk, target_root);
+        window, active_desk_, target_desk, target_root);
   } else {
     active_desk_->MoveWindowToDesk(window, target_desk, target_root,
                                    /*unminimize=*/true);
@@ -1566,7 +1567,7 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   auto* overview_controller = shell->overview_controller();
   const bool in_overview = overview_controller->InOverviewSession();
   const std::vector<aura::Window*> removed_desk_windows =
-      removed_desk->windows();
+      removed_desk->GetAllAssociatedWindows();
 
   // No need to spend time refreshing the mini_views of the removed desk.
   auto removed_desk_mini_views_pauser =
@@ -1639,7 +1640,8 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     // Now that the windows from the removed and target desks merged, add them
     // all to the grid in the order of the new MRU.
     if (in_overview)
-      AppendWindowsToOverview(target_desk->windows());
+      AppendWindowsToOverview(target_desk->GetAllAssociatedWindows());
+
   } else if (close_type == DeskCloseType::kCombineDesks) {
     // We will refresh the mini_views of the active desk only once at the end.
     auto active_desk_mini_view_pauser =
@@ -1740,7 +1742,7 @@ void DesksController::UndoDeskRemoval() {
     RestackVisibleOnAllDesksWindowsOnActiveDesk();
 
     if (in_overview)
-      AppendWindowsToOverview(readded_desk_ptr->windows());
+      AppendWindowsToOverview(readded_desk_ptr->GetAllAssociatedWindows());
   }
 
   Shell::Get()
@@ -1797,7 +1799,15 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
   std::unique_ptr<aura::WindowTracker> closing_window_tracker =
       std::make_unique<aura::WindowTracker>(app_windows);
 
-  for (aura::Window* window : app_windows) {
+  // We create a new tracker other than `closing_window_tracker`, since we want
+  // to leave it unaffected as we will pass it later to a delayed callback to
+  // force close the windows that haven't been closed yet. The new tracker
+  // `unclosed_windows_tracker` will be empty by the end of the below
+  // while-loop.
+  aura::WindowTracker unclosed_windows_tracker(app_windows);
+
+  while (!unclosed_windows_tracker.windows().empty()) {
+    aura::Window* window = unclosed_windows_tracker.Pop();
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
     DCHECK(widget);
 

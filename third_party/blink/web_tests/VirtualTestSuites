@@ -111,7 +111,8 @@
   {
     "prefix": "gpu-rasterization",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["images"],
+    "bases": ["images",
+              "external/wpt/css/css-images/gradient"],
     "args": ["--enable-gpu-rasterization"]
   },
   {
@@ -282,6 +283,13 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/cookies"],
     "args": ["--disable-features=SchemefulSameSite"]
+  },
+  {
+    "prefix": "dark-mode-classifier-transparency-and-num-colors",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["dark-mode/images"],
+    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
+             "--dark-mode-settings=ImageClassifierPolicy=1"]
   },
   {
     "prefix": "dark-mode-default",
@@ -886,7 +894,7 @@
               "external/wpt/html/anonymous-iframe/",
               "http/tests/cookies/partitioned-cookies",
               "http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
+    "args": ["--enable-features=PartitionedCookies"]
   },
   {
     "prefix": "prerender",
@@ -929,8 +937,8 @@
   },
   {
     "prefix": "no-alloc-direct-call",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["fast/canvas", "external/wpt/html/canvas"],
+    "platforms": ["Linux"],
+    "bases": ["fast/canvas"],
     "args": ["--enable-fake-no-alloc-direct-call-for-testing"]
   },
   {
@@ -940,6 +948,14 @@
               "view-transition",
               "inspector-protocol/css/css-get-styles-for-view-transition.js"],
     "args": ["--enable-features=ViewTransition",
+             "--enable-threaded-compositing",
+             "--enable-gpu-rasterization"]
+  },
+  {
+    "prefix": "view-transition-on-navigation",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["wpt_internal/view-transition-on-navigation"],
+    "args": ["--enable-features=ViewTransition,ViewTransitionOnNavigation",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]
   },
@@ -1088,6 +1104,7 @@
       "external/wpt/shared-storage",
       "http/tests/inspector-protocol/storage/shared-storage.js",
       "http/tests/inspector-protocol/storage/shared-storage-delete.js",
+      "http/tests/inspector-protocol/storage/shared-storage-set.js",
       "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride"]
@@ -1100,6 +1117,7 @@
       "external/wpt/shared-storage",
       "http/tests/inspector-protocol/storage/shared-storage.js",
       "http/tests/inspector-protocol/storage/shared-storage-delete.js",
+      "http/tests/inspector-protocol/storage/shared-storage-set.js",
       "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride"]
@@ -1379,6 +1397,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/eyedropper",
+      "external/wpt/idle-detection",
       "external/wpt/web-nfc"
     ],
     "args": ["--disable-features=AbortSignalHandleBasedRemoval"]

@@ -1892,15 +1892,19 @@ TEST_P(PartitionAllocTest, MappingCollision) {
       partition_alloc::internal::ReservedFreeSlotBitmapSize();
   // Map a single system page either side of the mapping for our allocations,
   // with the goal of tripping up alignment of the next mapping.
-  uintptr_t map1 = AllocPages(
-      super_page - PageAllocationGranularity(), PageAllocationGranularity(),
-      PageAllocationGranularity(),
-      PageAccessibilityConfiguration::kInaccessible, PageTag::kPartitionAlloc);
+  uintptr_t map1 =
+      AllocPages(super_page - PageAllocationGranularity(),
+                 PageAllocationGranularity(), PageAllocationGranularity(),
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessible),
+                 PageTag::kPartitionAlloc);
   EXPECT_TRUE(map1);
-  uintptr_t map2 = AllocPages(
-      super_page + kSuperPageSize, PageAllocationGranularity(),
-      PageAllocationGranularity(),
-      PageAccessibilityConfiguration::kInaccessible, PageTag::kPartitionAlloc);
+  uintptr_t map2 =
+      AllocPages(super_page + kSuperPageSize, PageAllocationGranularity(),
+                 PageAllocationGranularity(),
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessible),
+                 PageTag::kPartitionAlloc);
   EXPECT_TRUE(map2);
 
   for (i = 0; i < num_partition_pages_needed; ++i)
@@ -1921,20 +1925,24 @@ TEST_P(PartitionAllocTest, MappingCollision) {
   // with the goal of tripping up alignment of the next mapping.
   map1 = AllocPages(super_page - PageAllocationGranularity(),
                     PageAllocationGranularity(), PageAllocationGranularity(),
-                    PageAccessibilityConfiguration::kReadWriteTagged,
+                    PageAccessibilityConfiguration(
+                        PageAccessibilityConfiguration::kReadWriteTagged),
                     PageTag::kPartitionAlloc);
   EXPECT_TRUE(map1);
   map2 = AllocPages(super_page + kSuperPageSize, PageAllocationGranularity(),
                     PageAllocationGranularity(),
-                    PageAccessibilityConfiguration::kReadWriteTagged,
+                    PageAccessibilityConfiguration(
+                        PageAccessibilityConfiguration::kReadWriteTagged),
                     PageTag::kPartitionAlloc);
   EXPECT_TRUE(map2);
-  EXPECT_TRUE(
-      TrySetSystemPagesAccess(map1, PageAllocationGranularity(),
-                              PageAccessibilityConfiguration::kInaccessible));
-  EXPECT_TRUE(
-      TrySetSystemPagesAccess(map2, PageAllocationGranularity(),
-                              PageAccessibilityConfiguration::kInaccessible));
+  EXPECT_TRUE(TrySetSystemPagesAccess(
+      map1, PageAllocationGranularity(),
+      PageAccessibilityConfiguration(
+          PageAccessibilityConfiguration::kInaccessible)));
+  EXPECT_TRUE(TrySetSystemPagesAccess(
+      map2, PageAllocationGranularity(),
+      PageAccessibilityConfiguration(
+          PageAccessibilityConfiguration::kInaccessible)));
 
   auto* slot_span_in_third_super_page = GetFullSlotSpan(kTestAllocSize);
   FreePages(map1, PageAllocationGranularity());
@@ -3948,9 +3956,11 @@ TEST_P(PartitionAllocTest, BackupRefPtrGuardRegion) {
          sizeof(requested_address));
   requested_address = RoundDownToPageAllocationGranularity(requested_address);
 
-  uintptr_t allocated_address = AllocPages(
-      requested_address, alignment, alignment,
-      PageAccessibilityConfiguration::kReadWrite, PageTag::kPartitionAlloc);
+  uintptr_t allocated_address =
+      AllocPages(requested_address, alignment, alignment,
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kReadWrite),
+                 PageTag::kPartitionAlloc);
   EXPECT_NE(allocated_address, requested_address);
 
   if (allocated_address) {
@@ -3984,6 +3994,22 @@ TEST_P(PartitionAllocTest, DanglingPtr) {
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
 
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
+  // Free it. This creates two dangling pointer.
+  allocator.root()->Free(ptr);
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  // The dangling raw_ptr stop referencing it.
+  EXPECT_FALSE(ref_count->Release());
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  // The dangling raw_ptr stop referencing it again.
+  EXPECT_TRUE(ref_count->Release());
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+#else
   // Free it. This creates two dangling pointer.
   allocator.root()->Free(ptr);
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
@@ -3998,6 +4024,7 @@ TEST_P(PartitionAllocTest, DanglingPtr) {
   EXPECT_TRUE(ref_count->Release());
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 2);
+#endif
 }
 
 // Allocate memory, and reference it from 3
@@ -4055,6 +4082,22 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseRawPtrFirst) {
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
 
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
+  // Free it.
+  allocator.root()->Free(ptr);
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  // The raw_ptr<> stops referencing it.
+  EXPECT_FALSE(ref_count->Release());
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  // The raw_ptr<T, DisableDanglingPtrDetection> stop referencing it.
+  EXPECT_TRUE(ref_count->ReleaseFromUnprotectedPtr());
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+#else
   // Free it.
   allocator.root()->Free(ptr);
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
@@ -4069,6 +4112,7 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseRawPtrFirst) {
   EXPECT_TRUE(ref_count->ReleaseFromUnprotectedPtr());
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 1);
+#endif
 }
 
 // When 'free' is called, it remain one raw_ptr<> and one
@@ -4087,6 +4131,22 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseDanglingPtrFirst) {
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
 
+#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
+  // Free it.
+  allocator.root()->Free(ptr);
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  // The raw_ptr<> stops referencing it.
+  EXPECT_FALSE(ref_count->ReleaseFromUnprotectedPtr());
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  // The raw_ptr<T, DisableDanglingPtrDetection> stop referencing it.
+  EXPECT_TRUE(ref_count->Release());
+  EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
+  EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+#else
   // Free it.
   allocator.root()->Free(ptr);
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
@@ -4101,6 +4161,7 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseDanglingPtrFirst) {
   EXPECT_TRUE(ref_count->Release());
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 1);
+#endif
 }
 
 // When 'free' is called, it remains one
@@ -4575,9 +4636,11 @@ TEST_P(PartitionAllocTest, ConfigurablePool) {
        pool_size /= 2) {
     PA_DCHECK(partition_alloc::internal::base::bits::IsPowerOfTwo(pool_size));
     EXPECT_FALSE(IsConfigurablePoolAvailable());
-    uintptr_t pool_base = AllocPages(
-        pool_size, pool_size, PageAccessibilityConfiguration::kInaccessible,
-        PageTag::kPartitionAlloc);
+    uintptr_t pool_base =
+        AllocPages(pool_size, pool_size,
+                   PageAccessibilityConfiguration(
+                       PageAccessibilityConfiguration::kInaccessible),
+                   PageTag::kPartitionAlloc);
     EXPECT_NE(0u, pool_base);
     PartitionAddressSpace::InitConfigurablePool(pool_base, pool_size);
 

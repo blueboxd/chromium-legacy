@@ -112,12 +112,14 @@
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
+#include "content/browser/renderer_host/page_factory.h"
 #include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 #include "content/browser/renderer_host/pending_beacon_host.h"
 #include "content/browser/renderer_host/pending_beacon_service.h"
 #include "content/browser/renderer_host/private_network_access_util.h"
 #include "content/browser/renderer_host/recently_destroyed_hosts.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
+#include "content/browser/renderer_host/render_frame_host_owner.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -158,10 +160,12 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/debug_utils.h"
+#include "content/common/features.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.mojom.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/common/navigation_params_utils.h"
+#include "content/public/browser/active_url_message_filter.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -270,6 +274,7 @@
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/renderer_host/render_frame_host_android.h"
 #include "content/public/browser/android/java_interfaces.h"
+#include "content/public/browser/authenticator_request_client_delegate.h"
 #else
 #include "content/browser/hid/hid_service.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -479,37 +484,6 @@ class ScopedCommitStateResetter {
   bool disabled_ = false;
 };
 
-class ActiveURLMessageFilter : public mojo::MessageFilter {
- public:
-  explicit ActiveURLMessageFilter(RenderFrameHostImpl* render_frame_host)
-      : render_frame_host_(render_frame_host) {}
-
-  ~ActiveURLMessageFilter() override {
-    if (debug_url_set_) {
-      GetContentClient()->SetActiveURL(GURL(), "");
-    }
-  }
-
-  // mojo::MessageFilter overrides.
-  bool WillDispatch(mojo::Message* message) override {
-    debug_url_set_ = true;
-    GetContentClient()->SetActiveURL(render_frame_host_->GetLastCommittedURL(),
-                                     render_frame_host_->GetMainFrame()
-                                         ->GetLastCommittedOrigin()
-                                         .GetDebugString());
-    return true;
-  }
-
-  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {
-    GetContentClient()->SetActiveURL(GURL(), "");
-    debug_url_set_ = false;
-  }
-
- private:
-  raw_ptr<RenderFrameHostImpl> render_frame_host_;
-  bool debug_url_set_ = false;
-};
-
 // This class can be added as a MessageFilter to a mojo receiver to detect
 // messages received while the the associated frame is in the Back-Forward
 // Cache. Documents that are in the bfcache should not be sending mojo messages
@@ -620,11 +594,11 @@ CreateMessageFilterForAssociatedReceiverImpl(
   filter_chain->Add(std::make_unique<BackForwardCacheMessageFilter>(
       render_frame_host, interface_name, policy));
   // BackForwardCacheMessageFilter might drop messages so add
-  // ActiveURLMessageFilter at the end of the chain as we need to make sure that
+  // ActiveUrlMessageFilter at the end of the chain as we need to make sure that
   // the debug url is reset, that is, DidDispatchOrReject() is called if
   // WillDispatch().
   filter_chain->Add(
-      std::make_unique<ActiveURLMessageFilter>(render_frame_host));
+      std::make_unique<internal::ActiveUrlMessageFilter>(render_frame_host));
   return filter_chain;
 }
 
@@ -1684,6 +1658,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           site_instance_->GetOrCreateAgentSchedulingGroup()),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
+      owner_(frame_tree_node),
       browsing_context_state_(std::move(browsing_context_state)),
       frame_owner_element_type_(frame_owner_element_type),
       parent_(parent),
@@ -1695,7 +1670,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       waiting_for_init_(renderer_initiated_creation_of_main_frame),
       frame_token_(frame_token),
       keep_alive_handle_factory_(
-          agent_scheduling_group_.GetProcess(),
+          agent_scheduling_group_->GetProcess(),
           RenderProcessHostImpl::kKeepAliveHandleFactoryTimeout),
       subframe_unload_timeout_(RenderViewHostImpl::kUnloadTimeout),
       media_device_id_salt_base_(
@@ -2243,11 +2218,11 @@ SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() const {
 }
 
 RenderProcessHost* RenderFrameHostImpl::GetProcess() const {
-  return agent_scheduling_group_.GetProcess();
+  return agent_scheduling_group_->GetProcess();
 }
 
 AgentSchedulingGroupHost& RenderFrameHostImpl::GetAgentSchedulingGroup() {
-  return agent_scheduling_group_;
+  return *agent_scheduling_group_;
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetParent() const {
@@ -5428,6 +5403,33 @@ void RenderFrameHostImpl::RunBeforeUnloadConfirm(
                                     std::move(dialog_closed_callback));
 }
 
+void RenderFrameHostImpl::WillPotentiallyStartNavigation(const GURL& url) {
+  TRACE_EVENT1("navigation",
+               "RenderFrameHostImpl::WillPotentiallyStartNavigation", "url",
+               url);
+
+  GURL filtered_url(url);
+  GetProcess()->FilterURL(/*empty_allowed=*/false, &filtered_url);
+  if (filtered_url == GURL(kBlockedURL))
+    return;
+
+  // Ask the service worker context to speculatively start a service worker for
+  // the request URL if necessary for optimization purposes. There are cases
+  // where we have already started the service worker (e.g, Prerendering or the
+  // previous navigation already started the service worker), but this call does
+  // nothing if the service worker already started for the URL.
+  if (base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
+    if (ServiceWorkerContext* context =
+            GetStoragePartition()->GetServiceWorkerContext()) {
+      const blink::StorageKey key(url::Origin::Create(filtered_url));
+      if (context->MaybeHasRegistrationForStorageKey(key)) {
+        context->StartServiceWorkerForNavigationHint(filtered_url, key,
+                                                     base::DoNothing());
+      }
+    }
+  }
+}
+
 // TODO(crbug.com/1213863): Move this method to content::PageImpl.
 void RenderFrameHostImpl::UpdateFaviconURL(
     std::vector<blink::mojom::FaviconURLPtr> favicon_urls) {
@@ -6673,7 +6675,7 @@ void RenderFrameHostImpl::EnterFullscreen(
     return;
   }
 
-  // Allow sites with the window-placement permission to open a popup window
+  // Allow sites with the Window Management permission to open a popup window
   // after requesting fullscreen on a specific screen of a multi-screen device.
   // This enables multi-screen content experiences from a single user gesture.
   const display::Screen* screen = display::Screen::GetScreen();
@@ -7170,7 +7172,8 @@ void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
     mojo_binder_policy_applier_->DropDeferredBinders();
   }
   broker_receiver_.Bind(std::move(receiver));
-  broker_receiver_.SetFilter(std::make_unique<ActiveURLMessageFilter>(this));
+  broker_receiver_.SetFilter(
+      std::make_unique<internal::ActiveUrlMessageFilter>(this));
 }
 
 void RenderFrameHostImpl::BindAssociatedInterfaceProviderReceiver(
@@ -9885,6 +9888,14 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(
   RequestAXTreeSnapshot(std::move(callback), std::move(params));
 }
 
+void RenderFrameHostImpl::SnapshotDocumentForViewTransition(
+    blink::mojom::LocalFrame::SnapshotDocumentForViewTransitionCallback
+        callback) {
+  DCHECK(IsRenderFrameLive());
+  GetAssociatedLocalFrame()->SnapshotDocumentForViewTransition(
+      std::move(callback));
+}
+
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
     AXTreeSnapshotCallback callback,
     mojom::SnapshotAccessibilityTreeParamsPtr params) {
@@ -12320,8 +12331,8 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   if (result == blink::mojom::CommitResult::RestartCrossDocument) {
     // The navigation could not be committed as a same-document navigation.
     // Restart the navigation cross-document.
-    frame_tree_node_->navigator().RestartNavigationAsCrossDocument(
-        std::move(request->second));
+    CHECK(owner_);
+    owner_->RestartNavigationAsCrossDocument(std::move(request->second));
     return;
   }
 
@@ -12408,6 +12419,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::SendCommitNavigation");
   base::ElapsedTimer timer;
   DCHECK_EQ(net::OK, navigation_request->GetNetErrorCode());
+  // `origin_to_commit` is currently only set only on failed navigations.
+  DCHECK(!commit_params->origin_to_commit);
   IncreaseCommitNavigationCounter();
   mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host;
   mojom::CookieManagerInfoPtr cookie_manager_info;
@@ -12526,6 +12539,8 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
         subresource_loader_factories,
     const blink::DocumentToken& document_token,
     blink::mojom::PolicyContainerPtr policy_container) {
+  // `origin_to_commit` must be set on failed navigations.
+  DCHECK(commit_params->origin_to_commit);
   DCHECK(navigation_client && navigation_request);
   DCHECK_NE(GURL(), common_params->url);
   DCHECK_NE(net::OK, error_code);
@@ -13922,6 +13937,14 @@ RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
     return std::make_pair(status, is_cross_origin);
   }
 
+  if (!GetContentClient()
+           ->browser()
+           ->GetWebAuthenticationDelegate()
+           ->IsSecurityLevelAcceptableForWebAuthn(this)) {
+    return std::make_pair(blink::mojom::AuthenticatorStatus::CERTIFICATE_ERROR,
+                          is_cross_origin);
+  }
+
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
       effective_origin, relying_party_id, request_type,
       remote_desktop_client_override);
@@ -13946,6 +13969,13 @@ RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
           effective_origin, request_type, &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
+  }
+
+  if (!GetContentClient()
+           ->browser()
+           ->GetWebAuthenticationDelegate()
+           ->IsSecurityLevelAcceptableForWebAuthn(this)) {
+    return blink::mojom::AuthenticatorStatus::CERTIFICATE_ERROR;
   }
 
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
@@ -14593,7 +14623,7 @@ RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
   if (!document.GetParent()) {
     PageDelegate* page_delegate = document.frame_tree()->page_delegate();
     DCHECK(page_delegate);
-    owned_page_ = std::make_unique<PageImpl>(document, *page_delegate);
+    owned_page_ = PageFactory::Create(document, *page_delegate);
   }
 }
 

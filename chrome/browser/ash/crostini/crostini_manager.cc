@@ -22,6 +22,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -3986,7 +3987,7 @@ void CrostiniManager::MountCrostiniFilesBackground(guest_os::GuestInfo info) {
 void CrostiniManager::GetInstallLocation(
     base::OnceCallback<void(base::FilePath)> callback) {
   if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile_)) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::FilePath()));
     return;
   }
@@ -4041,6 +4042,7 @@ void CrostiniManager::RegisterContainer(const guest_os::GuestId& container_id) {
     terminal_provider_ids_[container_id] = registry->Register(
         std::make_unique<CrostiniTerminalProvider>(profile_, container_id));
   }
+
   if (CrostiniFeatures::Get()->IsMultiContainerAllowed(profile_) &&
       container_id != DefaultContainerId()) {
     // TODO(b/217469540): The default container is still using sshfs for now, so
@@ -4059,12 +4061,18 @@ void CrostiniManager::UnregisterContainer(
   auto* terminal_registry = guest_os::GuestOsService::GetForProfile(profile_)
                                 ->TerminalProviderRegistry();
   auto it = terminal_provider_ids_.find(container_id);
-  if (it == terminal_provider_ids_.end()) {
-    // Not registered, nothing to do.
-    return;
+  if (it != terminal_provider_ids_.end()) {
+    terminal_registry->Unregister(it->second);
+    terminal_provider_ids_.erase(it);
   }
-  terminal_registry->Unregister(it->second);
-  terminal_provider_ids_.erase(it);
+
+  auto* mount_registry = guest_os::GuestOsService::GetForProfile(profile_)
+                             ->MountProviderRegistry();
+  it = mount_provider_ids_.find(container_id);
+  if (it != mount_provider_ids_.end()) {
+    mount_registry->Unregister(it->second);
+    mount_provider_ids_.erase(it);
+  }
 }
 
 void CrostiniManager::UnregisterAllContainers() {
@@ -4074,6 +4082,13 @@ void CrostiniManager::UnregisterAllContainers() {
     terminal_registry->Unregister(pair.second);
   }
   terminal_provider_ids_.clear();
+
+  auto* mount_registry = guest_os::GuestOsService::GetForProfile(profile_)
+                             ->MountProviderRegistry();
+  for (const auto& pair : mount_provider_ids_) {
+    mount_registry->Unregister(pair.second);
+  }
+  mount_provider_ids_.clear();
 }
 
 bool CrostiniManager::RegisterCreateOptions(

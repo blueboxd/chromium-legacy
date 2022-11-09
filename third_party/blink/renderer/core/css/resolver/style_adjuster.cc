@@ -525,7 +525,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (auto* html_plugin_element = DynamicTo<HTMLPlugInElement>(element)) {
-    style.SetRequiresAcceleratedCompositingForExternalReasons(
+    builder.SetRequiresAcceleratedCompositingForExternalReasons(
         html_plugin_element->ShouldAccelerate());
     if (style.Display() == EDisplay::kContents)
       builder.SetDisplay(EDisplay::kNone);
@@ -533,7 +533,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (IsA<HTMLUListElement>(element) || IsA<HTMLOListElement>(element)) {
-    style.SetIsInsideListElement();
+    builder.SetIsInsideListElement();
     return;
   }
 
@@ -551,7 +551,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
 
   if (IsA<HTMLBodyElement>(element) &&
       element.GetDocument().FirstBodyElement() != element) {
-    style.SetIsSecondaryBodyElement();
+    builder.SetIsSecondaryBodyElement();
   }
 }
 
@@ -612,14 +612,14 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
                                   Document* document) {
   // Blockify the children of flex, grid or LayoutCustom containers.
   if (layout_parent_style.BlockifiesChildren() && !HostIsInputFile(element)) {
-    style.SetIsInBlockifyingDisplay();
+    builder.SetIsInBlockifyingDisplay();
     if (style.Display() != EDisplay::kContents) {
       builder.SetDisplay(EquivalentBlockDisplay(style.Display()));
       if (!style.HasOutOfFlowPosition())
-        style.SetIsFlexOrGridOrCustomItem();
+        builder.SetIsFlexOrGridOrCustomItem();
     }
     if (layout_parent_style.IsDisplayFlexibleOrGridBox())
-      style.SetIsFlexOrGridItem();
+      builder.SetIsFlexOrGridItem();
   }
 
   if (style.Display() == EDisplay::kBlock)
@@ -773,13 +773,14 @@ void StyleAdjuster::AdjustEffectiveTouchAction(
   }
 }
 
-static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
+static void AdjustStyleForInert(ComputedStyleBuilder& builder,
+                                Element* element) {
   if (!element)
     return;
 
   if (element->IsInertRoot()) {
-    style.SetIsInert(true);
-    style.SetIsInertIsInherited(false);
+    builder.SetIsInert(true);
+    builder.SetIsInertIsInherited(false);
     return;
   }
 
@@ -788,13 +789,13 @@ static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
   if (!modal_element)
     modal_element = Fullscreen::FullscreenElementFrom(document);
   if (modal_element == element) {
-    style.SetIsInert(false);
-    style.SetIsInertIsInherited(false);
+    builder.SetIsInert(false);
+    builder.SetIsInertIsInherited(false);
     return;
   }
   if (modal_element && element == document.documentElement()) {
-    style.SetIsInert(true);
-    style.SetIsInertIsInherited(false);
+    builder.SetIsInert(true);
+    builder.SetIsInertIsInherited(false);
     return;
   }
 }
@@ -811,7 +812,7 @@ void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style,
   if (style.ShouldForceColor(style.AccentColor()))
     builder.SetAccentColor(ComputedStyleInitialValues::InitialAccentColor());
   if (!style.HasUrlBackgroundImage())
-    style.ClearBackgroundImage();
+    builder.ClearBackgroundImage();
 }
 
 void StyleAdjuster::AdjustForSVGTextElement(ComputedStyleBuilder& builder) {
@@ -928,7 +929,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
           layout_parent_style)) {
     style.SetIsStackingContextWithoutContainment(false);
     if (!style.HasAutoZIndex())
-      style.SetEffectiveZIndexZero(true);
+      builder.SetEffectiveZIndexZero(true);
   } else if (!style.HasAutoZIndex()) {
     style.SetIsStackingContextWithoutContainment(true);
   }
@@ -967,8 +968,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   // Cull out any useless layers and also repeat patterns into additional
   // layers.
-  style.AdjustBackgroundLayers();
-  style.AdjustMaskLayers();
+  builder.AdjustBackgroundLayers();
+  builder.AdjustMaskLayers();
 
   // A subset of CSS properties should be forced at computed value time:
   // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties.
@@ -977,7 +978,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // Let the theme also have a crack at adjusting the style.
   LayoutTheme::GetTheme().AdjustStyle(element, style, builder);
 
-  AdjustStyleForInert(style, element);
+  AdjustStyleForInert(builder, element);
 
   AdjustStyleForEditing(builder);
 
@@ -1025,7 +1026,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
                baseline == EDominantBaseline::kResetSize) {
       baseline = layout_parent_style.CssDominantBaseline();
     }
-    style.SetCssDominantBaseline(baseline);
+    builder.SetCssDominantBaseline(baseline);
 
   } else if (is_mathml_element) {
     if (style.Display() == EDisplay::kContents) {
@@ -1066,7 +1067,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (is_media_control && !style.HasEffectiveAppearance()) {
     // For compatibility reasons if the element is a media control and the
     // -webkit-appearance is none then we should clear the background image.
-    style.MutableBackgroundInternal().ClearImage();
+    builder.MutableBackgroundInternal().ClearImage();
   }
 
   if (element && style.TextOverflow() == ETextOverflow::kEllipsis) {

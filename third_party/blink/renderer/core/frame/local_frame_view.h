@@ -113,6 +113,7 @@ class RootFrameViewport;
 class ScrollableArea;
 class Scrollbar;
 class ScrollingCoordinator;
+class TapFriendlinessChecker;
 class TransformState;
 class LocalFrameUkmAggregator;
 class WebPluginContainerImpl;
@@ -707,6 +708,7 @@ class CORE_EXPORT LocalFrameView final
     return mobile_friendliness_checker_;
   }
   void DidChangeMobileFriendliness(const MobileFriendliness& mf);
+  void RegisterTapEvent(Element* target);
 
   // Returns the UKM aggregator for this frame's local root, creating it if
   // necessary.
@@ -1156,6 +1158,8 @@ class CORE_EXPORT LocalFrameView final
   // Non-null in the outermost main frame of an ordinary page only.
   Member<MobileFriendlinessChecker> mobile_friendliness_checker_;
 
+  Member<TapFriendlinessChecker> tap_friendliness_checker_;
+
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
 
   HeapHashSet<WeakMember<HTMLVideoElement>> fullscreen_video_elements_;
@@ -1179,11 +1183,6 @@ class CORE_EXPORT LocalFrameView final
   // TODO(yotha): unify these into one HeapHashMap.
   Member<HeapHashSet<Member<LayoutObject>>> pending_transform_updates_;
   Member<HeapHashSet<Member<LayoutObject>>> pending_opacity_updates_;
-
-  // TODO(1370937): Currently we don't yet know how to handle soft navigation
-  // UKM reporting. This flag indicates that First Contentful Paint was reported
-  // once and should not be reported again.
-  bool was_fcp_reported_ = false;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

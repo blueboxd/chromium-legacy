@@ -129,6 +129,7 @@ class EventClientImpl;
 class EventRewriterControllerImpl;
 class EventTransformationHandler;
 class WindowRestoreController;
+class FirmwareUpdateManager;
 class FirmwareUpdateNotificationController;
 class FloatController;
 class FocusCycler;
@@ -234,6 +235,10 @@ enum class LoginStatus;
 namespace diagnostics {
 class DiagnosticsLogController;
 }  // namespace diagnostics
+
+namespace federated {
+class FederatedServiceController;
+}  // namespace federated
 
 namespace quick_pair {
 class Mediator;
@@ -454,6 +459,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   EventClientImpl* event_client() { return event_client_.get(); }
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
+  }
+
+  federated::FederatedServiceController* federated_service_controller() {
+    return federated_service_controller_.get();
   }
 
   FirmwareUpdateNotificationController*
@@ -849,6 +858,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplayHighlightController> display_highlight_controller_;
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
+  std::unique_ptr<FirmwareUpdateManager> firmware_update_manager_;
   std::unique_ptr<FirmwareUpdateNotificationController>
       firmware_update_notification_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
@@ -1052,6 +1062,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<OcclusionTrackerPauser> occlusion_tracker_pauser_;
 
   std::unique_ptr<MultiCaptureServiceClient> multi_capture_service_client_;
+
+  std::unique_ptr<federated::FederatedServiceController>
+      federated_service_controller_;
 
   std::unique_ptr<quick_pair::Mediator> quick_pair_mediator_;
 

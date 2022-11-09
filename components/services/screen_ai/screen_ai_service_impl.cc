@@ -4,21 +4,25 @@
 
 #include "components/services/screen_ai/screen_ai_service_impl.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/check.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/process/process.h"
 #include "base/scoped_native_library.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/screen_ai/proto/proto_convertor.h"
-#include "components/services/screen_ai/public/cpp/utilities.h"
 #include "components/services/screen_ai/screen_ai_ax_tree_serializer.h"
-#include "sandbox/policy/switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -26,6 +30,15 @@
 namespace screen_ai {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ScreenAILoadLibraryResult {
+  kAllOk = 0,
+  kVisualAnnotationFailed = 1,
+  kMainContentExtractionFailed = 2,
+  kMaxValue = kMainContentExtractionFailed,
+};
 
 std::vector<char> LoadModelFile(base::File& model_file) {
   std::vector<char> buffer;
@@ -45,6 +58,14 @@ std::vector<char> LoadModelFile(base::File& model_file) {
 }
 
 }  // namespace
+
+ScreenAIService::ScreenAIService(
+    mojo::PendingReceiver<mojom::ScreenAIService> receiver)
+    : task_runner_(new base::DeferredSequencedTaskRunner(
+          base::ThreadTaskRunnerHandle::Get())),
+      receiver_(this, std::move(receiver)) {}
+
+ScreenAIService::~ScreenAIService() = default;
 
 void LibraryFunctions::LoadFunctions(base::ScopedNativeLibrary& library) {
   // General functions.
@@ -76,13 +97,35 @@ void LibraryFunctions::LoadFunctions(base::ScopedNativeLibrary& library) {
 #endif  // !BUILDFLAG(IS_WIN)
 }
 
-ScreenAIService::ScreenAIService(
-    mojo::PendingReceiver<mojom::ScreenAIService> receiver)
-    : receiver_(this, std::move(receiver)) {}
-
 void ScreenAIService::LoadLibrary(base::File model_config,
                                   base::File model_tflite,
                                   const base::FilePath& library_path) {
+  DCHECK(!library_.get());
+
+  // LoadLibrary will be run before all other requests to this service, but may
+  // be called after queuing one or more requests. Therefore if we use WeakPtr
+  // here, it may be taken after the other requests but released before them and
+  // that creates a sequencing error, hence used |unretained(this)|.
+  // This object gets destroyed only when service is shutting down, so unless
+  // the service would be destroyed immediately after LoadLibrary request is
+  // triggered, using 'this' unretained is safe.
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&ScreenAIService::LoadLibraryInternal,
+                     base::Unretained(this), std::move(model_config),
+                     std::move(model_tflite), library_path),
+      base::BindOnce(
+          [](scoped_refptr<base::DeferredSequencedTaskRunner> task_runner) {
+            task_runner->Start();
+          },
+          task_runner_));
+}
+
+void ScreenAIService::LoadLibraryInternal(base::File model_config,
+                                          base::File model_tflite,
+                                          const base::FilePath& library_path) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   library_ = base::ScopedNativeLibrary(library_path);
   library_functions_.LoadFunctions(library_);
   if (features::IsScreenAIDebugModeEnabled())
@@ -93,15 +136,19 @@ void ScreenAIService::LoadLibrary(base::File model_config,
       features::IsScreenAIVisualAnnotationsEnabled()) {
     if (!CallInitVisualAnnotationsFunction(library_path.DirName())) {
       init_ok = false;
-      // TODO(https://crbug.com/1278249): Add UMA metrics to monitor failures.
+      base::UmaHistogramEnumeration(
+          "Accessibility.ScreenAI.LoadLibraryResult",
+          ScreenAILoadLibraryResult::kVisualAnnotationFailed);
     }
   }
 #endif
 
   if (init_ok && features::IsReadAnythingWithScreen2xEnabled()) {
     if (!CallInitMainContentExtractionFunction(model_config, model_tflite)) {
-      // TODO(https://crbug.com/1278249): Add UMA metrics to monitor failures.
       init_ok = false;
+      base::UmaHistogramEnumeration(
+          "Accessibility.ScreenAI.LoadLibraryResult",
+          ScreenAILoadLibraryResult::kMainContentExtractionFailed);
     }
   }
 
@@ -109,9 +156,10 @@ void ScreenAIService::LoadLibrary(base::File model_config,
     VLOG(0) << "Screen AI library initialization failed.";
     base::Process::TerminateCurrentProcessImmediately(-1);
   }
-}
 
-ScreenAIService::~ScreenAIService() = default;
+  base::UmaHistogramEnumeration("Accessibility.ScreenAI.LoadLibraryResult",
+                                ScreenAILoadLibraryResult::kAllOk);
+}
 
 NO_SANITIZE("cfi-icall")
 bool ScreenAIService::CallInitVisualAnnotationsFunction(
@@ -164,6 +212,41 @@ void ScreenAIService::BindMainContentExtractor(
 void ScreenAIService::Annotate(const SkBitmap& image,
                                const ui::AXTreeID& parent_tree_id,
                                AnnotationCallback callback) {
+  std::unique_ptr<ui::AXTreeUpdate> annotation =
+      std::make_unique<ui::AXTreeUpdate>();
+  ui::AXTreeUpdate* annotation_ptr = annotation.get();
+
+  // Ownership of |annotation| is passed to the reply function, and hence it is
+  // destroyed after the task function is called, or both functions get
+  // cancelled, so it's safe to pass |annotation_ptr| unretained.
+  // We need to get the pointer beforehand since compiler optimizations may
+  // result in binding the reply function (and moving |annotation|) before
+  // binding the task.
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&ScreenAIService::AnnotateInternal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(image),
+                     std::move(parent_tree_id),
+                     base::Unretained(annotation_ptr)),
+      base::BindOnce(
+          [](mojo::Remote<mojom::ScreenAIAnnotatorClient>* client,
+             AnnotationCallback callback,
+             std::unique_ptr<ui::AXTreeUpdate> update) {
+            // The original caller is always replied to, and an AXTreeIDUnknown
+            // is sent to tell it that the annotation function was not
+            // successful. However the client is only contacted for successful
+            // runs and when we have an update.
+            std::move(callback).Run(update->tree_data.tree_id);
+            if (update->tree_data.tree_id != ui::AXTreeIDUnknown())
+              (*client)->HandleAXTreeUpdate(*update);
+          },
+          &screen_ai_annotator_client_, std::move(callback),
+          std::move(annotation)));
+}
+
+void ScreenAIService::AnnotateInternal(const SkBitmap& image,
+                                       const ui::AXTreeID& parent_tree_id,
+                                       ui::AXTreeUpdate* annotation) {
   DCHECK(screen_ai_annotator_client_.is_bound());
   VLOG(2) << "Screen AI library starting to process " << image.width() << "x"
           << image.height() << " snapshot.";
@@ -174,7 +257,7 @@ void ScreenAIService::Annotate(const SkBitmap& image,
   // verifies the data integrity and source.
   if (!CallLibraryAnnotateFunction(image, annotation_proto,
                                    annotation_proto_length)) {
-    std::move(callback).Run(ui::AXTreeIDUnknown());
+    DCHECK_EQ(annotation->tree_data.tree_id, ui::AXTreeIDUnknown());
     VLOG(1) << "Screen AI library could not process snapshot.";
     return;
   }
@@ -184,20 +267,18 @@ void ScreenAIService::Annotate(const SkBitmap& image,
   delete annotation_proto;
 
   gfx::Rect image_rect(image.width(), image.height());
-  ui::AXTreeUpdate update =
+  *annotation =
       ScreenAIVisualAnnotationToAXTreeUpdate(proto_as_string, image_rect);
-  ScreenAIAXTreeSerializer serializer(parent_tree_id, std::move(update.nodes));
-  update = serializer.Serialize();
+  ScreenAIAXTreeSerializer serializer(parent_tree_id,
+                                      std::move(annotation->nodes));
+  *annotation = serializer.Serialize();
 
-  const ui::AXTreeID& child_tree_id = update.tree_data.tree_id;
   // `ScreenAIAXTreeSerializer` should have assigned a new tree ID to `update`.
   // Thereby, it should never be an unknown tree ID, otherwise there has been an
   // unexpected serialization bug.
-  DCHECK_NE(child_tree_id, ui::AXTreeIDUnknown()) << "Invalid serialization.\n"
-                                                  << update.ToString();
-  std::move(callback).Run(child_tree_id);
-
-  screen_ai_annotator_client_->HandleAXTreeUpdate(update);
+  DCHECK_NE(annotation->tree_data.tree_id, ui::AXTreeIDUnknown())
+      << "Invalid serialization.\n"
+      << annotation->ToString();
 }
 
 NO_SANITIZE("cfi-icall")
@@ -217,8 +298,30 @@ bool ScreenAIService::CallLibraryAnnotateFunction(
 
 void ScreenAIService::ExtractMainContent(const ui::AXTreeUpdate& snapshot,
                                          ContentExtractionCallback callback) {
+  std::unique_ptr<std::vector<int32_t>> content_node_ids =
+      std::make_unique<std::vector<int32_t>>();
+  std::vector<int32_t>* node_ids_ptr = content_node_ids.get();
+
+  // Ownership of |content_node_ids| is passed to the reply function, so it's
+  // safe to pass an unretained pointer to the task function.
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&ScreenAIService::ExtractMainContentInternal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(snapshot),
+                     base::Unretained(node_ids_ptr)),
+      base::BindOnce(
+          [](ContentExtractionCallback callback,
+             std::unique_ptr<std::vector<int32_t>> content_node_ids) {
+            std::move(callback).Run(*content_node_ids);
+          },
+          std::move(callback), std::move(content_node_ids)));
+}
+
+void ScreenAIService::ExtractMainContentInternal(
+    const ui::AXTreeUpdate& snapshot,
+    std::vector<int32_t>* content_node_ids) {
+  DCHECK(content_node_ids);
   std::string serialized_snapshot = Screen2xSnapshotToViewHierarchy(snapshot);
-  std::vector<int32_t> content_node_ids;
 
   int32_t* node_ids = nullptr;
   uint32_t nodes_count = 0;
@@ -226,18 +329,18 @@ void ScreenAIService::ExtractMainContent(const ui::AXTreeUpdate& snapshot,
                                              serialized_snapshot.length(),
                                              node_ids, nodes_count)) {
     VLOG(1) << "Screen2x did not return main content.";
-  } else {
-    content_node_ids.resize(nodes_count);
-    memcpy(content_node_ids.data(), node_ids, nodes_count * sizeof(int32_t));
-    delete[] node_ids;
-    node_ids = nullptr;
-
-    VLOG(2) << "Screen2x returned " << content_node_ids.size() << " node ids:";
-    for (int32_t i : content_node_ids)
-      VLOG(2) << i;
+    DCHECK(content_node_ids->empty());
+    return;
   }
 
-  std::move(callback).Run(content_node_ids);
+  content_node_ids->resize(nodes_count);
+  memcpy(content_node_ids->data(), node_ids, nodes_count * sizeof(int32_t));
+  delete[] node_ids;
+  node_ids = nullptr;
+
+  VLOG(2) << "Screen2x returned " << content_node_ids->size() << " node ids:";
+  for (int32_t i : *content_node_ids)
+    VLOG(2) << i;
 }
 
 NO_SANITIZE("cfi-icall")

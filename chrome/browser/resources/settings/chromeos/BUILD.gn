@@ -45,7 +45,6 @@ if (optimize_webui) {
       ":build_ts",
       "//chrome/browser/resources/nearby_share/shared:preprocess_v3",
       "//ui/webui/resources:preprocess",
-      "//ui/webui/resources/cr_components/app_management:build_ts",
     ]
     excludes = [
       "app-management/app_management.mojom-lite.js",
@@ -61,7 +60,7 @@ if (optimize_webui) {
       "chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js",
       "chrome://resources/ash/common/cellular_setup/mojo_interface_provider.js",
       "chrome://resources/ash/common/network/mojo_interface_provider.js",
-      "chrome://resources/js/cr.m.js",
+      "chrome://resources/js/cr.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/cellular_setup.mojom-webui.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js",
       "chrome://resources/mojo/chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom-webui.js",
@@ -332,7 +331,6 @@ generate_grd("build_grd") {
     deps += [
       ":build_ts",
       "//chrome/browser/resources/nearby_share/shared:build_v3_grdp",
-      "//ui/webui/resources/cr_components/app_management:build_ts",
     ]
     grdp_files += [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_share_resources_v3.grdp" ]
     manifest_files += [ "$target_gen_dir/build_ts.manifest" ]
@@ -363,7 +361,6 @@ group("generate_web_components") {
     "os_apps_page/app_notifications_page:web_components",
     "os_bluetooth_page:web_components",
     "os_people_page:web_components",
-    "os_printing_page:web_components",
     "os_privacy_page:web_components",
   ]
 }
@@ -385,7 +382,6 @@ group("closure_compile_module") {
     "os_bluetooth_page:closure_compile_module",
     "os_languages_page:closure_compile_module",
     "os_people_page:closure_compile_module",
-    "os_printing_page:closure_compile_module",
     "os_privacy_page:closure_compile_module",
   ]
 }

@@ -774,9 +774,8 @@ void StyleResolver::MatchUARules(const Element& element,
   };
   ForEachUARulesForElement(element, &collector, func);
 
-  if (!match_request.IsEmpty()) {
+  if (!match_request.IsEmpty())
     MatchRuleSets(collector, match_request);
-  }
 
   collector.FinishAddingUARules();
   collector.SetMatchingUARules(false);
@@ -1069,7 +1068,7 @@ void StyleResolver::InitStyleAndApplyInheritance(
       DCHECK((IsShadowHost(element.parentNode()) ||
               IsA<HTMLSlotElement>(element.parentNode())) &&
              !LayoutTreeBuilderTraversal::ParentElement(element));
-      state.Style()->SetIsEnsuredOutsideFlatTree();
+      state.StyleBuilder().SetIsEnsuredOutsideFlatTree();
     }
   }
   state.StyleBuilder().SetStyleType(style_request.pseudo_id);
@@ -1109,29 +1108,29 @@ void StyleResolver::ApplyMathMLCustomStyleProperties(
     StyleResolverState& state) {
   DCHECK(RuntimeEnabledFeatures::MathMLCoreEnabled() &&
          IsA<MathMLElement>(element));
-  ComputedStyle& style = state.StyleRef();
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (auto* space = DynamicTo<MathMLSpaceElement>(*element)) {
-    space->AddMathBaselineIfNeeded(style, state.CssToLengthConversionData());
+    space->AddMathBaselineIfNeeded(builder, state.CssToLengthConversionData());
   } else if (auto* padded = DynamicTo<MathMLPaddedElement>(*element)) {
-    padded->AddMathBaselineIfNeeded(style, state.CssToLengthConversionData());
-    padded->AddMathPaddedDepthIfNeeded(style,
+    padded->AddMathBaselineIfNeeded(builder, state.CssToLengthConversionData());
+    padded->AddMathPaddedDepthIfNeeded(builder,
                                        state.CssToLengthConversionData());
-    padded->AddMathPaddedLSpaceIfNeeded(style,
+    padded->AddMathPaddedLSpaceIfNeeded(builder,
                                         state.CssToLengthConversionData());
-    padded->AddMathPaddedVOffsetIfNeeded(style,
+    padded->AddMathPaddedVOffsetIfNeeded(builder,
                                          state.CssToLengthConversionData());
   } else if (auto* fraction = DynamicTo<MathMLFractionElement>(*element)) {
     fraction->AddMathFractionBarThicknessIfNeeded(
-        style, state.CssToLengthConversionData());
+        builder, state.CssToLengthConversionData());
   } else if (auto* operator_element =
                  DynamicTo<MathMLOperatorElement>(*element)) {
-    operator_element->AddMathLSpaceIfNeeded(style,
+    operator_element->AddMathLSpaceIfNeeded(builder,
                                             state.CssToLengthConversionData());
-    operator_element->AddMathRSpaceIfNeeded(style,
+    operator_element->AddMathRSpaceIfNeeded(builder,
                                             state.CssToLengthConversionData());
-    operator_element->AddMathMinSizeIfNeeded(style,
+    operator_element->AddMathMinSizeIfNeeded(builder,
                                              state.CssToLengthConversionData());
-    operator_element->AddMathMaxSizeIfNeeded(style,
+    operator_element->AddMathMaxSizeIfNeeded(builder,
                                              state.CssToLengthConversionData());
   }
 }
@@ -1320,17 +1319,27 @@ void StyleResolver::ApplyBaseStyleNoCache(
 
   CascadeAndApplyMatchedProperties(state, cascade);
 
-  if (collector.MatchedResult().DependsOnSizeContainerQueries())
+  const MatchResult& match_result = collector.MatchedResult();
+
+  if (match_result.HasFlag(MatchFlag::kAffectedByDrag))
+    state.Style()->SetAffectedByDrag();
+  if (match_result.HasFlag(MatchFlag::kAffectedByFocusWithin))
+    state.Style()->SetAffectedByFocusWithin();
+  if (match_result.HasFlag(MatchFlag::kAffectedByHover))
+    state.Style()->SetAffectedByHover();
+  if (match_result.HasFlag(MatchFlag::kAffectedByActive))
+    state.Style()->SetAffectedByActive();
+  if (match_result.DependsOnSizeContainerQueries())
     state.Style()->SetDependsOnSizeContainerQueries(true);
-  if (collector.MatchedResult().DependsOnStyleContainerQueries())
+  if (match_result.DependsOnStyleContainerQueries())
     state.Style()->SetDependsOnStyleContainerQueries(true);
-  if (collector.MatchedResult().DependsOnStaticViewportUnits())
+  if (match_result.DependsOnStaticViewportUnits())
     state.Style()->SetHasStaticViewportUnits();
-  if (collector.MatchedResult().DependsOnDynamicViewportUnits())
+  if (match_result.DependsOnDynamicViewportUnits())
     state.Style()->SetHasDynamicViewportUnits();
-  if (collector.MatchedResult().DependsOnRemContainerQueries())
+  if (match_result.DependsOnRemContainerQueries())
     state.Style()->SetHasRemUnits();
-  if (collector.MatchedResult().ConditionallyAffectsAnimations())
+  if (match_result.ConditionallyAffectsAnimations())
     state.SetCanAffectAnimations();
 
   ApplyCallbackSelectors(state);
@@ -1381,7 +1390,7 @@ void StyleResolver::ApplyBaseStyle(
 #endif
 
     state.SetStyle(ComputedStyle::Clone(*animation_base_computed_style));
-    state.StyleRef().SetBaseData(
+    state.StyleBuilder().SetBaseData(
         scoped_refptr<StyleBaseData>(GetBaseData(state)));
     state.StyleBuilder().SetStyleType(style_request.pseudo_id);
     if (!state.ParentStyle()) {
@@ -1573,9 +1582,9 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
   builder.SetTapHighlightColor(
       ComputedStyleInitialValues::InitialTapHighlightColor());
 
-  initial_style->SetUsedColorScheme(engine.GetPageColorSchemes(),
-                                    engine.GetPreferredColorScheme(),
-                                    engine.GetForceDarkModeEnabled());
+  builder.SetUsedColorScheme(engine.GetPageColorSchemes(),
+                             engine.GetPreferredColorScheme(),
+                             engine.GetForceDarkModeEnabled());
 
   FontDescription document_font_description =
       initial_style->GetFontDescription();
@@ -1655,7 +1664,7 @@ Element* StyleResolver::FindContainerForElement(
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
     Element* element,
     PseudoId pseudo_id,
-    const AtomicString& view_transition_tag,
+    const AtomicString& view_transition_name,
     unsigned rules_to_include) {
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
@@ -1669,7 +1678,7 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
   // TODO(obrufau): support collecting rules for nested ::marker
   if (!element->IsPseudoElement()) {
     CollectPseudoRulesForElement(*element, collector, pseudo_id,
-                                 view_transition_tag, rules_to_include);
+                                 view_transition_name, rules_to_include);
   }
 
   if (tracker_)
@@ -1687,10 +1696,10 @@ void StyleResolver::CollectPseudoRulesForElement(
     const Element& element,
     ElementRuleCollector& collector,
     PseudoId pseudo_id,
-    const AtomicString& view_transition_tag,
+    const AtomicString& view_transition_name,
     unsigned rules_to_include) {
   collector.SetPseudoElementStyleRequest(
-      StyleRequest(pseudo_id, nullptr, view_transition_tag));
+      StyleRequest(pseudo_id, nullptr, view_transition_name));
 
   if (rules_to_include & kUACSSRules)
     MatchUARules(element, collector);
@@ -1739,7 +1748,7 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
 
   if (!IsAnimationStyleChange(*animating_element) ||
       !state.StyleRef().BaseData()) {
-    state.StyleRef().SetBaseData(StyleBaseData::Create(
+    state.StyleBuilder().SetBaseData(StyleBaseData::Create(
         ComputedStyle::Clone(state.StyleRef()), cascade.GetImportantSet()));
   }
 
@@ -2155,7 +2164,7 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
 
   // NOTE: This flag needs to be set before the entry is added to the
   // matched properties cache, or it will be wrong on cache hits.
-  state.Style()->SetInlineStyleLostCascade(cascade.InlineStyleLost());
+  state.StyleBuilder().SetInlineStyleLostCascade(cascade.InlineStyleLost());
 
   MaybeAddToMatchedPropertiesCache(state, cache_success, result);
 
@@ -2185,7 +2194,7 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   if (!rules)
     return;
   for (auto rule : *rules)
-    state.Style()->AddCallbackSelector(rule->SelectorsText());
+    state.StyleBuilder().AddCallbackSelector(rule->SelectorsText());
 }
 
 // Font properties are also handled by FontStyleResolver outside the main
@@ -2341,8 +2350,6 @@ void StyleResolver::PropagateStyleToViewport() {
   const ComputedStyle& viewport_style =
       GetDocument().GetLayoutView()->StyleRef();
   ComputedStyleBuilder new_viewport_style_builder(viewport_style);
-  ComputedStyle* new_viewport_style =
-      new_viewport_style_builder.MutableInternalStyle();
   bool changed = false;
   bool update_scrollbar_style = false;
 
@@ -2398,7 +2405,7 @@ void StyleResolver::PropagateStyleToViewport() {
       changed = true;
       new_viewport_style_builder.SetBackgroundColor(
           StyleColor(background_color));
-      new_viewport_style->AccessBackgroundLayers() = background_layers;
+      new_viewport_style_builder.AccessBackgroundLayers() = background_layers;
       new_viewport_style_builder.SetImageRendering(image_rendering);
     }
   }
@@ -2516,6 +2523,8 @@ void StyleResolver::PropagateStyleToViewport() {
       GetDocument(), document_element_style, new_viewport_style_builder);
 
   if (changed) {
+    ComputedStyle* new_viewport_style =
+        new_viewport_style_builder.MutableInternalStyle();
     new_viewport_style->UpdateFontOrientation();
     FontBuilder(&GetDocument()).CreateInitialFont(*new_viewport_style);
   }
@@ -2671,17 +2680,18 @@ scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
   StyleResolverState state(GetDocument(), element);
   state.SetStyle(ComputedStyle::Clone(base_style));
   const CSSPropertyValueSet& properties = try_rule->Properties();
-  for (unsigned i = 0; i < properties.PropertyCount(); ++i) {
-    CSSPropertyValueSet::PropertyReference property_ref =
-        properties.PropertyAt(i);
-    if (property_ref.Value().IsVariableReferenceValue()) {
-      // TODO(crbug.com/1309178): Resolve var() references.
-      continue;
-    }
-    StyleBuilder::ApplyProperty(
-        property_ref.Name(), state,
-        ScopedCSSValue(property_ref.Value(), &GetDocument()));
-  }
+
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  cascade.MutableMatchResult().FinishAddingUARules();
+  cascade.MutableMatchResult().FinishAddingUserRules();
+  cascade.MutableMatchResult().FinishAddingPresentationalHints();
+  cascade.MutableMatchResult().AddMatchedProperties(&properties);
+  // TODO(crbug.com/1381623): Pass proper TreeScope here once @position-fallback
+  // is supported in ShadowDOM.
+  cascade.MutableMatchResult().FinishAddingAuthorRulesForTreeScope(
+      GetDocument());
+  cascade.Apply();
+
   return state.TakeStyle();
 }
 

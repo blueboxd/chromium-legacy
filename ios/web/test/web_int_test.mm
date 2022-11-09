@@ -9,6 +9,7 @@
 #import "base/scoped_observation.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "base/test/scoped_run_loop_timeout.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/test/js_test_util.h"
@@ -131,13 +132,14 @@ bool WebIntTest::LoadWithParams(
 
 void WebIntTest::RemoveWKWebViewCreatedData(WKWebsiteDataStore* data_store,
                                             NSSet* websiteDataTypes) {
-  __block bool data_removed = false;
+  base::RunLoop run_loop;
+  __block base::OnceClosure quit_closure = run_loop.QuitClosure();
 
   ProceduralBlock remove_data = ^{
     [data_store removeDataOfTypes:websiteDataTypes
-                    modifiedSince:[NSDate distantPast]
+                    modifiedSince:NSDate.distantPast
                 completionHandler:^{
-                  data_removed = true;
+                  std::move(quit_closure).Run();
                 }];
   };
 
@@ -158,10 +160,13 @@ void WebIntTest::RemoveWKWebViewCreatedData(WKWebsiteDataStore* data_store,
     remove_data();
   }
 
-  EXPECT_TRUE(
-      WaitUntilConditionOrTimeout(kWaitForClearBrowsingDataTimeout * 2, ^{
-        return data_removed;
-      }));
+  // Wait until the data is removed. We increase the timeout to 90 seconds here
+  // since this action has been timing out frequently on the bots.
+  {
+    base::test::ScopedRunLoopTimeout data_removal_timeout(FROM_HERE,
+                                                          base::Seconds(90));
+    run_loop.Run();
+  }
 }
 
 NSInteger WebIntTest::GetIndexOfNavigationItem(

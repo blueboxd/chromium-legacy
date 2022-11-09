@@ -181,13 +181,13 @@ js_library("actions_model") {
     ":folder_shortcuts_data_model",
     "metadata:metadata_model",
     "ui:action_model_ui",
+    "//ash/webui/common/resources:cr_deprecated",
     "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/file_manager/file_manager/externs/background:drive_sync_handler",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr_deprecated",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }
@@ -252,7 +252,7 @@ js_unittest("banner_util_unittest") {
 
 js_library("mock_actions_model") {
   deps = [
-    "//ui/webui/resources/js:cr_deprecated",
+    "//ash/webui/common/resources:cr_deprecated",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }
@@ -363,8 +363,10 @@ js_library("crostini_controller") {
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs/background:crostini",
-    "//ui/file_manager/file_manager/foreground/elements:files_toast",
     "//ui/webui/resources/js:assert",
+  ]
+  externs_list = [
+    "//ui/file_manager/file_manager/externs/polymer_elements/files_toast.js",
   ]
 }
 
@@ -393,6 +395,7 @@ js_library("directory_contents") {
     ":constants",
     ":file_list_model",
     "metadata:metadata_model",
+    "//ash/webui/common/resources:cr_deprecated",
     "//ui/file_manager/file_manager/common/js:async_util",
     "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:trash",
@@ -401,7 +404,6 @@ js_library("directory_contents") {
     "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr_deprecated",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }
@@ -428,6 +430,7 @@ js_library("directory_model") {
     "ui:file_list_selection_model",
     "ui:list_selection_model",
     "ui:list_single_selection_model",
+    "//ash/webui/common/resources:cr_deprecated",
     "//ui/file_manager/file_manager/common/js:async_util",
     "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:util",
@@ -441,7 +444,6 @@ js_library("directory_model") {
     "//ui/file_manager/file_manager/externs/ts:state",
     "//ui/file_manager/file_manager/externs/ts:store",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr_deprecated",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }
@@ -529,8 +531,6 @@ js_library("deferred_elements") {
     "//ui/file_manager/file_manager/foreground/elements:files_format_dialog",
     "//ui/file_manager/file_manager/foreground/elements:files_password_dialog",
     "//ui/file_manager/file_manager/foreground/elements:files_spinner",
-    "//ui/file_manager/file_manager/foreground/elements:files_toast",
-    "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
     "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
     "//ui/file_manager/file_manager/foreground/elements:xf_button",
     "//ui/file_manager/file_manager/foreground/elements:xf_circular_progress",
@@ -700,13 +700,13 @@ js_library("file_selection") {
     ":directory_model",
     "metadata:metadata_model",
     "ui:list_container",
+    "//ash/webui/common/resources:cr_deprecated",
     "//ui/file_manager/file_manager/common/js:file_type",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/file_manager/file_manager/externs/background:file_operation_manager",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr_deprecated",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }
@@ -737,8 +737,10 @@ js_library("file_transfer_controller") {
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/file_manager/file_manager/externs/background:file_operation_manager",
     "//ui/file_manager/file_manager/externs/background:progress_center",
-    "//ui/file_manager/file_manager/foreground/elements:files_toast",
     "//ui/webui/resources/js:assert",
+  ]
+  externs_list = [
+    "//ui/file_manager/file_manager/externs/polymer_elements/files_toast.js",
   ]
 }
 
@@ -769,7 +771,6 @@ js_unittest("file_transfer_controller_unittest") {
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/file_manager/file_manager/externs/background:file_operation_manager",
     "//ui/file_manager/file_manager/externs/background:progress_center",
-    "//ui/file_manager/file_manager/foreground/elements:files_toast",
   ]
   externs_list =
       [ "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js" ]
@@ -1094,7 +1095,7 @@ js_library("quick_view_controller") {
 
 js_library("quick_view_model") {
   deps = [
-    "//ui/webui/resources/js:cr_deprecated",
+    "//ash/webui/common/resources:cr_deprecated",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }
@@ -1139,7 +1140,6 @@ js_library("selection_menu_controller") {
     "ui:menu",
     "ui:multi_menu_button",
     "//ui/file_manager/file_manager/common/js:util",
-    "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
     "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
   ]
 }
@@ -1149,7 +1149,6 @@ js_library("sort_menu_controller") {
     ":file_list_model",
     "ui:multi_menu_button",
     "//ui/file_manager/file_manager/common/js:util",
-    "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
   ]
 }
 
@@ -1167,7 +1166,7 @@ js_unittest("spinner_controller_unittest") {
 
 js_library("task_history") {
   deps = [
-    "//ui/webui/resources/js:cr_deprecated",
+    "//ash/webui/common/resources:cr_deprecated",
     "//ui/webui/resources/js/cr:event_target",
   ]
 }
@@ -1214,7 +1213,7 @@ js_library("toolbar_controller") {
 js_library("webui_command_extender") {
   deps = [
     "ui:command",
-    "//ui/webui/resources/js:cr_deprecated",
+    "//ash/webui/common/resources:cr_deprecated",
   ]
 }
 

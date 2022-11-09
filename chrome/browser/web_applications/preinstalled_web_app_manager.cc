@@ -19,12 +19,15 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -60,6 +63,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "url/gurl.h"
 
@@ -494,8 +498,8 @@ void PreinstalledWebAppManager::DeviceDataInitializedEvent::Post(
   // asynchronous and may not have completed by this point.
   if (!ui::DeviceDataManager::HasInstance() ||
       ui::DeviceDataManager::GetInstance()->AreDeviceListsComplete()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     std::move(task));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                             std::move(task));
   } else {
     DCHECK(!device_data_observation_.IsObserving());
     device_data_observation_.Observe(ui::DeviceDataManager::GetInstance());
@@ -541,6 +545,7 @@ void PreinstalledWebAppManager::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kWebAppsUninstalledDefaultChromeApps);
 }
 
+// static
 void PreinstalledWebAppManager::SkipStartupForTesting() {
   g_skip_startup_for_testing_ = true;
 }
@@ -588,12 +593,15 @@ void PreinstalledWebAppManager::SetSubsystems(
   externally_managed_app_manager_ = externally_managed_app_manager;
 }
 
-void PreinstalledWebAppManager::Start() {
-  if (!g_skip_startup_for_testing_) {
-    LoadAndSynchronize(
-        base::BindOnce(&PreinstalledWebAppManager::OnStartUpTaskCompleted,
-                       weak_ptr_factory_.GetWeakPtr()));
+void PreinstalledWebAppManager::Start(base::OnceClosure on_done) {
+  if (g_skip_startup_for_testing_ || skip_startup_for_testing_) {  // IN-TEST
+    std::move(on_done).Run();                                      // IN-TEST
+    return;                                                        // IN-TEST
   }
+  LoadAndSynchronize(
+      base::BindOnce(&PreinstalledWebAppManager::OnStartUpTaskCompleted,
+                     weak_ptr_factory_.GetWeakPtr())
+          .Then(std::move(on_done)));
 }
 
 void PreinstalledWebAppManager::LoadForTesting(ConsumeInstallOptions callback) {
@@ -610,6 +618,11 @@ void PreinstalledWebAppManager::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void PreinstalledWebAppManager::SetSkipStartupSynchronizeForTesting(  // IN-TEST
+    bool skip_startup) {
+  skip_startup_for_testing_ = skip_startup;  // IN-TEST
+}
+
 void PreinstalledWebAppManager::LoadAndSynchronizeForTesting(
     SynchronizeCallback callback) {
   LoadAndSynchronize(std::move(callback));
@@ -617,16 +630,18 @@ void PreinstalledWebAppManager::LoadAndSynchronizeForTesting(
 
 void PreinstalledWebAppManager::LoadAndSynchronize(
     SynchronizeCallback callback) {
+  int num_barriers_issued = 2;
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      2,
+      num_barriers_issued,
       base::BindOnce(
           &PreinstalledWebAppManager::Load, weak_ptr_factory_.GetWeakPtr(),
           base::BindOnce(&PreinstalledWebAppManager::Synchronize,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
+  device_data_initialized_event_->Post(barrier_closure);
+
   // Make sure ExtensionSystem is ready to know if default apps new installation
   // will be performed.
   extensions::OnExtensionSystemReady(profile_, barrier_closure);
-  device_data_initialized_event_->Post(barrier_closure);
 }
 
 void PreinstalledWebAppManager::Load(ConsumeInstallOptions callback) {

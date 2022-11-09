@@ -441,7 +441,7 @@ void VideoTrackRecorderImpl::Encoder::RetrieveFrameOnEncodingTaskRunner(
     // PaintCanvasVideoRenderer requires these settings to work.
     Platform::ContextAttributes attributes;
     attributes.enable_raster_interface = true;
-    attributes.support_grcontext = true;
+    attributes.prefer_low_power_gpu = true;
 
     Platform::GraphicsInfo info;
     encoder_thread_context_ = CreateOffscreenGraphicsContext3DProvider(
@@ -578,6 +578,8 @@ VideoTrackRecorderImpl::Encoder::ConvertToI420ForSoftwareEncoder(
 
   if (frame->GetGpuMemoryBuffer())
     frame = media::ConvertToMemoryMappedFrame(frame);
+  if (!frame)
+    return nullptr;
 
   scoped_refptr<media::VideoFrame> i420_frame = frame_pool_.CreateFrame(
       media::VideoPixelFormat::PIXEL_FORMAT_I420, frame->coded_size(),

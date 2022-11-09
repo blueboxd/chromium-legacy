@@ -305,6 +305,7 @@
 <translation id="4044093238444069296">Не може да се стапи во контакт со портал</translation>
 <translation id="4046123991198612571">Следна песна</translation>
 <translation id="404928562651467259">ПРЕДУПРЕДУВАЊЕ</translation>
+<translation id="4060260348856573701">Нов APN</translation>
 <translation id="4093865285251893588">Профилна слика</translation>
 <translation id="409427325554347132">Зачувај детали од тестот</translation>
 <translation id="4110686435123617899">Изберете го албумот <ph name="TITLE" /> <ph name="DESC" /></translation>
@@ -333,6 +334,7 @@
 <translation id="4297501883039923494">Запрено - непозната грешка</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> слики</translation>
 <translation id="4333390807948134856">Копчето <ph name="KEY_NAME" /> е притиснато</translation>
+<translation id="435692326371619097">Управувајте со поставките за имињата на пристапните точки на мрежата. Имињата на пристапните точки воспоставуваат врска помеѓу мобилната мрежа и интернетот. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Не е извршена</translation>
 <translation id="4378551569595875038">Се поврзува…</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -605,6 +607,7 @@
 <translation id="6766275201586212568">Неуспешни одредувања со DNS</translation>
 <translation id="6768237774506518020">Висока стапка на неуспех на одредување со DNS</translation>
 <translation id="6791471867139427246">боја на светло на тастатурата</translation>
+<translation id="6793680441750437230">Притиснете кое било копче на тастатурата. Може да притиснете најмногу 4 копчиња истовремено. Притиснете Alt плус Esc за да го затворите дијалогот.</translation>
 <translation id="680983167891198932">Клуч</translation>
 <translation id="6816797338148849397">Достапни се информации поврзани со вашиот избор. Користете го копчето со стрелка нагоре за да пристапите.</translation>
 <translation id="6853312040151791195">Брзина на празнење</translation>

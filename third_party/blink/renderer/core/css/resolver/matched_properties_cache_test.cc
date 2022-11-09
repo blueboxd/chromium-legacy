@@ -170,8 +170,9 @@ TEST_F(MatchedPropertiesCacheTest, EnsuredOutsideFlatTree) {
 
   auto style = CreateStyle();
   auto parent = CreateStyle();
-  auto ensured_style = CreateStyle();
-  ensured_style->SetIsEnsuredOutsideFlatTree();
+  auto builder = CreateStyleBuilder();
+  builder.SetIsEnsuredOutsideFlatTree();
+  auto ensured_style = builder.TakeStyle();
 
   TestKey key1("display:block", 1, GetDocument());
 
@@ -188,11 +189,15 @@ TEST_F(MatchedPropertiesCacheTest, EnsuredOutsideFlatTreeAndDisplayNone) {
   TestCache cache(GetDocument());
 
   auto parent = CreateStyle();
-  auto parent_none = CreateStyle();
   auto style = CreateStyle();
-  auto style_flat = CreateStyle();
-  parent_none->SetIsEnsuredInDisplayNone();
-  style_flat->SetIsEnsuredOutsideFlatTree();
+
+  auto builder = CreateStyleBuilder();
+  builder.SetIsEnsuredInDisplayNone();
+  auto parent_none = builder.TakeStyle();
+
+  builder = CreateStyleBuilder();
+  builder.SetIsEnsuredOutsideFlatTree();
+  auto style_flat = builder.TakeStyle();
 
   TestKey key1("display:block", 1, GetDocument());
 
@@ -250,12 +255,16 @@ TEST_F(MatchedPropertiesCacheTest, DirectionDependency) {
 TEST_F(MatchedPropertiesCacheTest, ColorSchemeDependency) {
   TestCache cache(GetDocument());
 
-  auto parent_a = CreateStyle();
-  auto parent_b = CreateStyle();
+  auto builder = CreateStyleBuilder();
+  builder.SetDarkColorScheme(false);
+  auto parent_a = builder.TakeStyle();
+
+  builder = CreateStyleBuilder();
+  builder.SetDarkColorScheme(true);
+  auto parent_b = builder.TakeStyle();
+
   auto style_a = CreateStyle();
   auto style_b = CreateStyle();
-  parent_a->SetDarkColorScheme(false);
-  parent_b->SetDarkColorScheme(true);
 
   TestKey key("display:block", 1, GetDocument());
 

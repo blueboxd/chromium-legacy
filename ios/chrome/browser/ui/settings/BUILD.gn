@@ -20,6 +20,7 @@ source_set("settings_root") {
     "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/cells:public",
     "//ios/chrome/browser/ui/table_view",
@@ -40,6 +41,23 @@ source_set("settings_root_constants") {
     "settings_root_table_constants.mm",
   ]
   deps = [ "//base" ]
+}
+
+source_set("settings_root_categories") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "settings_root_table_view_controller+toolbar_add.h",
+    "settings_root_table_view_controller+toolbar_add.mm",
+    "settings_root_table_view_controller+toolbar_settings.h",
+    "settings_root_table_view_controller+toolbar_settings.mm",
+  ]
+  deps = [
+    ":settings_root",
+    ":settings_root_constants",
+    "//ios/chrome/app/strings",
+    "//ui/base",
+  ]
+  frameworks = [ "UIKit.framework" ]
 }
 
 source_set("settings") {

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 
+#import <objc/runtime.h>
+
 #import "base/bind.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -19,7 +21,6 @@
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
-#import "ios/chrome/browser/ui/keyboard/key_command_actions.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/disabled_tab_view_controller.h"
@@ -126,7 +127,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 @interface TabGridViewController () <DisabledTabViewControllerDelegate,
                                      GridViewControllerDelegate,
-                                     KeyCommandActions,
                                      LayoutSwitcher,
                                      SuggestedActionsDelegate,
                                      UIGestureRecognizerDelegate,
@@ -1871,7 +1871,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self openNewRegularTabForKeyboardCommand];
       break;
     case TabGridPageRemoteTabs:
-      // Tabs cannot be opened with ⌘-t from the remote tabs page.
+      NOTREACHED() << "It is invalid to have an active tab in remote tabs.";
       break;
   }
 }
@@ -2517,8 +2517,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
   if (IsKeyboardShortcutsMenuEnabled()) {
-    // Key commands are already declared in the menu.
-    return nil;
+    // Other key commands are already declared in the menu.
+    return @[
+      UIKeyCommand.cr_openNewRegularTab,
+    ];
   } else {
     return @[
       UIKeyCommand.cr_openNewTab,
@@ -2528,15 +2530,29 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+  if (sel_isEqual(action, @selector(keyCommand_openNewTab)) ||
+      sel_isEqual(action, @selector(keyCommand_openNewRegularTab)) ||
+      sel_isEqual(action, @selector(keyCommand_openNewIncognitoTab))) {
+    return self.currentPage != TabGridPageRemoteTabs;
+  }
+  return [super canPerformAction:action withSender:sender];
+}
+
 - (void)keyCommand_openNewTab {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandOpenNewTab"));
   [self openNewTabInCurrentPageForKeyboardCommand];
 }
 
 - (void)keyCommand_openNewRegularTab {
+  base::RecordAction(
+      base::UserMetricsAction("MobileKeyCommandOpenNewRegularTab"));
   [self openNewRegularTabForKeyboardCommand];
 }
 
 - (void)keyCommand_openNewIncognitoTab {
+  base::RecordAction(
+      base::UserMetricsAction("MobileKeyCommandOpenNewIncognitoTab"));
   [self openNewIncognitoTabForKeyboardCommand];
 }
 

@@ -315,15 +315,18 @@
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
+        'swarming': {
+          'shards': 2,
+        },
         'test': 'android_browsertests',
       },
       'bf_cache_chrome_public_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_chrome_public_test_apk.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
         ],
         'swarming': {
-          'shards': 15,
+          'shards': 12,
         },
         'mixins': [
           'skia_gold_test',
@@ -342,7 +345,7 @@
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter;../../testing/buildbot/filters/android.emulator.bf_cache_content_shell_test_apk.filter'
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter',
         ],
         'test': 'content_shell_test_apk',
       },
@@ -596,9 +599,7 @@
           'android_r',
           'bullhead',
           'flame',
-          'hammerhead',
           'marshmallow',
-          'marshmallow_generic',
           'mdarcy',
           'nougat_generic',
           'oreo_fleet',
@@ -1606,9 +1607,7 @@
           'android_r',
           'bullhead',
           'flame',
-          'hammerhead',
           'marshmallow',
-          'marshmallow_generic',
           'mdarcy',
           'nougat_generic',
           'oreo_fleet',
@@ -2155,6 +2154,7 @@
           'shards': 8,
         },
       },
+      'sync_integration_tests': {},
       'unit_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.unit_tests.filter',
@@ -2200,6 +2200,16 @@
         },
       },
       'compositor_unittests': {},
+      'content_browsertests': {
+        'args': [
+          '--test-arg=--disable-gpu',
+          '--test-arg=--headless',
+          '--test-arg=--ozone-platform=headless',
+        ],
+        'swarming': {
+          'shards': 14,
+        },
+      },
       'content_unittests': {},
       'crypto_unittests': {},
       'events_unittests': {},
@@ -4318,9 +4328,7 @@
           'android_r',
           'bullhead',
           'flame',
-          'hammerhead',
           'marshmallow',
-          'marshmallow_generic',
           'mdarcy',
           'nougat_generic',
           'oreo_fleet',
@@ -5493,6 +5501,30 @@
         'experiment_percentage': 100,
       },
     },
+
+    'wpt_web_tests_layout_ng_disabled': {
+      'wpt_tests_suite_layout_ng_disabled': {
+        'args': [
+          '--child-processes=8',
+          '--log-wptreport',
+          '--xvfb',
+          '--flag-specific',
+          'disable-layout-ng',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 12,
+        },
+        'experiment_percentage': 100,
+      },
+    },
   },
 
   ##############################################################################
@@ -6406,6 +6438,7 @@
 
     'wpt_web_tests_content_shell_multiple_flags': [
       'wpt_web_tests_content_shell',
+      'wpt_web_tests_layout_ng_disabled',
       'wpt_web_tests_highdpi',
     ],
   },

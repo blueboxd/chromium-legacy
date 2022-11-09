@@ -167,11 +167,6 @@ extern const char kDefaultBrowserFullscreenPromoExperimentDescription[];
 extern const char kDefaultBrowserIntentsShowSettingsName[];
 extern const char kDefaultBrowserIntentsShowSettingsDescription[];
 
-// Title and description for the flag to control the delay (in minutes) for
-// polling for the existence of Gaia cookies for google.com.
-extern const char kDelayThresholdMinutesToUpdateGaiaCookieName[];
-extern const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[];
-
 // Title and description for the flag to control if a crash report is generated
 // on main thread freeze.
 extern const char kDetectMainThreadFreezeName[];
@@ -719,6 +714,10 @@ extern const char kEnableLensInKeyboardDescription[];
 // the device camera from the ntp.
 extern const char kEnableLensInNTPName[];
 extern const char kEnableLensInNTPDescription[];
+
+// Title and description for the flag to sort the tab by recency in the TabGrid.
+extern const char kTabGridRecencySortName[];
+extern const char kTabGridRecencySortDescription[];
 
 // Title and description for the flag to enable using the
 // loadSimulatedRequest:responseHTMLString: API for displaying error pages in

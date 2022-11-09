@@ -71,7 +71,7 @@ class ViewTransitionStyleTracker
   void AddSharedElementsFromCSS();
 
   // Indicate that capture was requested. This verifies that the combination of
-  // set elements and tags is valid. Returns true if capture phase started, and
+  // set elements and names is valid. Returns true if capture phase started, and
   // false if the transition should be aborted.
   bool Capture();
 
@@ -81,7 +81,7 @@ class ViewTransitionStyleTracker
   void CaptureResolved();
 
   // Indicate that start was requested. This verifies that the combination of
-  // set elements and tags is valid. Returns true if start phase started, and
+  // set elements and names is valid. Returns true if start phase started, and
   // false if the transition should be aborted.
   bool Start();
 
@@ -103,10 +103,10 @@ class ViewTransitionStyleTracker
       viz::ViewTransitionElementResourceId&) const;
 
   // Creates a PseudoElement for the corresponding |pseudo_id| and
-  // |view_transition_tag|. The |pseudo_id| must be a ::transition* element.
+  // |view_transition_name|. The |pseudo_id| must be a ::transition* element.
   PseudoElement* CreatePseudoElement(Element* parent,
                                      PseudoId pseudo_id,
-                                     const AtomicString& view_transition_tag);
+                                     const AtomicString& view_transition_name);
 
   // Dispatched after the pre-paint lifecycle stage after each rendering
   // lifecycle update when a transition is in progress.
@@ -136,13 +136,13 @@ class ViewTransitionStyleTracker
 
   void VerifySharedElements();
 
-  int CapturedTagCount() const { return captured_tag_count_; }
+  int CapturedTagCount() const { return captured_name_count_; }
 
   bool IsSharedElement(Element* element) const;
 
   // This function represents whether root itself is participating in the
-  // transition (i.e. it has a tag in the current phase). Note that we create an
-  // EffectNode for the root whether or not it's transitioning.
+  // transition (i.e. it has a name in the current phase). Note that we create
+  // an EffectNode for the root whether or not it's transitioning.
   bool IsRootTransitioning() const;
 
   std::vector<viz::ViewTransitionElementResourceId> TakeCaptureResourceIds() {
@@ -226,7 +226,7 @@ class ViewTransitionStyleTracker
 
   struct RootData {
     viz::ViewTransitionElementResourceId snapshot_id;
-    VectorOf<AtomicString> tags;
+    VectorOf<AtomicString> names;
   };
 
   void InvalidateStyle();
@@ -241,10 +241,10 @@ class ViewTransitionStyleTracker
   void AddSharedElementsFromCSSRecursive(PaintLayer*);
 
   int OldRootDataTagSize() const {
-    return old_root_data_ ? old_root_data_->tags.size() : 0;
+    return old_root_data_ ? old_root_data_->names.size() : 0;
   }
   int NewRootDataTagSize() const {
-    return new_root_data_ ? new_root_data_->tags.size() : 0;
+    return new_root_data_ ? new_root_data_->names.size() : 0;
   }
   absl::optional<RootData> GetCurrentRootData() const;
   HashSet<AtomicString> AllRootTags() const;
@@ -252,20 +252,46 @@ class ViewTransitionStyleTracker
   void InvalidateHitTestingCache();
 
   Member<Document> document_;
+
+  // Indicates which step during the transition we're currently at.
   State state_ = State::kIdle;
-  int captured_tag_count_ = 0;
+
+  // Set if this style tracker was created by deserializing captured state
+  // instead of running through the capture phase. This is done for transitions
+  // initiated by navigations where capture and animation could run in different
+  // Documents which are cross-process.
+  const bool deserialized_ = false;
+
+  // Tracks the number of names discovered during the capture phase of the
+  // transition.
+  int captured_name_count_ = 0;
+
+  // Map of the CSS |view-transition-name| property to state for that tag.
   HeapHashMap<AtomicString, Member<ElementData>> element_data_map_;
+
+  // The device scale factor used for layout of the Document. This is kept in
+  // sync with the Document during RunPostPrePaintSteps().
   float device_pixel_ratio_ = 1.f;
+
+  // The data for the |documentElement| generate if it has a valid
+  // |view-transition-name| for the old and new DOM state.
   absl::optional<RootData> old_root_data_;
   absl::optional<RootData> new_root_data_;
+
+  // The paint property node for the |documentElement|. This is generated if the
+  // element has a valid |view-transition-name| and ensures correct generation
+  // of its snapshot.
   scoped_refptr<EffectPaintPropertyNode> root_effect_node_;
+
+  // The dynamically generated UA stylesheet for default styles on
+  // pseudo-elements.
   absl::optional<String> ua_style_sheet_;
 
   // The following state is buffered until the capture phase and populated again
   // by script for the start phase.
   int set_element_sequence_id_ = 0;
   HeapHashMap<Member<Element>, HashSet<std::pair<AtomicString, int>>>
-      pending_shared_element_tags_;
+      pending_shared_element_names_;
 
   // This vector is passed as constructed to cc's view transition request,
   // so this uses the std::vector for that reason, instead of WTF::Vector.

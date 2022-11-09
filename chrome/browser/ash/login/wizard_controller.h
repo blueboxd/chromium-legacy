@@ -54,6 +54,7 @@
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
 #include "chrome/browser/ash/login/screens/smart_privacy_protection_screen.h"
@@ -159,10 +160,10 @@ class WizardController : public OobeUI::Observer {
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
   //    ash::DemoPreferencesScreenView::kScreenId
-  //    chromeos::NetworkScreenView::kScreenId
+  //    ash::NetworkScreenView::kScreenId
   //    ash::EulaView::kScreenId
   //    ash::ArcTermsOfServiceScreenView::kScreenId
-  //    chromeos::UpdateView::kScreenId
+  //    ash::UpdateView::kScreenId
   //    ash::DemoSetupScreenView::kScreenId
   void StartDemoModeSetup();
 
@@ -348,6 +349,8 @@ class WizardController : public OobeUI::Observer {
   void OnDemoPreferencesScreenExit(DemoPreferencesScreen::Result result);
   void OnDemoSetupScreenExit(DemoSetupScreen::Result result);
   void OnLocaleSwitchScreenExit(LocaleSwitchScreen::Result result);
+  void OnRecoveryEligibilityScreenExit(
+      RecoveryEligibilityScreen::Result result);
   void OnTermsOfServiceScreenExit(TermsOfServiceScreen::Result result);
   void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result);
   void OnSyncConsentScreenExit(SyncConsentScreen::Result result);

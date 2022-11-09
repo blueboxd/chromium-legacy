@@ -332,6 +332,7 @@ _CONFIG = [
             'cc::UsePaintCache',
 
             # Chromium geometry types.
+            'gfx::DecomposedTransform',
             'gfx::Insets',
             'gfx::InsetsF',
             'gfx::Outsets',
@@ -1449,6 +1450,7 @@ _CONFIG = [
         'allowed': [
             'gpu::webgpu::PowerPreference',
             'gpu::webgpu::WebGPUInterface',
+            'media::PIXEL_FORMAT_NV12',
         ],
     },
     {

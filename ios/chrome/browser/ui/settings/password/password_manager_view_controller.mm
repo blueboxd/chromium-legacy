@@ -48,6 +48,9 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_settings_commands.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller+toolbar_add.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller+toolbar_settings.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
@@ -307,6 +310,12 @@ NSInteger kTrailingSymbolSize = 18;
 // navigation controller, but the instance will persist here.
 @property(nonatomic, strong) UISearchController* searchController;
 
+// Settings button for the toolbar.
+@property(nonatomic, strong) UIBarButtonItem* settingsButtonInToolbar;
+
+// Add button for the toolbar.
+@property(nonatomic, strong) UIBarButtonItem* addButtonInToolbar;
+
 @end
 
 @implementation PasswordManagerViewController
@@ -423,14 +432,6 @@ NSInteger kTrailingSymbolSize = 18;
                      action:@selector(dismissSearchController:)
            forControlEvents:UIControlEventTouchUpInside];
 
-  if (ShouldShowSettingsUI() && [self allowsAddPassword]) {
-    self.shouldShowAddButtonInToolbar = YES;
-    self.addButtonInToolbar.enabled = YES;
-  } else if (!ShouldShowSettingsUI()) {
-    self.shouldShowSettingsButtonInToolbar = YES;
-    self.settingsButtonInToolbar.enabled = YES;
-  }
-
   [self loadModel];
 
   if (!_didReceivePasswords) {
@@ -529,8 +530,7 @@ NSInteger kTrailingSymbolSize = 18;
 
   // If we don't have data or settings to show, add an empty state, then stop
   // so that we don't add anything that overlaps the illustrated background.
-  if (!ShouldShowSettingsUI() && ![self hasPasswords] &&
-      _blockedSites.empty()) {
+  if ([self shouldShowEmptyStateView]) {
     return;
   }
 
@@ -759,20 +759,36 @@ NSInteger kTrailingSymbolSize = 18;
   [self updatedToolbarForEditState];
 }
 
-- (void)addButtonCallback {
-  [self.handler showAddPasswordSheet];
-}
-
-- (void)settingsButtonCallback {
-  [self.presentationDelegate showPasswordSettingsSubmenu];
-}
-
 - (void)editButtonPressed {
   // Disable search bar if the user is bulk editing (edit mode). (Reverse logic
   // because parent method -editButtonPressed is calling setEditing to change
   // the state).
   self.shouldEnableSearchBar = self.tableView.editing;
   [super editButtonPressed];
+}
+
+- (UIBarButtonItem*)customLeftToolbarButton {
+  if (!self.tableView.isEditing) {
+    if (ShouldShowSettingsUI() && [self allowsAddPassword]) {
+      return self.addButtonInToolbar;
+    } else if (!ShouldShowSettingsUI()) {
+      return self.settingsButtonInToolbar;
+    }
+  }
+
+  return nil;
+}
+
+- (UIBarButtonItem*)customRightToolbarButton {
+  if (!self.tableView.isEditing) {
+    // Display Add button on the right side of the toolbar when the empty state
+    // is displayed. The Settings button will be on the left. When the tableView
+    // is not empty, the Add button is displayed in a row.
+    if ([self shouldShowEmptyStateView]) {
+      return self.addButtonInToolbar;
+    }
+  }
+  return nil;
 }
 
 #pragma mark - SettingsControllerProtocol
@@ -1014,7 +1030,7 @@ NSInteger kTrailingSymbolSize = 18;
   passwordItem.affiliatedGroup = affiliatedGroup;
   // TODO(crbug.com/1358978): Temporary credential object so Password Details
   // works.
-  passwordItem.credential = *affiliatedGroup.GetCredentialGroups().begin();
+  passwordItem.credential = *affiliatedGroup.GetCredentials().begin();
   passwordItem.detailText = detailText;
   // TODO(crbug.com/1355956): Fix favicon logic.
   passwordItem.URL =
@@ -1564,7 +1580,7 @@ NSInteger kTrailingSymbolSize = 18;
       if (hidden)
         continue;
 
-      int nbAccounts = affiliatedGroup.GetCredentialGroups().size();
+      int nbAccounts = affiliatedGroup.GetCredentials().size();
       NSString* detailText =
           nbAccounts > 1 ? l10n_util::GetNSStringF(
                                IDS_IOS_SETTINGS_PASSWORDS_NUMBER_ACCOUNT,
@@ -1882,7 +1898,7 @@ NSInteger kTrailingSymbolSize = 18;
                   for (const auto& affiliatedGroup :
                        strongSelf->_affiliatedGroups) {
                     for (const auto& credentialGroup :
-                         affiliatedGroup.GetCredentialGroups()) {
+                         affiliatedGroup.GetCredentials()) {
                       passwords.push_back(std::move(credentialGroup));
                     }
                   }
@@ -1942,7 +1958,7 @@ NSInteger kTrailingSymbolSize = 18;
     } else {
       removeCredential(_passwords, credential);
     }
-    
+
     credentialsToDelete.push_back(std::move(credential));
   }
 
@@ -2118,6 +2134,37 @@ NSInteger kTrailingSymbolSize = 18;
 // Private accessor to `_didReceivePasswords` only exposed to unit tests.
 - (BOOL)didReceivePasswords {
   return _didReceivePasswords;
+}
+
+- (void)settingsButtonCallback {
+  [self.presentationDelegate showPasswordSettingsSubmenu];
+}
+
+- (void)addButtonCallback {
+  [self.handler showAddPasswordSheet];
+}
+
+- (UIBarButtonItem*)settingsButtonInToolbar {
+  if (!_settingsButtonInToolbar) {
+    _settingsButtonInToolbar =
+        [self settingsButtonWithAction:@selector(settingsButtonCallback)];
+  }
+
+  return _settingsButtonInToolbar;
+}
+
+- (UIBarButtonItem*)addButtonInToolbar {
+  if (!_addButtonInToolbar) {
+    _addButtonInToolbar =
+        [self addButtonWithAction:@selector(addButtonCallback)];
+  }
+  return _addButtonInToolbar;
+}
+
+// Helper method determining if the empty state view should be displayed.
+- (BOOL)shouldShowEmptyStateView {
+  return !ShouldShowSettingsUI() && ![self hasPasswords] &&
+         _blockedSites.empty();
 }
 
 #pragma mark - UITableViewDelegate

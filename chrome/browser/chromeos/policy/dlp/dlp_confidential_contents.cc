@@ -9,6 +9,7 @@
 
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -30,12 +31,6 @@ gfx::ImageSkia GetWindowIcon(aura::Window* window) {
   return image ? *image : gfx::ImageSkia();
 }
 
-GURL GetWithoutRef(const GURL& url) {
-  GURL::Replacements replacements;
-  replacements.ClearRef();
-  return url.ReplaceComponents(replacements);
-}
-
 }  // namespace
 
 // The maximum number of entries that can be kept in the
@@ -51,13 +46,13 @@ DlpConfidentialContent::DlpConfidentialContent(
     content::WebContents* web_contents)
     : icon(favicon::TabFaviconFromWebContents(web_contents).AsImageSkia()),
       title(web_contents->GetTitle()),
-      url(GetWithoutRef(web_contents->GetLastCommittedURL())) {}
+      url(web_contents->GetLastCommittedURL().GetWithoutRef()) {}
 
 DlpConfidentialContent::DlpConfidentialContent(aura::Window* window,
                                                const GURL& url)
     : icon(GetWindowIcon(window)),
       title(window->GetTitle()),
-      url(GetWithoutRef(url)) {}
+      url(url.GetWithoutRef()) {}
 
 DlpConfidentialContent::DlpConfidentialContent(
     const DlpConfidentialContent& other) = default;
@@ -167,7 +162,7 @@ DlpConfidentialContentsCache::Entry::~Entry() = default;
 
 DlpConfidentialContentsCache::DlpConfidentialContentsCache()
     : cache_size_limit_(kDefaultCacheSizeLimit),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()) {}
 
 DlpConfidentialContentsCache::~DlpConfidentialContentsCache() = default;
 

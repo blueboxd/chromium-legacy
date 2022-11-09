@@ -197,12 +197,6 @@ const char kDefaultBrowserIntentsShowSettingsDescription[] =
     "When enabled, external apps can trigger the settings screen showing "
     "default browser tutorial.";
 
-const char kDelayThresholdMinutesToUpdateGaiaCookieName[] =
-    "Delay for polling (in minutes) to verify the existence of GAIA cookies.";
-const char kDelayThresholdMinutesToUpdateGaiaCookieDescription[] =
-    "Used for testing purposes to reduce the amount of delay between polling "
-    "intervals.";
-
 const char kDetectMainThreadFreezeName[] = "Detect freeze in the main thread.";
 const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
@@ -815,6 +809,10 @@ const char kEnableLensInNTPDescription[] =
     "When enabled, use Lens to search for images from your device camera "
     "menu when Google is the selected search engine, accessible from the"
     "new tab page.";
+
+const char kTabGridRecencySortName[] = "Sort tabs by recency";
+const char kTabGridRecencySortDescription[] =
+    "When enabled, the tabs in the Tab Grid are sorted by last time used.";
 
 const char kUseLoadSimulatedRequestForOfflinePageName[] =
     "Use loadSimulatedRequest:responseHTMLString: when displaying offline "

@@ -855,7 +855,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   // See https://crbug.com/936566.
   //
   // The credentials mode also has repercussions in WouldTaintOrigin(), but we
-  // access what we need from `mb_data_source_`->cors_mode() directly, instead
+  // access what we need from `data_source_`->cors_mode() directly, instead
   // of storing it here.
   allow_media_player_renderer_credentials_ = cors_mode != kCorsModeAnonymous;
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -898,58 +898,53 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 : media::mojom::MediaURLScheme::kUnknown,
       media::mojom::MediaStreamType::kNone);
 
-  if (demuxer_override_ || load_type == kLoadTypeMediaSource) {
-    // If a demuxer override was specified or a Media Source pipeline will be
-    // used, the pipeline can start immediately.
+  // If a demuxer override was specified or a Media Source pipeline will be
+  // used, the pipeline can start immediately.
+  if (demuxer_override_ || load_type == kLoadTypeMediaSource ||
+      loaded_url_.SchemeIs(media::remoting::kRemotingScheme)) {
     StartPipeline();
-  } else {
-    // If `loaded_url_` is remoting media, starting the pipeline.
-    if (loaded_url_.SchemeIs(media::remoting::kRemotingScheme)) {
-      StartPipeline();
-      return;
-    }
-
-    // Short circuit the more complex loading path for data:// URLs. Sending
-    // them through the network based loading path just wastes memory and causes
-    // worse performance since reads become asynchronous.
-    if (loaded_url_.SchemeIs(url::kDataScheme)) {
-      std::string mime_type, charset, data;
-      if (!net::DataURL::Parse(loaded_url_, &mime_type, &charset, &data) ||
-          data.empty()) {
-        DataSourceInitialized(false);
-        return;
-      }
-
-      // Replace `loaded_url_` with an empty data:// URL since it may be large.
-      loaded_url_ = GURL("data:,");
-
-      // Mark all the data as buffered.
-      buffered_data_source_host_->SetTotalBytes(data.size());
-      buffered_data_source_host_->AddBufferedByteRange(0, data.size());
-
-      DCHECK(!mb_data_source_);
-      data_source_ = std::make_unique<media::MemoryDataSource>(std::move(data));
-      DataSourceInitialized(true);
-      return;
-    }
-
-    auto url_data = url_index_->GetByUrl(
-        url, static_cast<UrlData::CorsMode>(cors_mode),
-        is_cache_disabled ? UrlIndex::kCacheDisabled : UrlIndex::kNormal);
-    mb_data_source_ = new MultiBufferDataSource(
-        main_task_runner_, std::move(url_data), media_log_.get(),
-        buffered_data_source_host_.get(),
-        base::BindRepeating(&WebMediaPlayerImpl::NotifyDownloading,
-                            weak_this_));
-    data_source_.reset(mb_data_source_);
-    mb_data_source_->OnRedirect(base::BindRepeating(
-        &WebMediaPlayerImpl::OnDataSourceRedirected, weak_this_));
-    mb_data_source_->SetPreload(preload_);
-    mb_data_source_->SetIsClientAudioElement(client_->IsAudioElement());
-
-    mb_data_source_->Initialize(base::BindOnce(
-        &WebMediaPlayerImpl::MultiBufferDataSourceInitialized, weak_this_));
+    return;
   }
+
+  // Short circuit the more complex loading path for data:// URLs. Sending
+  // them through the network based loading path just wastes memory and causes
+  // worse performance since reads become asynchronous.
+  if (loaded_url_.SchemeIs(url::kDataScheme)) {
+    std::string mime_type, charset, data;
+    if (!net::DataURL::Parse(loaded_url_, &mime_type, &charset, &data) ||
+        data.empty()) {
+      DataSourceInitialized(false);
+      return;
+    }
+
+    // Replace `loaded_url_` with an empty data:// URL since it may be large.
+    loaded_url_ = GURL("data:,");
+
+    // Mark all the data as buffered.
+    buffered_data_source_host_->SetTotalBytes(data.size());
+    buffered_data_source_host_->AddBufferedByteRange(0, data.size());
+
+    DCHECK(!mb_data_source_);
+    data_source_ = std::make_unique<media::MemoryDataSource>(std::move(data));
+    DataSourceInitialized(true);
+    return;
+  }
+
+  auto url_data = url_index_->GetByUrl(
+      url, static_cast<UrlData::CorsMode>(cors_mode),
+      is_cache_disabled ? UrlIndex::kCacheDisabled : UrlIndex::kNormal);
+  mb_data_source_ = new MultiBufferDataSource(
+      main_task_runner_, std::move(url_data), media_log_.get(),
+      buffered_data_source_host_.get(),
+      base::BindRepeating(&WebMediaPlayerImpl::NotifyDownloading, weak_this_));
+  data_source_.reset(mb_data_source_);
+  mb_data_source_->OnRedirect(base::BindRepeating(
+      &WebMediaPlayerImpl::OnDataSourceRedirected, weak_this_));
+  mb_data_source_->SetPreload(preload_);
+  mb_data_source_->SetIsClientAudioElement(client_->IsAudioElement());
+
+  mb_data_source_->Initialize(base::BindOnce(
+      &WebMediaPlayerImpl::MultiBufferDataSourceInitialized, weak_this_));
 }
 
 void WebMediaPlayerImpl::Play() {
@@ -1413,9 +1408,7 @@ WebTimeRanges WebMediaPlayerImpl::Seekable() const {
 
   // Allow a special exception for seeks to zero for streaming sources with a
   // finite duration; this allows looping to work.
-  const bool is_finite_stream = mb_data_source_ &&
-                                mb_data_source_->IsStreaming() &&
-                                std::isfinite(seekable_end);
+  const bool is_finite_stream = IsStreaming() && std::isfinite(seekable_end);
 
   // Do not change the seekable range when using the MediaPlayerRenderer. It
   // will take care of dropping invalid seeks.
@@ -1529,18 +1522,10 @@ bool WebMediaPlayerImpl::WouldTaintOrigin() const {
     return true;
   }
 
-  if (!mb_data_source_)
-    return false;
-
-  // When the resource is redirected to another origin we think it as
-  // tainted. This is actually not specified, and is under discussion.
-  // See https://github.com/whatwg/fetch/issues/737.
-  if (!mb_data_source_->HasSingleOrigin() &&
-      mb_data_source_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
-    return true;
-  }
-
-  return mb_data_source_->IsCorsCrossOrigin();
+  // TODO(crbug/1377053): The default |false| value might have to be
+  // re-considered for MediaPlayerRenderer, but for now, leave behavior the
+  // same as it was.
+  return data_source_ ? data_source_->WouldTaintOrigin() : false;
 }
 
 double WebMediaPlayerImpl::MediaTimeForTimeValue(double timeValue) const {
@@ -1792,7 +1777,7 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
 
   // Tell the data source we have enough data so that it may release the
   // connection (unless blink is waiting on us to signal play()).
-  if (mb_data_source_ && !client_->CouldPlayIfEnoughData()) {
+  if (data_source_ && !client_->CouldPlayIfEnoughData()) {
     // `attempting_suspended_start_` will be cleared by OnPipelineSeeked() which
     // will occur after this method during a suspended startup.
     if (attempting_suspended_start_ && did_lazy_load_) {
@@ -1805,17 +1790,17 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
       // enough" to the MultiBufferDataSource.
       //
       // base::Unretained() is safe here since the base::CancelableOnceClosure
-      // will cancel upon destruction of this class and `mb_data_source_` is
-      // gauranteeed to outlive us.
+      // will cancel upon destruction of this class and `data_source_` is
+      // gauranteeed to outlive us as a result of the DestructionHelper.
       have_enough_after_lazy_load_cb_.Reset(
-          base::BindOnce(&MultiBufferDataSource::OnBufferingHaveEnough,
-                         base::Unretained(mb_data_source_), true));
+          base::BindOnce(&media::DataSource::OnBufferingHaveEnough,
+                         base::Unretained(data_source_.get()), true));
       main_task_runner_->PostDelayedTask(
           FROM_HERE, have_enough_after_lazy_load_cb_.callback(),
           base::Milliseconds(250));
     } else {
       have_enough_after_lazy_load_cb_.Cancel();
-      mb_data_source_->OnBufferingHaveEnough(true);
+      data_source_->OnBufferingHaveEnough(true);
     }
   }
 
@@ -2321,12 +2306,12 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
     // It may use this information to update buffer sizes or release unused
     // network connections.
     MaybeUpdateBufferSizesForPlayback();
-    if (mb_data_source_ && !client_->CouldPlayIfEnoughData()) {
+    if (data_source_ && !client_->CouldPlayIfEnoughData()) {
       // For LazyLoad this will be handled during OnPipelineSuspended().
       if (for_suspended_start && did_lazy_load_)
         DCHECK(!have_enough_after_lazy_load_cb_.IsCancelled());
       else
-        mb_data_source_->OnBufferingHaveEnough(false);
+        data_source_->OnBufferingHaveEnough(false);
     }
 
     // Blink expects a timeChanged() in response to a seek().
@@ -2793,7 +2778,6 @@ void WebMediaPlayerImpl::MultiBufferDataSourceInitialized(bool success) {
 void WebMediaPlayerImpl::OnDataSourceRedirected() {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK(mb_data_source_);
 
   if (WouldTaintOrigin()) {
     audio_source_provider_->TaintOrigin();
@@ -4013,12 +3997,12 @@ void WebMediaPlayerImpl::MaybeUpdateBufferSizesForPlayback() {
   // Don't increase the MultiBufferDataSource buffer size until we've reached
   // kReadyStateHaveEnoughData. Otherwise we will unnecessarily slow down
   // playback startup -- it can instead be done for free after playback starts.
-  if (!mb_data_source_ || highest_ready_state_ < kReadyStateHaveEnoughData)
+  if (!data_source_ || highest_ready_state_ < kReadyStateHaveEnoughData)
     return;
 
-  mb_data_source_->MediaPlaybackRateChanged(playback_rate_);
+  data_source_->OnMediaPlaybackRateChanged(playback_rate_);
   if (!paused_)
-    mb_data_source_->MediaIsPlaying();
+    data_source_->OnMediaIsPlaying();
 }
 
 void WebMediaPlayerImpl::OnSimpleWatchTimerTick() {
@@ -4106,7 +4090,7 @@ void WebMediaPlayerImpl::UnregisterFrameSinkHierarchy() {
 }
 
 void WebMediaPlayerImpl::ReportSessionUMAs() const {
-  if (renderer_type_ != media::RendererType::kDefault &&
+  if (renderer_type_ != media::RendererType::kRendererImpl &&
       renderer_type_ != media::RendererType::kMediaFoundation) {
     return;
   }
@@ -4143,6 +4127,9 @@ bool WebMediaPlayerImpl::PassedTimingAllowOriginCheck() const {
   // revealed via the MediaSource or WebMediaPlayer that's using MSE.
   // TODO(1266991): Ensure that this returns the correct value for HLS media,
   // based on the TAO checks performed on those resources.
+  // TODO(crbug/1377053): The default |true| value might have to be
+  // re-considered for MediaPlayerRenderer, but for now, leave behavior the
+  // same as it was.
   return data_source_ ? data_source_->PassedTimingAllowOriginCheck() : true;
 }
 

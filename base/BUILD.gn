@@ -18,6 +18,7 @@
 # huge sequence of random-looking conditionals.
 
 import("//base/allocator/allocator.gni")
+import("//base/allocator/partition_allocator/partition_alloc.gni")
 import("//base/trace_event/tracing.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/arm.gni")
@@ -565,6 +566,9 @@ mixed_component("base") {
     "power_monitor/sampling_event_source.h",
     "power_monitor/timer_sampling_event_source.cc",
     "power_monitor/timer_sampling_event_source.h",
+    "process/current_process.cc",
+    "process/current_process.h",
+    "process/current_process_test.h",
     "process/environment_internal.cc",
     "process/environment_internal.h",
     "process/kill.cc",
@@ -890,6 +894,7 @@ mixed_component("base") {
     "threading/scoped_thread_priority.cc",
     "threading/scoped_thread_priority.h",
     "threading/sequence_bound.h",
+    "threading/sequence_bound_internal.h",
     "threading/sequence_local_storage_map.cc",
     "threading/sequence_local_storage_map.h",
     "threading/sequence_local_storage_slot.cc",

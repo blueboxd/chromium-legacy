@@ -495,6 +495,8 @@ static_library("test_support") {
 
   if (is_chromeos_ash) {
     sources += [
+      "../browser/apps/app_service/metrics/app_platform_metrics_service_test_base.cc",
+      "../browser/apps/app_service/metrics/app_platform_metrics_service_test_base.h",
       "../browser/ash/accessibility/speech_monitor.cc",
       "../browser/ash/accessibility/speech_monitor.h",
       "../browser/ash/arc/tracing/arc_app_performance_tracing_test_helper.cc",
@@ -2010,7 +2012,6 @@ if (!is_android) {
       "../browser/policy/test/content_settings_policy_browsertest.cc",
       "../browser/policy/test/default_search_provider_policy_browsertest.cc",
       "../browser/policy/test/force_google_safe_search_policy_browsertest.cc",
-      "../browser/policy/test/hsts_policy_browsertest.cc",
       "../browser/policy/test/jit_policy_browsertest.cc",
       "../browser/policy/test/platform_management_service_browsertest.cc",
       "../browser/policy/test/policy_browsertest.cc",
@@ -2323,7 +2324,6 @@ if (!is_android) {
       "../browser/ukm_worker_browsertest.cc",
       "../browser/unload_browsertest.cc",
       "../browser/url_param_filter/url_param_classifications_loader_browsertest.cc",
-      "../browser/url_param_filter/url_param_filter_browsertest.cc",
       "../browser/usb/chrome_usb_browsertest.cc",
       "../browser/user_agent/user_agent_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
@@ -3512,7 +3512,6 @@ if (!is_android) {
           "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
           "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
           "../browser/ui/views/toolbar/outdated_upgrade_bubble_browsertest.cc",
-          "../browser/ui/views/toolbar/toolbar_account_icon_container_browsertest.cc",
         ]
       }
       if (enable_supervised_users) {
@@ -4016,6 +4015,7 @@ if (!is_android) {
         "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
         "../browser/ui/app_list/app_list_sort_browsertest.cc",
         "../browser/ui/app_list/app_service/app_service_app_item_browsertest.cc",
+        "../browser/ui/app_list/app_service/app_service_context_menu_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
         "../browser/ui/app_list/chrome_app_list_item_browsertest.cc",
         "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
@@ -4060,6 +4060,7 @@ if (!is_android) {
         "../browser/ui/ash/shelf/browser_app_shelf_controller_browsertest.cc",
         "../browser/ui/ash/shelf/browser_shortcut_shelf_item_controller_browsertest.cc",
         "../browser/ui/ash/shelf/chrome_shelf_controller_browsertest.cc",
+        "../browser/ui/ash/shelf/extension_shelf_context_menu_browsertest.cc",
         "../browser/ui/ash/shelf_browsertest.cc",
         "../browser/ui/ash/system_tray_client_impl_browsertest.cc",
         "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
@@ -4108,8 +4109,6 @@ if (!is_android) {
         "../browser/ui/webui/ash/parent_access/parent_access_browsertest_base.cc",
         "../browser/ui/webui/ash/parent_access/parent_access_browsertest_base.h",
         "../browser/ui/webui/ash/parent_access/parent_access_dialog_browsertest.cc",
-        "../browser/ui/webui/ash/parent_access/parent_access_ui_browsertest.cc",
-        "../browser/ui/webui/ash/parent_access/parent_access_ui_handler_impl_browsertest.cc",
         "../browser/ui/webui/ash/smb_shares/smb_credentials_dialog_browsertest.cc",
         "../browser/ui/webui/ash/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/nearby_share/nearby_share_dialog_ui_browsertest.cc",
@@ -6495,6 +6494,7 @@ test("unit_tests") {
       "../browser/sharing/optimization_guide/optimization_guide_message_handler_unittest.cc",
       "../browser/sharing/sms/sms_fetch_request_handler_unittest.cc",
       "../browser/supervised_user/android/favicon_fetcher_unittest.cc",
+      "../browser/touch_to_fill/payments/android/touch_to_fill_credit_card_controller_unittest.cc",
       "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/android/translate_bridge_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
@@ -6535,6 +6535,7 @@ test("unit_tests") {
       "//chrome/browser/share",
       "//chrome/browser/supervised_user/kids_chrome_management:proto",
       "//chrome/browser/thumbnail:unit_tests",
+      "//chrome/browser/touch_to_fill/payments/android:public",
       "//chrome/services/media_gallery_util:unit_tests",
       "//components/autofill_assistant/browser/public:unit_test_support",
       "//components/autofill_assistant/browser/public/fast_checkout/proto:proto",
@@ -6556,6 +6557,7 @@ test("unit_tests") {
       "//components/media_router/browser:test_support",
       "//components/messages/android:test_support",
       "//components/module_installer/android:module_installer_java",
+      "//components/navigation_interception:navigation_interception",
       "//components/offline_pages/core/request_header",
       "//components/offline_pages/task",
       "//components/pref_registry",
@@ -6818,7 +6820,6 @@ test("unit_tests") {
       "../browser/ui/browser_command_controller_unittest.cc",
       "../browser/ui/browser_instant_controller_unittest.cc",
       "../browser/ui/browser_list_unittest.cc",
-      "../browser/ui/browser_navigator_params_unittest.cc",
       "../browser/ui/browser_navigator_unittest.cc",
       "../browser/ui/browser_unittest.cc",
       "../browser/ui/browser_window_state_unittest.cc",
@@ -7435,17 +7436,6 @@ test("unit_tests") {
       "../browser/ui/app_list/search/ranking/removed_results_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/score_normalizing_ranker_unittest.cc",
       "../browser/ui/app_list/search/search_controller_impl_new_unittest.cc",
-      "../browser/ui/app_list/search/search_controller_impl_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/app_launch_predictor_test_util.h",
-      "../browser/ui/app_list/search/search_result_ranker/app_launch_predictor_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/app_search_result_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/chip_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/frecency_store_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/recurrence_predictor_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/search_result_ranker_unittest.cc",
       "../browser/ui/app_list/search/test/ranking_test_util.cc",
       "../browser/ui/app_list/search/test/ranking_test_util.h",
       "../browser/ui/app_list/search/test/test_search_controller.cc",
@@ -7570,8 +7560,6 @@ test("unit_tests") {
       "//chrome/browser/policy:onc",
       "//chrome/browser/policy:unit_tests",
       "//chrome/browser/ui/app_list/search/ranking:proto",
-      "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
-      "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
       "//chrome/browser/ui/app_list/search/util:proto",
       "//chrome/browser/ui/ash/holding_space:test_support",
       "//chrome/browser/ui/quick_answers",
@@ -8258,6 +8246,7 @@ test("unit_tests") {
         "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
         "../browser/policy/restricted_mgs_policy_provider_ash_unittest.cc",
         "../browser/ui/webui/about_ui_unittest.cc",
+        "../browser/ui/webui/ash/parent_access/parent_access_ui_handler_impl_unittest.cc",
         "../common/chromeos/extensions/chromeos_system_extension_info_unittest.cc",
         "../common/chromeos/extensions/manifest_tests/extension_manifests_chromeos_system_extension_unittest.cc",
         "../renderer/extensions/api/accessibility_private_hooks_delegate_unittest.cc",
@@ -8265,6 +8254,7 @@ test("unit_tests") {
 
       deps += [
         "//chrome/browser/ash/system_web_apps:unit_tests",
+        "//chrome/browser/ui/webui/ash/parent_access:mojo_bindings",
         "//chrome/common/chromeos/extensions",
         "//chromeos/ash/components/dbus/image_burner",
         "//content/public/browser",
@@ -10443,7 +10433,7 @@ if (!is_android) {
       "//third_party/mesa_headers",
     ]
 
-    if (is_linux || is_chromeos || is_win) {
+    if (is_linux || is_chromeos || is_win || is_fuchsia) {
       data_deps += [ "//chrome:packed_resources" ]
     }
 
@@ -10490,6 +10480,16 @@ if (!is_android) {
         "//chromeos/printing",
         "//chromeos/services/network_config/public/cpp",
         "//components/desks_storage",
+      ]
+    }
+    if (is_fuchsia) {
+      use_test_server = true
+
+      test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+      additional_manifest_fragments = [
+        "//build/config/fuchsia/test/fonts.shard.test-cml",
+        "//build/config/fuchsia/test/network.shard.test-cml",
+        "//build/config/fuchsia/test/present_view.shard.test-cml",
       ]
     }
 
@@ -10551,6 +10551,24 @@ if (!is_android) {
         "//third_party/wtl",
         "//ui/resources",
       ]
+    }
+    if (is_fuchsia) {
+      use_test_server = true
+
+      test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+      additional_manifest_fragments = [
+        "//build/config/fuchsia/test/network.shard.test-cml",
+        "//build/config/fuchsia/test/present_view.shard.test-cml",
+      ]
+
+      # This is a workaround to create the chrome/test/data/ folder under /pkg.
+      # When a browser test is being initialized in
+      # //chrome/test/base/in_process_browser_test.cc, an HTTP server will be
+      # created under the test data directory. If the directory does not exit,
+      # create one. However, /pkg is read-only in runtime.
+      # This is not an issue in other browser tests. Because they include test
+      # data directories in the Fuchsia package via gn "data" entries.
+      data = [ "//chrome/test/data/empty.html" ]
     }
 
     if (toolkit_views) {

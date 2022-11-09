@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/ranges/algorithm.h"
@@ -17276,15 +17277,15 @@ class NavigationStarterBeforeDidCommitNavigation
       mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
-    if ((**params).url == url_to_intercept_) {
-      shell_->LoadURL(url_to_start_);
+    if ((**params).url == *url_to_intercept_) {
+      shell_->LoadURL(*url_to_start_);
     }
     return true;
   }
 
   raw_ptr<Shell> shell_;
-  const GURL& url_to_intercept_;
-  const GURL& url_to_start_;
+  const raw_ref<const GURL> url_to_intercept_;
+  const raw_ref<const GURL> url_to_start_;
 };
 
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
@@ -21797,13 +21798,9 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Tests that navigating to a document that was previously sandboxed but later
-// on is loaded again without being marked as sandboxed would reuse the opaque
-// origin that was used when the document was first loaded. Note that this
-// behavior is not currently following the spec, which always calculates the
-// origin based on the latest sandbox flags, but that might change soon.
-// See also the linked bug and https://github.com/whatwg/html/issues/6809.
-// TODO(https://crbug.com/1359351): Update this test to expect the origin to
-// be recalculated once `origin_to_commit` is no longer used.
+// on is loaded again without being marked as sandboxed would not reuse the
+// opaque origin that was used when the document was first loaded, and instead
+// recalculate the origin using the latest state.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
                        HistoryNavigationToPreviouslySandboxedDocument) {
   net::test_server::ControllableHttpResponse response1(
@@ -21869,16 +21866,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
     response2.Done();
     nav_observer.Wait();
     EXPECT_EQ(main_url, controller.GetLastCommittedEntry()->GetURL());
-    // The document is not sandboxed, but has an opaque origin derived from
+    // The document is not sandboxed, and has a non-opaque origin based on
     // `main_url`.
-    // TODO(https://crbug.com/1359351): The origin should be recalculated and
-    // result in a non-opaque origin instead.
     EXPECT_FALSE(root->current_frame_host()->IsSandboxed(
         network::mojom::WebSandboxFlags::kAll));
-    EXPECT_TRUE(root->current_frame_host()->GetLastCommittedOrigin().opaque());
-    EXPECT_TRUE(
-        root->current_frame_host()->GetLastCommittedOrigin().CanBeDerivedFrom(
-            main_url));
+    EXPECT_FALSE(root->current_frame_host()->GetLastCommittedOrigin().opaque());
+    EXPECT_EQ(root->current_frame_host()->GetLastCommittedOrigin(),
+              url::Origin::Create(main_url));
   }
 }
 
@@ -21939,14 +21933,14 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(child);
     controller.GoBack();
     capturer.Wait();
-    // The document is not sandboxed, but has an opaque origin derived from
-    // `main_url` (the initiator origin).
+    // The document is not sandboxed, and has a non-opaque origin based on
+    // `main_url`.
     EXPECT_FALSE(child->current_frame_host()->IsSandboxed(
         network::mojom::WebSandboxFlags::kAll));
-    EXPECT_TRUE(child->current_frame_host()->GetLastCommittedOrigin().opaque());
-    EXPECT_TRUE(
-        child->current_frame_host()->GetLastCommittedOrigin().CanBeDerivedFrom(
-            main_url));
+    EXPECT_FALSE(
+        child->current_frame_host()->GetLastCommittedOrigin().opaque());
+    EXPECT_EQ(child->current_frame_host()->GetLastCommittedOrigin(),
+              url::Origin::Create(main_url));
   }
 }
 

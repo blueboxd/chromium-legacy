@@ -59,6 +59,9 @@ class CONTENT_EXPORT AXTreeDistiller {
   // by a rules-based algorithm in this process.
   void DistillAXTree();
 
+  // Distills the AXTree via a rules-based algorithm.
+  void DistillViaAlgorithm();
+
   // Run the callback, notifying the caller that an AXTree has been distilled.
   // This function is called asynchronously when the AXTree is distilled by
   // Screen2x and synchronously otherwise. It passes |snapshot_| and
@@ -69,7 +72,6 @@ class CONTENT_EXPORT AXTreeDistiller {
   RenderFrameImpl* render_frame_;
   std::unique_ptr<ui::AXTreeUpdate> snapshot_;
   std::unique_ptr<std::vector<ui::AXNodeID>> content_node_ids_;
-  bool is_distillable_ = true;
 
   // A function  defined in the browser process and passed across the render
   // frame to AXTreeDistiller.

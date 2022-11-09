@@ -161,13 +161,11 @@ class RestrictedCookieManagerSync {
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
-      mojom::CookieManagerGetOptionsPtr options,
-      bool partitioned_cookies_runtime_feature_enabled) {
+      mojom::CookieManagerGetOptionsPtr options) {
     base::test::TestFuture<const std::vector<net::CookieWithAccessResult>&>
         future;
-    cookie_service_->GetAllForUrl(
-        url, site_for_cookies, top_frame_origin, std::move(options),
-        partitioned_cookies_runtime_feature_enabled, future.GetCallback());
+    cookie_service_->GetAllForUrl(url, site_for_cookies, top_frame_origin,
+                                  std::move(options), future.GetCallback());
     return net::cookie_util::StripAccessResults(future.Take());
   }
 
@@ -190,12 +188,10 @@ class RestrictedCookieManagerSync {
   void SetCookieFromString(const GURL& url,
                            const net::SiteForCookies& site_for_cookies,
                            const url::Origin& top_frame_origin,
-                           const std::string& cookie,
-                           bool partitioned_cookies_runtime_feature_enabled) {
+                           const std::string& cookie) {
     base::test::TestFuture<bool, bool> future;
     cookie_service_->SetCookieFromString(
-        url, site_for_cookies, top_frame_origin, cookie,
-        partitioned_cookies_runtime_feature_enabled, future.GetCallback());
+        url, site_for_cookies, top_frame_origin, cookie, future.GetCallback());
     ASSERT_TRUE(future.Wait());
   }
 
@@ -562,9 +558,9 @@ TEST_P(RestrictedCookieManagerTest,
     options->name = "new-name";
     options->match_type = mojom::CookieMatchType::EQUALS;
     ExpectBadMessage();
-    std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
-        kDefaultUrl, kDefaultSiteForCookies, kDefaultOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/false);
+    std::vector<net::CanonicalCookie> cookies =
+        sync_service_->GetAllForUrl(kDefaultUrl, kDefaultSiteForCookies,
+                                    kDefaultOrigin, std::move(options));
     EXPECT_TRUE(received_bad_message());
   }
   // Fetch cookies from the correct origin value which RestrictedCookieManager
@@ -574,8 +570,7 @@ TEST_P(RestrictedCookieManagerTest,
     options->name = "new-name";
     options->match_type = mojom::CookieMatchType::EQUALS;
     std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
-        kOtherUrl, kDefaultSiteForCookies, kDefaultOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/false);
+        kOtherUrl, kDefaultSiteForCookies, kDefaultOrigin, std::move(options));
 
     ASSERT_THAT(cookies, testing::SizeIs(1));
 
@@ -594,19 +589,17 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlBlankFilter) {
   options->name = "";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
   EXPECT_THAT(
-      sync_service_->GetAllForUrl(
-          kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-          std::move(options),
-          /*partitioned_cookies_runtime_feature_enabled=*/false),
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
       UnorderedElementsAre(
           net::MatchesCookieNameValue("cookie-name", "cookie-value"),
           net::MatchesCookieNameValue("cookie-name-2", "cookie-value-2")));
 
   // Can also use the document.cookie-style API to get the same info.
   std::string cookies_out;
-  EXPECT_TRUE(backend()->GetCookiesString(
-      kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-      /*partitioned_cookies_runtime_feature_enabled=*/false, &cookies_out));
+  EXPECT_TRUE(backend()->GetCookiesString(kDefaultUrlWithPath,
+                                          kDefaultSiteForCookies,
+                                          kDefaultOrigin, &cookies_out));
   EXPECT_EQ("cookie-name=cookie-value; cookie-name-2=cookie-value-2",
             cookies_out);
 }
@@ -617,11 +610,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlEmptyFilter) {
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "";
   options->match_type = mojom::CookieMatchType::EQUALS;
-  EXPECT_THAT(sync_service_->GetAllForUrl(
-                  kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-                  std::move(options),
-                  /*partitioned_cookies_runtime_feature_enabled=*/false),
-              IsEmpty());
+  EXPECT_THAT(
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
+      IsEmpty());
 }
 
 TEST_P(RestrictedCookieManagerTest, GetAllForUrlEqualsMatch) {
@@ -632,10 +624,8 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlEqualsMatch) {
   options->name = "cookie-name";
   options->match_type = mojom::CookieMatchType::EQUALS;
   EXPECT_THAT(
-      sync_service_->GetAllForUrl(
-          kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-          std::move(options),
-          /*partitioned_cookies_runtime_feature_enabled=*/false),
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
       ElementsAre(net::MatchesCookieNameValue("cookie-name", "cookie-value")));
 }
 
@@ -649,10 +639,8 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlStartsWithMatch) {
   options->name = "cookie-name-2";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
   EXPECT_THAT(
-      sync_service_->GetAllForUrl(
-          kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-          std::move(options),
-          /*partitioned_cookies_runtime_feature_enabled=*/false),
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
       UnorderedElementsAre(
           net::MatchesCookieNameValue("cookie-name-2", "cookie-value-2"),
           net::MatchesCookieNameValue("cookie-name-2b", "cookie-value-2b")));
@@ -666,10 +654,9 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlHttpOnly) {
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "cookie-name";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
-      kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-      std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
+  std::vector<net::CanonicalCookie> cookies =
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options));
 
   if (GetParam() == mojom::RestrictedCookieManagerRole::SCRIPT) {
     EXPECT_THAT(cookies, UnorderedElementsAre(net::MatchesCookieNameValue(
@@ -693,11 +680,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlFromWrongOrigin) {
   options->name = "";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
   ExpectBadMessage();
-  EXPECT_THAT(sync_service_->GetAllForUrl(
-                  kOtherUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-                  std::move(options),
-                  /*partitioned_cookies_runtime_feature_enabled=*/false),
-              IsEmpty());
+  EXPECT_THAT(
+      sync_service_->GetAllForUrl(kOtherUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
+      IsEmpty());
   EXPECT_TRUE(received_bad_message());
 }
 
@@ -712,11 +698,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlFromOpaqueOrigin) {
   options->name = "";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
   ExpectBadMessage();
-  EXPECT_THAT(sync_service_->GetAllForUrl(
-                  kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-                  std::move(options),
-                  /*partitioned_cookies_runtime_feature_enabled=*/false),
-              IsEmpty());
+  EXPECT_THAT(
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
+      IsEmpty());
   EXPECT_TRUE(received_bad_message());
 }
 
@@ -729,8 +714,7 @@ TEST_P(RestrictedCookieManagerTest, GetCookieStringFromWrongOrigin) {
   ExpectBadMessage();
   std::string cookies_out;
   EXPECT_TRUE(backend()->GetCookiesString(
-      kOtherUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-      /*partitioned_cookies_runtime_feature_enabled=*/false, &cookies_out));
+      kOtherUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin, &cookies_out));
   EXPECT_TRUE(received_bad_message());
   EXPECT_THAT(cookies_out, IsEmpty());
 }
@@ -745,12 +729,11 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        ElementsAre(
+            net::MatchesCookieNameValue("cookie-name", "cookie-value")));
   }
 
   WaitForCallback();
@@ -770,11 +753,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                IsEmpty());
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        IsEmpty());
   }
 
   WaitForCallback();
@@ -812,10 +794,8 @@ TEST_P(RestrictedCookieManagerTest, FilteredCookieAccessEvents) {
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
     EXPECT_THAT(
-        sync_service_->GetAllForUrl(
-            kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-            std::move(options),
-            /*partitioned_cookies_runtime_feature_enabled=*/false),
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
         ElementsAre(net::MatchesCookieNameValue(kCookieName, kCookieValue)));
 
     WaitForCallback();
@@ -835,10 +815,8 @@ TEST_P(RestrictedCookieManagerTest, FilteredCookieAccessEvents) {
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
     EXPECT_THAT(
-        sync_service_->GetAllForUrl(
-            kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-            std::move(options),
-            /*partitioned_cookies_runtime_feature_enabled=*/false),
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
         ElementsAre(net::MatchesCookieNameValue(kCookieName, kCookieValue)));
 
     // A second cookie access should not generate a notification.
@@ -864,11 +842,10 @@ TEST_P(RestrictedCookieManagerTest, FilteredCookieAccessEvents) {
     options->name = kCookieName;
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                IsEmpty());
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        IsEmpty());
 
     WaitForCallback();
 
@@ -886,10 +863,8 @@ TEST_P(RestrictedCookieManagerTest, FilteredCookieAccessEvents) {
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
     EXPECT_THAT(
-        sync_service_->GetAllForUrl(
-            kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-            std::move(options),
-            /*partitioned_cookies_runtime_feature_enabled=*/false),
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
         ElementsAre(net::MatchesCookieNameValue(kCookieName, kNewCookieValue)));
 
     WaitForCallback();
@@ -928,11 +903,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                IsEmpty());
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        IsEmpty());
   }
 
   WaitForCallback();
@@ -957,12 +931,11 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                    kDefaultOrigin, std::move(options)),
+        ElementsAre(
+            net::MatchesCookieNameValue("cookie-name", "cookie-value")));
     WaitForCallback();
   }
 
@@ -977,12 +950,11 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        ElementsAre(
+            net::MatchesCookieNameValue("cookie-name", "cookie-value")));
     WaitForCallback();
   }
   {
@@ -992,11 +964,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                IsEmpty());
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        IsEmpty());
 
     WaitForCallback();
 
@@ -1030,12 +1001,11 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        ElementsAre(
+            net::MatchesCookieNameValue("cookie-name", "cookie-value")));
 
     WaitForCallback();
 
@@ -1057,12 +1027,11 @@ TEST_P(SamePartyEnabledRestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                    kDefaultOrigin, std::move(options)),
+        ElementsAre(
+            net::MatchesCookieNameValue("cookie-name", "cookie-value")));
     WaitForCallback();
   }
 
@@ -1077,12 +1046,11 @@ TEST_P(SamePartyEnabledRestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        ElementsAre(
+            net::MatchesCookieNameValue("cookie-name", "cookie-value")));
     WaitForCallback();
   }
   {
@@ -1092,11 +1060,10 @@ TEST_P(SamePartyEnabledRestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                IsEmpty());
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        IsEmpty());
 
     WaitForCallback();
 
@@ -1137,11 +1104,10 @@ TEST_P(SamePartyEnabledRestrictedCookieManagerTest, GetAllForUrlSameParty) {
     options->name = "cookie-name";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    std::move(options),
-                    /*partitioned_cookies_runtime_feature_enabled=*/false),
-                IsEmpty());
+    EXPECT_THAT(
+        sync_service_->GetAllForUrl(kDefaultUrlWithPath, net::SiteForCookies(),
+                                    kDefaultOrigin, std::move(options)),
+        IsEmpty());
 
     WaitForCallback();
 
@@ -1173,10 +1139,8 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookie) {
   options->name = "new-name";
   options->match_type = mojom::CookieMatchType::EQUALS;
   EXPECT_THAT(
-      sync_service_->GetAllForUrl(
-          kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-          std::move(options),
-          /*partitioned_cookies_runtime_feature_enabled=*/false),
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
       ElementsAre(net::MatchesCookieNameValue("new-name", "new-value")));
 }
 
@@ -1193,10 +1157,9 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieHttpOnly) {
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "new-name";
   options->match_type = mojom::CookieMatchType::EQUALS;
-  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
-      kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-      std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
+  std::vector<net::CanonicalCookie> cookies =
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options));
 
   if (GetParam() == mojom::RestrictedCookieManagerRole::SCRIPT) {
     EXPECT_THAT(cookies, IsEmpty());
@@ -1211,19 +1174,15 @@ TEST_P(RestrictedCookieManagerTest, SetCookieFromString) {
   bool top_frame_origin_ok = false;
   EXPECT_TRUE(backend()->SetCookieFromString(
       kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-      "new-name=new-value;path=/",
-      /*partitioned_cookies_runtime_feature_enabled=*/false,
-      &site_for_cookies_ok, &top_frame_origin_ok));
+      "new-name=new-value;path=/", &site_for_cookies_ok, &top_frame_origin_ok));
   EXPECT_TRUE(site_for_cookies_ok);
   EXPECT_TRUE(top_frame_origin_ok);
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "new-name";
   options->match_type = mojom::CookieMatchType::EQUALS;
   EXPECT_THAT(
-      sync_service_->GetAllForUrl(
-          kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-          std::move(options),
-          /*partitioned_cookies_runtime_feature_enabled=*/false),
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
       ElementsAre(net::MatchesCookieNameValue("new-name", "new-value")));
 }
 
@@ -1235,7 +1194,6 @@ TEST_P(RestrictedCookieManagerTest, BadSetCookieFromString) {
       kDefaultUrlWithPath, net::SiteForCookies(),
       url::Origin::Create(GURL("https://not-example.com")),
       "__Host-invalid=host_prefix_with_domain; Domain=example.com",
-      /*partitioned_cookies_runtime_feature_enabled=*/false,
       &site_for_cookies_ok, &top_frame_origin_ok));
   EXPECT_FALSE(site_for_cookies_ok);
   EXPECT_FALSE(top_frame_origin_ok);
@@ -1287,9 +1245,7 @@ TEST_P(RestrictedCookieManagerTest, SetCookieFromStringWrongOrigin) {
   bool top_frame_origin_ok = false;
   EXPECT_TRUE(backend()->SetCookieFromString(
       kOtherUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-      "new-name=new-value;path=/",
-      /*partitioned_cookies_runtime_feature_enabled=*/false,
-      &site_for_cookies_ok, &top_frame_origin_ok));
+      "new-name=new-value;path=/", &site_for_cookies_ok, &top_frame_origin_ok));
   ASSERT_TRUE(received_bad_message());
 }
 
@@ -1345,11 +1301,10 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
   service_->OverrideIsolationInfoForTesting(kDefaultIsolationInfo);
-  EXPECT_THAT(sync_service_->GetAllForUrl(
-                  kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-                  std::move(options),
-                  /*partitioned_cookies_runtime_feature_enabled=*/false),
-              ElementsAre(net::MatchesCookieNameValue("A", "B")));
+  EXPECT_THAT(
+      sync_service_->GetAllForUrl(kDefaultUrlWithPath, kDefaultSiteForCookies,
+                                  kDefaultOrigin, std::move(options)),
+      ElementsAre(net::MatchesCookieNameValue("A", "B")));
 
   WaitForCallback();
 
@@ -1388,10 +1343,8 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
 TEST_P(SamePartyEnabledRestrictedCookieManagerTest,
        SetCookieFromString_SameParty_ReportsInvalid) {
   // Invalid. Should be reported.
-  sync_service_->SetCookieFromString(
-      kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-      "name=value;SameParty",
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
+  sync_service_->SetCookieFromString(kDefaultUrlWithPath, net::SiteForCookies(),
+                                     kDefaultOrigin, "name=value;SameParty");
 
   WaitForCallback();
 
@@ -1433,10 +1386,9 @@ TEST_P(SamePartyEnabledRestrictedCookieManagerTest,
     options->name = "new-name";
     options->match_type = mojom::CookieMatchType::EQUALS;
     EXPECT_THAT(
-        sync_service_->GetAllForUrl(
-            GURL("https://member1.com/test/"), net::SiteForCookies(),
-            kDefaultOrigin, std::move(options),
-            /*partitioned_cookies_runtime_feature_enabled=*/false),
+        sync_service_->GetAllForUrl(GURL("https://member1.com/test/"),
+                                    net::SiteForCookies(), kDefaultOrigin,
+                                    std::move(options)),
         ElementsAre(net::MatchesCookieNameValue("new-name", "new-value")));
   }
 
@@ -1579,11 +1531,9 @@ TEST_P(RestrictedCookieManagerTest, SameSiteCookiesSpecialScheme) {
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  EXPECT_THAT(
-      sync_service_->GetAllForUrl(
-          https_url, chrome_site_for_cookies, chrome_origin, std::move(options),
-          /*partitioned_cookies_runtime_feature_enabled=*/false),
-      testing::SizeIs(2));
+  EXPECT_THAT(sync_service_->GetAllForUrl(https_url, chrome_site_for_cookies,
+                                          chrome_origin, std::move(options)),
+              testing::SizeIs(2));
 
   // Test if site_for_cookies is chrome, then SameSite cookies cannot be
   // set and gotten if the origin is not secure.
@@ -1609,11 +1559,9 @@ TEST_P(RestrictedCookieManagerTest, SameSiteCookiesSpecialScheme) {
   options = mojom::CookieManagerGetOptions::New();
   options->name = "";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  EXPECT_THAT(
-      sync_service_->GetAllForUrl(
-          http_url, chrome_site_for_cookies, chrome_origin, std::move(options),
-          /*partitioned_cookies_runtime_feature_enabled=*/false),
-      IsEmpty());
+  EXPECT_THAT(sync_service_->GetAllForUrl(http_url, chrome_site_for_cookies,
+                                          chrome_origin, std::move(options)),
+              IsEmpty());
 }
 
 TEST_P(RestrictedCookieManagerTest, ChangeDispatch) {
@@ -1859,12 +1807,9 @@ TEST_P(RestrictedCookieManagerTest, PartitionedCookies) {
       net::IsolationInfo::CreateForInternalRequest(kTopFrameOrigin);
 
   service_->OverrideIsolationInfoForTesting(kIsolationInfo);
-  // Set partitioned_cookies_runtime_feature_enabled to true to make sure it
-  // does not override the net feature.
   sync_service_->SetCookieFromString(
       kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
+      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned");
 
   {  // Test request from the same top-level site.
     auto options = mojom::CookieManagerGetOptions::New();
@@ -1872,8 +1817,7 @@ TEST_P(RestrictedCookieManagerTest, PartitionedCookies) {
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
     net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
+        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
     ASSERT_EQ(1u, cookies.size());
     EXPECT_FALSE(cookies[0].IsPartitioned());
     EXPECT_EQ("__Host-foo", cookies[0].Name());
@@ -1913,10 +1857,9 @@ TEST_P(RestrictedCookieManagerTest, PartitionedCookies) {
     options->name = "";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kOtherSiteForCookies, kOtherTopFrameOrigin,
-        std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
+    net::CookieList cookies =
+        sync_service_->GetAllForUrl(kCookieURL, kOtherSiteForCookies,
+                                    kOtherTopFrameOrigin, std::move(options));
     ASSERT_EQ(1u, cookies.size());
     EXPECT_FALSE(cookies[0].IsPartitioned());
     EXPECT_EQ("__Host-foo", cookies[0].Name());
@@ -1965,8 +1908,7 @@ TEST_P(RestrictedCookieManagerTest, PartitionKeyFromScript) {
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
   net::CookieList cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
+      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
   ASSERT_EQ(1u, cookies.size());
   EXPECT_FALSE(cookies[0].IsPartitioned());
   EXPECT_EQ("__Host-foo", cookies[0].Name());
@@ -1985,8 +1927,7 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionedCookies) {
   service_->OverrideIsolationInfoForTesting(kIsolationInfo);
   sync_service_->SetCookieFromString(
       kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
+      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned");
 
   {  // Test request from the same top-level site.
     auto options = mojom::CookieManagerGetOptions::New();
@@ -1994,8 +1935,7 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionedCookies) {
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
     net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
+        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
     ASSERT_EQ(1u, cookies.size());
     EXPECT_TRUE(cookies[0].IsPartitioned());
     EXPECT_EQ(
@@ -2038,10 +1978,9 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionedCookies) {
     options->name = "";
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
-    net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kOtherSiteForCookies, kOtherTopFrameOrigin,
-        std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
+    net::CookieList cookies =
+        sync_service_->GetAllForUrl(kCookieURL, kOtherSiteForCookies,
+                                    kOtherTopFrameOrigin, std::move(options));
     ASSERT_EQ(0u, cookies.size());
 
     auto listener = CreateCookieChangeListener(kCookieURL, kOtherSiteForCookies,
@@ -2109,204 +2048,12 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionKeyFromScript) {
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
   net::CookieList cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
+      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
   ASSERT_EQ(1u, cookies.size());
   EXPECT_TRUE(cookies[0].IsPartitioned());
   EXPECT_EQ(cookies[0].PartitionKey().value(),
             net::CookiePartitionKey::FromURLForTesting(kTopFrameURL));
   EXPECT_EQ("__Host-foo", cookies[0].Name());
-}
-
-// Tests the interaction between First-Party Sets and partitioned cookies in
-// RestrictedCookieManager. When FPS are enabled, RestrictedCookieManager
-// should use the same cookie partition key for all sites in
-TEST_P(PartitionedCookiesRestrictedCookieManagerTest,
-       PartitionedCookiesAndFirstPartySets) {
-  const GURL kOwnerURL("https://owner.com");
-  const net::SchemefulSite kOwnerSite(kOwnerURL);
-  const url::Origin kOwnerOrigin = url::Origin::Create(kOwnerURL);
-  const net::IsolationInfo kOwnerIsolationInfo =
-      net::IsolationInfo::CreateForInternalRequest(kOwnerOrigin);
-  const net::SiteForCookies kOwnerSiteForCookies =
-      net::SiteForCookies::FromUrl(kOwnerURL);
-
-  const GURL kMemberURL("https://member.com");
-  const net::SchemefulSite kMemberSite(kMemberURL);
-  const url::Origin kMemberOrigin = url::Origin::Create(kMemberURL);
-  const net::IsolationInfo kMemberIsolationInfo =
-      net::IsolationInfo::CreateForInternalRequest(kMemberOrigin);
-  const net::SiteForCookies kMemberSiteForCookies =
-      net::SiteForCookies::FromUrl(kMemberURL);
-
-  const GURL kNonMemberURL("https://nonmember.com");
-  const url::Origin kNonMemberOrigin = url::Origin::Create(kNonMemberURL);
-  const net::IsolationInfo kNonMemberIsolationInfo =
-      net::IsolationInfo::CreateForInternalRequest(kNonMemberOrigin);
-  const net::SiteForCookies kNonMemberSiteForCookies =
-      net::SiteForCookies::FromUrl(kNonMemberURL);
-
-  const GURL kCookieURL("https://example.com");
-
-  auto cookie_access_delegate =
-      std::make_unique<net::TestCookieAccessDelegate>();
-  cookie_access_delegate->SetFirstPartySets({
-      {kOwnerSite, net::FirstPartySetEntry(kOwnerSite, net::SiteType::kPrimary,
-                                           absl::nullopt)},
-      {kMemberSite,
-       net::FirstPartySetEntry(kOwnerSite, net::SiteType::kAssociated, 0)},
-  });
-  cookie_monster_.SetCookieAccessDelegate(std::move(cookie_access_delegate));
-
-  // Set https://example.com cookie when the top-frame site is the owner
-  // of the set.
-  service_->OverrideIsolationInfoForTesting(kOwnerIsolationInfo);
-  sync_service_->SetCookieFromString(
-      kCookieURL, kOwnerSiteForCookies, kOwnerOrigin,
-      "__Host-foo=0; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-
-  {
-    // Check that its partition key is the set's owner site.
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kOwnerSiteForCookies, kOwnerOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-    ASSERT_EQ(1u, cookies.size());
-    EXPECT_TRUE(cookies[0].IsPartitioned());
-    EXPECT_EQ(net::CookiePartitionKey::FromURLForTesting(kOwnerURL),
-              cookies[0].PartitionKey());
-    EXPECT_EQ("__Host-foo", cookies[0].Name());
-
-    auto listener = CreateCookieChangeListener(kCookieURL, kOwnerSiteForCookies,
-                                               kOwnerOrigin);
-
-    // Update partitioned cookie Max-Age: None -> 7200.
-    sync_service_->SetCookieFromString(
-        kCookieURL, kOwnerSiteForCookies, kOwnerOrigin,
-        "__Host-foo=0; Secure; SameSite=None; Path=/; Partitioned; "
-        "Max-Age: 7200",
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-
-    listener->WaitForChange();
-    ASSERT_THAT(listener->observed_changes(), testing::SizeIs(1));
-  }
-
-  {
-    // Check that cookie is available to https://example.com when the top-frame
-    // site is a site that is a member of the set but not the owner.
-    service_->OverrideIsolationInfoForTesting(kMemberIsolationInfo);
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kMemberSiteForCookies, kMemberOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-    ASSERT_EQ(1u, cookies.size());
-    EXPECT_TRUE(cookies[0].IsPartitioned());
-    EXPECT_EQ(net::CookiePartitionKey::FromURLForTesting(kOwnerURL),
-              cookies[0].PartitionKey());
-    EXPECT_EQ("__Host-foo", cookies[0].Name());
-
-    auto listener = CreateCookieChangeListener(
-        kCookieURL, kMemberSiteForCookies, kMemberOrigin);
-
-    // Update partitioned cookie Max-Age: None -> 7200.
-    service_->OverrideIsolationInfoForTesting(kOwnerIsolationInfo);
-    sync_service_->SetCookieFromString(
-        kCookieURL, kOwnerSiteForCookies, kOwnerOrigin,
-        "__Host-foo=0; Secure; SameSite=None; Path=/; Partitioned; "
-        "Max-Age: 3600",
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-
-    listener->WaitForChange();
-    ASSERT_THAT(listener->observed_changes(), testing::SizeIs(1));
-  }
-
-  // Set https://example.com cookie when the top-frame site is a member of
-  // the set.
-  service_->OverrideIsolationInfoForTesting(kMemberIsolationInfo);
-  sync_service_->SetCookieFromString(
-      kCookieURL, kMemberSiteForCookies, kMemberOrigin,
-      "__Host-bar=1; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-
-  {
-    // Check that the new cookie's partition key is the set's owner site.
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kMemberSiteForCookies, kMemberOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-    ASSERT_EQ(2u, cookies.size());
-
-    EXPECT_EQ("__Host-foo", cookies[0].Name());
-    EXPECT_EQ("__Host-bar", cookies[1].Name());
-    for (const auto& cookie : cookies) {
-      EXPECT_TRUE(cookie.IsPartitioned());
-      EXPECT_EQ(net::CookiePartitionKey::FromURLForTesting(kOwnerURL),
-                cookie.PartitionKey());
-    }
-  }
-
-  {
-    // Check that the owner site can also access both cookies.
-    service_->OverrideIsolationInfoForTesting(kOwnerIsolationInfo);
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kOwnerSiteForCookies, kOwnerOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-    ASSERT_EQ(2u, cookies.size());
-    EXPECT_EQ("__Host-foo", cookies[0].Name());
-    EXPECT_EQ("__Host-bar", cookies[1].Name());
-  }
-
-  {
-    // Check that the cookies are not available to https://example.com when the
-    // top-frame site is not a member of the set.
-    service_->OverrideIsolationInfoForTesting(kNonMemberIsolationInfo);
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kNonMemberSiteForCookies, kNonMemberOrigin,
-        std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-    ASSERT_EQ(0u, cookies.size());
-
-    auto listener = CreateCookieChangeListener(
-        kCookieURL, kNonMemberSiteForCookies, kNonMemberOrigin);
-
-    // Set a new listener with the original IsolationInfo, we wait for this
-    // listener to receive an event to verify that the second listener was
-    // either called or skipped.
-    service_->OverrideIsolationInfoForTesting(kOwnerIsolationInfo);
-    auto second_listener = CreateCookieChangeListener(
-        kCookieURL, kOwnerSiteForCookies, kOwnerOrigin);
-
-    // Update partitioned cookie __Host-bar's Max-Age: None -> 3600.
-    service_->OverrideIsolationInfoForTesting(kOwnerIsolationInfo);
-    sync_service_->SetCookieFromString(
-        kCookieURL, kOwnerSiteForCookies, kOwnerOrigin,
-        "__Host-bar=1; Secure; SameSite=None; Path=/; Partitioned; "
-        "Max-Age: 3600",
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
-
-    // The listener set on the non-member top-frame site should not be able to
-    // observe the change.
-    second_listener->WaitForChange();
-    ASSERT_THAT(listener->observed_changes(), testing::SizeIs(0));
-  }
 }
 
 TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionKeyWithNonce) {
@@ -2344,8 +2091,7 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionKeyWithNonce) {
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
     net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
+        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
     ASSERT_EQ(1u, cookies.size());
     EXPECT_TRUE(cookies[0].IsPartitioned());
     EXPECT_EQ(cookies[0].PartitionKey().value(), kNoncedPartitionKey);
@@ -2361,8 +2107,7 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionKeyWithNonce) {
     options->match_type = mojom::CookieMatchType::STARTS_WITH;
 
     net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
+        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
     ASSERT_EQ(0u, cookies.size());
 
     auto listener = CreateCookieChangeListener(kCookieURL, kSiteForCookies,
@@ -2412,8 +2157,7 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionKeyWithNonce) {
 
     // Should only be able to see the nonced partitioned cookie only.
     net::CookieList cookies = sync_service_->GetAllForUrl(
-        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-        /*partitioned_cookies_runtime_feature_enabled=*/true);
+        kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
     ASSERT_EQ(1u, cookies.size());
     ASSERT_EQ("__Host-foo", cookies[0].Name());
 
@@ -2450,219 +2194,6 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionKeyWithNonce) {
     second_listener->WaitForChange();
     ASSERT_THAT(listener->observed_changes(), testing::SizeIs(0));
   }
-}
-
-TEST_P(PartitionedCookiesRestrictedCookieManagerTest, RuntimeEnabledFeature) {
-  const GURL kCookieURL("https://example.com");
-  const GURL kTopFrameURL("https://sub.foo.com");
-  const net::SiteForCookies kSiteForCookies =
-      net::SiteForCookies::FromUrl(kTopFrameURL);
-  const url::Origin kTopFrameOrigin = url::Origin::Create(kTopFrameURL);
-  const net::IsolationInfo kIsolationInfo =
-      net::IsolationInfo::CreateForInternalRequest(kTopFrameOrigin);
-
-  service_->OverrideIsolationInfoForTesting(kIsolationInfo);
-
-  // Setting a partitioned cookie when the RuntimeEnabledFeature is disabled
-  // should result in an unpartitioned cookie.
-  sync_service_->SetCookieFromString(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
-
-  auto options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-  net::CookieList cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_EQ("__Host-foo", cookies[0].Name());
-  EXPECT_FALSE(cookies[0].IsPartitioned());
-
-  // Should be able to access both partitioned and unpartitioned cookie when the
-  // RuntimeEnabledFeature is on.
-  sync_service_->SetCookieFromString(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-bar=baz; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-
-  options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-  cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-  ASSERT_EQ(2u, cookies.size());
-  EXPECT_FALSE(cookies[0].IsPartitioned());
-  EXPECT_TRUE(cookies[1].IsPartitioned());
-
-  // Should only be able to read the unpartitioned cookie when the feature is
-  // off.
-  options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_EQ("__Host-foo", cookies[0].Name());
-}
-
-TEST_P(PartitionedCookiesRestrictedCookieManagerTest,
-       RuntimeEnabledFeature_NoncedPartitionKey) {
-  const GURL kCookieURL("https://example.com");
-  const GURL kTopFrameURL("https://sub.foo.com");
-  const net::SiteForCookies kSiteForCookies =
-      net::SiteForCookies::FromUrl(kTopFrameURL);
-  const url::Origin kTopFrameOrigin = url::Origin::Create(kTopFrameURL);
-  const base::UnguessableToken kNonce = base::UnguessableToken::Create();
-  const net::IsolationInfo kNoncedIsolationInfo = net::IsolationInfo::Create(
-      net::IsolationInfo::RequestType::kOther, kTopFrameOrigin, kTopFrameOrigin,
-      net::SiteForCookies::FromOrigin(kTopFrameOrigin),
-      /*party_context=*/std::set<net::SchemefulSite>(), &kNonce);
-  service_->OverrideIsolationInfoForTesting(kNoncedIsolationInfo);
-
-  // Should be able to set and read a partitioned cookie with a nonce when the
-  // runtime enabled feature is off.
-  sync_service_->SetCookieFromString(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
-
-  auto options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  net::CookieList cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_EQ("__Host-foo", cookies[0].Name());
-  EXPECT_TRUE(cookies[0].IsPartitioned());
-}
-
-TEST_P(PartitionedCookiesRestrictedCookieManagerTest,
-       RuntimeEnabledFeature_BypassOriginTrial) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {net::features::kPartitionedCookies,
-       net::features::kPartitionedCookiesBypassOriginTrial},
-      {});
-
-  const GURL kCookieURL("https://example.com");
-  const GURL kTopFrameURL("https://sub.foo.com");
-  const net::SiteForCookies kSiteForCookies =
-      net::SiteForCookies::FromUrl(kTopFrameURL);
-  const url::Origin kTopFrameOrigin = url::Origin::Create(kTopFrameURL);
-  const net::IsolationInfo kIsolationInfo =
-      net::IsolationInfo::CreateForInternalRequest(kTopFrameOrigin);
-
-  service_->OverrideIsolationInfoForTesting(kIsolationInfo);
-
-  // Setting a partitioned cookie when the RuntimeEnabledFeature is disabled but
-  // the "bypass origin trial" feature is enabled should result in a partitioned
-  // cookie.
-  sync_service_->SetCookieFromString(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
-
-  auto options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-  auto cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_TRUE(cookies[0].IsPartitioned());
-}
-
-TEST_P(PartitionedCookiesRestrictedCookieManagerTest,
-       ConvertPartitionedCookiesToUnpartitioned) {
-  const GURL kCookieURL("https://example.com");
-  const GURL kTopFrameURL("https://sub.foo.com");
-  const net::SiteForCookies kSiteForCookies =
-      net::SiteForCookies::FromUrl(kTopFrameURL);
-  const url::Origin kTopFrameOrigin = url::Origin::Create(kTopFrameURL);
-  const net::IsolationInfo kIsolationInfo =
-      net::IsolationInfo::CreateForInternalRequest(kTopFrameOrigin);
-
-  service_->OverrideIsolationInfoForTesting(kIsolationInfo);
-
-  sync_service_->SetCookieFromString(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-
-  auto options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  auto cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_TRUE(cookies[0].IsPartitioned());
-
-  service_->ConvertPartitionedCookiesToUnpartitioned(kCookieURL);
-
-  // The partitioned cookie should now be unpartitioned.
-  options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_FALSE(cookies[0].IsPartitioned());
-}
-
-TEST_P(PartitionedCookiesRestrictedCookieManagerTest,
-       ConvertPartitionedCookiesToUnpartitioned_BypassOriginTrial) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {net::features::kPartitionedCookies,
-       net::features::kPartitionedCookiesBypassOriginTrial},
-      {});
-
-  const GURL kCookieURL("https://example.com");
-  const GURL kTopFrameURL("https://sub.foo.com");
-  const net::SiteForCookies kSiteForCookies =
-      net::SiteForCookies::FromUrl(kTopFrameURL);
-  const url::Origin kTopFrameOrigin = url::Origin::Create(kTopFrameURL);
-  const net::IsolationInfo kIsolationInfo =
-      net::IsolationInfo::CreateForInternalRequest(kTopFrameOrigin);
-
-  service_->OverrideIsolationInfoForTesting(kIsolationInfo);
-
-  sync_service_->SetCookieFromString(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin,
-      "__Host-foo=bar; Secure; SameSite=None; Path=/; Partitioned",
-      /*partitioned_cookies_runtime_feature_enabled=*/false);
-
-  auto options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  auto cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_TRUE(cookies[0].IsPartitioned());
-
-  service_->ConvertPartitionedCookiesToUnpartitioned(kCookieURL);
-
-  // The partitioned cookie should remain partitioned if the origin trial bypass
-  // is enabled.
-  options = mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  cookies = sync_service_->GetAllForUrl(
-      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options),
-      /*partitioned_cookies_runtime_feature_enabled=*/true);
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_TRUE(cookies[0].IsPartitioned());
 }
 
 INSTANTIATE_TEST_SUITE_P(

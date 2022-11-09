@@ -87,6 +87,7 @@
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/debug_utils.h"
+#include "content/common/features.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -112,14 +113,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
-#include "net/cookies/parsed_cookie.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
@@ -153,9 +152,6 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
-#include "third_party/blink/public/common/origin_trials/trial_token.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_result.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
@@ -1025,48 +1021,6 @@ void RemoveOriginTrialHintsFromAcceptCH(
   }
 }
 
-bool IsValidPartitionedCookiesOriginTrial(
-    const GURL& url,
-    const net::HttpResponseHeaders* response_headers) {
-  blink::TrialTokenValidator validator;
-  if (!validator.IsTrialPossibleOnOrigin(url))
-    return false;
-  // Since third-party requests can participate in the CHIPS origin trial and
-  // typically the Origin-Trial header is reserved for requests from the
-  // top-level site, we cannot use validator.RequestEnablesFeature here.
-  url::Origin origin = url::Origin::Create(url);
-  url::Origin third_party_origins[] = {url::Origin::Create(url)};
-  size_t iter = 0;
-  std::string token;
-  base::Time now(base::Time::Now());
-  while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
-    blink::TrialTokenResult result =
-        validator.ValidateToken(token, origin, third_party_origins, now);
-    if (result.Status() == blink::OriginTrialTokenStatus::kSuccess) {
-      if (result.ParsedToken()->feature_name() == "PartitionedCookies") {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-// For the partitioned cookies OT, we check if the response has a Set-Cookie
-// header with a partitioned cookie. If it does, we validate the OT token
-// otherwise we convert the URL's partitioned cookies to unpartitioned.
-void CheckPartitionedCookiesOriginTrial(
-    const network::mojom::URLResponseHead* response,
-    const GURL& url,
-    network::mojom::CookieManager* cookie_manager) {
-  if (!base::FeatureList::IsEnabled(net::features::kPartitionedCookies) ||
-      !response || !cookie_manager || !response->has_partitioned_cookie) {
-    return;
-  }
-  if (!IsValidPartitionedCookiesOriginTrial(url, response->headers.get())) {
-    cookie_manager->ConvertPartitionedCookiesToUnpartitioned(url);
-  }
-}
-
 // If there are any "Origin-Trial" headers on the |response|, persist those
 // that correspond to persistent origin trials, provided the tokens are valid.
 void PersistOriginTrialsFromHeaders(
@@ -1305,7 +1259,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           frame_tree_node->AncestorOrSelfHasCSPEE(),
           std::string() /* reduced_accept_language */,
           /*navigation_delivery_type=*/
-          network::mojom::NavigationDeliveryType::kDefault);
+          network::mojom::NavigationDeliveryType::kDefault,
+          /*view_transition_state=*/absl::nullopt);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1391,7 +1346,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
   // not used by the browser after commit.
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
-          origin,
+          absl::nullopt,
           // The correct storage key is computed right after creating the
           // NavigationRequest below.
           blink::StorageKey(), is_overriding_user_agent, redirects,
@@ -1437,7 +1392,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           frame_tree_node->AncestorOrSelfHasCSPEE(),
           std::string() /* reduced_accept_language */,
           /*navigation_delivery_type=*/
-          network::mojom::NavigationDeliveryType::kDefault);
+          network::mojom::NavigationDeliveryType::kDefault,
+          /*view_transition_state=*/absl::nullopt);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1570,6 +1526,8 @@ NavigationRequest::NavigationRequest(
               ? absl::make_optional(
                     FencedFrameURLMapping::FencedFrameProperties())
               : absl::nullopt) {
+  TRACE_EVENT1("navigation", "NavigationRequest::NavigationRequest", "url",
+               GetURL());
   DCHECK(!blink::IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
   DCHECK_EQ(common_params_->url, commit_params_->original_url);
@@ -1883,6 +1841,29 @@ NavigationRequest::NavigationRequest(
       blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
     commit_params_->fallback_srcdoc_baseurl =
         frame_tree_node_->parent()->GetBaseUrl();
+  }
+
+  // Ask the service worker context to speculatively start a service worker for
+  // the request URL if necessary for optimization purposes. Don't ask to do
+  // that if this request is for ReloadType::BYPASSING_CACHE that is supposed to
+  // skip a service worker. There are cases where we have already started the
+  // service worker (e.g, Prerendering or the previous navigation already
+  // started the service worker), but this call does nothing if the service
+  // worker already started for the URL.
+  if (reload_type_ != ReloadType::BYPASSING_CACHE &&
+      base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
+    if (ServiceWorkerContext* context =
+            frame_tree_node_->navigator()
+                .controller()
+                .GetBrowserContext()
+                ->GetStoragePartition(site_info_.storage_partition_config())
+                ->GetServiceWorkerContext()) {
+      const blink::StorageKey key(GetTentativeOriginAtRequestTime());
+      if (context->MaybeHasRegistrationForStorageKey(key)) {
+        context->StartServiceWorkerForNavigationHint(GetURL(), key,
+                                                     base::DoNothing());
+      }
+    }
   }
 }
 
@@ -2201,6 +2182,8 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
   is_deferred_on_fenced_frame_url_mapping_ = false;
 
   if (properties) {
+    if (properties->on_navigate_callback)
+      properties->on_navigate_callback.Run();
     common_params_->url = properties->mapped_url;
     commit_params_->original_url = properties->mapped_url;
     // TODO(crbug/1281643): move into commit_params_->ad_auction_components
@@ -2660,11 +2643,6 @@ void NavigationRequest::ResetStateForSiteInstanceChange() {
     commit_params_->page_state =
         blink::PageState::CreateFromURL(GetURL()).ToEncodedData();
 
-  // Any previously computed origin to commit is no longer valid (e.g., an
-  // opaque origin for an error page).
-  if (commit_params_->origin_to_commit)
-    commit_params_->origin_to_commit.reset();
-
   // ISNs and DSNs are process-specific.
   frame_entry_item_sequence_number_ = -1;
   frame_entry_document_sequence_number_ = -1;
@@ -2914,11 +2892,6 @@ void NavigationRequest::OnRequestRedirected(
 
   commit_params_->redirect_response.push_back(response_head_.Clone());
   commit_params_->redirect_infos.push_back(redirect_info);
-
-  // On redirects, the initial origin_to_commit is no longer correct, so it
-  // must be cleared to avoid sending incorrect value to the renderer process.
-  if (commit_params_->origin_to_commit)
-    commit_params_->origin_to_commit.reset();
 
   const bool is_same_origin_redirect =
       url::Origin::Create(common_params_->url)
@@ -4673,6 +4646,27 @@ void NavigationRequest::OnRedirectChecksComplete(
   if (auto reduce_accept_lang_utils =
           ReduceAcceptLanguageUtils::Create(browser_context);
       reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    // Remove persisted language for the source origin if needed.
+    const network::mojom::URLResponseHead* response_head =
+        commit_params_->redirect_response.back().get();
+    // ReduceAcceptLanguageThrottle issues a 307 internal redirect without the
+    // original headers, and we don't want to remove persisted language when
+    // there is a potential restart due to language negotiation. This means that
+    // if the site sends a 307 (instead of a 301 or 302), the source origin
+    // persisted language will *not* be removed from the cache if the redirect
+    // response doesn't have a valid origin trial token.
+    if (response_head->headers && response_head->headers->response_code() !=
+                                      net::HTTP_TEMPORARY_REDIRECT) {
+      const url::Origin& source_origin =
+          url::Origin::Create(commit_params_->redirects.back());
+      absl::optional<std::string> persisted_language =
+          reduce_accept_lang_utils.value().LookupReducedAcceptLanguage(
+              source_origin, frame_tree_node_);
+      reduce_accept_lang_utils.value().RemoveOriginTrialReducedAcceptLanguage(
+          persisted_language.value_or(""), source_origin, response_head,
+          frame_tree_node_);
+    }
+
     net::HttpRequestHeaders accept_language_headers;
     absl::optional<std::string> reduced_accept_language =
         reduce_accept_lang_utils.value()
@@ -4682,6 +4676,8 @@ void NavigationRequest::OnRedirectChecksComplete(
     commit_params_->reduced_accept_language =
         reduced_accept_language.value_or("");
     modified_headers.MergeFrom(accept_language_headers);
+    // Remove the Accept-Language header passed from previous request if it has.
+    removed_headers.push_back(net::HttpRequestHeaders::kAcceptLanguage);
   }
 
   net::HttpRequestHeaders cors_exempt_headers;
@@ -4915,9 +4911,10 @@ void NavigationRequest::CommitErrorPage(
 
   // Set |origin_to_commit| for the renderer; error pages should always commit
   // in an opaque origin (with the precursor reflecting the destination URL).
-  commit_params_->origin_to_commit.reset();
+  DCHECK(!commit_params_->origin_to_commit);
   commit_params_->origin_to_commit = GetOriginToCommit();
   DCHECK(commit_params_->origin_to_commit->opaque());
+
   if (request_navigation_client_.is_bound()) {
     if (render_frame_host_ == frame_tree_node()->current_frame_host()) {
       // Reuse the request NavigationClient for commit.
@@ -5075,10 +5072,16 @@ void NavigationRequest::CommitNavigation() {
 
   PersistOriginTrialsFromHeaders(origin, response(), browser_context);
 
-  CheckPartitionedCookiesOriginTrial(response(), common_params_->url,
-                                     frame_tree_node_->current_frame_host()
-                                         ->GetStoragePartition()
-                                         ->GetCookieManagerForBrowserProcess());
+  // If the final response do not have a valid ReduceAcceptLanguage origin trial
+  // token, stop persisting the accepted language. This happens when the token
+  // expires, is invalid, or is missing when the server stop using it.
+  if (auto reduce_accept_lang_utils =
+          ReduceAcceptLanguageUtils::Create(browser_context);
+      reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    reduce_accept_lang_utils.value().RemoveOriginTrialReducedAcceptLanguage(
+        commit_params_->reduced_accept_language, GetOriginToCommit(),
+        response(), frame_tree_node_);
+  }
 
   // Generate a UKM source and track it on NavigationRequest. This will be
   // passed down to the blink::Document to be created, if any, and used for UKM
@@ -6640,31 +6643,6 @@ url::Origin NavigationRequest::GetOriginToCommit() {
 
 std::pair<url::Origin, std::string>
 NavigationRequest::GetOriginToCommitWithDebugInfo() {
-  if (!IsSameDocument() && !IsPageActivation() &&
-      commit_params_->origin_to_commit) {
-    // `origin_to_commit` is set when there is an origin saved in the
-    // FrameNavigationEntry and it hasn't been reset yet due to redirects etc.
-    // Always try to use it, because this is what the renderer does in
-    // `DocumentLoader::CalculateOrigin()`. However this might not be the
-    // final origin, as the callers of this function might also consider sandbox
-    // flags too, which may require an opaque origin.
-    /// Note that this is handled here instead of in
-    // GetOriginForURLLoaderFactoryWithFinalFrameHostWithDebugInfo() as that
-    // function is used for more than just browser-vs-renderer origin
-    // verification, to avoid changing the behavior of existing browser-side
-    // code that don't expect `origin_to_commit` to be used before commit.
-    // TODO(https://crbug.com/1359351): Stop using `origin_to_commit` in the
-    // renderer and remove this special handling.
-    std::pair<url::Origin, std::string> origin_and_debug_info =
-        std::make_pair(*commit_params_->origin_to_commit, "origin_to_commit");
-    if ((SandboxFlagsToCommit() & network::mojom::WebSandboxFlags::kOrigin) ==
-        network::mojom::WebSandboxFlags::kOrigin) {
-      origin_and_debug_info =
-          std::make_pair(origin_and_debug_info.first.DeriveNewOpaqueOrigin(),
-                         origin_and_debug_info.second + ", sandbox_flags");
-    }
-    return origin_and_debug_info;
-  }
   return GetOriginForURLLoaderFactoryWithFinalFrameHostWithDebugInfo();
 }
 
@@ -6944,7 +6922,6 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCacheRestore() {
 
   // Add bfcache-specific provisional load params:
   params->did_create_new_entry = false;
-  DCHECK_EQ(params->origin, commit_params().origin_to_commit.value());
   params->page_state =
       blink::PageState::CreateFromEncodedData(commit_params().page_state);
   return params;
@@ -8319,5 +8296,10 @@ NavigationRequest::GetJavaNavigationHandle() {
   return navigation_handle_proxy_->java_navigation_handle();
 }
 #endif
+
+void NavigationRequest::SetViewTransitionState(
+    blink::ViewTransitionState view_transition_state) {
+  commit_params_->view_transition_state = std::move(view_transition_state);
+}
 
 }  // namespace content

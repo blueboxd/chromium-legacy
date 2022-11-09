@@ -684,71 +684,6 @@ export class Output {
   }
 
   /** @override */
-  formatName_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const prevNode = data.opt_prevNode;
-    const formatLog = data.outputFormatLogger;
-
-    options.annotation.push(token);
-    const earcon = node ? this.findEarcon_(node, prevNode) : null;
-    if (earcon) {
-      options.annotation.push(earcon);
-    }
-
-    // Place the selection on the first character of the name if the
-    // node is the active descendant. This ensures the braille window is
-    // panned appropriately.
-    if (node.activeDescendantFor && node.activeDescendantFor.length > 0) {
-      options.annotation.push(new outputTypes.OutputSelectionSpan(0, 0));
-    }
-
-    if (localStorage['languageSwitching'] === 'true') {
-      this.assignLocaleAndAppend_(node.name || '', node, buff, options);
-    } else {
-      this.append_(buff, node.name || '', options);
-    }
-
-    formatLog.writeTokenWithValue(token, node.name);
-  }
-
-  /** @override */
-  formatDescription_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    if (node.name === node.description) {
-      return;
-    }
-
-    options.annotation.push(token);
-    this.append_(buff, node.description || '', options);
-    formatLog.writeTokenWithValue(token, node.description);
-  }
-
-  /** @override */
-  formatUrlFilename_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    options.annotation.push('name');
-    const url = node.url || '';
-    let filename = '';
-    if (url.substring(0, 4) !== 'data') {
-      filename = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
-
-      // Hack to not speak the filename if it's ridiculously long.
-      if (filename.length >= 30) {
-        filename = filename.substring(0, 16) + '...';
-      }
-    }
-    this.append_(buff, filename, options);
-    formatLog.writeTokenWithValue(token, filename);
-  }
-
-  /** @override */
   formatNameFromNode_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -2245,12 +2180,7 @@ export class Output {
     }, new Spannable());
   }
 
-  /**
-   * Find the earcon for a given node (including ancestry).
-   * @param {!AutomationNode} node
-   * @param {!AutomationNode=} opt_prevNode
-   * @return {outputTypes.OutputAction}
-   */
+  /** @override */
   findEarcon_(node, opt_prevNode) {
     if (node === opt_prevNode) {
       return null;
@@ -2307,13 +2237,7 @@ export class Output {
     }, null);
   }
 
-  /**
-   * @param {string} text
-   * @param {!AutomationNode} contextNode
-   * @param {!Array<Spannable>} buff
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   * @private
-   */
+  /** @override */
   assignLocaleAndAppend_(text, contextNode, buff, options) {
     const data =
         LocaleOutputHelper.instance.computeTextAndLocale(text, contextNode);

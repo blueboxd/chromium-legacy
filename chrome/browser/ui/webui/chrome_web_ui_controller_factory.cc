@@ -240,7 +240,7 @@
 #include "chrome/browser/ash/scanning/scan_service_factory.h"
 #include "chrome/browser/ash/shimless_rma/chrome_shimless_rma_delegate.h"
 #include "chrome/browser/ash/web_applications/chrome_file_manager_ui_delegate.h"
-#include "chrome/browser/ash/web_applications/face_ml/chrome_user_provider.h"
+#include "chrome/browser/ash/web_applications/face_ml/chrome_face_ml_user_provider.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/media_app/chrome_media_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
@@ -945,45 +945,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (url.host_piece() == ash::kChromeUIOSFeedbackHost)
       return &NewWebUI<ash::OSFeedbackUI>;
   }
-  if (url.host_piece() == chrome::kChromeUIPasswordChangeHost) {
-    if (!profile->GetPrefs()->GetBoolean(
-            ash::prefs::kSamlInSessionPasswordChangeEnabled)) {
-      return nullptr;
-    }
-    return &NewWebUI<ash::PasswordChangeUI>;
-  }
-  if (url.host_piece() == chrome::kChromeUIConfirmPasswordChangeHost) {
-    if (!profile->GetPrefs()->GetBoolean(
-            ash::prefs::kSamlInSessionPasswordChangeEnabled)) {
-      return nullptr;
-    }
-    return &NewWebUI<ash::ConfirmPasswordChangeUI>;
-  }
-  if (url.host_piece() ==
-      chrome::kChromeUIUrgentPasswordExpiryNotificationHost) {
-    if (!profile->GetPrefs()->GetBoolean(
-            ash::prefs::kSamlInSessionPasswordChangeEnabled)) {
-      return nullptr;
-    }
-    return &NewWebUI<ash::UrgentPasswordExpiryNotificationUI>;
-  }
-  if (url.host_piece() == chrome::kChromeUILockScreenStartReauthHost) {
-    if (!ash::ProfileHelper::IsLockScreenProfile(profile)) {
-      return nullptr;
-    }
-    return &NewWebUI<ash::LockScreenStartReauthUI>;
-  }
-  if (url.host_piece() == chrome::kChromeUILockScreenNetworkHost) {
-    if (!ash::ProfileHelper::IsLockScreenProfile(profile)) {
-      return nullptr;
-    }
-    return &NewWebUI<ash::LockScreenNetworkUI>;
-  }
   if (url.host_piece() == ash::kChromeUIFaceMLAppHost) {
     if (!ash::features::IsFaceMLSwaEnabled()) {
       return nullptr;
     }
-    return &NewComponentUI<ash::FaceMLAppUI, ash::ChromeUserProvider>;
+    return &NewComponentUI<ash::FaceMLAppUI, ash::ChromeFaceMLUserProvider>;
   }
   if (url.host_piece() == ash::file_manager::kChromeUIFileManagerHost) {
     return &NewComponentUI<ash::file_manager::FileManagerUI,
@@ -1015,10 +981,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<ash::cellular_setup::MobileSetupUI>;
-  if (url.host_piece() == chrome::kChromeUIMultiDeviceInternalsHost)
-    return &NewWebUI<ash::MultideviceInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUIMultiDeviceSetupHost)
-    return &NewWebUI<ash::multidevice_setup::MultiDeviceSetupDialogUI>;
   if (url.host_piece() == chrome::kChromeUIOobeHost) {
     if (ash::ProfileHelper::IsSigninProfile(profile)) {
       return &NewWebUI<chromeos::OobeUI>;
@@ -1062,8 +1024,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
   }
-  if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
-    return &NewWebUI<chromeos::AssistantOptInUI>;
   if (url.host_piece() == chrome::kChromeUINearbyInternalsHost)
     return &NewWebUI<NearbyInternalsUI>;
   if (arc::IsArcAllowedForProfile(profile)) {
@@ -1082,9 +1042,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == ash::eche_app::kChromeUIEcheAppHost &&
       base::FeatureList::IsEnabled(ash::features::kEcheSWA)) {
     return &NewWebUI<ash::eche_app::EcheAppUI>;
-  }
-  if (url.host_piece() == chrome::kChromeUIVmHost) {
-    return &NewWebUI<ash::VmUI>;
   }
   if (url.host_piece() ==
       ash::personalization_app::kChromeUIPersonalizationAppHost) {

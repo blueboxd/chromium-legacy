@@ -41,11 +41,11 @@ export class OutputFormatter {
     if (token === 'value') {
       this.formatValue_(this.params_, token, options);
     } else if (token === 'name') {
-      this.output_.formatName_(this.params_, token, options);
+      this.formatName_(this.params_, token, options);
     } else if (token === 'description') {
-      this.output_.formatDescription_(this.params_, token, options);
+      this.formatDescription_(this.params_, token, options);
     } else if (token === 'urlFilename') {
-      this.output_.formatUrlFilename_(this.params_, token, options);
+      this.formatUrlFilename_(this.params_, token, options);
     } else if (token === 'nameFromNode') {
       this.output_.formatNameFromNode_(this.params_, token, options);
     } else if (token === 'nameOrDescendants') {
@@ -154,6 +154,85 @@ export class OutputFormatter {
         this.speechProps_ = null;
       }
     }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatDescription_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    if (node.name === node.description) {
+      return;
+    }
+
+    options.annotation.push(token);
+    this.output_.append_(buff, node.description || '', options);
+    formatLog.writeTokenWithValue(token, node.description);
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   */
+  formatName_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const prevNode = data.opt_prevNode;
+    const formatLog = data.outputFormatLogger;
+
+    options.annotation.push(token);
+    const earcon = node ? this.output_.findEarcon_(node, prevNode) : null;
+    if (earcon) {
+      options.annotation.push(earcon);
+    }
+
+    // Place the selection on the first character of the name if the
+    // node is the active descendant. This ensures the braille window is
+    // panned appropriately.
+    if (node.activeDescendantFor && node.activeDescendantFor.length > 0) {
+      options.annotation.push(new outputTypes.OutputSelectionSpan(0, 0));
+    }
+
+    if (localStorage['languageSwitching'] === 'true') {
+      this.output_.assignLocaleAndAppend_(node.name || '', node, buff, options);
+    } else {
+      this.output_.append_(buff, node.name || '', options);
+    }
+
+    formatLog.writeTokenWithValue(token, node.name);
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatUrlFilename_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    options.annotation.push('name');
+    const url = node.url || '';
+    let filename = '';
+    if (url.substring(0, 4) !== 'data') {
+      filename = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+
+      // Hack to not speak the filename if it's ridiculously long.
+      if (filename.length >= 30) {
+        filename = filename.substring(0, 16) + '...';
+      }
+    }
+    this.output_.append_(buff, filename, options);
+    formatLog.writeTokenWithValue(token, filename);
   }
 
   /**

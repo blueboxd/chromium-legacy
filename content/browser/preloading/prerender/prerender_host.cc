@@ -8,6 +8,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/typed_macros.h"
@@ -42,7 +43,9 @@ namespace {
 
 bool AreHttpRequestHeadersCompatible(
     const std::string& potential_activation_headers_str,
-    const std::string& prerender_headers_str) {
+    const std::string& prerender_headers_str,
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix) {
   net::HttpRequestHeaders prerender_headers;
   prerender_headers.AddHeadersFromString(prerender_headers_str);
 
@@ -60,8 +63,26 @@ bool AreHttpRequestHeadersCompatible(
   prerender_headers.RemoveHeader("Sec-Purpose");
   potential_activation_headers.RemoveHeader("Sec-Purpose");
 
-  return prerender_headers.ToString() ==
-         potential_activation_headers.ToString();
+  // Compare headers in serialized strings. The spec doesn't require serialized
+  // string matches, but practically Chrome generates headers in a decisive way,
+  // i.e. in the same order and cases. So we can expect serialized string
+  // comparisons just work. We ensure this assumption through the metric we
+  // handled in AnalyzePrerenderActivationHeader.
+  if (prerender_headers.ToString() == potential_activation_headers.ToString()) {
+    return true;
+  }
+
+  // The headers mismatch. Analyze the headers asynchronously.
+  // TODO(https://crbug.com/1378921): This is only used to detect if prerender
+  // fails to set headers correctly. Remove this logic after we draw the
+  // conclusion.
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&AnalyzePrerenderActivationHeader,
+                     std::move(potential_activation_headers),
+                     std::move(prerender_headers), trigger_type,
+                     embedder_histogram_suffix));
+  return false;
 }
 
 PreloadingFailureReason ToPreloadingFailureReason(PrerenderFinalStatus status) {
@@ -162,13 +183,13 @@ PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
   // prerendering page.
   frame_tree_->controller().SetSessionStorageNamespace(
       site_instance->GetStoragePartitionConfig(),
-      web_contents_.GetPrimaryFrameTree()
+      web_contents_->GetPrimaryFrameTree()
           .controller()
           .GetSessionStorageNamespace(
               site_instance->GetStoragePartitionConfig()));
 
   // TODO(https://crbug.com/1199679): This should be moved to FrameTree::Init
-  web_contents_.NotifySwappedFromRenderManager(
+  web_contents_->NotifySwappedFromRenderManager(
       /*old_frame=*/nullptr,
       frame_tree_->root()->render_manager()->current_frame_host());
 
@@ -239,7 +260,7 @@ bool PrerenderHost::ShouldPreserveAbortedURLs() {
 }
 
 WebContents* PrerenderHost::DeprecatedGetWebContents() {
-  return &web_contents_;
+  return &*web_contents_;
 }
 
 // TODO(https://crbug.com/1132746): Inspect diffs from the current
@@ -361,7 +382,7 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   DCHECK(is_ready_for_activation_);
   is_ready_for_activation_ = false;
 
-  FrameTree& target_frame_tree = web_contents_.GetPrimaryFrameTree();
+  FrameTree& target_frame_tree = web_contents_->GetPrimaryFrameTree();
 
   // There should be no ongoing main-frame navigation during activation.
   // TODO(https://crbug.com/1190644): Make sure sub-frame navigations are
@@ -421,6 +442,9 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   CHECK(!page->render_frame_host()->GetParentOrOuterDocumentOrEmbedder());
 
   page->render_frame_host()->SetFrameTreeNode(*(target_frame_tree.root()));
+
+  page->render_frame_host()->SetRenderFrameHostOwner(target_frame_tree.root());
+
   // Copy frame name into the replication state of the primary main frame to
   // ensure that the replication state of the primary main frame after
   // activation matches the replication state stored in the renderer.
@@ -459,7 +483,7 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
         // updates the visibility state using the PageVisibilityState of
         // |web_contents|.
         rfh->render_view_host()->SetFrameTreeVisibility(
-            web_contents_.GetPageVisibilityState());
+            web_contents_->GetPageVisibilityState());
       });
 
   frame_tree_->Shutdown();
@@ -510,7 +534,7 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
 // parent document sets a policy on the child iframe.
 bool PrerenderHost::IsFramePolicyCompatibleWithPrimaryFrameTree() {
   FrameTreeNode* prerender_root_ftn = frame_tree_->root();
-  FrameTreeNode* primary_root_ftn = web_contents_.GetPrimaryFrameTree().root();
+  FrameTreeNode* primary_root_ftn = web_contents_->GetPrimaryFrameTree().root();
 
   // Ensure that the pending frame policy is not set on the main frames, as it
   // is usually set on frames by their parent frames.
@@ -583,7 +607,8 @@ PrerenderHost::AreBeginNavigationParamsCompatibleWithNavigation(
   }
 
   if (!AreHttpRequestHeadersCompatible(potential_activation.headers,
-                                       begin_params_->headers)) {
+                                       begin_params_->headers, trigger_type(),
+                                       embedder_histogram_suffix())) {
     return ActivationNavigationParamsMatch::kHttpRequestHeader;
   }
 

@@ -195,6 +195,25 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="InputMethod.Assistive.AutocorrectV2.PkUserPreference.{Language}"
+    enum="IMEAutocorrectPreference" expires_after="2023-05-01">
+  <owner>mehrab@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    This histogram records the value of the user's physical keyboard autocorrect
+    preference once when an input method is activated. The metric is broken down
+    into two extra buckets, English and All languages. When a user has an
+    english based input method enabled, the metric will be recorded twice, once
+    for the English bucket and once for the All bucket. All other input methods
+    will be recorded once in the All bucket.
+  </summary>
+  <token key="Language">
+    <variant name="All" summary="All languages"/>
+    <variant name="English" summary="English language only"/>
+  </token>
+</histogram>
+
 <histogram name="InputMethod.Assistive.AutocorrectV2.Quality.PkAccepted"
     enum="IMEAutocorrectQualityBreakdown" expires_after="2023-05-01">
   <owner>mehrab@google.com</owner>
@@ -367,6 +386,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.Assistive.Grammar.Count" enum="IMETextInputClient"
+    expires_after="2023-04-16">
+  <owner>curtismcmullan@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    Tracks when assistive grammar is performed by a text input client. Recorded
+    when grammar is triggered by users with the feature enabled using a text
+    input client that's being tracked.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.Assistive.InsufficientData"
     enum="IMEAssistiveAction" expires_after="2022-09-30">
   <owner>jiwan@google.com</owner>
@@ -403,7 +433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.Assistive.MultiWord.CouldPossiblyShowSuggestion"
-    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-03-05">
+    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-05-07">
   <owner>curtismcmullan@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>

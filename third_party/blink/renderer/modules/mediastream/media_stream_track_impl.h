@@ -28,7 +28,6 @@
 
 #include <memory>
 
-#include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle.h"
@@ -62,8 +61,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   // surface type.
   static MediaStreamTrack* Create(ExecutionContext* context,
                                   MediaStreamComponent* component,
-                                  base::OnceClosure callback,
-                                  const String& descriptor_id);
+                                  base::OnceClosure callback);
 
   MediaStreamTrackImpl(ExecutionContext*, MediaStreamComponent*);
   MediaStreamTrackImpl(ExecutionContext*,
@@ -94,11 +92,13 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   ScriptPromise applyConstraints(ScriptState*,
                                  const MediaTrackConstraints*) override;
 
-  // This function is called when constrains have been successfully applied.
+  // These two functions are called when constraints have been successfully
+  // applied.
   // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
-  void SetConstraints(const MediaConstraints& constraints) override {
-    constraints_ = constraints;
-  }
+  // SetInitialConstraints() is expected to be called once when capture starts.
+  // SetConstraints() is called later, when changing the set of constraints.
+  void SetInitialConstraints(const MediaConstraints& constraints) override;
+  void SetConstraints(const MediaConstraints& constraints) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mute, kMute)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute, kUnmute)
@@ -134,15 +134,6 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
 
   void BeingTransferred(const base::UnguessableToken& transfer_id) override;
 
-#if !BUILDFLAG(IS_ANDROID)
-  // Only relevant for focusable streams (FocusableMediaStreamTrack).
-  // When called on one of these, it signals that Conditional Focus
-  // no longer applies - the browser will now decide whether
-  // the captured display surface should be captured. Later calls to
-  // FocusableMediaStreamTrack.focus() will now raise an exception.
-  void CloseFocusWindowOfOpportunity() override;
-#endif
-
   void AddObserver(MediaStreamTrack::Observer*) override;
 
   void Trace(Visitor*) const override;
@@ -176,6 +167,9 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   // Ensures that |feature_handle_for_scheduler_| is initialized.
   void EnsureFeatureHandleForScheduler();
 
+  void SetConstraintsInternal(const MediaConstraints& constraints,
+                              bool initial_values);
+
   void setReadyState(MediaStreamSource::ReadyState ready_state);
 
   // This handle notifies the scheduler about a live media stream track
@@ -193,6 +187,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   HeapHashSet<WeakMember<MediaStreamTrack::Observer>> observers_;
   bool muted_ = false;
   MediaConstraints constraints_;
+  absl::optional<bool> suppress_local_audio_playback_setting_;
 };
 
 }  // namespace blink

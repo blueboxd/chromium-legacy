@@ -32,7 +32,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="HeapProfiling.AndroidStackUnwinder"
-    enum="AndroidStackUnwinder" expires_after="2023-03-05">
+    enum="AndroidStackUnwinder" expires_after="2023-05-07">
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -536,7 +536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.LockingSuccess"
-    enum="BooleanLockingSuccess" expires_after="2023-03-05">
+    enum="BooleanLockingSuccess" expires_after="2023-05-07">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -623,7 +623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Browser2.Tiny" units="bytes"
-    expires_after="2023-04-30">
+    expires_after="2023-05-07">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -727,7 +727,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Extension2.Tiny" units="bytes"
-    expires_after="2023-04-30">
+    expires_after="2023-05-07">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -805,7 +805,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Gpu2.Tiny" units="bytes"
-    expires_after="2023-04-30">
+    expires_after="2023-05-07">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -873,7 +873,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.NetworkService2.Tiny"
-    units="bytes" expires_after="2023-04-30">
+    units="bytes" expires_after="2023-05-07">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -1075,7 +1075,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Renderer2.Tiny" units="bytes"
-    expires_after="2023-04-23">
+    expires_after="2023-05-07">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -2686,7 +2686,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.SystemCommitLimit" units="GB"
-    expires_after="2023-03-05">
+    expires_after="2023-05-07">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -2811,7 +2811,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Memory.WorkingSetTrim.ArcVmTrimCountPer30Mins"
     units="VMsTrimmed" expires_after="2022-04-03">
-  <owner>yusukes@chromium.org</owner>
+  <owner>khmel@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <summary>
     Number of ARCVM's crosvm trimmed in the last 30 minutes. Recorded every 30
@@ -2826,7 +2826,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Memory.WorkingSetTrim.ArcVmTrimFailCountPer30Mins"
     units="failures" expires_after="2022-10-15">
   <owner>raging@google.com</owner>
-  <owner>yusukes@chromium.org</owner>
+  <owner>khmel@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <summary>
     Tracks the number of failures that resulted from ArcVM trim operations.
@@ -2839,7 +2839,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Memory.WorkingSetTrim.ArcVmTrimPageLimit" units="pages"
     expires_after="2022-10-15">
   <owner>raging@google.com</owner>
-  <owner>yusukes@chromium.org</owner>
+  <owner>khmel@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <summary>
     Tracks the ongoing computed value used to limit the number of pages to trim

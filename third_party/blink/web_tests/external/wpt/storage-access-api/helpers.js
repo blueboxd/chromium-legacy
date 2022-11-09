@@ -1,5 +1,14 @@
 'use strict';
 
+function processQueryParams() {
+  const queryParams = new URL(window.location).searchParams;
+  return {
+    expectAccessAllowed: queryParams.get("allowed") != "false",
+    topLevelDocument: queryParams.get("rootdocument") != "false",
+    testPrefix: queryParams.get("testCase") || "top-level-context",
+  };
+}
+
 function RunTestsInIFrame(sourceURL) {
   let frame = document.createElement('iframe');
   frame.src = sourceURL;
@@ -48,7 +57,7 @@ function RunRequestStorageAccessViaDomParser() {
   return doc.requestStorageAccess();
 }
 
-async function ClickButtonWithGesture(buttonId, onClickMethod) {
+async function RunCallbackWithGesture(buttonId, callback) {
   // Append some formatting and information so non WebDriver instances can complete this test too.
   const info = document.createElement('p');
   info.innerText = "This test case requires user-interaction and TestDriver. If you're running it manually please click the 'Request Access' button below exactly once.";
@@ -62,13 +71,21 @@ async function ClickButtonWithGesture(buttonId, onClickMethod) {
   // Insert the button and use test driver to click the button with a gesture.
   document.body.appendChild(button);
 
-  const clickPromise = new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
+    const wrappedCallback = () => {
+      callback().then(resolve, reject);
+    };
+
+    // In automated tests, we call the callback via test_driver.
+    test_driver.bless('run callback with user interaction', wrappedCallback);
+
+    // But we still allow the button to trigger the callback, for use on
+    // https://wpt.live.
     button.addEventListener('click', e => {
-      onClickMethod().then(resolve, reject);
+      wrappedCallback();
       button.style = "background-color:#00FF00;"
     }, {once: true});
   });
 
-  await test_driver.click(button);
-  return {clickPromise};
+  return {promise};
 }

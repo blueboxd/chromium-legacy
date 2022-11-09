@@ -124,13 +124,13 @@ void ImeService::InitializeConnectionFactory(
   ResetAllBackendConnections();
 
   switch (connection_target) {
-    case mojom::ConnectionTarget::kImeService: {
-      connection_factory_ =
-          std::make_unique<ConnectionFactory>(std::move(connection_factory));
+    case mojom::ConnectionTarget::kRulebasedEngine: {
+      connection_factory_ = std::make_unique<RuleBasedEngineConnectionFactory>(
+          std::move(connection_factory));
       std::move(callback).Run(/*success=*/true);
       break;
     }
-    case mojom::ConnectionTarget::kDecoder: {
+    case mojom::ConnectionTarget::kImeServiceLib: {
       system_engine_ = std::make_unique<SystemEngine>(
           this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
       bool bound =
@@ -182,18 +182,22 @@ bool ImeService::IsFeatureEnabled(const char* feature_name) {
     return base::FeatureList::IsEnabled(
         chromeos::features::kAutocorrectParamsTuning);
   }
-  if (strcmp(feature_name, "LacrosSupport") == 0) {
+  if (strcmp(feature_name, chromeos::features::kLacrosSupport.name) == 0) {
     return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
   }
-  if (strcmp(feature_name, "SystemChinesePhysicalTyping") == 0) {
+  if (strcmp(feature_name,
+             chromeos::features::kSystemChinesePhysicalTyping.name) == 0) {
     return base::FeatureList::IsEnabled(
         chromeos::features::kSystemChinesePhysicalTyping);
   }
-  if (strcmp(feature_name, "SystemJapanesePhysicalTyping") == 0) {
+  if (strcmp(feature_name,
+             chromeos::features::kSystemJapanesePhysicalTyping.name) == 0) {
     return base::FeatureList::IsEnabled(
         chromeos::features::kSystemJapanesePhysicalTyping);
   }
-  if (strcmp(feature_name, "SystemTransliterationPhysicalTyping") == 0) {
+  if (strcmp(feature_name,
+             chromeos::features::kSystemTransliterationPhysicalTyping.name) ==
+      0) {
     return base::FeatureList::IsEnabled(
         chromeos::features::kSystemTransliterationPhysicalTyping);
   }

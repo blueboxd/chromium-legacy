@@ -30,6 +30,11 @@ class BrowserContext;
 class RenderFrameHost;
 }  // namespace content
 
+namespace device {
+class PublicKeyCredentialDescriptor;
+class PublicKeyCredentialUserEntity;
+}  // namespace device
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -62,6 +67,8 @@ class ChromeWebAuthenticationDelegate
   bool OriginMayUseRemoteDesktopClientOverride(
       content::BrowserContext* browser_context,
       const url::Origin& caller_origin) override;
+  bool IsSecurityLevelAcceptableForWebAuthn(
+      content::RenderFrameHost* rfh) override;
   absl::optional<std::string> MaybeGetRelyingPartyIdOverride(
       const std::string& claimed_relying_party_id,
       const url::Origin& caller_origin) override;
@@ -174,6 +181,8 @@ class ChromeAuthenticatorRequestDelegate
   void DisableUI() override;
   bool IsWebAuthnUIEnabled() override;
   void SetConditionalRequest(bool is_conditional) override;
+  void SetCredentialIdFilter(std::vector<device::PublicKeyCredentialDescriptor>
+                                 credential_list) override;
   void SetUserEntityForMakeCredentialRequest(
       const device::PublicKeyCredentialUserEntity& user_entity) override;
 
@@ -252,6 +261,11 @@ class ChromeAuthenticatorRequestDelegate
   // If true, show a more subtle UI unless the user has platform discoverable
   // credentials on the device.
   bool is_conditional_ = false;
+
+  // A list of credentials used to filter passkeys by ID. When non-empty,
+  // non-matching passkeys will not be displayed during conditional mediation
+  // requests. When empty, no filter is applied and all passkeys are displayed.
+  std::vector<device::PublicKeyCredentialDescriptor> credential_filter_;
 
   // See `SetPassEmptyUsbDeviceManagerForTesting`.
   bool pass_empty_usb_device_manager_ = false;

@@ -763,16 +763,16 @@ bool ViewTransition::NeedsUpToDateTags() const {
 PseudoElement* ViewTransition::CreatePseudoElement(
     Element* parent,
     PseudoId pseudo_id,
-    const AtomicString& view_transition_tag) {
+    const AtomicString& view_transition_name) {
   DCHECK(style_tracker_);
 
   return style_tracker_->CreatePseudoElement(parent, pseudo_id,
-                                             view_transition_tag);
+                                             view_transition_name);
 }
 
 String ViewTransition::UAStyleSheet() const {
   // TODO(vmpstr): We can still request getComputedStyle(html,
-  // "::page-transition-pseudo") outside of a page transition. What should we
+  // "::view-transition-pseudo") outside of a page transition. What should we
   // return in that case?
   if (!style_tracker_)
     return "";
@@ -853,11 +853,14 @@ void ViewTransition::AtMicrotask(void callback(ScriptPromiseResolver*),
       WTF::BindOnce(callback, WrapPersistent(resolver)));
 }
 
-// TODO(khushalsagar): This needs to be called for pages exiting BFCache.
-void ViewTransition::OnRenderBlockingFinished() {
+void ViewTransition::WillBeginMainFrame() {
   if (state_ != State::kWaitForRenderBlock)
     return;
 
+  // WillBeginMainFrame() implies that rendering has started. If we were waiting
+  // for render-blocking resources to be loaded, they must have been fetched (or
+  // timed out) before rendering is started.
+  DCHECK(document_->RenderingHasBegun());
   bool process_next_state = AdvanceTo(State::kAnimateTagDiscovery);
   DCHECK(process_next_state);
   ProcessCurrentState();

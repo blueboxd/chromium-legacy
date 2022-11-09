@@ -158,7 +158,7 @@ void HistoryClustersAction::RecordActionShown(size_t position,
 }
 
 void HistoryClustersAction::Execute(ExecutionContext& context) const {
-  if (context.client_.OpenJourneys(query_)) {
+  if (context.client_->OpenJourneys(query_)) {
     // If the client opens Journeys in the Side Panel, we are done.
     return;
   }
@@ -233,9 +233,9 @@ void AttachHistoryClustersActions(
 
   for (auto& match : result) {
     // Skip incompatible matches (like entities) or ones with existing actions.
-    // TODO(manukh): We don't use `AutocompleteMatch::IsActionCompatibleType()`
+    // TODO(manukh): We don't use `AutocompleteMatch::IsActionCompatible()`
     //  because we're not sure if we want to show on entities or not. Once we
-    //  decide, either share `IsActionCompatibleType()` or inline it to its
+    //  decide, either share `IsActionCompatible()` or inline it to its
     //  remaining callsite.
     if (match.action)
       continue;

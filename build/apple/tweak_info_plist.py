@@ -99,7 +99,7 @@ def _AddVersionKeys(plist, version_format_for_key, version=None,
     VERSION_FILE = os.path.join(TOP, 'chrome/VERSION')
     (stdout, retval) = _GetOutput([
         VERSION_TOOL, '-f', VERSION_FILE, '-t',
-        '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
+        '@MAJOR@.@MINOR@.@BUILD@.@PATCH@.@LEGACYPATCH@'
     ])
 
     # If the command finished with a non-zero return code, then report the
@@ -113,10 +113,10 @@ def _AddVersionKeys(plist, version_format_for_key, version=None,
   # format (where each value is a number). Note that str.isdigit() returns
   # True if the string is composed only of digits (and thus match \d+ regexp).
   groups = version.split('.')
-  if len(groups) != 4 or not all(element.isdigit() for element in groups):
+  if len(groups) != 5 or not all(element.isdigit() for element in groups):
     print('Invalid version string specified: "%s"' % version, file=sys.stderr)
     return False
-  values = dict(zip(('MAJOR', 'MINOR', 'BUILD', 'PATCH'), groups))
+  values = dict(zip(('MAJOR', 'MINOR', 'BUILD', 'PATCH', 'LEGACYPATCH'), groups))
 
   for key in version_format_for_key:
     plist[key] = _GetVersion(version_format_for_key[key], values, overrides)
@@ -353,14 +353,14 @@ def Main(argv):
         return 1
       key, value = pair.split('=', 1)
       overrides[key] = value
-      if key not in ('MAJOR', 'MINOR', 'BUILD', 'PATCH'):
+      if key not in ('MAJOR', 'MINOR', 'BUILD', 'PATCH', 'LEGACYPATCH'):
         print('Unsupported key for --version-overrides:', key, file=sys.stderr)
         return 1
 
   if options.platform == 'mac':
     version_format_for_key = {
         # Add public version info so "Get Info" works.
-        'CFBundleShortVersionString': '@MAJOR@.@MINOR@.@BUILD@.@PATCH@',
+        'CFBundleShortVersionString': '@MAJOR@.@MINOR@.@BUILD@.@PATCH@.@LEGACYPATCH@',
 
         # Honor the 429496.72.95 limit.  The maximum comes from splitting
         # 2^32 - 1 into  6, 2, 2 digits.  The limitation was present in Tiger,

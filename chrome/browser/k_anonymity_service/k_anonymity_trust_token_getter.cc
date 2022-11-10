@@ -84,6 +84,7 @@ KAnonymityTrustTokenGetter::~KAnonymityTrustTokenGetter() = default;
 void KAnonymityTrustTokenGetter::TryGetTrustTokenAndKey(
     TryGetTrustTokenAndKeyCallback callback) {
   if (!base::FeatureList::IsEnabled(network::features::kTrustTokens) ||
+      !identity_manager_ ||
       !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     std::move(callback).Run(absl::nullopt);
     return;
@@ -141,14 +142,6 @@ void KAnonymityTrustTokenGetter::OnAccessTokenRequestCompleted(
     signin::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
   if (error.state() != GoogleServiceAuthError::NONE) {
-    RecordTrustTokenGetterAction(
-        KAnonymityTrustTokenGetterAction::kAccessTokenRequestFailed);
-    FailAllCallbacks();
-    return;
-  }
-
-  if (access_token_info.expiration_time <= base::Time::Now()) {
-    // Token we got has already expired.
     RecordTrustTokenGetterAction(
         KAnonymityTrustTokenGetterAction::kAccessTokenRequestFailed);
     FailAllCallbacks();

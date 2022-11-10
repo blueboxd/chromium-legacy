@@ -33,7 +33,7 @@ class AutoEnrollmentController {
       base::RepeatingCallbackList<void(policy::AutoEnrollmentState)>;
   using RlweClientFactory =
       base::RepeatingCallback<std::unique_ptr<policy::psm::RlweClient>(
-          const std::vector<private_membership::rlwe::RlwePlaintextId>&)>;
+          const private_membership::rlwe::RlwePlaintextId&)>;
 
   // State of the system clock.
   enum class SystemClockSyncState {
@@ -168,7 +168,7 @@ class AutoEnrollmentController {
   // It is only used for PSM during creating the client for initial enrollment.
   RlweClientFactory psm_rlwe_client_factory_;
 
-  policy::AutoEnrollmentState state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
+  policy::AutoEnrollmentState state_ = policy::AutoEnrollmentState::kIdle;
   ProgressCallbackList progress_callbacks_;
 
   std::unique_ptr<policy::AutoEnrollmentClient> client_;

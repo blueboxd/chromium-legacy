@@ -22,15 +22,6 @@ BASE_FEATURE(kAllowSyncOffForChildAccounts,
              "AllowSyncOffForChildAccounts",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// If enabled, SigninChecker is created before displaying the sync consent
-// fragment during FRE.
-//
-// This should have no user-visible impact, the flag is present as a
-// kill-switch.
-BASE_FEATURE(kCreateSigninCheckerBeforeSyncConsentFragment,
-             "CreateSigninCheckerBeforeSyncConsentFragment",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, starts gaia id fetching process from android accounts in
 // AccountManagerFacade (AMF). Thus clients can get gaia id from AMF directly.
 BASE_FEATURE(kGaiaIdCacheInAccountManagerFacade,
@@ -70,12 +61,7 @@ BASE_FEATURE(kEnableFetchingAccountCapabilities,
 // Decouples signing out from clearing browsing data on Android. Users are
 // no longer signed-out when they clear browsing data. Instead they may
 // choose to sign out separately by pressing another button.
-// Disabled by default in IOS because the launch process is behind android.
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kEnableCbdSignOut,
-             "EnableCbdSignOut",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#elif BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_IOS)
 BASE_FEATURE(kEnableCbdSignOut,
              "EnableCbdSignOut",
              base::FEATURE_DISABLED_BY_DEFAULT);

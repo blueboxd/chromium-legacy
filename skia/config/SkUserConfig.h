@@ -212,15 +212,11 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 
-#define SK_LEGACY_NEAREST_SAMPLE_MATRIX_TWEAK
-
 #define SK_SUPPORT_LEGACY_DRAWLOOPER
 
 #define SK_SUPPORT_LEGACY_DITHER
 
 #define SK_USE_LEGACY_MIPMAP_BUILDER
-
-#define SK_USE_LEGACY_GAMUT_CLAMP
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

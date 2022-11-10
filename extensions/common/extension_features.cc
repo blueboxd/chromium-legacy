@@ -100,16 +100,13 @@ BASE_FEATURE(kAvoidEarlyExtensionScriptContextCreation,
 // The feature enabling offscreen documents in Manifest V3 extensions.
 BASE_FEATURE(kExtensionsOffscreenDocuments,
              "ExtensionsOffscreenDocuments",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, allows APIs used by the webstore to be exposed on the URL for the
 // new webstore.
-// TODO(crbug.com/1338235): Before this starts to be rolled out to end users, we
-// need to ensure the new domain has all the special handling we do for the
-// current webstore enabled on it.
 BASE_FEATURE(kNewWebstoreDomain,
              "NewWebstoreDomain",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Side panel API availability.
 BASE_FEATURE(kExtensionSidePanelIntegration,

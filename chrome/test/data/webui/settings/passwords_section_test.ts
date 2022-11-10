@@ -8,7 +8,7 @@
 import 'chrome://settings/lazy_load.js';
 
 import {isMac, isWindows, isChromeOS, isLacros} from 'chrome://resources/js/platform.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PasswordsSectionElement} from 'chrome://settings/lazy_load.js';
@@ -921,7 +921,7 @@ suite('PasswordsSection', function() {
     assertFalse(isVisible(passwordListItem.$.moreActionsButton));
     const subpageButton = passwordListItem.$.seePasswordDetails;
     assertTrue(isVisible(subpageButton));
-    passwordManager.setRequestCredentialDetailsResponse(item);
+    passwordManager.setRequestCredentialsDetailsResponse(item);
     const PasswordViewPageRequestedEvent =
         eventToPromise('password-view-page-requested', passwordListItem);
     subpageButton.click();

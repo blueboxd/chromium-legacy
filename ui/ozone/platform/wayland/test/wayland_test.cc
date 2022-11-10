@@ -164,39 +164,26 @@ void WaylandTest::SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
                                      struct wl_array* states) {
   const int32_t width = size.width();
   const int32_t height = size.height();
-  // In xdg_shell_v6+, both surfaces send serial configure event and toplevel
-  // surfaces send other data like states, heights and widths.
   // Please note that toplevel surfaces may not exist if the surface was created
   // for the popup role.
-  if (GetParam().shell_version == wl::ShellVersion::kV6) {
-    if (xdg_surface->xdg_toplevel()) {
-      zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel()->resource(),
-                                      width, height, states);
-    } else {
-      ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
-      zxdg_popup_v6_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0,
-                                   width, height);
-    }
-    zxdg_surface_v6_send_configure(xdg_surface->resource(), serial);
+  if (xdg_surface->xdg_toplevel()) {
+    xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(), width,
+                                height, states);
   } else {
-    if (xdg_surface->xdg_toplevel()) {
-      xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(),
-                                  width, height, states);
-    } else {
-      ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
-      xdg_popup_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0,
-                               width, height);
-    }
-    xdg_surface_send_configure(xdg_surface->resource(), serial);
+    ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
+    xdg_popup_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0, width,
+                             height);
   }
+  xdg_surface_send_configure(xdg_surface->resource(), serial);
 }
 
 void WaylandTest::SendConfigureEvent(uint32_t surface_id,
                                      const gfx::Size& size,
-                                     uint32_t serial,
-                                     const wl::ScopedWlArray& states) {
-  PostToServerAndWait([size, surface_id,
-                       states](wl::TestWaylandServerThread* server) {
+                                     const wl::ScopedWlArray& states,
+                                     absl::optional<uint32_t> serial) {
+  ASSERT_EQ(server_mode_, TestServerMode::kAsync);
+  PostToServerAndWait([size, surface_id, states,
+                       serial](wl::TestWaylandServerThread* server) {
     auto* surface = server->GetObject<wl::MockSurface>(surface_id);
     ASSERT_TRUE(surface);
     auto* xdg_surface = surface->xdg_surface();
@@ -209,29 +196,17 @@ void WaylandTest::SendConfigureEvent(uint32_t surface_id,
     // Please note that toplevel surfaces may not exist if the surface was
     // created for the popup role.
     wl::ScopedWlArray surface_states(states);
-    if (GetParam().shell_version == wl::ShellVersion::kV6) {
-      if (xdg_surface->xdg_toplevel()) {
-        zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel()->resource(),
-                                        width, height, surface_states.get());
-      } else {
-        ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
-        zxdg_popup_v6_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0,
-                                     width, height);
-      }
-      zxdg_surface_v6_send_configure(xdg_surface->resource(),
-                                     server->GetNextSerial());
+    if (xdg_surface->xdg_toplevel()) {
+      xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(),
+                                  width, height, surface_states.get());
     } else {
-      if (xdg_surface->xdg_toplevel()) {
-        xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(),
-                                    width, height, surface_states.get());
-      } else {
-        ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
-        xdg_popup_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0,
-                                 width, height);
-      }
-      xdg_surface_send_configure(xdg_surface->resource(),
-                                 server->GetNextSerial());
+      ASSERT_TRUE(xdg_surface->xdg_popup()->resource());
+      xdg_popup_send_configure(xdg_surface->xdg_popup()->resource(), 0, 0,
+                               width, height);
     }
+    xdg_surface_send_configure(
+        xdg_surface->resource(),
+        serial.has_value() ? serial.value() : server->GetNextSerial());
   });
 }
 
@@ -241,8 +216,14 @@ void WaylandTest::ActivateSurface(wl::MockXdgSurface* xdg_surface) {
 }
 
 void WaylandTest::InitializeSurfaceAugmenter() {
-  server_.EnsureSurfaceAugmenter();
-  Sync();
+  if (server_mode_ == TestServerMode::kAsync) {
+    PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+      server->EnsureSurfaceAugmenter();
+    });
+  } else {
+    server_.EnsureSurfaceAugmenter();
+    Sync();
+  }
 }
 
 void WaylandTest::SyncDisplay() {

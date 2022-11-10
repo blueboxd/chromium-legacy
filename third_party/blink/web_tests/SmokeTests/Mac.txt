@@ -676,7 +676,6 @@ fast/borders/overflow-hidden-border-radius-force-backing-store.html
 fast/box-shadow/box-shadow.html
 fast/canvas-api/canvas-lowlatency-getContext.html
 fast/canvas/canvas-textMetrics-width.html
-fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html
 fast/css-generated-content/011.html
 fast/css-generated-content/012.html
 fast/css-generated-content/013.html
@@ -1424,8 +1423,8 @@ virtual/disable-ua-client-hint/external/wpt/client-hints/http-equiv-accept-ch-no
 virtual/disable-ua-client-hint/external/wpt/client-hints/service-workers/new-request-critical.https.window.html
 virtual/disable-ua-client-hint/wpt_internal/client-hints/accept_ch_feature_policy_allow_legacy_hints.tentative.sub.https.html
 virtual/document-domain-disabled-by-default/external/wpt/document-policy/experimental-features/document-domain/document-domain.tentative.sub.html
-virtual/view-transition/wpt_internal/view-transition/new-content-container-writing-modes.html
-virtual/view-transition/wpt_internal/view-transition/one-element-two-targets.html
+virtual/view-transition/external/wpt/css/css-view-transitions/new-content-container-writing-modes.html
+virtual/view-transition/external/wpt/css/css-view-transitions/one-element-two-targets.html
 virtual/elastic-overscroll/fixed-elements-dont-overscroll.html
 virtual/exotic-color-space/images/2-comp.html
 virtual/exotic-color-space/images/color-jpeg-with-color-profile.html
@@ -1557,7 +1556,6 @@ virtual/oopr-canvas2d/fast/canvas/canvas-largedraws.html
 virtual/oopr-canvas2d/fast/canvas/canvas-pattern-no-repeat-with-transformations.html
 virtual/oopr-canvas2d/fast/canvas/canvas-text-baseline.html
 virtual/oopr-canvas2d/fast/canvas/canvas-zero-length-lineCap.html
-virtual/oopr-canvas2d/fast/canvas/color-space/canvas-createImageBitmap-p3.html
 virtual/oopr-canvas2d/fast/canvas/image-object-in-canvas.html
 virtual/oopr-canvas2d/fast/canvas/quadraticCurveTo.xml
 virtual/overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html

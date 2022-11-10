@@ -148,7 +148,7 @@ gfx::Rect RemoteFrameView::ComputeCompositingRect() const {
       owner_layout_object->PhysicalContentBoxOffset());
   owner_layout_object->MapLocalToAncestor(nullptr, local_root_transform_state,
                                           kTraverseDocumentBoundaries);
-  TransformationMatrix matrix =
+  gfx::Transform matrix =
       local_root_transform_state.AccumulatedTransform().InverseOrIdentity();
   PhysicalRect local_viewport_rect = PhysicalRect::EnclosingRect(
       matrix.ProjectQuad(gfx::QuadF(gfx::RectF(viewport_rect))).BoundingBox());
@@ -225,7 +225,7 @@ void RemoteFrameView::UpdateCompositingScaleFactor() {
 
   float frame_to_local_root_scale_factor = 1.0f;
   gfx::Transform local_root_transform =
-      local_root_transform_state.AccumulatedTransform().ToTransform();
+      local_root_transform_state.AccumulatedTransform();
   absl::optional<gfx::Vector2dF> scale_components =
       gfx::TryComputeTransform2dScaleComponents(local_root_transform);
   if (!scale_components) {

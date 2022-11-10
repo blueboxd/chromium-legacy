@@ -86,8 +86,9 @@ export class Background extends ChromeVoxState {
 
   /** @private */
   init_() {
-    // Initialize braille, TTS, and legacy background page first.
+    // Initialize braille, prefs, TTS, and legacy background page first.
     BrailleBackground.init();
+    ChromeVoxPrefs.init();
     TtsBackground.init();
     ChromeVoxBackground.init();
 
@@ -222,7 +223,7 @@ export class Background extends ChromeVoxState {
     position.y = loc.top + loc.height / 2;
     let url = root.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
-    ChromeVox.position[url] = position;
+    ChromeVoxState.position[url] = position;
   }
 
   /** @override */

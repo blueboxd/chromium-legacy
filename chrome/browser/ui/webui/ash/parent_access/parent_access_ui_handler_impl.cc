@@ -8,12 +8,16 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/notreached.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_callback.pb.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_dialog.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.mojom.h"
+#include "components/google/core/common/google_util.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -21,8 +25,29 @@
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "url/gurl.h"
 
 namespace ash {
+
+namespace {
+constexpr char kParentAccessDefaultURL[] =
+    "https://families.google.com/parentaccess";
+constexpr char kParentAccessSwitch[] = "parent-access-url";
+
+// Returns the caller id to be used for the web widget.  The caller id is
+// mapped from the flow type.   When new flow types are added to
+// ParentAccessParams, a new case statement should be added here.
+std::string GetCallerId(
+    parent_access_ui::mojom::ParentAccessParams::FlowType flow_type) {
+  switch (flow_type) {
+    case parent_access_ui::mojom::ParentAccessParams::FlowType::kWebsiteAccess:
+      return "39454505";
+      // NOTE:  Do not add default case here, to ensure that adding new flow
+      // types to ParentAccessParams forces this case statement to be updated.
+  }
+}
+
+}  // namespace
 
 ParentAccessUIHandlerImpl::ParentAccessUIHandlerImpl(
     mojo::PendingReceiver<parent_access_ui::mojom::ParentAccessUIHandler>
@@ -80,6 +105,7 @@ void ParentAccessUIHandlerImpl::GetParentAccessParams(
   if (!delegate_) {
     LOG(ERROR) << "Delegate not available in ParentAccessUIHandler - WebUI was "
                   "probably created without a dialog";
+    std::move(callback).Run(parent_access_ui::mojom::ParentAccessParams::New());
     return;
   }
   std::move(callback).Run(delegate_->CloneParentAccessParams());
@@ -92,6 +118,7 @@ void ParentAccessUIHandlerImpl::OnParentAccessDone(
   if (!delegate_) {
     LOG(ERROR) << "Delegate not available in ParentAccessUIHandler - WebUI was "
                   "probably created without a dialog";
+    std::move(callback).Run();
     return;
   }
   switch (result) {
@@ -115,6 +142,45 @@ void ParentAccessUIHandlerImpl::OnParentAccessDone(
   }
 
   std::move(callback).Run();
+}
+
+void ParentAccessUIHandlerImpl::GetParentAccessURL(
+    GetParentAccessURLCallback callback) {
+  if (!delegate_) {
+    LOG(ERROR) << "Delegate not available in ParentAccessUIHandler - WebUI was "
+                  "probably created without a dialog";
+    std::move(callback).Run("");
+    return;
+  }
+
+  std::string platform_version = base::SysInfo::OperatingSystemVersion();
+  std::string language_code =
+      google_util::GetGoogleLocale(g_browser_process->GetApplicationLocale());
+
+  std::string url;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kParentAccessSwitch)) {
+    url = command_line->GetSwitchValueASCII(kParentAccessSwitch);
+  } else {
+    url = kParentAccessDefaultURL;
+    DCHECK(GURL(url).DomainIs("google.com"));
+  }
+
+  parent_access_ui::mojom::ParentAccessParamsPtr params =
+      delegate_->CloneParentAccessParams();
+
+  const GURL base_url(url);
+  GURL::Replacements replacements;
+  std::string query_string = base::StringPrintf(
+      "callerid=%s&hl=%s&platform_version=%s&cros-origin=chrome://"
+      "parent-access",
+      GetCallerId(params->flow_type).c_str(), language_code.c_str(),
+      platform_version.c_str());
+  replacements.SetQueryStr(query_string);
+  const GURL result = base_url.ReplaceComponents(replacements);
+  DCHECK(result.is_valid()) << "Invalid URL \"" << url << "\" for switch \""
+                            << kParentAccessSwitch << "\"";
+  std::move(callback).Run(result.spec());
 }
 
 const kids::platform::parentaccess::client::proto::ParentAccessToken*

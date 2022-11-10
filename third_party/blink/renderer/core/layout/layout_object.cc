@@ -105,12 +105,12 @@
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/fragment_data_iterator.h"
-#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/image_element_timing.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
@@ -3141,7 +3141,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (!StyleRef().AnchorName().IsNull())
+  if (StyleRef().AnchorName())
     MarkMayHaveAnchorQuery();
 }
 
@@ -3361,7 +3361,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           !container->IsText() && path_preserves_3d;
 
   if (use_transforms && ShouldUseTransformFromContainer(container)) {
-    TransformationMatrix t;
+    gfx::Transform t;
     GetTransformFromContainer(container, container_offset, t);
     transform_state.ApplyTransform(t, preserve3d
                                           ? TransformState::kAccumulateTransform
@@ -3412,7 +3412,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
 
   const bool preserve3d = use_transforms && StyleRef().Preserves3D();
   if (use_transforms && ShouldUseTransformFromContainer(container)) {
-    TransformationMatrix t;
+    gfx::Transform t;
     GetTransformFromContainer(container, container_offset, t);
     transform_state.ApplyTransform(t, preserve3d
                                           ? TransformState::kAccumulateTransform
@@ -3453,7 +3453,7 @@ bool LayoutObject::ShouldUseTransformFromContainer(
 void LayoutObject::GetTransformFromContainer(
     const LayoutObject* container_object,
     const PhysicalOffset& offset_in_container,
-    TransformationMatrix& transform,
+    gfx::Transform& transform,
     const PhysicalSize* size) const {
   NOT_DESTROYED();
   transform.MakeIdentity();
@@ -3483,7 +3483,7 @@ void LayoutObject::GetTransformFromContainer(
     if (const auto* container_box = DynamicTo<LayoutBox>(container_object))
       perspective_origin = container_box->PerspectiveOrigin(size);
 
-    TransformationMatrix perspective_matrix;
+    gfx::Transform perspective_matrix;
     perspective_matrix.ApplyPerspectiveDepth(
         container_object->StyleRef().UsedPerspective());
     perspective_matrix.ApplyTransformOrigin(perspective_origin.x(),
@@ -3556,7 +3556,7 @@ void LayoutObject::LocalToAncestorRects(
   }
 }
 
-TransformationMatrix LayoutObject::LocalToAncestorTransform(
+gfx::Transform LayoutObject::LocalToAncestorTransform(
     const LayoutBoxModelObject* ancestor,
     MapCoordinatesFlags mode) const {
   NOT_DESTROYED();

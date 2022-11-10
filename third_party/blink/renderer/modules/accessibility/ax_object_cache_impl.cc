@@ -125,6 +125,24 @@ namespace blink {
 
 namespace {
 
+bool IsInitialEmptyDocument(const Document& document) {
+  // Do not fire for initial empty top document. This helps avoid thrashing the
+  // a11y tree, causing an extra serialization.
+  // TODO(accessibility) This is an ugly special case -- find a better way.
+  // Note: Document::IsInitialEmptyDocument() did not work -- should it?
+  if (document.body() && document.body()->hasChildren())
+    return false;
+
+  if (document.head() && document.head()->hasChildren())
+    return false;
+
+  if (document.ParentDocument())
+    return false;
+
+  // No contents and not a child document, return true if about::blank.
+  return document.Url().IsAboutBlankURL();
+}
+
 // Return a node for the current layout object or ancestor layout object.
 Node* GetClosestNodeForLayoutObject(const LayoutObject* layout_object) {
   if (!layout_object)
@@ -647,7 +665,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document,
       ax_tree_source_(BlinkAXTreeSource::Create(*this)),
       ax_tree_serializer_(
           std::make_unique<ui::AXTreeSerializer<AXObject*>>(ax_tree_source_)) {
-  if (document_->LoadEventFinished())
+  if (document_->IsLoadCompleted())
     AddPermissionStatusListener();
   use_ax_menu_list_ = GetSettings()->GetUseAXMenuList();
 }
@@ -1030,7 +1048,7 @@ AXObject* AXObjectCacheImpl::Get(AbstractInlineTextBox* inline_text_box) {
 
 void AXObjectCacheImpl::Invalidate(Document& document, AXID ax_id) {
   if (GetInvalidatedIds(document).insert(ax_id).is_new_entry)
-    ScheduleVisualUpdate(document);
+    ScheduleAXUpdate();
 }
 
 AXID AXObjectCacheImpl::GetAXID(Node* node) {
@@ -1943,7 +1961,7 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
 
   // These events are fired during RunPostLifecycleTasks(),
   // ensure there is a document lifecycle update scheduled.
-  ScheduleVisualUpdate(*tree_update_document);
+  ScheduleAXUpdate();
 }
 
 void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
@@ -1978,7 +1996,7 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
 
   // These events are fired during RunPostLifecycleTasks(),
   // ensure there is a document lifecycle update scheduled.
-  ScheduleVisualUpdate(tree_update_document);
+  ScheduleAXUpdate();
 }
 
 void AXObjectCacheImpl::DeferTreeUpdate(
@@ -2251,7 +2269,11 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
   ChildrenChangedWithCleanLayout(
       Get(LayoutTreeBuilderTraversal::Parent(*node)));
 
-  // Once we have reached the threshhold number of roles that forces a data
+  // If an image map area is added, we need to update children on the image.
+  if (IsA<HTMLAreaElement>(node))
+    ChildrenChangedWithCleanLayout(AXObject::ComputeNonARIAParent(*this, node));
+
+  // Once we have reached the threshold number of roles that forces a data
   // table, invalidate the AXTable if it was previously a layout table, so that
   // its subtree recomputes roles.
   if (IsA<HTMLTableRowElement>(node)) {
@@ -2479,7 +2501,7 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
     DCHECK_EQ(&document, GetPopupDocumentIfShowing());
     // Since a change occurred in the popup, processing of both documents will
     // be needed. A visual update on the main document will force this.
-    ScheduleVisualUpdate(GetDocument());
+    ScheduleAXUpdate();
     return;
   }
 
@@ -2883,27 +2905,28 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
 
   // These events are fired during RunPostLifecycleTasks(),
   // ensure there is a visual update scheduled.
-  ScheduleVisualUpdate(document);
+  ScheduleAXUpdate();
 }
 
-void AXObjectCacheImpl::ScheduleVisualUpdate(Document& document) {
+void AXObjectCacheImpl::ScheduleAXUpdate() {
+  // A visual update will force accessibility to be updated as well.
   // Scheduling visual updates before the document is finished loading can
   // interfere with event ordering. In any case, at least one visual update will
   // occur between now and when the document load is complete.
-  if (!document.IsLoadCompleted())
+  if (!GetDocument().IsLoadCompleted())
     return;
 
   // If there was a document change that doesn't trigger a lifecycle update on
   // its own, (e.g. because it doesn't make layout dirty), make sure we run
   // lifecycle phases to update the computed accessibility tree.
-  LocalFrameView* frame_view = document.View();
-  Page* page = document.GetPage();
+  LocalFrameView* frame_view = GetDocument().View();
+  Page* page = GetDocument().GetPage();
   if (!frame_view || !page)
     return;
 
   if (!frame_view->CanThrottleRendering() &&
-      !document.GetPage()->Animator().IsServicingAnimations()) {
-    page->Animator().ScheduleVisualUpdate(document.GetFrame());
+      !GetDocument().GetPage()->Animator().IsServicingAnimations()) {
+    page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
   }
 }
 
@@ -3654,6 +3677,17 @@ bool IsNodeAriaVisible(Node* node) {
   return !is_null && !hidden;
 }
 
+WebLocalFrameClient* AXObjectCacheImpl::GetWebLocalFrameClient() const {
+  DCHECK(document_);
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
+  if (!web_frame)
+    return nullptr;
+  WebLocalFrameClient* client = web_frame->Client();
+  DCHECK(client);
+  return client;
+}
+
 void AXObjectCacheImpl::PostPlatformNotification(
     AXObject* obj,
     ax::mojom::blink::Event event_type,
@@ -3664,22 +3698,28 @@ void AXObjectCacheImpl::PostPlatformNotification(
   if (!obj)
     return;
 
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
-  if (web_frame && web_frame->Client()) {
-    ui::AXEvent event;
-    event.id = obj->AXObjectID();
-    event.event_type = event_type;
-    event.event_from = event_from;
-    event.event_from_action = event_from_action;
-    event.event_intents.resize(event_intents.size());
-    // We need to filter out the counts from every intent.
-    std::transform(event_intents.begin(), event_intents.end(),
-                   event.event_intents.begin(),
-                   [](const auto& intent) { return intent.key.intent(); });
-    for (auto agent : agents_)
-      agent->AXEventFired(obj, event_type);
-    web_frame->Client()->PostAccessibilityEvent(event);
+  ui::AXEvent event;
+  event.id = obj->AXObjectID();
+  event.event_type = event_type;
+  event.event_from = event_from;
+  event.event_from_action = event_from_action;
+  event.event_intents.resize(event_intents.size());
+  // We need to filter out the counts from every intent.
+  std::transform(event_intents.begin(), event_intents.end(),
+                 event.event_intents.begin(),
+                 [](const auto& intent) { return intent.key.intent(); });
+  for (auto agent : agents_)
+    agent->AXEventFired(obj, event_type);
+
+  if (auto* client = GetWebLocalFrameClient()) {
+    // TODO(accessibility) This doesn't need to call into RAI -- it
+    // can add to pending events and dirty objects here. The only reason to call
+    // into RAI would be during a page load, to inform in the case of an
+    // event that requires immediate serialization, such as focus.
+    // MarkAXObjectDirtyWithDetails(obj, false, event_from, event_from_action,
+    //                              event.event_intents);
+    // AddPendingEvent(event);
+    client->PostAccessibilityEvent(event);
   }
 }
 
@@ -3699,14 +3739,15 @@ void AXObjectCacheImpl::MarkAXObjectDirtyWithCleanLayoutHelper(
   if (IsPopup(*obj->GetDocument()))
     MarkElementDirty(GetDocument().FocusedElement());
 
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(
-      obj->GetDocument()->AXObjectCacheOwner().GetFrame());
-  if (webframe && webframe->Client()) {
-    webframe->Client()->NotifyWebAXObjectMarkedDirty(WebAXObject(obj));
-  }
+  // TODO(aleventhal) This is for web tests only, in order to record MarkDirty
+  // events. Is there a way to avoid these calls for normal browsing?
+  // Maybe we should use dependency injection from AccessibilityController.
+  if (auto* client = GetWebLocalFrameClient())
+    client->NotifyWebAXObjectMarkedDirty(WebAXObject(obj));
 
   std::vector<ui::AXEventIntent> event_intents;
-  MarkAXObjectDirty(obj, subtree, event_from, event_from_action, event_intents);
+  MarkAXObjectDirtyWithDetails(obj, subtree, event_from, event_from_action,
+                               event_intents);
 
   obj->UpdateCachedAttributeValuesIfNeeded(true);
   for (auto agent : agents_)
@@ -3967,7 +4008,7 @@ bool AXObjectCacheImpl::SerializeEntireTree(bool exclude_offscreen,
   return result;
 }
 
-void AXObjectCacheImpl::MarkAXObjectDirty(
+void AXObjectCacheImpl::MarkAXObjectDirtyWithDetails(
     AXObject* obj,
     bool subtree,
     ax::mojom::blink::EventFrom event_from,
@@ -4325,13 +4366,15 @@ void AXObjectCacheImpl::HandleLoadComplete(Document* document) {
 
 void AXObjectCacheImpl::HandleLoadCompleteWithCleanLayout(Node* document_node) {
   DCHECK(document_node);
-  DCHECK(IsA<Document>(document_node));
-#if DCHECK_IS_ON()
   const Document* document = To<Document>(document_node);
+#if DCHECK_IS_ON()
   DCHECK(document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean)
       << "Unclean document at lifecycle " << document->Lifecycle().ToString();
   DCHECK(document == document_.Get());
 #endif  // DCHECK_IS_ON()
+
+  if (!document->IsLoadCompleted() || IsInitialEmptyDocument(*document))
+    return;
 
   AddPermissionStatusListener();
   PostNotification(GetOrCreate(document_node),
@@ -4342,19 +4385,17 @@ void AXObjectCacheImpl::HandleLayoutComplete(Document* document) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION();
   DCHECK(document);
   // Do not fire kLayoutComplete for popup document.
-  if (document == GetPopupDocumentIfShowing())
+  if (IsPopup(*document))
     return;
 
-  // TODO(accessibility) What is the purpose of firing kLayoutComplete?
-  // Do we even need this?
-  if (document->Lifecycle().GetState() >=
-      DocumentLifecycle::kAfterPerformLayout) {
-    PostNotification(GetOrCreate(document),
-                     ax::mojom::blink::Event::kLayoutComplete);
-  } else {
-    DeferTreeUpdate(&AXObjectCacheImpl::EnsurePostNotification, document,
-                    ax::mojom::blink::Event::kLayoutComplete);
-  }
+  // Do not fire for initial empty document.
+  if (IsInitialEmptyDocument(*document))
+    return;
+
+  // TODO(accessibility) Investigate removal of the layout complete event, which
+  // seems to only be used as a signal to serialize location data.
+  DeferTreeUpdate(&AXObjectCacheImpl::EnsurePostNotification, document,
+                  ax::mojom::blink::Event::kLayoutComplete);
 }
 
 void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {

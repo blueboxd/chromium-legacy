@@ -767,14 +767,13 @@ void FederatedAuthRequestImpl::OnManifestFetched(
     }
   }
 
-  idp_info_[idp.config_url].endpoints.token =
-      ResolveManifestUrl(idp, endpoints.token);
-  idp_info_[idp.config_url].endpoints.accounts =
-      ResolveManifestUrl(idp, endpoints.accounts);
-  idp_info_[idp.config_url].endpoints.client_metadata =
+  Endpoints& idp_info_endpoints = idp_info_[idp.config_url].endpoints;
+  idp_info_endpoints.token = ResolveManifestUrl(idp, endpoints.token);
+  idp_info_endpoints.accounts = ResolveManifestUrl(idp, endpoints.accounts);
+  idp_info_endpoints.client_metadata =
       ResolveManifestUrl(idp, endpoints.client_metadata);
-  // TODO(crbug.com/1307709): Fix metrics endpoint for multi IDPs.
-  endpoints_.metrics = ResolveManifestUrl(idp, endpoints.metrics);
+  idp_info_endpoints.metrics = ResolveManifestUrl(idp, endpoints.metrics);
+
   idp_info_[idp.config_url].metadata = idp_metadata;
 
   if (idp_info_[idp.config_url].manifest_list_checked)
@@ -889,6 +888,8 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog(
       idp_data_for_display.push_back(idp_data_.at(idp));
   }
 
+  // TODO(crbug.com/1382863): Handle UI where some IDPs are successful and some
+  // IDPs are failing in the multi IDP case.
   request_dialog_controller_->ShowAccountsDialog(
       rp_web_contents, rp_url_for_display, idp_data_for_display,
       is_auto_sign_in ? SignInMode::kAuto : SignInMode::kExplicit,
@@ -899,7 +900,7 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog(
 }
 
 void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
-    const GURL& idp_url,
+    const url::Origin& idp_origin,
     blink::mojom::FederatedAuthRequestResult result,
     absl::optional<TokenStatus> token_status) {
   if (!IsFedCmIdpSigninStatusEnabled()) {
@@ -908,7 +909,6 @@ void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
     return;
   }
 
-  const url::Origin idp_origin = url::Origin::Create(idp_url);
   const absl::optional<bool> idp_signin_status =
       sharing_permission_delegate_->GetIdpSigninStatus(idp_origin);
   // Ensures that we only fetch accounts unconditionally once.
@@ -927,9 +927,10 @@ void FederatedAuthRequestImpl::HandleAccountsFetchFailure(
       WebContents::FromRenderFrameHost(&render_frame_host());
   DCHECK(render_frame_host().GetMainFrame()->IsInPrimaryMainFrame());
 
+  // TODO(crbug.com/1382495): Handle failure UI in the multi IDP case.
   request_dialog_controller_->ShowFailureDialog(
       rp_web_contents, FormatOriginForDisplay(GetEmbeddingOrigin()),
-      FormatUrlForDisplay(idp_url),
+      FormatOriginForDisplay(idp_origin),
       base::BindOnce(
           &FederatedAuthRequestImpl::OnDismissFailureDialog,
           weak_ptr_factory_.GetWeakPtr(), FederatedAuthRequestResult::kError,
@@ -940,12 +941,20 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
     const IdentityProviderInfo& idp_info,
     IdpNetworkRequestManager::FetchStatus status,
     IdpNetworkRequestManager::AccountList accounts) {
+  url::Origin idp_origin = url::Origin::Create(idp_info.provider.config_url);
+
+  // Record metrics on effect of IDP sign-in status API.
+  const absl::optional<bool> idp_signin_status =
+      sharing_permission_delegate_->GetIdpSigninStatus(idp_origin);
+  fedcm_metrics_->RecordIdpSigninMatchStatus(idp_signin_status,
+                                             status.parse_status);
+
   constexpr char kAccountsUrl[] = "accounts endpoint";
   switch (status.parse_status) {
     case IdpNetworkRequestManager::ParseStatus::kHttpNotFoundError: {
       MaybeAddResponseCodeToConsole(kAccountsUrl, status.response_code);
       HandleAccountsFetchFailure(
-          idp_info.provider.config_url,
+          idp_origin,
           FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound,
           TokenStatus::kAccountsHttpNotFound);
       return;
@@ -953,7 +962,7 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
     case IdpNetworkRequestManager::ParseStatus::kNoResponseError: {
       MaybeAddResponseCodeToConsole(kAccountsUrl, status.response_code);
       HandleAccountsFetchFailure(
-          idp_info.provider.config_url,
+          idp_origin,
           FederatedAuthRequestResult::kErrorFetchingAccountsNoResponse,
           TokenStatus::kAccountsNoResponse);
       return;
@@ -961,7 +970,7 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
     case IdpNetworkRequestManager::ParseStatus::kInvalidResponseError: {
       MaybeAddResponseCodeToConsole(kAccountsUrl, status.response_code);
       HandleAccountsFetchFailure(
-          idp_info.provider.config_url,
+          idp_origin,
           FederatedAuthRequestResult::kErrorFetchingAccountsInvalidResponse,
           TokenStatus::kAccountsInvalidResponse);
       return;
@@ -969,8 +978,6 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
     case IdpNetworkRequestManager::ParseStatus::kSuccess: {
       ComputeLoginStateAndReorderAccounts(idp_info.provider, accounts);
 
-      const url::Origin idp_origin =
-          url::Origin::Create(idp_info.provider.config_url);
       sharing_permission_delegate_->SetIdpSigninStatus(idp_origin, true);
 
       bool need_client_metadata = false;
@@ -1211,12 +1218,27 @@ void FederatedAuthRequestImpl::CompleteTokenRequest(
           token_response_time_ - select_account_time_,
           token_response_time_ - start_time_);
 
-      if (endpoints_.metrics.is_valid() && IsFedCmMetricsEndpointEnabled()) {
-        network_manager_->SendSuccessfulTokenRequestMetrics(
-            endpoints_.metrics, show_accounts_dialog_time_ - start_time_,
-            select_account_time_ - show_accounts_dialog_time_,
-            token_response_time_ - select_account_time_,
-            token_response_time_ - start_time_);
+      if (IsFedCmMetricsEndpointEnabled()) {
+        for (const auto& idp_info_kv : idp_info_) {
+          const GURL& metrics_endpoint = idp_info_kv.second.endpoints.metrics;
+          if (!metrics_endpoint.is_valid())
+            continue;
+
+          if (idp_info_kv.first == idp.config_url) {
+            network_manager_->SendSuccessfulTokenRequestMetrics(
+                metrics_endpoint, show_accounts_dialog_time_ - start_time_,
+                select_account_time_ - show_accounts_dialog_time_,
+                token_response_time_ - select_account_time_,
+                token_response_time_ - start_time_);
+          } else {
+            // Send kUserFailure so that IDP cannot tell difference between user
+            // selecting a different IDP and user dismissing dialog without
+            // selecting any IDP.
+            network_manager_->SendFailedTokenRequestMetrics(
+                metrics_endpoint, IdpNetworkRequestManager::
+                                      MetricsEndpointErrorCode::kUserFailure);
+          }
+        }
       }
 
       CompleteRequest(FederatedAuthRequestResult::kSuccess,
@@ -1281,8 +1303,6 @@ void FederatedAuthRequestImpl::CompleteRequest(
   if (!auth_request_callback_)
     return;
 
-  GetWebContentsData(&render_frame_host())
-      ->SetHasPendingWebIdentityRequest(false);
   if (token_status)
     fedcm_metrics_->RecordRequestTokenStatus(*token_status);
 
@@ -1300,16 +1320,24 @@ void FederatedAuthRequestImpl::CompleteRequest(
     AddInspectorIssue(result);
     AddConsoleErrorMessage(result);
 
-    if (endpoints_.metrics.is_valid() && IsFedCmMetricsEndpointEnabled()) {
-      network_manager_->SendFailedTokenRequestMetrics(
-          endpoints_.metrics,
-          FederatedAuthRequestResultToMetricsEndpointErrorCode(result));
+    if (IsFedCmMetricsEndpointEnabled()) {
+      for (const auto& idp_info_kv : idp_info_) {
+        const GURL& metrics_endpoint = idp_info_kv.second.endpoints.metrics;
+        if (!metrics_endpoint.is_valid())
+          continue;
+
+        network_manager_->SendFailedTokenRequestMetrics(
+            metrics_endpoint,
+            FederatedAuthRequestResultToMetricsEndpointErrorCode(result));
+      }
     }
   }
 
   CleanUp();
 
   if (!should_delay_callback || ShouldCompleteRequestImmediately()) {
+    GetWebContentsData(&render_frame_host())
+        ->SetHasPendingWebIdentityRequest(false);
     errors_logged_to_console_ = false;
 
     RequestTokenStatus status =

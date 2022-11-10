@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -167,20 +168,30 @@ using base::UserMetricsAction;
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  if (sel_isEqual(action, @selector(keyCommand_back)) ||
-      sel_isEqual(action, @selector(keyCommand_forward))) {
-    // Since cmd+left and cmd+right are valid system shortcuts when editing
-    // text, register those only if text is not being edited.
-    if ([sender isEqual:UIKeyCommand.cr_back_2] ||
-        [sender isEqual:UIKeyCommand.cr_forward_2]) {
-      return self.tabsCount > 0 && !self.editingText;
+  if (sel_isEqual(action, @selector(keyCommand_back))) {
+    BOOL canPerformBack =
+        self.tabsCount > 0 && self.navigationAgent->CanGoBack();
+    // Since cmd+left is a valid system shortcuts when editing text, register it
+    // only if text is not being edited.
+    if ([sender isEqual:UIKeyCommand.cr_back_2]) {
+      return canPerformBack && !self.editingText;
     }
-    return self.tabsCount > 0;
+    return canPerformBack;
+  }
+
+  if (sel_isEqual(action, @selector(keyCommand_forward))) {
+    BOOL canPerformForward =
+        self.tabsCount > 0 && self.navigationAgent->CanGoForward();
+    // Since cmd+right is a valid system shortcuts when editing text, register
+    // it only if text is not being edited.
+    if ([sender isEqual:UIKeyCommand.cr_forward_2]) {
+      return canPerformForward && !self.editingText;
+    }
+    return canPerformForward;
   }
   if (sel_isEqual(action, @selector(keyCommand_openLocation)) ||
       sel_isEqual(action, @selector(keyCommand_closeTab)) ||
       sel_isEqual(action, @selector(keyCommand_showBookmarks)) ||
-      sel_isEqual(action, @selector(keyCommand_addToBookmarks)) ||
       sel_isEqual(action, @selector(keyCommand_reload)) ||
       sel_isEqual(action, @selector(keyCommand_showHistory)) ||
       sel_isEqual(action, @selector(keyCommand_voiceSearch)) ||
@@ -198,10 +209,12 @@ using base::UserMetricsAction;
       sel_isEqual(action, @selector(keyCommand_showLastTab))) {
     return self.tabsCount > 0;
   }
-  if (sel_isEqual(action, @selector(keyCommand_find)) ||
-      sel_isEqual(action, @selector(keyCommand_findNext)) ||
-      sel_isEqual(action, @selector(keyCommand_findPrevious))) {
+  if (sel_isEqual(action, @selector(keyCommand_find))) {
     return self.findInPageAvailable;
+  }
+  if (sel_isEqual(action, @selector(keyCommand_findNext)) ||
+      sel_isEqual(action, @selector(keyCommand_findPrevious))) {
+    return [self isFindInPageActive];
   }
   if (sel_isEqual(action, @selector(keyCommand_close))) {
     return self.canDismissModals;
@@ -212,6 +225,10 @@ using base::UserMetricsAction;
     return webStateList &&
            webStateList->active_index() != WebStateList::kInvalidIndex &&
            self.tabsCount > 1;
+  }
+  if (sel_isEqual(action, @selector(keyCommand_addToBookmarks)) ||
+      sel_isEqual(action, @selector(keyCommand_addToReadingList))) {
+    return [self isHTTPOrHTTPSPage];
   }
   return [super canPerformAction:action withSender:sender];
 }
@@ -513,6 +530,17 @@ using base::UserMetricsAction;
   return (helper && helper->CurrentPageSupportsFindInPage());
 }
 
+- (BOOL)isFindInPageActive {
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  if (!currentWebState) {
+    return NO;
+  }
+
+  FindTabHelper* helper = FindTabHelper::FromWebState(currentWebState);
+  return (helper && helper->IsFindUIActive());
+}
+
 - (NSUInteger)tabsCount {
   return self.browser->GetWebStateList()->count();
 }
@@ -542,6 +570,17 @@ using base::UserMetricsAction;
   if (webStateList->ContainsIndex(index)) {
     webStateList->ActivateWebStateAt(static_cast<int>(index));
   }
+}
+
+- (BOOL)isHTTPOrHTTPSPage {
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  if (!currentWebState) {
+    return NO;
+  }
+
+  const GURL& url = currentWebState->GetVisibleURL();
+  return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
 }
 
 @end

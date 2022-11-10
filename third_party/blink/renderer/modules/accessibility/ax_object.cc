@@ -5827,7 +5827,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
 
   // Compute the transform between the container's coordinate space and this
   // object.
-  TransformationMatrix transform = layout_object->LocalToAncestorTransform(
+  gfx::Transform transform = layout_object->LocalToAncestorTransform(
       To<LayoutBoxModelObject>(container_layout_object));
 
   // If the transform is just a simple translation, apply that to the
@@ -5836,7 +5836,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   if (transform.IsIdentityOr2DTranslation()) {
     out_bounds_in_container.Offset(transform.To2dTranslation());
   } else {
-    out_container_transform = transform.ToTransform();
+    out_container_transform = transform;
   }
 }
 

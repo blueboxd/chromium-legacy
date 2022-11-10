@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/instance_registry_updater.h"
@@ -320,8 +321,14 @@ void AppServiceProxyAsh::LaunchAppWithIntent(const std::string& app_id,
 
   policy::DlpFilesController* files_controller = GetDlpFilesController();
   if (files_controller) {
-    files_controller->CheckIfLaunchAllowed(app_id, std::move(intent_copy),
-                                           std::move(launch_callback));
+    auto app_found = app_registry_cache_.ForOneApp(
+        app_id, [&files_controller, &intent_copy,
+                 &launch_callback](const apps::AppUpdate& update) {
+          files_controller->CheckIfLaunchAllowed(update, std::move(intent_copy),
+                                                 std::move(launch_callback));
+        });
+    if (!app_found)
+      std::move(launch_callback).Run(/*is_allowed=*/true);
   } else {
     std::move(launch_callback).Run(/*is_allowed=*/true);
   }
@@ -696,6 +703,33 @@ void AppServiceProxyAsh::LaunchAppWithIntentIfAllowed(
   AppServiceProxyBase::LaunchAppWithIntent(
       app_id, event_flags, std::move(intent), std::move(launch_source),
       std::move(window_info), std::move(callback));
+}
+
+bool AppServiceProxyAsh::ShouldReadIcons() {
+  return base::FeatureList::IsEnabled(kUnifiedAppServiceIconLoading);
+}
+
+void AppServiceProxyAsh::ReadIcons(const std::string& app_id,
+                                   int32_t size_hint_in_dip,
+                                   const IconKey& icon_key,
+                                   IconType icon_type,
+                                   LoadIconCallback callback) {
+  icon_reader.ReadIcons(
+      app_id, size_hint_in_dip, static_cast<IconEffects>(icon_key.icon_effects),
+      icon_type,
+      base::BindOnce(&AppServiceProxyAsh::OnIconRead,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AppServiceProxyAsh::OnIconRead(LoadIconCallback callback,
+                                    IconValuePtr iv) {
+  if (!iv || (iv->uncompressed.isNull() && iv->compressed.empty())) {
+    // TODO(crbug.com/1380608): Call the publisher to fetch the icon.
+    std::move(callback).Run(std::make_unique<apps::IconValue>());
+    return;
+  }
+
+  std::move(callback).Run(std::move(iv));
 }
 
 }  // namespace apps

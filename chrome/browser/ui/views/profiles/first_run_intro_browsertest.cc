@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/functional/callback_helpers.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/signin/signin_features.h"
@@ -29,6 +30,7 @@ struct TestParam {
   std::string test_suffix = "";
   bool use_dark_theme = false;
   bool use_fixed_size = false;
+  bool use_longer_strings = false;
 };
 
 // To be passed as 4th argument to `INSTANTIATE_TEST_SUITE_P()`, allows the test
@@ -44,7 +46,21 @@ const TestParam kTestParams[] = {
      .use_dark_theme = true,
      .use_fixed_size = true},
     {.test_suffix = "LightTheme"},
+    {.test_suffix = "LongerStringsFixedSize",
+     .use_fixed_size = true,
+     .use_longer_strings = true},
 };
+
+const char kMakeCardDescriptionLongerJsString[] =
+    "(async () => {"
+    "const introApp = document.querySelector('intro-app');"
+    "const signInPromo = introApp.shadowRoot.querySelector('sign-in-promo');"
+    "const cardDescriptions = "
+    "Array.from(signInPromo.shadowRoot.querySelectorAll('.benefit-card-"
+    "description'));"
+    "cardDescriptions[0].innerHTML = cardDescriptions[0].innerHTML.repeat(20);"
+    "return true;"
+    "})();";
 
 }  // namespace
 
@@ -68,15 +84,24 @@ class FirstRunIntroPixelTest : public UiBrowserTest,
   void ShowUi(const std::string& name) override {
     ui::ScopedAnimationDurationScaleMode disable_animation(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-    profile_picker_view_ = ProfileManagementStepTestView::CreateForStep(
-        browser()->profile(), ProfileManagementFlowController::Step::kIntro,
+    profile_picker_view_ = new ProfileManagementStepTestView(
+        ProfilePicker::Params::ForFirstRun(browser()->profile()->GetPath(),
+                                           base::DoNothing()),
+        ProfileManagementFlowController::Step::kIntro,
+        /*step_controller_factory=*/
         base::BindRepeating([](ProfilePickerWebContentsHost* host) {
-          return CreateIntroStep(host, /*enable_animations=*/false);
+          return CreateIntroStep(host, base::DoNothing(),
+                                 /*enable_animations=*/false);
         }));
     profile_picker_view_->ShowAndWait(
         GetParam().use_fixed_size
             ? absl::optional<gfx::Size>(gfx::Size(840, 630))
             : absl::nullopt);
+
+    if (GetParam().use_longer_strings) {
+      EXPECT_EQ(true, content::EvalJs(profile_picker_view_->GetPickerContents(),
+                                      kMakeCardDescriptionLongerJsString));
+    }
   }
 
   bool VerifyUi() override {

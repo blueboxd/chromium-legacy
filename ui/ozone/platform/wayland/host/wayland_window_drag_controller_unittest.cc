@@ -849,7 +849,7 @@ TEST_P(WaylandWindowDragControllerTest, RestoreDuringWindowDragSession) {
   window_->Maximize();
   states.AddStateToWlArray(XDG_TOPLEVEL_STATE_MAXIMIZED);
   SendConfigureEvent(window_->root_surface()->get_surface_id(),
-                     kMaximizedBounds.size(), 1, states);
+                     kMaximizedBounds.size(), states);
 
   EXPECT_EQ(kMaximizedBounds, window_->GetBoundsInDIP());
 
@@ -1393,12 +1393,6 @@ TEST_P(WaylandWindowDragControllerTest, ExtendedDragUnavailable) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowDragControllerTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kStable}));
-
-INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
-                         WaylandWindowDragControllerTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kV6}));
+                         Values(wl::ServerConfig{}));
 
 }  // namespace ui

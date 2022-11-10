@@ -256,7 +256,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kIsVoiceSearchEnabledCache,
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
-    &kNewInstanceFromDraggedLink,
     &kNewTabPageTilesTitleWrapAround,
     &kNewWindowAppMenu,
     &kNotificationPermissionVariant,
@@ -395,6 +394,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordEditDialogWithDetails,
     &privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
     &privacy_sandbox::kPrivacySandboxSettings3,
+    &privacy_sandbox::kPrivacySandboxSettings4,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
     &query_tiles::features::kQueryTilesOnStart,
@@ -414,8 +414,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &supervised_users::kLocalWebApprovals,
     &supervised_users::kWebFilterInterstitialRefresh,
     &switches::kAllowSyncOffForChildAccounts,
-    &switches::kCreateSigninCheckerBeforeSyncConsentFragment,
-    &switches::kEnableCbdSignOut,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kTangibleSync,
@@ -808,10 +806,6 @@ BASE_FEATURE(kSearchEnginePromoNewDevice,
 
 BASE_FEATURE(kSearchEnginePromoNewDeviceV2,
              "SearchEnginePromo.NewDeviceVer2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kNewInstanceFromDraggedLink,
-             "NewInstanceFromDraggedLink",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNewTabPageTilesTitleWrapAround,

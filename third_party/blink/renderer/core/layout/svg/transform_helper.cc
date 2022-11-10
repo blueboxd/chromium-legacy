@@ -80,7 +80,7 @@ AffineTransform TransformHelper::ComputeTransform(
   // Note: objectBoundingBox is an empty rect for elements like pattern or
   // clipPath. See
   // https://svgwg.org/svg2-draft/coords.html#ObjectBoundingBoxUnits
-  TransformationMatrix transform;
+  gfx::Transform transform;
   gfx::RectF reference_box = ComputeReferenceBox(layout_object);
   style.ApplyTransform(
       transform, reference_box, ComputedStyle::kIncludeTransformOperations,
@@ -90,7 +90,7 @@ AffineTransform TransformHelper::ComputeTransform(
   if (zoom != 1)
     transform.Zoom(1 / zoom);
   // Flatten any 3D transform.
-  return transform.ToAffineTransform();
+  return AffineTransform::FromTransform(transform);
 }
 
 gfx::PointF TransformHelper::ComputeTransformOrigin(

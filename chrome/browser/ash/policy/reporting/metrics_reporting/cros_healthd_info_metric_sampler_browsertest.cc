@@ -4,9 +4,9 @@
 
 #include <array>
 
+#include "base/functional/bind.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_info_metric_sampler_test_utils.h"
-#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_metric_sampler.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/reporting/metric_default_utils.h"
@@ -42,6 +42,7 @@ using ::reporting::MetricData;
 using ::reporting::Priority;
 using ::reporting::Record;
 using ::testing::Eq;
+using ::testing::StrEq;
 
 // Is the given record about info metric? If yes, return the underlying
 // MetricData object.
@@ -94,21 +95,6 @@ class BusInfoSamplerBrowserTest : public policy::DevicePolicyCrosBrowserTest {
            record_data.value().info_data().has_bus_device_info();
   }
 
-  // Gets next enqueued memory info record. This is useful in excluding
-  // other types of records from being examined.
-  static std::tuple<Priority, Record> GetNextEnqueuedBusInfoRecord(
-      MissiveClientTestObserver* observer) {
-    Priority priority;
-    Record record;
-    do {
-      // If no record is enqueued, this line would time out when the loop
-      // is entered for the first time.
-      std::tie(priority, record) = observer->GetNextEnqueuedRecord();
-    } while (!IsRecordBusInfo(record));
-
-    return std::make_tuple(priority, record);
-  }
-
  private:
   CrosHealthdInfoMetricsHelper cros_healthd_info_metrics_helper_;
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
@@ -128,8 +114,8 @@ IN_PROC_BROWSER_TEST_F(BusInfoSamplerBrowserTest, Thunderbolt) {
       ::reporting::test::CreateThunderboltBusResult(kHealthdSecurityLevels);
   ash::cros_healthd::FakeCrosHealthd::Get()
       ->SetProbeTelemetryInfoResponseForTesting(thunderbolt_bus_result);
-  MissiveClientTestObserver observer(Destination::INFO_METRIC);
-  auto [priority, record] = GetNextEnqueuedBusInfoRecord(&observer);
+  MissiveClientTestObserver observer(base::BindRepeating(&IsRecordBusInfo));
+  auto [priority, record] = observer.GetNextEnqueuedRecord();
   auto info_data = AssertInfo(priority, record).info_data();
   ASSERT_THAT(
       static_cast<size_t>(info_data.bus_device_info().thunderbolt_info_size()),
@@ -166,21 +152,6 @@ class CpuInfoSamplerBrowserTest : public policy::DevicePolicyCrosBrowserTest {
            record_data.value().info_data().has_cpu_info();
   }
 
-  // Gets next enqueued memory info record. This is useful in excluding
-  // other types of records from being examined.
-  static std::tuple<Priority, Record> GetNextEnqueuedCpuInfoRecord(
-      MissiveClientTestObserver* observer) {
-    Priority priority;
-    Record record;
-    do {
-      // If no record is enqueued, this line would time out when the loop
-      // is entered for the first time.
-      std::tie(priority, record) = observer->GetNextEnqueuedRecord();
-    } while (!IsRecordCpuInfo(record));
-
-    return std::make_tuple(priority, record);
-  }
-
  private:
   CrosHealthdInfoMetricsHelper cros_healthd_info_metrics_helper_;
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
@@ -190,8 +161,8 @@ IN_PROC_BROWSER_TEST_F(CpuInfoSamplerBrowserTest, KeylockerUnsupported) {
   auto cpu_result = ::reporting::test::CreateCpuResult(nullptr);
   ash::cros_healthd::FakeCrosHealthd::Get()
       ->SetProbeTelemetryInfoResponseForTesting(cpu_result);
-  MissiveClientTestObserver observer(Destination::INFO_METRIC);
-  auto [priority, record] = GetNextEnqueuedCpuInfoRecord(&observer);
+  MissiveClientTestObserver observer(base::BindRepeating(&IsRecordCpuInfo));
+  auto [priority, record] = observer.GetNextEnqueuedRecord();
   auto info_data = AssertInfo(priority, record).info_data();
   ASSERT_TRUE(info_data.cpu_info().has_keylocker_info());
   EXPECT_FALSE(info_data.cpu_info().keylocker_info().configured());
@@ -203,8 +174,8 @@ IN_PROC_BROWSER_TEST_F(CpuInfoSamplerBrowserTest, KeylockerConfigured) {
       ::reporting::test::CreateKeylockerInfo(true));
   ash::cros_healthd::FakeCrosHealthd::Get()
       ->SetProbeTelemetryInfoResponseForTesting(cpu_result);
-  MissiveClientTestObserver observer(Destination::INFO_METRIC);
-  auto [priority, record] = GetNextEnqueuedCpuInfoRecord(&observer);
+  MissiveClientTestObserver observer(base::BindRepeating(&IsRecordCpuInfo));
+  auto [priority, record] = observer.GetNextEnqueuedRecord();
   auto info_data = AssertInfo(priority, record).info_data();
   ASSERT_TRUE(info_data.cpu_info().has_keylocker_info());
   EXPECT_TRUE(info_data.cpu_info().keylocker_info().configured());
@@ -243,23 +214,8 @@ class MemoryInfoSamplerBrowserTest
            record_data.value().info_data().has_memory_info();
   }
 
-  // Gets next enqueued memory info record. This is useful in excluding
-  // other types of records from being examined.
-  static std::tuple<Priority, Record> GetNextEnqueuedMemoryInfoRecord(
-      MissiveClientTestObserver* observer) {
-    Priority priority;
-    Record record;
-    do {
-      // If no record is enqueued, this line would time out when the loop
-      // is entered for the first time.
-      std::tie(priority, record) = observer->GetNextEnqueuedRecord();
-    } while (!IsRecordMemoryInfo(record));
-
-    return std::make_tuple(priority, record);
-  }
-
   static void AssertMemoryInfo(MissiveClientTestObserver* observer) {
-    auto [priority, record] = GetNextEnqueuedMemoryInfoRecord(observer);
+    auto [priority, record] = observer->GetNextEnqueuedRecord();
     MetricData record_data = AssertInfo(priority, record);
     ::reporting::test::AssertMemoryInfo(record_data, GetParam());
   }
@@ -278,7 +234,7 @@ IN_PROC_BROWSER_TEST_P(MemoryInfoSamplerBrowserTest, ReportMemoryInfo) {
 
   ash::cros_healthd::FakeCrosHealthd::Get()
       ->SetProbeTelemetryInfoResponseForTesting(memory_result);
-  MissiveClientTestObserver observer(Destination::INFO_METRIC);
+  MissiveClientTestObserver observer(base::BindRepeating(&IsRecordMemoryInfo));
   AssertMemoryInfo(&observer);
 }
 
@@ -298,5 +254,72 @@ INSTANTIATE_TEST_SUITE_P(
     }),
     [](const testing::TestParamInfo<MemoryInfoSamplerBrowserTest::ParamType>&
            info) { return info.param.test_name; });
+
+// ---- Input ----
+
+class InputInfoSamplerBrowserTest : public policy::DevicePolicyCrosBrowserTest {
+ public:
+  InputInfoSamplerBrowserTest(const InputInfoSamplerBrowserTest&) = delete;
+  InputInfoSamplerBrowserTest& operator=(const InputInfoSamplerBrowserTest&) =
+      delete;
+
+ protected:
+  InputInfoSamplerBrowserTest() = default;
+  ~InputInfoSamplerBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    policy::DevicePolicyCrosBrowserTest::SetUpOnMainThread();
+    scoped_testing_cros_settings_.device_settings()->SetBoolean(
+        kReportDeviceGraphicsStatus, true);
+  }
+
+  // Is the given record about CPU info metric?
+  static bool IsRecordTouchScreenInfo(const Record& record) {
+    auto record_data = IsRecordInfo(record);
+    return record_data.has_value() &&
+           record_data.value().info_data().has_touch_screen_info();
+  }
+
+ private:
+  CrosHealthdInfoMetricsHelper cros_healthd_info_metrics_helper_;
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
+};
+
+IN_PROC_BROWSER_TEST_F(InputInfoSamplerBrowserTest, TouchScreenSingleInternal) {
+  static constexpr char kSampleLibrary[] = "SampleLibrary";
+  static constexpr char kSampleDevice[] = "SampleDevice";
+  static constexpr int kTouchPoints = 10;
+
+  auto input_device = cros_healthd::TouchscreenDevice::New(
+      cros_healthd::InputDevice::New(
+          kSampleDevice, cros_healthd::InputDevice_ConnectionType::kInternal,
+          /*physical_location*/ "", /*is_enabled*/ true),
+      kTouchPoints, /*has_stylus*/ true,
+      /*has_stylus_garage_switch*/ false);
+  std::vector<cros_healthd::TouchscreenDevicePtr> touchscreen_devices;
+  touchscreen_devices.push_back(std::move(input_device));
+
+  auto input_result = ::reporting::test::CreateInputResult(
+      kSampleLibrary, std::move(touchscreen_devices));
+  ash::cros_healthd::FakeCrosHealthd::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(input_result);
+  MissiveClientTestObserver observer(
+      base::BindRepeating(&IsRecordTouchScreenInfo));
+  auto [priority, record] = observer.GetNextEnqueuedRecord();
+  auto info_data = AssertInfo(priority, record).info_data();
+  ASSERT_TRUE(info_data.has_touch_screen_info());
+  ASSERT_TRUE(info_data.touch_screen_info().has_library_name());
+  EXPECT_THAT(info_data.touch_screen_info().library_name(),
+              StrEq(kSampleLibrary));
+  ASSERT_EQ(info_data.touch_screen_info().touch_screen_devices().size(), 1);
+  EXPECT_THAT(
+      info_data.touch_screen_info().touch_screen_devices(0).display_name(),
+      StrEq(kSampleDevice));
+  EXPECT_THAT(
+      info_data.touch_screen_info().touch_screen_devices(0).touch_points(),
+      Eq(kTouchPoints));
+  EXPECT_TRUE(
+      info_data.touch_screen_info().touch_screen_devices(0).has_stylus());
+}
 
 }  // namespace ash::reporting

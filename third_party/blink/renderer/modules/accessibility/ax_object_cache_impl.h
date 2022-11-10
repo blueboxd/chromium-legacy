@@ -68,6 +68,7 @@ class AbstractInlineTextBox;
 class AXRelationCache;
 class HTMLAreaElement;
 class LocalFrameView;
+class WebLocalFrameClient;
 
 // This class should only be used from inside the accessibility directory.
 class MODULES_EXPORT AXObjectCacheImpl
@@ -100,8 +101,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   void AddInspectorAgent(InspectorAccessibilityAgent*);
   void RemoveInspectorAgent(InspectorAccessibilityAgent*);
 
-  // Ensure that a call to ProcessDeferredAccessibilityEvents() will occur soon.
-  void ScheduleVisualUpdate(Document& document) override;
+  // Ensure that a full document lifecycle will occur, which in turn ensures
+  // that a call to ProcessDeferredAccessibilityEvents() will occur soon.
+  void ScheduleAXUpdate() override;
 
   void Dispose() override;
 
@@ -144,6 +146,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void Remove(Document*) override;
   void Remove(AbstractInlineTextBox*) override;
   void Remove(AXObject*);  // Calls more specific Remove methods as necessary.
+
   // For any ancestor that could contain the passed-in AXObject* in their cached
   // children, clear their children and set needs to update children on them.
   // In addition, ChildrenChanged() on an included ancestor that might contain
@@ -432,7 +435,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void ResetSerializer() override { ax_tree_serializer_->Reset(); }
 
-  void MarkAXObjectDirty(
+  void MarkAXObjectDirtyWithDetails(
       AXObject* obj,
       bool subtree,
       ax::mojom::blink::EventFrom event_from,
@@ -557,6 +560,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   mojo::Remote<mojom::blink::RenderAccessibilityHost>&
   GetOrCreateRemoteRenderAccessibilityHost();
+  WebLocalFrameClient* GetWebLocalFrameClient() const;
   void ProcessDeferredAccessibilityEventsImpl(Document&);
   void UpdateLifecycleIfNeeded(Document& document);
 

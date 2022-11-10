@@ -564,6 +564,12 @@ BASE_FEATURE(kAudioWorkletThreadRealtimePriority,
              "AudioWorkletThreadRealtimePriority",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// A server-side switch for the output device (sink) selection in Web Audio API.
+// This enables the selection via the AudioContext constructor and also via
+// AudioContext.setSinkId() method.
+BASE_FEATURE(kWebAudioSinkSelection, "kWebAudioSinkSelection",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // A feature to reduce the set of resources fetched by No-State Prefetch.
 BASE_FEATURE(kLightweightNoStatePrefetch,
              "LightweightNoStatePrefetch",
@@ -645,7 +651,7 @@ const base::FeatureParam<ForceDarkImageClassifier>
 BASE_FEATURE(kWebRtcUseMinMaxVEADimensions,
              "WebRtcUseMinMaxVEADimensions",
 // TODO(crbug.com/1008491): enable other platforms.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -1342,9 +1348,10 @@ BASE_FEATURE(kReportFCPOnlyOnSuccessfulCommit,
              "ReportFCPOnlyOnSuccessfulCommit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// TODO(crbug.com/1382005): Deprecate this flag.
 BASE_FEATURE(kRegionCaptureExperimentalSubtypes,
              "RegionCaptureExperimentalSubtypes",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUserAgentOverrideExperiment,
              "UserAgentOverrideExperiment",

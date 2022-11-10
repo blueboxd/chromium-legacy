@@ -130,7 +130,7 @@ void AdjustStyleForSvgElement(const SVGElement& element,
   builder.SetTextDecorationStyle(
       ETextDecorationStyle::kSolid);  // crbug.com/1246719
   builder.SetTextDecorationThickness(TextDecorationThickness(Length::Auto()));
-  builder.MutableInternalStyle()->SetTextEmphasisMark(TextEmphasisMark::kNone);
+  builder.SetTextEmphasisMark(TextEmphasisMark::kNone);
   builder.SetTextUnderlineOffset(Length());  // crbug.com/1247912
   builder.SetTextUnderlinePosition(kTextUnderlinePositionAuto);
 }
@@ -345,20 +345,20 @@ void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyleBuilder& builder) {
 }
 
 void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyleBuilder& builder) {
-  ComputedStyle& style = *builder.MutableInternalStyle();
   builder.ResetTextCombine();
-  style.SetLetterSpacing(0.0f);
+  builder.SetLetterSpacing(0.0f);
   builder.SetTextAlign(ETextAlign::kCenter);
   builder.SetTextDecorationLine(TextDecorationLine::kNone);
-  style.SetTextEmphasisMark(TextEmphasisMark::kNone);
-  style.SetVerticalAlign(EVerticalAlign ::kMiddle);
+  builder.SetTextEmphasisMark(TextEmphasisMark::kNone);
+  builder.SetVerticalAlign(EVerticalAlign::kMiddle);
   builder.SetWordBreak(EWordBreak::kKeepAll);
-  style.SetWordSpacing(0.0f);
+  builder.SetWordSpacing(0.0f);
   builder.SetWritingMode(WritingMode::kHorizontalTb);
 
+  ComputedStyle& style = *builder.MutableInternalStyle();
   style.ClearAppliedTextDecorations();
   builder.ResetTextIndent();
-  style.UpdateFontOrientation();
+  builder.UpdateFontOrientation();
 
   DCHECK_EQ(style.GetFont().GetFontDescription().Orientation(),
             FontOrientation::kHorizontal);
@@ -644,7 +644,7 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.Display() == EDisplay::kTableRowGroup) {
     builder.SetWritingMode(layout_parent_style.GetWritingMode());
     builder.SetTextOrientation(layout_parent_style.GetTextOrientation());
-    style.UpdateFontOrientation();
+    builder.UpdateFontOrientation();
   }
 }
 
@@ -800,14 +800,14 @@ static void AdjustStyleForInert(ComputedStyleBuilder& builder,
   }
 }
 
-void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style,
+void StyleAdjuster::AdjustForForcedColorsMode(const ComputedStyle& style,
                                               ComputedStyleBuilder& builder) {
   if (!style.InForcedColorsMode() ||
       style.ForcedColorAdjust() != EForcedColorAdjust::kAuto)
     return;
 
-  style.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
-  style.SetBoxShadow(ComputedStyleInitialValues::InitialBoxShadow());
+  builder.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
+  builder.SetBoxShadow(ComputedStyleInitialValues::InitialBoxShadow());
   builder.SetColorScheme({"light", "dark"});
   if (style.ShouldForceColor(style.AccentColor()))
     builder.SetAccentColor(ComputedStyleInitialValues::InitialAccentColor());
@@ -1038,7 +1038,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // TODO(rbuis): this will not work with logical CSS properties.
       // Disable vertical writing-mode for now.
       builder.SetWritingMode(WritingMode::kHorizontalTb);
-      style.UpdateFontOrientation();
+      builder.UpdateFontOrientation();
     }
   }
 

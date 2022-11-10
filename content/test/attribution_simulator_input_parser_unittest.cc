@@ -12,11 +12,12 @@
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "base/values.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/constants.h"
+#include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
@@ -356,7 +357,8 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
           "key_piece": "0x1"
         }],
         "aggregatable_values": {"a": 1},
-        "aggregatable_deduplication_key": "789"
+        "aggregatable_deduplication_key": "789",
+        "debug_reporting": true
       }
     }
   ]})json";
@@ -387,7 +389,7 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                       /*debug_key=*/14,
                       /*aggregatable_dedup_key=*/absl::nullopt,
                       {
-                          AttributionTrigger::EventTriggerData(
+                          attribution_reporting::EventTriggerData(
                               /*data=*/10,
                               /*priority=*/-5,
                               /*dedup_key=*/123,
@@ -399,7 +401,7 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                               *AttributionFilters::Create({
                                   {"z", {}},
                               })),
-                          AttributionTrigger::EventTriggerData(
+                          attribution_reporting::EventTriggerData(
                               /*data=*/0,
                               /*priority=*/0,
                               /*dedup_key=*/absl::nullopt,
@@ -407,7 +409,10 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                               /*not_filters=*/AttributionFilters()),
                       },
                       /*aggregatable_trigger_data=*/{},
-                      /*aggregatable_values=*/AttributionAggregatableValues()),
+                      /*aggregatable_values=*/
+                      attribution_reporting::AggregatableValues(),
+                      /*is_within_fenced_frame=*/false,
+                      /*debug_reporting=*/false),
                   .time = kOffsetTime + base::Milliseconds(1643235576123),
               },
               _),
@@ -424,7 +429,10 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                       /*aggregatable_dedup_key=*/absl::nullopt,
                       /*event_triggers=*/{},
                       /*aggregatable_trigger_data=*/{},
-                      /*aggregatable_values=*/AttributionAggregatableValues()),
+                      /*aggregatable_values=*/
+                      attribution_reporting::AggregatableValues(),
+                      /*is_within_fenced_frame=*/false,
+                      /*debug_reporting=*/false),
                   .time = kOffsetTime + base::Milliseconds(1643235575123),
               },
               _),
@@ -440,14 +448,16 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                       /*debug_key=*/absl::nullopt,
                       /*aggregatable_dedup_key=*/789,
                       /*event_triggers=*/{},
-                      {AttributionAggregatableTriggerData::CreateForTesting(
+                      {*attribution_reporting::AggregatableTriggerData::Create(
                           absl::MakeUint128(/*high=*/0, /*low=*/1),
                           /*source_keys=*/{"a"},
                           /*filters=*/AttributionFilters(),
                           /*not_filters=*/AttributionFilters())},
                       /*aggregatable_values=*/
-                      AttributionAggregatableValues::CreateForTesting(
-                          {{"a", 1}})),
+                      *attribution_reporting::AggregatableValues::Create(
+                          {{"a", 1}}),
+                      /*is_within_fenced_frame=*/false,
+                      /*debug_reporting=*/true),
                   .time = kOffsetTime + base::Milliseconds(1643235574123),
               },
               _))));
@@ -1020,6 +1030,14 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         R"json({"triggers":[{
           "Attribution-Reporting-Register-Trigger": {
             "aggregatable_deduplication_key": 123
+          }
+        }]})json",
+    },
+    {
+        R"(["triggers"][0]["Attribution-Reporting-Register-Trigger"]["debug_reporting"]: must be a boolean)",
+        R"json({"triggers":[{
+          "Attribution-Reporting-Register-Trigger": {
+            "debug_reporting": 123
           }
         }]})json",
     },

@@ -11,10 +11,10 @@
 #include "base/debug/stack_trace.h"
 #include "base/format_macros.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -83,7 +83,7 @@ class Http2Connection::DataFrameSource
 
     // Write blocked.
     if (result == 0) {
-      connection_->blocked_streams_.insert(stream_id_);
+      connection_->blocked_streams_.insert(*stream_id_);
       return false;
     }
 
@@ -117,7 +117,7 @@ class Http2Connection::DataFrameSource
 
  private:
   const raw_ptr<Http2Connection> connection_;
-  const StreamId& stream_id_;
+  const raw_ref<const StreamId> stream_id_;
   std::queue<std::string> chunks_;
   bool last_frame_ = false;
   base::OnceClosure send_completion_callback_;

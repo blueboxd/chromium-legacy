@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ref.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
@@ -334,7 +335,7 @@ class BoxPartFileUploadApiCallFlow : public BoxChunkedUploadBaseApiCallFlow {
  private:
   void OnSuccessJsonParsed(ParseResult result);
   TaskCallback callback_;
-  const std::string& part_content_;
+  const raw_ref<const std::string> part_content_;
   const std::string content_range_;
   base::WeakPtrFactory<BoxPartFileUploadApiCallFlow> weak_factory_{this};
 };
@@ -371,7 +372,7 @@ class BoxCommitUploadSessionApiCallFlow
       base::OnceCallback<void(Response, base::TimeDelta, const std::string&)>;
   BoxCommitUploadSessionApiCallFlow(TaskCallback callback,
                                     const std::string& session_endpoint,
-                                    const base::Value& parts,
+                                    const base::Value::List& parts,
                                     const std::string digest);
   ~BoxCommitUploadSessionApiCallFlow() override;
 
@@ -388,7 +389,7 @@ class BoxCommitUploadSessionApiCallFlow
   TaskCallback callback_;
   const GURL commit_endpoint_;
   const std::string sha_digest_;
-  base::Value upload_session_parts_;
+  base::Value::List upload_session_parts_;
   base::TimeDelta retry_after_;
 };
 

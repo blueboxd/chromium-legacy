@@ -23,6 +23,12 @@ const ALLOWED_HOSTS = [
   'google.com',
 ];
 
+/**
+ * The local dev server host, which is the only non-https URL the
+ * webview is permitted to load.
+ */
+const LOCAL_DEV_SERVER_HOST = 'localhost:9879';
+
 class ParentAccessUi extends PolymerElement {
   constructor() {
     super();
@@ -52,11 +58,10 @@ class ParentAccessUi extends PolymerElement {
    */
   isAllowedRequest(url) {
     const requestUrl = new URL(url);
-    const webviewUrl = new URL(this.webviewUrl_);
 
     // Allow non https only for requests to a local development server webview
     // URL, which would have been specified at the command line.
-    if (requestUrl.host === webviewUrl.host) {
+    if (requestUrl.host === LOCAL_DEV_SERVER_HOST) {
       return true;
     }
 
@@ -101,38 +106,48 @@ class ParentAccessUi extends PolymerElement {
     /**
      * @private {string} The initial URL for the webview.
      */
-    this.webviewUrl_ = loadTimeData.getString('webviewUrl');
+    this.webviewUrl_ =
+        (await this.parentAccessUIHandler.getParentAccessURL()).url;
 
-    const eventOriginFilter = loadTimeData.getString('eventOriginFilter');
+    try {
+      const parsedWebviewUrl = new URL(this.webviewUrl_);
+      // Set the filter to accept postMessages from the webviewURL's origin
+      // only.
+      const eventOriginFilter = parsedWebviewUrl.origin;
 
-    const oauthFetchResult = await this.parentAccessUIHandler.getOAuthToken();
-    if (oauthFetchResult.status != GetOAuthTokenStatus.kSuccess) {
+      const oauthFetchResult = await this.parentAccessUIHandler.getOAuthToken();
+      if (oauthFetchResult.status != GetOAuthTokenStatus.kSuccess) {
+        // TODO(b/200187536): show error page.
+        return;
+      }
+
+      const webview =
+          /** @type {!WebView} */ (this.$.webview);
+      const accessToken = oauthFetchResult.oauthToken;
+
+      // Set up the WebviewManager to handle the configuration and
+      // access control for the webview.
+      this.webview_manager_ = new WebviewManager(webview);
+      this.webview_manager_.setAccessToken(accessToken, (url) => {
+        return this.shouldReceiveAuthHeader(url);
+      });
+      this.webview_manager_.setAllowRequestFn((url) => {
+        return this.isAllowedRequest(url);
+      });
+
+      // Setting the src of the webview triggers the loading process.
+      const url = new URL(this.webviewUrl_);
+      webview.src = url.toString();
+
+      // Set up the controller. It will automatically start the initialization
+      // handshake with the hosted content.
+      this.server = new ParentAccessController(
+          webview, url.toString(), eventOriginFilter);
+
+    } catch (e) {
       // TODO(b/200187536): show error page.
       return;
     }
-
-    const webview =
-        /** @type {!WebView} */ (this.$.webview);
-    const accessToken = oauthFetchResult.oauthToken;
-
-    // Set up the WebviewManager to handle the configuration and
-    // access control for the webview.
-    this.webview_manager_ = new WebviewManager(webview);
-    this.webview_manager_.setAccessToken(accessToken, (url) => {
-      return this.shouldReceiveAuthHeader(url);
-    });
-    this.webview_manager_.setAllowRequestFn((url) => {
-      return this.isAllowedRequest(url);
-    });
-
-    // Setting the src of the webview triggers the loading process.
-    const url = new URL(this.webviewUrl_);
-    webview.src = url.toString();
-
-    // Set up the controller. It will automatically start the initialization
-    // handshake with the hosted content.
-    this.server =
-        new ParentAccessController(webview, url.toString(), eventOriginFilter);
 
 
     // What follows is the main message handling loop.  The received base64

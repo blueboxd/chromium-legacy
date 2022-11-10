@@ -119,7 +119,6 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
-      writable: true,
     },
     {
       name: "AffectedByHover",
@@ -127,7 +126,6 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
-      writable: true,
     },
     {
       name: "AffectedByActive",
@@ -135,7 +133,6 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
-      writable: true,
     },
     {
       name: "AffectedByDrag",
@@ -143,7 +140,6 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
-      writable: true,
     },
     // A non-inherited property references a variable or @apply is used
     {
@@ -270,7 +266,6 @@
       type_name: "bool",
       custom_copy: true,
       custom_compare: true,
-      writable: true,
     },
     // Whether any highlight pseudo selectors were found when collecting non-UA
     // rules for the originating element. Stored in the *originating* style, and
@@ -283,7 +278,6 @@
       type_name: "bool",
       custom_copy: true,
       custom_compare: true,
-      writable: true,
     },
     // Used by ::highlight
     {
@@ -305,7 +299,6 @@
       default_value: "nullptr",
       computed_style_custom_functions: ["setter", "getter"],
       custom_copy: true,
-      writable: true,
     },
     // True if 'underline solid' is the only text decoration on this element.
     {
@@ -327,7 +320,6 @@
       type_name: "unsigned",
       default_value: "static_cast<unsigned>(EVerticalAlign::kBaseline)",
       computed_style_custom_functions: ["initial", "getter", "setter"],
-      writable: true,
     },
     {
       name: "VerticalAlignLength",
@@ -338,7 +330,6 @@
       field_group: "box",
       getter: "GetVerticalAlignLength",
       computed_style_custom_functions: ["setter"],
-      writable: true,
     },
     {
       name: "border-image",
@@ -388,8 +379,6 @@
       field_group: "inherited->font",
       inherited: true,
       default_value: "Font()",
-      computed_style_custom_functions: ["getter", "setter"],
-      writable: true,
     },
     {
       name: "TextAutosizingMultiplier",
@@ -399,7 +388,6 @@
       field_group: "inherited",
       default_value: "1.0",
       computed_style_custom_functions: ["setter"],
-      writable: true,
     },
     {
       name: "CursorData",
@@ -429,7 +417,6 @@
       default_value: "filled",
       keywords: ["filled", "open"],
       field_group: "*",
-      writable: true,
     },
     {
       name: "TextEmphasisMark",
@@ -439,8 +426,7 @@
       default_value: "none",
       keywords: ["none", "auto", "dot", "circle", "double-circle", "triangle", "sesame", "custom"],
       field_group: "*",
-      computed_style_custom_functions: ["getter", "setter"],
-      writable: true,
+      computed_style_custom_functions: ["getter"],
     },
     // Though will-change is not itself an inherited property, the intent
     // expressed by 'will-change: contents' includes descendants.
@@ -488,7 +474,6 @@
       include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
       default_value: "AtomicString()",
       field_group: "*",
-      writable: true,
     },
     {
       name: "AppliedTextDecorations",
@@ -1136,7 +1121,6 @@
       type_name: "bool",
       field_group: "*",
       default_value: "false",
-      writable: true,
     },
     {
       name: "BaseData",

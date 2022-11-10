@@ -17,6 +17,8 @@ class GURL;
 
 namespace content {
 
+class AttributionTrigger;
+class CreateReportResult;
 class StorableSource;
 
 // Class that contains all the data needed to serialize and send an attribution
@@ -26,12 +28,34 @@ class CONTENT_EXPORT AttributionDebugReport {
   enum class DataType {
     kSourceDestinationLimit,
     kSourceNoised,
+    kSourceStorageLimit,
+    kSourceUnknownError,
+    kTriggerNoMatchingSource,
+    kTriggerAttributionsPerSourceDestinationLimit,
+    kTriggerNoMatchingFilterData,
+    kTriggerReportingOriginLimit,
+    kTriggerEventDeduplicated,
+    kTriggerEventNoMatchingConfigurations,
+    kTriggerEventNoise,
+    kTriggerEventLowPriority,
+    kTriggerEventExcessiveReports,
+    kTriggerEventStorageLimit,
+    kTriggerAggregateDeduplicated,
+    kTriggerAggregateNoContributions,
+    kTriggerAggregateInsufficientBudget,
+    kTriggerAggregateStorageLimit,
+    kTriggerUnknownError,
   };
 
   static absl::optional<AttributionDebugReport> Create(
       const StorableSource& source,
       bool is_debug_cookie_set,
       const AttributionStorage::StoreSourceResult& result);
+
+  static absl::optional<AttributionDebugReport> Create(
+      const AttributionTrigger& trigger,
+      bool is_debug_cookie_set,
+      const CreateReportResult& result);
 
   ~AttributionDebugReport();
 

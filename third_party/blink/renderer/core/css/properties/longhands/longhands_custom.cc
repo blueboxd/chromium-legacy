@@ -161,9 +161,10 @@ const CSSValue* AnchorName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.AnchorName().empty())
+  if (!style.AnchorName())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorName());
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.AnchorName()->GetName());
 }
 
 const CSSValue* AnchorScroll::ParseSingleValue(
@@ -180,9 +181,10 @@ const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.AnchorScroll().empty())
+  if (!style.AnchorScroll())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.AnchorScroll());
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.AnchorScroll()->GetName());
 }
 
 const CSSValue* AnimationDelay::ParseSingleValue(
@@ -392,12 +394,6 @@ const CSSValue* AnimationName::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationName::InitialValue() const {
   return CSSIdentifierValue::Create(CSSValueID::kNone);
-}
-
-void AnimationName::ApplyValue(StyleResolverState& state,
-                               const ScopedCSSValue& scoped_value) const {
-  // TODO(futhark): Set the TreeScope on CSSAnimationData.
-  ApplyValue(state, scoped_value.GetCSSValue());
 }
 
 const CSSValue* AnimationPlayState::ParseSingleValue(
@@ -2909,12 +2905,6 @@ const CSSValue* FontFamily::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontFamily(style);
-}
-
-void FontFamily::ApplyValue(StyleResolverState& state,
-                            const ScopedCSSValue& scoped_value) const {
-  state.GetFontBuilder().SetFamilyTreeScope(scoped_value.GetTreeScope());
-  ApplyValue(state, scoped_value.GetCSSValue());
 }
 
 void FontFamily::ApplyInitial(StyleResolverState& state) const {
@@ -7845,23 +7835,23 @@ const CSSValue* VerticalAlign::CSSValueFromComputedStyleInternal(
 }
 
 void VerticalAlign::ApplyInherit(StyleResolverState& state) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   EVerticalAlign vertical_align = state.ParentStyle()->VerticalAlign();
-  state.Style()->SetVerticalAlign(vertical_align);
+  builder.SetVerticalAlign(vertical_align);
   if (vertical_align == EVerticalAlign::kLength) {
-    state.Style()->SetVerticalAlignLength(
+    builder.SetVerticalAlignLength(
         state.ParentStyle()->GetVerticalAlignLength());
   }
 }
 
 void VerticalAlign::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    state.Style()->SetVerticalAlign(
-        identifier_value->ConvertTo<EVerticalAlign>());
+    builder.SetVerticalAlign(identifier_value->ConvertTo<EVerticalAlign>());
   } else {
-    state.Style()->SetVerticalAlignLength(
-        To<CSSPrimitiveValue>(value).ConvertToLength(
-            state.CssToLengthConversionData()));
+    builder.SetVerticalAlignLength(To<CSSPrimitiveValue>(value).ConvertToLength(
+        state.CssToLengthConversionData()));
   }
 }
 
@@ -8793,63 +8783,59 @@ const CSSValue* TextEmphasisStyle::CSSValueFromComputedStyleInternal(
 }
 
 void TextEmphasisStyle::ApplyInitial(StyleResolverState& state) const {
-  state.Style()->SetTextEmphasisFill(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetTextEmphasisFill(
       ComputedStyleInitialValues::InitialTextEmphasisFill());
-  state.Style()->SetTextEmphasisMark(
+  builder.SetTextEmphasisMark(
       ComputedStyleInitialValues::InitialTextEmphasisMark());
-  state.Style()->SetTextEmphasisCustomMark(
+  builder.SetTextEmphasisCustomMark(
       ComputedStyleInitialValues::InitialTextEmphasisCustomMark());
 }
 
 void TextEmphasisStyle::ApplyInherit(StyleResolverState& state) const {
-  state.Style()->SetTextEmphasisFill(
-      state.ParentStyle()->GetTextEmphasisFill());
-  state.Style()->SetTextEmphasisMark(
-      state.ParentStyle()->GetTextEmphasisMark());
-  state.Style()->SetTextEmphasisCustomMark(
+  ComputedStyleBuilder& builder = state.StyleBuilder();
+  builder.SetTextEmphasisFill(state.ParentStyle()->GetTextEmphasisFill());
+  builder.SetTextEmphasisMark(state.ParentStyle()->GetTextEmphasisMark());
+  builder.SetTextEmphasisCustomMark(
       state.ParentStyle()->TextEmphasisCustomMark());
 }
 
 void TextEmphasisStyle::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
+  ComputedStyleBuilder& builder = state.StyleBuilder();
   if (const auto* list = DynamicTo<CSSValueList>(value)) {
     DCHECK_EQ(list->length(), 2U);
     for (unsigned i = 0; i < 2; ++i) {
       const auto& ident_value = To<CSSIdentifierValue>(list->Item(i));
       if (ident_value.GetValueID() == CSSValueID::kFilled ||
           ident_value.GetValueID() == CSSValueID::kOpen) {
-        state.Style()->SetTextEmphasisFill(
-            ident_value.ConvertTo<TextEmphasisFill>());
+        builder.SetTextEmphasisFill(ident_value.ConvertTo<TextEmphasisFill>());
       } else {
-        state.Style()->SetTextEmphasisMark(
-            ident_value.ConvertTo<TextEmphasisMark>());
+        builder.SetTextEmphasisMark(ident_value.ConvertTo<TextEmphasisMark>());
       }
     }
-    state.Style()->SetTextEmphasisCustomMark(g_null_atom);
+    builder.SetTextEmphasisCustomMark(g_null_atom);
     return;
   }
 
   if (auto* string_value = DynamicTo<CSSStringValue>(value)) {
-    state.Style()->SetTextEmphasisFill(TextEmphasisFill::kFilled);
-    state.Style()->SetTextEmphasisMark(TextEmphasisMark::kCustom);
-    state.Style()->SetTextEmphasisCustomMark(
-        AtomicString(string_value->Value()));
+    builder.SetTextEmphasisFill(TextEmphasisFill::kFilled);
+    builder.SetTextEmphasisMark(TextEmphasisMark::kCustom);
+    builder.SetTextEmphasisCustomMark(AtomicString(string_value->Value()));
     return;
   }
 
   const auto& identifier_value = To<CSSIdentifierValue>(value);
 
-  state.Style()->SetTextEmphasisCustomMark(g_null_atom);
+  builder.SetTextEmphasisCustomMark(g_null_atom);
 
   if (identifier_value.GetValueID() == CSSValueID::kFilled ||
       identifier_value.GetValueID() == CSSValueID::kOpen) {
-    state.Style()->SetTextEmphasisFill(
-        identifier_value.ConvertTo<TextEmphasisFill>());
-    state.Style()->SetTextEmphasisMark(TextEmphasisMark::kAuto);
+    builder.SetTextEmphasisFill(identifier_value.ConvertTo<TextEmphasisFill>());
+    builder.SetTextEmphasisMark(TextEmphasisMark::kAuto);
   } else {
-    state.Style()->SetTextEmphasisFill(TextEmphasisFill::kFilled);
-    state.Style()->SetTextEmphasisMark(
-        identifier_value.ConvertTo<TextEmphasisMark>());
+    builder.SetTextEmphasisFill(TextEmphasisFill::kFilled);
+    builder.SetTextEmphasisMark(identifier_value.ConvertTo<TextEmphasisMark>());
   }
 }
 

@@ -10,17 +10,23 @@
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/util/url_with_title.h"
+#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
+#import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
@@ -72,6 +78,30 @@ class KeyCommandsProviderTest : public PlatformTest {
   // Checks that `view_controller_` can perform the `action`. The sender is set
   // to nil when performing this check.
   bool CanPerform(NSString* action) { return CanPerform(action, nil); }
+
+  // Creates a web state with a back list with 2 elements.
+  web::FakeWebState* InsertNewWebPageWithMultipleEntries(int index) {
+    std::unique_ptr<web::FakeWebState> web_state =
+        std::make_unique<web::FakeWebState>();
+
+    std::unique_ptr<web::FakeNavigationManager> navigation_manager =
+        std::make_unique<web::FakeNavigationManager>();
+    GURL url1("http:/test1.test/");
+    navigation_manager->AddItem(url1, ui::PageTransition::PAGE_TRANSITION_LINK);
+    GURL url2("http:/test2.test/");
+    navigation_manager->AddItem(url2, ui::PageTransition::PAGE_TRANSITION_LINK);
+    GURL url3("http:/test3.test/");
+    navigation_manager->AddItem(url3, ui::PageTransition::PAGE_TRANSITION_LINK);
+
+    web_state->SetNavigationManager(std::move(navigation_manager));
+    web_state->SetBrowserState(browser_state_.get());
+
+    int insertedIndex = web_state_list_->InsertWebState(
+        index, std::move(web_state), WebStateList::INSERT_ACTIVATE,
+        WebStateOpener());
+    return static_cast<web::FakeWebState*>(
+        web_state_list_->GetWebStateAt(insertedIndex));
+  }
 
   void ExpectUMA(NSString* action, const std::string& user_action) {
     ASSERT_EQ(user_action_tester_.GetActionCount(user_action), 0);
@@ -149,7 +179,6 @@ TEST_F(KeyCommandsProviderTest, CanPerform_AlwaysAvailableActions) {
   EXPECT_TRUE(CanPerform(@"keyCommand_reopenLastClosedTab"));
   EXPECT_TRUE(CanPerform(@"keyCommand_showSettings"));
   EXPECT_TRUE(CanPerform(@"keyCommand_reportAnIssue"));
-  EXPECT_TRUE(CanPerform(@"keyCommand_addToReadingList"));
   EXPECT_TRUE(CanPerform(@"keyCommand_showReadingList"));
   EXPECT_TRUE(CanPerform(@"keyCommand_goToTabGrid"));
   EXPECT_TRUE(CanPerform(@"keyCommand_clearBrowsingData"));
@@ -161,16 +190,23 @@ TEST_F(KeyCommandsProviderTest, CanPerform_TabsActions) {
   // No tabs.
   ASSERT_EQ(web_state_list_->count(), 0);
   NSArray<NSString*>* actions = @[
-    @"keyCommand_openLocation",  @"keyCommand_closeTab",
-    @"keyCommand_showBookmarks", @"keyCommand_addToBookmarks",
-    @"keyCommand_reload",        @"keyCommand_back",
-    @"keyCommand_forward",       @"keyCommand_showHistory",
-    @"keyCommand_voiceSearch",   @"keyCommand_stop",
-    @"keyCommand_showHelp",      @"keyCommand_showDownloads",
-    @"keyCommand_showFirstTab",  @"keyCommand_showTab2",
-    @"keyCommand_showTab3",      @"keyCommand_showTab4",
-    @"keyCommand_showTab5",      @"keyCommand_showTab6",
-    @"keyCommand_showTab7",      @"keyCommand_showTab8",
+    @"keyCommand_openLocation",
+    @"keyCommand_closeTab",
+    @"keyCommand_showBookmarks",
+    @"keyCommand_reload",
+    @"keyCommand_showHistory",
+    @"keyCommand_voiceSearch",
+    @"keyCommand_stop",
+    @"keyCommand_showHelp",
+    @"keyCommand_showDownloads",
+    @"keyCommand_showFirstTab",
+    @"keyCommand_showTab2",
+    @"keyCommand_showTab3",
+    @"keyCommand_showTab4",
+    @"keyCommand_showTab5",
+    @"keyCommand_showTab6",
+    @"keyCommand_showTab7",
+    @"keyCommand_showTab8",
     @"keyCommand_showLastTab",
   ];
   for (NSString* action in actions) {
@@ -191,18 +227,14 @@ TEST_F(KeyCommandsProviderTest, CanPerform_TabsActions) {
 }
 
 // Checks whether KeyCommandsProvider can perform the actions that are only
-// available when there are tabs and Find in Page is available.
+// available when there are tabs and Find in Page is available. Ensure that Find
+// Next and Find Previous are not shown.
 TEST_F(KeyCommandsProviderTest, CanPerform_FindInPageActions) {
   // No tabs.
   ASSERT_EQ(web_state_list_->count(), 0);
-  NSArray<NSString*>* actions = @[
-    @"keyCommand_find",
-    @"keyCommand_findNext",
-    @"keyCommand_findPrevious",
-  ];
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
+  EXPECT_FALSE(CanPerform(@"keyCommand_find"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_findNext"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_findPrevious"));
 
   // Open a tab.
   web::FakeWebState* web_state = InsertNewWebState(0);
@@ -211,21 +243,27 @@ TEST_F(KeyCommandsProviderTest, CanPerform_FindInPageActions) {
 
   // No Find in Page.
   web_state->SetContentIsHTML(false);
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
+  EXPECT_FALSE(CanPerform(@"keyCommand_find"));
 
   // Can Find in Page.
   web_state->SetContentIsHTML(true);
-  for (NSString* action in actions) {
-    EXPECT_TRUE(CanPerform(action));
-  }
+  EXPECT_TRUE(CanPerform(@"keyCommand_find"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_findNext"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_findPrevious"));
+
+  // Find UI active.
+  FindTabHelper* helper = FindTabHelper::FromWebState(web_state);
+  helper->SetFindUIActive(YES);
+  EXPECT_TRUE(CanPerform(@"keyCommand_findNext"));
+  EXPECT_TRUE(CanPerform(@"keyCommand_findPrevious"));
+
+  helper->SetFindUIActive(NO);
+  EXPECT_FALSE(CanPerform(@"keyCommand_findNext"));
+  EXPECT_FALSE(CanPerform(@"keyCommand_findPrevious"));
 
   // Close the tab.
   CloseWebState(0);
-  for (NSString* action in actions) {
-    EXPECT_FALSE(CanPerform(action));
-  }
+  EXPECT_FALSE(CanPerform(@"keyCommand_find"));
 }
 
 // Checks whether KeyCommandsProvider can perform the actions that are only
@@ -243,8 +281,10 @@ TEST_F(KeyCommandsProviderTest, CanPerform_EditingTextActions) {
   EXPECT_FALSE(CanPerform(@"keyCommand_back", back_2));
   EXPECT_FALSE(CanPerform(@"keyCommand_forward", forward_2));
 
-  // Add one.
-  InsertNewWebState(0);
+  // Add one with back and forward list not empty.
+  web::FakeWebState* web_state = InsertNewWebPageWithMultipleEntries(0);
+  // Ensure you have go back and go forward enabled.
+  web_navigation_util::GoBack(web_state);
 
   EXPECT_TRUE(CanPerform(@"keyCommand_back"));
   EXPECT_TRUE(CanPerform(@"keyCommand_forward"));
@@ -464,6 +504,88 @@ TEST_F(KeyCommandsProviderTest, CanPerform_ShowPreviousAndNextTab) {
   for (NSString* action in actions) {
     EXPECT_FALSE(CanPerform(action));
   }
+}
+
+// Checks whether KeyCommandsProvider can perform the actions that are only
+// available when there are tabs and it is a http or https page.
+TEST_F(KeyCommandsProviderTest, CanPerform_ActionsInHttpPage) {
+  // No tabs.
+  ASSERT_EQ(web_state_list_->count(), 0);
+  NSArray<NSString*>* actions =
+      @[ @"keyCommand_addToBookmarks", @"keyCommand_addToReadingList" ];
+  for (NSString* action in actions) {
+    EXPECT_FALSE(CanPerform(action));
+  }
+
+  // Open a New Tab Page (NTP) tab which is not a http or https page.
+  std::unique_ptr<web::FakeNavigationManager> fake_navigation_manager =
+      std::make_unique<web::FakeNavigationManager>();
+
+  std::unique_ptr<web::NavigationItem> pending_item =
+      web::NavigationItem::Create();
+  pending_item->SetURL(GURL(kChromeUIAboutNewTabURL));
+
+  fake_navigation_manager->SetPendingItem(pending_item.get());
+  std::unique_ptr<web::FakeWebState> fake_web_state =
+      std::make_unique<web::FakeWebState>();
+
+  GURL url(kChromeUINewTabURL);
+  fake_web_state->SetVisibleURL(url);
+  fake_web_state->SetNavigationManager(std::move(fake_navigation_manager));
+  fake_web_state->SetBrowserState(browser_state_.get());
+
+  id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+
+  NewTabPageTabHelper::CreateForWebState(fake_web_state.get());
+  NewTabPageTabHelper* ntp_helper =
+      NewTabPageTabHelper::FromWebState(fake_web_state.get());
+  ntp_helper->SetDelegate(delegate);
+
+  // Ensure that the actions are not available when the tab is a NTP.
+  ASSERT_TRUE(ntp_helper->IsActive());
+  ASSERT_FALSE(url.SchemeIsHTTPOrHTTPS());
+  for (NSString* action in actions) {
+    EXPECT_FALSE(CanPerform(action));
+  }
+
+  // Open a second tab which is a http one.
+  web::FakeWebState* second_tab_web_state = InsertNewWebState(1);
+  GURL http_url("http://foo/");
+  second_tab_web_state->SetVisibleURL(http_url);
+
+  // Ensure that the actions are available.
+  ASSERT_TRUE(http_url.SchemeIsHTTPOrHTTPS());
+  for (NSString* action in actions) {
+    EXPECT_TRUE(CanPerform(action));
+  }
+}
+
+// Checks whether KeyCommandsProvider can perform the actions that are only
+// available when there are back or forward navigations.
+TEST_F(KeyCommandsProviderTest, CanPerform_BackForwardWithMultipleEntries) {
+  web::FakeWebState* web_state = InsertNewWebPageWithMultipleEntries(0);
+
+  NSString* goBackActions = @"keyCommand_back";
+  NSString* goForwardActions = @"keyCommand_forward";
+
+  EXPECT_TRUE(CanPerform(goBackActions));
+  EXPECT_FALSE(CanPerform(goForwardActions));
+
+  web_navigation_util::GoBack(web_state);
+  EXPECT_TRUE(CanPerform(goBackActions));
+  EXPECT_TRUE(CanPerform(goForwardActions));
+
+  web_navigation_util::GoBack(web_state);
+  EXPECT_FALSE(CanPerform(goBackActions));
+  EXPECT_TRUE(CanPerform(goForwardActions));
+
+  web_navigation_util::GoForward(web_state);
+  EXPECT_TRUE(CanPerform(goBackActions));
+  EXPECT_TRUE(CanPerform(goForwardActions));
+
+  web_navigation_util::GoForward(web_state);
+  EXPECT_TRUE(CanPerform(goBackActions));
+  EXPECT_FALSE(CanPerform(goForwardActions));
 }
 
 }  // namespace

@@ -608,12 +608,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kOnDevice,
                                  EditableType::kTextArea)));
 
-INSTANTIATE_TEST_SUITE_P(
-    OnDeviceContentEditable,
-    DictationTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kOnDevice,
-                                 EditableType::kContentEditable)));
-
 // Tests the behavior of the GetAllSupportedLocales method, specifically how
 // it sets locale data.
 IN_PROC_BROWSER_TEST_P(DictationTest, GetAllSupportedLocales) {
@@ -1311,14 +1305,15 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeleteAllTextMultiLineString) {
 // and ensure that you can't run the Dictation
 // Commands under that feature flag.
 
-IN_PROC_BROWSER_TEST_P(DictationCommandsTest, NavStartTextSimple) {
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DISABLED_NavStartTextSimple) {
   SendFinalResultAndWaitForEditableValue("Is good", "Is good");
   SendFinalResultAndWaitForCaretBoundsChanged("move to the start");
   SendFinalResultAndWaitForEditableValue("the weather outside",
                                          "the weather outside Is good");
 }
 
-IN_PROC_BROWSER_TEST_P(DictationCommandsTest, NavStartTextMultiLineString) {
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest,
+                       DISABLED_NavStartTextMultiLineString) {
   if (!RunOnMultilineContent())
     return;
 
@@ -2038,12 +2033,6 @@ INSTANTIATE_TEST_SUITE_P(
     DictationPumpkinTest,
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kOnDevice,
                                  EditableType::kTextArea)));
-
-INSTANTIATE_TEST_SUITE_P(
-    OnDeviceContentEditable,
-    DictationPumpkinTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kOnDevice,
-                                 EditableType::kContentEditable)));
 
 // TODO(crbug.com/1368843): Test is flaky on MSAN builds.
 #if defined(MEMORY_SANITIZER)

@@ -7,7 +7,10 @@
 #include <ostream>
 #include <tuple>
 
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -102,6 +105,61 @@ std::ostream& operator<<(std::ostream& out, const SourceRegistration& s) {
   WriteOptional(out, s.debug_key())
       << ",aggregation_keys=" << s.aggregation_keys()
       << ",debug_reporting=" << s.debug_reporting() << "}";
+  return out;
+}
+
+bool operator==(const AggregatableValues& a, const AggregatableValues& b) {
+  return a.values() == b.values();
+}
+
+std::ostream& operator<<(std::ostream& out, const AggregatableValues& values) {
+  out << "{";
+  const char* separator = "";
+  for (const auto& [key, value] : values.values()) {
+    out << separator << key << ":" << value;
+    separator = ", ";
+  }
+  return out << "}";
+}
+
+bool operator==(const AggregatableTriggerData& a,
+                const AggregatableTriggerData& b) {
+  const auto tie = [](const AggregatableTriggerData& trigger_data) {
+    return std::make_tuple(trigger_data.key_piece(), trigger_data.source_keys(),
+                           trigger_data.filters(), trigger_data.not_filters());
+  };
+  return tie(a) == tie(b);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AggregatableTriggerData& trigger_data) {
+  out << "{key_piece=" << trigger_data.key_piece() << ",source_keys=[";
+
+  const char* separator = "";
+  for (const auto& key : trigger_data.source_keys()) {
+    out << separator << key;
+    separator = ", ";
+  }
+
+  return out << "],filters=" << trigger_data.filters()
+             << ",not_filters=" << trigger_data.not_filters() << "}";
+}
+
+bool operator==(const EventTriggerData& a, const EventTriggerData& b) {
+  const auto tie = [](const EventTriggerData& t) {
+    return std::make_tuple(t.data, t.priority, t.dedup_key, t.filters,
+                           t.not_filters);
+  };
+  return tie(a) == tie(b);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const EventTriggerData& event_trigger) {
+  out << "{data=" << event_trigger.data
+      << ",priority=" << event_trigger.priority << ",dedup_key=";
+  WriteOptional(out, event_trigger.dedup_key)
+      << ",filters=" << event_trigger.filters
+      << ",not_filters=" << event_trigger.not_filters << "}";
   return out;
 }
 

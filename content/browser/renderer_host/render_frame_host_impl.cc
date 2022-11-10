@@ -34,7 +34,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
@@ -49,7 +48,6 @@
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/render_accessibility_host.h"
-#include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
@@ -78,7 +76,6 @@
 #include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/log_console_message.h"
-#include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/navigation_or_document_handle.h"
@@ -113,7 +110,6 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/page_factory.h"
-#include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 #include "content/browser/renderer_host/pending_beacon_host.h"
 #include "content/browser/renderer_host/pending_beacon_service.h"
 #include "content/browser/renderer_host/private_network_access_util.h"
@@ -131,7 +127,6 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
-#include "content/browser/shared_storage/shared_storage_document_service_impl.h"
 #include "content/browser/site_info.h"
 #include "content/browser/sms/webotp_service.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
@@ -206,10 +201,9 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/features.h"
 #include "net/base/schemeful_site.h"
 #include "net/net_buildflags.h"
-#include "services/device/public/mojom/screen_orientation.mojom.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -254,7 +248,6 @@
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/opengraph/metadata.mojom.h"
-#include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/storage_key/ancestor_chain_bit.mojom.h"
@@ -286,8 +279,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PPAPI)
-#include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
+#include "content/browser/renderer_host/render_frame_host_impl_ppapi_support.h"
 #endif
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -483,124 +475,6 @@ class ScopedCommitStateResetter {
   raw_ptr<RenderFrameHostImpl> render_frame_host_;
   bool disabled_ = false;
 };
-
-// This class can be added as a MessageFilter to a mojo receiver to detect
-// messages received while the the associated frame is in the Back-Forward
-// Cache. Documents that are in the bfcache should not be sending mojo messages
-// back to the browser.
-class BackForwardCacheMessageFilter : public mojo::MessageFilter {
- public:
-  explicit BackForwardCacheMessageFilter(
-      RenderFrameHostImpl* render_frame_host,
-      const char* interface_name,
-      BackForwardCacheImpl::MessageHandlingPolicyWhenCached policy)
-      : render_frame_host_(render_frame_host),
-        interface_name_(interface_name),
-        policy_(policy) {}
-
-  ~BackForwardCacheMessageFilter() override = default;
-
- private:
-  // mojo::MessageFilter overrides.
-  bool WillDispatch(mojo::Message* message) override {
-    if (!render_frame_host_->render_view_host())
-      return false;
-    if (render_frame_host_->render_view_host()
-            ->GetPageLifecycleStateManager()
-            ->RendererExpectedToSendChannelAssociatedIpcs() ||
-        ProcessHoldsNonCachedPages() ||
-        policy_ == BackForwardCacheImpl::kMessagePolicyNone) {
-      return true;
-    }
-
-    BackForwardCacheImpl::VlogUnexpectedRendererToBrowserMessage(
-        interface_name_, message->name());
-
-    TRACE_EVENT2(
-        "content", "BackForwardCacheMessageFilter::WillDispatch bad_message",
-        "interface_name", interface_name_, "message_name", message->name());
-
-    base::UmaHistogramSparse(
-        "BackForwardCache.UnexpectedRendererToBrowserMessage.InterfaceName",
-        static_cast<int32_t>(base::HashMetricName(interface_name_)));
-
-    switch (policy_) {
-      case BackForwardCacheImpl::kMessagePolicyNone:
-      case BackForwardCacheImpl::kMessagePolicyLog:
-        return true;
-      case BackForwardCacheImpl::kMessagePolicyDump:
-        base::debug::DumpWithoutCrashing();
-        return true;
-    }
-  }
-
-  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {}
-
-  // TODO(https://crbug.com/1125996): Remove once a well-behaved frozen
-  // RenderFrame never send IPCs messages, even if there are active pages in the
-  // process.
-  bool ProcessHoldsNonCachedPages() {
-    return RenderViewHostImpl::HasNonBackForwardCachedInstancesForProcess(
-        render_frame_host_->GetProcess());
-  }
-
-  const raw_ptr<RenderFrameHostImpl> render_frame_host_;
-  const char* const interface_name_;
-  const BackForwardCacheImpl::MessageHandlingPolicyWhenCached policy_;
-};
-
-// This class is used to chain multiple mojo::MessageFilter. Messages will be
-// processed by the filters in the same order as the filters are added with the
-// Add() method. WillDispatch() might not be called for all filters or might see
-// a modified message if a filter earlier in the chain discards or modifies it.
-// Similarly a given filter instance might not receive a DidDispatchOrReject()
-// call even if WillDispatch() was called if a filter further down the chain
-// discarded it. Long story short, the order in which filters are added is
-// important!
-class MessageFilterChain final : public mojo::MessageFilter {
- public:
-  MessageFilterChain() = default;
-  ~MessageFilterChain() final = default;
-
-  bool WillDispatch(mojo::Message* message) override {
-    for (auto& filter : filters_) {
-      if (!filter->WillDispatch(message))
-        return false;
-    }
-    return true;
-  }
-  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {
-    for (auto& filter : filters_) {
-      filter->DidDispatchOrReject(message, accepted);
-    }
-  }
-
-  // Adds a filter to the end of the chain. See class description for ordering
-  // implications.
-  void Add(std::unique_ptr<mojo::MessageFilter> filter) {
-    filters_.push_back(std::move(filter));
-  }
-
- private:
-  std::vector<std::unique_ptr<mojo::MessageFilter>> filters_;
-};
-
-std::unique_ptr<mojo::MessageFilter>
-CreateMessageFilterForAssociatedReceiverImpl(
-    RenderFrameHostImpl* render_frame_host,
-    const char* interface_name,
-    BackForwardCacheImpl::MessageHandlingPolicyWhenCached policy) {
-  auto filter_chain = std::make_unique<MessageFilterChain>();
-  filter_chain->Add(std::make_unique<BackForwardCacheMessageFilter>(
-      render_frame_host, interface_name, policy));
-  // BackForwardCacheMessageFilter might drop messages so add
-  // ActiveUrlMessageFilter at the end of the chain as we need to make sure that
-  // the debug url is reset, that is, DidDispatchOrReject() is called if
-  // WillDispatch().
-  filter_chain->Add(
-      std::make_unique<internal::ActiveUrlMessageFilter>(render_frame_host));
-  return filter_chain;
-}
 
 void GrantFileAccess(int child_id,
                      const std::vector<base::FilePath>& file_paths) {
@@ -850,30 +724,32 @@ bool VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
   // - blob urls with content scheme are opaque on browser side
   // (https://crbug.com/1295268)
   const url::Origin& renderer_side_origin = params.origin;
-  std::pair<url::Origin, std::string> browser_side_origin_and_debug_info =
-      navigation_request->GetOriginToCommitWithDebugInfo();
+  std::pair<absl::optional<url::Origin>, std::string>
+      browser_side_origin_and_debug_info =
+          navigation_request->GetOriginToCommitWithDebugInfo();
   if ((renderer_side_origin.opaque() ||
        renderer_side_origin.scheme() == url::kContentScheme) &&
-      browser_side_origin_and_debug_info.first.opaque()) {
+      browser_side_origin_and_debug_info.first->opaque()) {
     return true;
   }
 
   // TODO(https://crbug.com/888079): Remove the DumpWithoutCrashing below, once
   // we are sure that the `browser_side_origin` is always the same as the
   // `renderer_side_origin`.
-  if (browser_side_origin_and_debug_info.first != renderer_side_origin) {
+  if (browser_side_origin_and_debug_info.first.value() !=
+      renderer_side_origin) {
     NavigationRequest::ScopedCrashKeys navigation_request_crash_keys(
         *navigation_request);
     SCOPED_CRASH_KEY_STRING256(
         "", "browser_origin",
-        browser_side_origin_and_debug_info.first.GetDebugString());
+        browser_side_origin_and_debug_info.first->GetDebugString());
     SCOPED_CRASH_KEY_STRING256("", "browser_debug_info",
                                browser_side_origin_and_debug_info.second);
 
     SCOPED_CRASH_KEY_STRING256(
         "", "browser_ready_to_commit_origin",
         navigation_request->browser_side_origin_to_commit_with_debug_info()
-            .first.GetDebugString());
+            .first->GetDebugString());
     SCOPED_CRASH_KEY_STRING256(
         "", "browser_ready_to_commit_debug_info",
         navigation_request->browser_side_origin_to_commit_with_debug_info()
@@ -890,7 +766,8 @@ bool VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
     return false;
   }
 
-  DCHECK_EQ(browser_side_origin_and_debug_info.first, renderer_side_origin)
+  DCHECK_EQ(browser_side_origin_and_debug_info.first.value(),
+            renderer_side_origin)
       << "; navigation_request->GetURL() = " << navigation_request->GetURL();
   return true;
 }
@@ -1317,7 +1194,7 @@ class RenderFrameHostImpl::SubresourceLoaderFactoriesConfig {
   static SubresourceLoaderFactoriesConfig ForPendingNavigation(
       NavigationRequest& navigation_request) {
     SubresourceLoaderFactoriesConfig result;
-    result.origin_ = navigation_request.GetOriginToCommit();
+    result.origin_ = navigation_request.GetOriginToCommit().value();
     result.client_security_state_ =
         navigation_request.BuildClientSecurityState();
     result.ukm_source_id_ = ukm::SourceIdObj::FromInt64(
@@ -1425,50 +1302,6 @@ class RenderFrameHostImpl::SubresourceLoaderFactoriesConfig {
   network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy_;
   ukm::SourceIdObj ukm_source_id_;
 };
-
-#if BUILDFLAG(ENABLE_PPAPI)
-class PepperPluginInstanceHost : public mojom::PepperPluginInstanceHost {
- public:
-  PepperPluginInstanceHost(
-      int32_t instance_id,
-      RenderFrameHostImpl* frame_host,
-      mojo::PendingAssociatedRemote<mojom::PepperPluginInstance> instance,
-      mojo::PendingAssociatedReceiver<mojom::PepperPluginInstanceHost> host)
-      : instance_id_(instance_id),
-        frame_host_(frame_host),
-        receiver_(this, std::move(host)),
-        remote_(std::move(instance)) {
-    frame_host_->delegate()->OnPepperInstanceCreated(frame_host_, instance_id);
-    remote_.set_disconnect_handler(
-        base::BindOnce(&RenderFrameHostImpl::PepperInstanceClosed,
-                       base::Unretained(frame_host), instance_id_));
-  }
-  ~PepperPluginInstanceHost() override = default;
-
-  // mojom::PepperPluginInstanceHost overrides.
-  void StartsPlayback() override {
-    frame_host_->delegate()->OnPepperStartsPlayback(frame_host_, instance_id_);
-  }
-
-  void StopsPlayback() override {
-    frame_host_->delegate()->OnPepperStopsPlayback(frame_host_, instance_id_);
-  }
-
-  void InstanceCrashed(const base::FilePath& plugin_path,
-                       base::ProcessId plugin_pid) override {
-    frame_host_->delegate()->OnPepperPluginCrashed(frame_host_, plugin_path,
-                                                   plugin_pid);
-  }
-
-  void SetVolume(double volume) { remote_->SetVolume(volume); }
-
- private:
-  int32_t const instance_id_;
-  const raw_ptr<RenderFrameHostImpl> frame_host_;
-  mojo::AssociatedReceiver<mojom::PepperPluginInstanceHost> receiver_;
-  mojo::AssociatedRemote<mojom::PepperPluginInstance> remote_;
-};
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 struct PendingNavigation {
   blink::mojom::CommonNavigationParamsPtr common_params;
@@ -2116,11 +1949,6 @@ void RenderFrameHostImpl::DisableBackForwardCache(
     BackForwardCache::DisabledReason reason) {
   back_forward_cache_disabled_reasons_.insert(reason);
   MaybeEvictFromBackForwardCache();
-}
-
-void RenderFrameHostImpl::ClearDisableBackForwardCache(
-    BackForwardCache::DisabledReason reason) {
-  back_forward_cache_disabled_reasons_.erase(reason);
 }
 
 void RenderFrameHostImpl::DisableProactiveBrowsingInstanceSwapForTesting() {
@@ -9447,246 +9275,6 @@ void RenderFrameHostImpl::BindBlobUrlStoreReceiver(
       storage_key(), std::move(receiver));
 }
 
-void RenderFrameHostImpl::SetUpMojoConnection() {
-  CHECK(!associated_registry_);
-
-  // TODO(https://crbug.com/1265864): Move the registry logic below to another
-  // file to ensure security review coverage.
-  associated_registry_ = std::make_unique<blink::AssociatedInterfaceRegistry>();
-
-  auto bind_frame_host_receiver =
-      [](RenderFrameHostImpl* impl,
-         mojo::PendingAssociatedReceiver<mojom::FrameHost> receiver) {
-        impl->frame_host_associated_receiver_.Bind(std::move(receiver));
-        impl->frame_host_associated_receiver_.SetFilter(
-            impl->CreateMessageFilterForAssociatedReceiver(
-                mojom::FrameHost::Name_));
-      };
-  associated_registry_->AddInterface<mojom::FrameHost>(
-      base::BindRepeating(bind_frame_host_receiver, base::Unretained(this)));
-
-  associated_registry_->AddInterface<
-      blink::mojom::BackForwardCacheControllerHost>(base::BindRepeating(
-      [](RenderFrameHostImpl* impl,
-         mojo::PendingAssociatedReceiver<
-             blink::mojom::BackForwardCacheControllerHost> receiver) {
-        impl->back_forward_cache_controller_host_associated_receiver_.Bind(
-            std::move(receiver));
-        impl->back_forward_cache_controller_host_associated_receiver_.SetFilter(
-            CreateMessageFilterForAssociatedReceiverImpl(
-                impl, blink::mojom::BackForwardCacheControllerHost::Name_,
-                BackForwardCacheImpl::kMessagePolicyNone));
-      },
-      base::Unretained(this)));
-
-  associated_registry_->AddInterface<blink::mojom::PortalHost>(
-      base::BindRepeating(
-          [](RenderFrameHostImpl* self,
-             mojo::PendingAssociatedReceiver<blink::mojom::PortalHost>
-                 receiver) {
-            Portal::BindPortalHostReceiver(self, std::move(receiver));
-          },
-          base::Unretained(this)));
-
-  associated_registry_->AddInterface<blink::mojom::LocalFrameHost>(
-      base::BindRepeating(
-          [](RenderFrameHostImpl* impl,
-             mojo::PendingAssociatedReceiver<blink::mojom::LocalFrameHost>
-                 receiver) {
-            impl->local_frame_host_receiver_.Bind(std::move(receiver));
-            impl->local_frame_host_receiver_.SetFilter(
-                impl->CreateMessageFilterForAssociatedReceiver(
-                    blink::mojom::LocalFrameHost::Name_));
-          },
-          base::Unretained(this)));
-
-  if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
-    associated_registry_->AddInterface<
-        blink::mojom::SharedStorageDocumentService>(base::BindRepeating(
-        [](RenderFrameHostImpl* impl,
-           mojo::PendingAssociatedReceiver<
-               blink::mojom::SharedStorageDocumentService> receiver) {
-          if (SharedStorageDocumentServiceImpl::GetForCurrentDocument(impl)) {
-            // The renderer somehow requested two shared storage worklets
-            // associated with the same document. This could indicate a
-            // compromised renderer, so let's terminate it.
-            mojo::ReportBadMessage(
-                "Attempted to request two shared storage worklets associated "
-                "with the same document.");
-            return;
-          }
-
-          SharedStorageDocumentServiceImpl::GetOrCreateForCurrentDocument(impl)
-              ->Bind(std::move(receiver));
-        },
-        base::Unretained(this)));
-  }
-
-  if (is_main_frame()) {
-    associated_registry_->AddInterface<blink::mojom::LocalMainFrameHost>(
-        base::BindRepeating(
-            [](RenderFrameHostImpl* impl,
-               mojo::PendingAssociatedReceiver<blink::mojom::LocalMainFrameHost>
-                   receiver) {
-              impl->local_main_frame_host_receiver_.Bind(std::move(receiver));
-              impl->local_main_frame_host_receiver_.SetFilter(
-                  impl->CreateMessageFilterForAssociatedReceiver(
-                      blink::mojom::LocalMainFrameHost::Name_));
-            },
-            base::Unretained(this)));
-
-    associated_registry_->AddInterface<blink::mojom::ManifestUrlChangeObserver>(
-        base::BindRepeating(
-            [](RenderFrameHostImpl* impl,
-               mojo::PendingAssociatedReceiver<
-                   blink::mojom::ManifestUrlChangeObserver> receiver) {
-              ManifestManagerHost::GetOrCreateForPage(impl->GetPage())
-                  ->BindObserver(std::move(receiver));
-            },
-            base::Unretained(this)));
-  }
-
-  // TODO(crbug.com/1047354): How to avoid binding if the
-  // BINDINGS_POLICY_DOM_AUTOMATION policy is not set?
-  associated_registry_->AddInterface<mojom::DomAutomationControllerHost>(
-      base::BindRepeating(
-          [](RenderFrameHostImpl* impl,
-             mojo::PendingAssociatedReceiver<mojom::DomAutomationControllerHost>
-                 receiver) {
-            impl->BindDomOperationControllerHostReceiver(std::move(receiver));
-          },
-          base::Unretained(this)));
-
-  file_system_manager_.reset(new FileSystemManagerImpl(
-      GetProcess()->GetID(),
-      GetProcess()->GetStoragePartition()->GetFileSystemContext(),
-      ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-
-#if BUILDFLAG(ENABLE_PPAPI)
-  associated_registry_->AddInterface<mojom::PepperHost>(base::BindRepeating(
-      [](RenderFrameHostImpl* impl,
-         mojo::PendingAssociatedReceiver<mojom::PepperHost> receiver) {
-        impl->pepper_host_receiver_.Bind(std::move(receiver));
-        impl->pepper_host_receiver_.SetFilter(
-            impl->CreateMessageFilterForAssociatedReceiver(
-                mojom::PepperHost::Name_));
-      },
-      base::Unretained(this)));
-#endif
-
-  associated_registry_->AddInterface<media::mojom::MediaPlayerHost>(
-      base::BindRepeating(
-          [](RenderFrameHostImpl* impl,
-             mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost>
-                 receiver) {
-            impl->delegate()->CreateMediaPlayerHostForRenderFrameHost(
-                impl, std::move(receiver));
-          },
-          base::Unretained(this)));
-
-  associated_registry_->AddInterface<blink::mojom::DisplayCutoutHost>(
-      base::BindRepeating(
-          [](RenderFrameHostImpl* impl,
-             mojo::PendingAssociatedReceiver<blink::mojom::DisplayCutoutHost>
-                 receiver) {
-            impl->delegate()->BindDisplayCutoutHost(impl, std::move(receiver));
-          },
-          base::Unretained(this)));
-
-  associated_registry_->AddInterface<blink::mojom::ConversionHost>(
-      base::BindRepeating(
-          [](RenderFrameHostImpl* impl,
-             mojo::PendingAssociatedReceiver<blink::mojom::ConversionHost>
-                 receiver) {
-            AttributionHost::BindReceiver(std::move(receiver), impl);
-          },
-          base::Unretained(this)));
-
-  associated_registry_->AddInterface<device::mojom::ScreenOrientation>(
-      base::BindRepeating(
-          [](RenderFrameHostImpl* impl,
-             mojo::PendingAssociatedReceiver<device::mojom::ScreenOrientation>
-                 receiver) {
-            impl->delegate()->BindScreenOrientation(impl, std::move(receiver));
-          },
-          base::Unretained(this)));
-
-  associated_registry_->AddInterface<blink::mojom::BroadcastChannelProvider>(
-      base::BindRepeating(&RenderFrameHostImpl::CreateBroadcastChannelProvider,
-                          base::Unretained(this)));
-
-  if (base::FeatureList::IsEnabled(net::features::kSupportPartitionedBlobUrl)) {
-    associated_registry_->AddInterface<blink::mojom::BlobURLStore>(
-        base::BindRepeating(
-            &RenderFrameHostImpl::BindBlobUrlStoreAssociatedReceiver,
-            base::Unretained(this)));
-  }
-
-  // Allow embedders to register their binders.
-  GetContentClient()
-      ->browser()
-      ->RegisterAssociatedInterfaceBindersForRenderFrameHost(
-          *this, *associated_registry_);
-
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      remote_interfaces;
-  GetMojomFrameInRenderer()->GetInterfaceProvider(
-      remote_interfaces.InitWithNewPipeAndPassReceiver());
-
-  remote_interfaces_ = std::make_unique<service_manager::InterfaceProvider>(
-      base::ThreadTaskRunnerHandle::Get());
-  remote_interfaces_->Bind(std::move(remote_interfaces));
-
-  // Called to bind the receiver for this interface to the local frame. We need
-  // to eagarly bind here because binding happens at normal priority on the main
-  // thread and future calls to this interface need to be high priority.
-  GetHighPriorityLocalFrame();
-}
-
-void RenderFrameHostImpl::TearDownMojoConnection() {
-  // While not directly a Mojo endpoint, |geolocation_service_| may attempt to
-  // cancel permission requests.
-  geolocation_service_.reset();
-
-  associated_registry_.reset();
-
-  mojo_image_downloader_.reset();
-  find_in_page_.reset();
-  local_frame_.reset();
-  local_main_frame_.reset();
-  high_priority_local_frame_.reset();
-
-  frame_host_associated_receiver_.reset();
-  associated_interface_provider_receiver_.reset();
-  back_forward_cache_controller_host_associated_receiver_.reset();
-  frame_.reset();
-  frame_bindings_control_.reset();
-  local_frame_host_receiver_.reset();
-  local_main_frame_host_receiver_.reset();
-
-  broker_receiver_.reset();
-
-  render_accessibility_.reset();
-  render_accessibility_host_.Reset();
-
-  dom_automation_controller_receiver_.reset();
-
-#if BUILDFLAG(ENABLE_PPAPI)
-  pepper_host_receiver_.reset();
-  pepper_instance_map_.clear();
-  pepper_hung_detectors_.Clear();
-#endif  // BUILDFLAG(ENABLE_PPAPI)
-
-  // Audio stream factories are tied to a live RenderFrame: see
-  // //content/browser/media/forwarding_audio_stream_factory.h.
-  // Eagerly reset now to ensure that it is impossible to create streams
-  // associated with a RenderFrameHost without a live RenderFrame;
-  // otherwise, the `RenderFrameDeleted()` signal used to clean up streams
-  // will never fire.
-  audio_service_audio_output_stream_factory_.reset();
-  audio_service_audio_input_stream_factory_.reset();
-}
-
 bool RenderFrameHostImpl::IsFocused() {
   if (!GetMainFrame()->GetRenderWidgetHost()->is_focused() ||
       !frame_tree_->GetFocusedFrame())
@@ -9872,6 +9460,14 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
     // in the renderer.
     render_accessibility_.reset();
   }
+
+  if (!ax_mode.has_mode(ui::kAXModeBasic.mode()) &&
+      browser_accessibility_manager_) {
+    // Missing either kWebContents and kNativeAPIs, so
+    // BrowserAccessibilityManager is no longer necessary.
+    browser_accessibility_manager_->DetachFromParentManager();
+    browser_accessibility_manager_.reset();
+  }
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
@@ -9895,6 +9491,15 @@ void RenderFrameHostImpl::SnapshotDocumentForViewTransition(
   GetAssociatedLocalFrame()->SnapshotDocumentForViewTransition(
       std::move(callback));
 }
+
+#if BUILDFLAG(ENABLE_PPAPI)
+RenderFrameHostImplPpapiSupport& RenderFrameHostImpl::GetPpapiSupport() {
+  if (!ppapi_support_) {
+    ppapi_support_ = std::make_unique<RenderFrameHostImplPpapiSupport>(*this);
+  }
+  return *ppapi_support_;
+}
+#endif
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
     AXTreeSnapshotCallback callback,
@@ -11391,8 +10996,8 @@ void RenderFrameHostImpl::SetAudioOutputDeviceIdForGlobalMediaControls(
 std::unique_ptr<mojo::MessageFilter>
 RenderFrameHostImpl::CreateMessageFilterForAssociatedReceiver(
     const char* interface_name) {
-  return CreateMessageFilterForAssociatedReceiverImpl(
-      this, interface_name,
+  return CreateMessageFilterForAssociatedReceiverInternal(
+      interface_name,
       BackForwardCacheImpl::GetChannelAssociatedMessageHandlingPolicy());
 }
 
@@ -12432,7 +12037,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
         navigation_request->isolation_info_for_subresources()
             .network_isolation_key());
 
-    url::Origin origin_to_commit = navigation_request->GetOriginToCommit();
+    url::Origin origin_to_commit =
+        navigation_request->GetOriginToCommit().value();
     // Make sure the origin of the isolation info and origin to commit match,
     // otherwise the cookie manager will crash. Sending the cookie manager here
     // is just an optimization, so it is fine for it to be null in the case
@@ -14297,109 +13903,6 @@ void RenderFrameHostImpl::Clone(
     mojo::PendingReceiver<network::mojom::CookieAccessObserver> observer) {
   cookie_observers_.Add(this, std::move(observer));
 }
-
-#if BUILDFLAG(ENABLE_PPAPI)
-void RenderFrameHostImpl::InstanceCreated(
-    int32_t instance_id,
-    mojo::PendingAssociatedRemote<mojom::PepperPluginInstance> instance,
-    mojo::PendingAssociatedReceiver<mojom::PepperPluginInstanceHost> host) {
-  pepper_instance_map_.emplace(
-      instance_id,
-      std::make_unique<PepperPluginInstanceHost>(
-          instance_id, this, std::move(instance), std::move(host)));
-}
-
-void RenderFrameHostImpl::BindHungDetectorHost(
-    mojo::PendingReceiver<mojom::PepperHungDetectorHost> hung_host,
-    int32_t plugin_child_id,
-    const base::FilePath& path) {
-  pepper_hung_detectors_.Add(this, std::move(hung_host),
-                             {plugin_child_id, path});
-}
-
-void RenderFrameHostImpl::GetPluginInfo(const GURL& url,
-                                        const std::string& mime_type,
-                                        GetPluginInfoCallback callback) {
-  bool allow_wildcard = true;
-  WebPluginInfo info;
-  std::string actual_mime_type;
-  bool found = PluginServiceImpl::GetInstance()->GetPluginInfo(
-      GetBrowserContext(), url, mime_type, allow_wildcard, nullptr, &info,
-      &actual_mime_type);
-  std::move(callback).Run(found, info, actual_mime_type);
-}
-
-void RenderFrameHostImpl::DidCreateInProcessInstance(int32_t instance,
-                                                     int32_t render_frame_id,
-                                                     const GURL& document_url,
-                                                     const GURL& plugin_url) {
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  process->pepper_renderer_connection()->DidCreateInProcessInstance(
-      instance, render_frame_id, document_url, plugin_url);
-}
-
-void RenderFrameHostImpl::DidDeleteInProcessInstance(int32_t instance) {
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  process->pepper_renderer_connection()->DidDeleteInProcessInstance(instance);
-}
-
-void RenderFrameHostImpl::DidCreateOutOfProcessPepperInstance(
-    int32_t plugin_child_id,
-    int32_t pp_instance,
-    bool is_external,
-    int32_t render_frame_id,
-    const GURL& document_url,
-    const GURL& plugin_url,
-    bool is_privileged_context,
-    DidCreateOutOfProcessPepperInstanceCallback callback) {
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  process->pepper_renderer_connection()->DidCreateOutOfProcessPepperInstance(
-      plugin_child_id, pp_instance, is_external, render_frame_id, document_url,
-      plugin_url, is_privileged_context, std::move(callback));
-}
-
-void RenderFrameHostImpl::DidDeleteOutOfProcessPepperInstance(
-    int32_t plugin_child_id,
-    int32_t pp_instance,
-    bool is_external) {
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  process->pepper_renderer_connection()->DidDeleteOutOfProcessPepperInstance(
-      plugin_child_id, pp_instance, is_external);
-}
-
-void RenderFrameHostImpl::OpenChannelToPepperPlugin(
-    const url::Origin& embedder_origin,
-    const base::FilePath& path,
-    const absl::optional<url::Origin>& origin_lock,
-    OpenChannelToPepperPluginCallback callback) {
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  process->pepper_renderer_connection()->OpenChannelToPepperPlugin(
-      embedder_origin, path, origin_lock, std::move(callback));
-}
-
-void RenderFrameHostImpl::PluginHung(bool is_hung) {
-  const HungDetectorContext& context = pepper_hung_detectors_.current_context();
-  delegate()->OnPepperPluginHung(this, context.plugin_child_id,
-                                 context.plugin_path, is_hung);
-}
-
-void RenderFrameHostImpl::PepperInstanceClosed(int32_t instance_id) {
-  delegate()->OnPepperInstanceDeleted(this, instance_id);
-  pepper_instance_map_.erase(instance_id);
-}
-
-void RenderFrameHostImpl::PepperSetVolume(int32_t instance_id, double volume) {
-  auto plugin_instance_host = pepper_instance_map_.find(instance_id);
-  DCHECK(plugin_instance_host != pepper_instance_map_.end());
-  plugin_instance_host->second->SetVolume(volume);
-}
-
-#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 void RenderFrameHostImpl::OnCookiesAccessed(
     network::mojom::CookieAccessDetailsPtr details) {

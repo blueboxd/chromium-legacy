@@ -6,7 +6,6 @@
 #define COMPONENTS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ITEM_H_
 
 #include "base/component_export.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -73,6 +72,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
 
   // Called by MediaNotificationView when mute button is clicked.
   virtual void SetMute(bool mute) = 0;
+
+  // Called by MediaNotificationService when a Remote Playback session is
+  // started.
+  virtual void RequestMediaRemoting() = 0;
 
   // Returns the type of source.
   virtual media_message_center::SourceType SourceType() = 0;

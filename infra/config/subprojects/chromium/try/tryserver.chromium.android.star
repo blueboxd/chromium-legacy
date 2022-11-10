@@ -47,6 +47,8 @@ try_.builder(
     mirrors = [
         "ci/android-11-x86-rel",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -55,6 +57,8 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-12-x64-dbg-tests",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.orchestrator_builder(
@@ -86,8 +90,44 @@ try_.builder(
     ],
 )
 
+try_.orchestrator_builder(
+    name = "android-arm64-rel",
+    mirrors = [
+        # TODO(crbug.com/1367393): Enable mirroring pie builder.
+        #"ci/android-pie-arm64-rel",
+        "ci/Android Release (Nexus 5X)",
+    ],
+    description_html = "This builder may trigger tests on multiple Android versions.",
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    compilator = "android-arm64-rel-compilator",
+    check_for_flakiness = True,
+    # TODO(crbug.com/1367393): Enable on branch once not experimental.
+    # branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
+    # are addressed
+    # use_orchestrator_pool = True,
+)
+
+try_.compilator_builder(
+    name = "android-arm64-rel-compilator",
+    # TODO(crbug.com/1367393): Enable on branch once not experimental.
+    # branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
+    main_list_view = "try",
+)
+
 try_.builder(
     name = "android-asan",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -95,6 +135,8 @@ try_.builder(
     mirrors = [
         "ci/android-bfcache-rel",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -123,7 +165,6 @@ try_.builder(
             ],
         },
     },
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(),
     ssd = True,
 )
@@ -144,18 +185,26 @@ try_.builder(
             cq.location_filter(path_regexp = "components/cronet/ios/.+", exclude = True),
         ],
     ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-cronet-arm64-dbg",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-cronet-arm64-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-cronet-asan-arm-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -367,6 +416,7 @@ try_.builder(
     ),
 )
 
+# TODO(crbug.com/1367393): Remove after android-arm64-rel is fully enabled.
 try_.orchestrator_builder(
     name = "android-pie-arm64-rel",
     mirrors = [
@@ -385,6 +435,25 @@ try_.orchestrator_builder(
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
+)
+
+try_.orchestrator_builder(
+    name = "android-pie-arm64-rel-inverse-fyi",
+    mirrors = [
+        "ci/android-pie-arm64-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+        "chromium_rts.inverted_rts_bail_early": 100,
+    },
+    compilator = "android-pie-arm64-rel-compilator",
+    check_for_flakiness = True,
+    use_orchestrator_pool = True,
 )
 
 try_.compilator_builder(
@@ -417,6 +486,7 @@ try_.builder(
         "ci/android-x86-rel",
         "ci/android-webview-10-x86-rel-tests",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -490,10 +560,10 @@ try_.builder(
 
 try_.builder(
     name = "android-arm64-all-targets-dbg",
-    goma_jobs = goma.jobs.J300,
     mirrors = [
         "ci/Android arm64 Builder All Targets (dbg)",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -557,6 +627,7 @@ try_.builder(
             "third_party/gvr-android-sdk/.+",
         ],
     ),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -584,6 +655,7 @@ try_.builder(
             "third_party/gvr-android-sdk/.+",
         ],
     ),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -616,10 +688,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView N (dbg)",
     ],
-)
-
-try_.builder(
-    name = "linux_android_dbg_ng",
 )
 
 try_.builder(

@@ -421,13 +421,26 @@ TEST_F(PaintPropertyNodeTest, EffectAnimatingOpacityChangesToAndFromOne) {
 TEST_F(PaintPropertyNodeTest, ChangeDirectCompositingReason) {
   ResetAllChanged();
   ExpectUnchangedState();
-  TransformPaintPropertyNode::State state;
-  state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
-  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyNonRerasterValues,
-            transform.child1->Update(*transform.ancestor, std::move(state)));
+  {
+    TransformPaintPropertyNode::State state;
+    state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
+    EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyValues,
+              transform.child1->Update(*transform.ancestor, std::move(state)));
+    EXPECT_CHANGE_EQ(PaintPropertyChangeType::kChangedOnlyValues,
+                     transform.child1, *transform.root);
+  }
 
-  EXPECT_CHANGE_EQ(PaintPropertyChangeType::kChangedOnlyNonRerasterValues,
-                   transform.child1, *transform.root);
+  {
+    TransformPaintPropertyNode::State state;
+    state.direct_compositing_reasons =
+        CompositingReason::kWillChangeTransform |
+        CompositingReason::kBackfaceVisibilityHidden;
+    EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyNonRerasterValues,
+              transform.child1->Update(*transform.ancestor, std::move(state)));
+    // The previous change is more significant.
+    EXPECT_CHANGE_EQ(PaintPropertyChangeType::kChangedOnlyValues,
+                     transform.child1, *transform.root);
+  }
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -460,12 +473,12 @@ TEST_F(PaintPropertyNodeTest, ChangeTransformOriginDuringCompositedAnimation) {
   ExpectUnchangedState();
   TransformPaintPropertyNode::AnimationState animation_state;
   animation_state.is_running_animation_on_compositor = true;
-  EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues,
-            transform.child1->Update(
-                *transform.ancestor,
-                TransformPaintPropertyNode::State{
-                    {TransformationMatrix(), gfx::Point3F(1, 2, 3)}},
-                animation_state));
+  EXPECT_EQ(
+      PaintPropertyChangeType::kChangedOnlySimpleValues,
+      transform.child1->Update(*transform.ancestor,
+                               TransformPaintPropertyNode::State{
+                                   {gfx::Transform(), gfx::Point3F(1, 2, 3)}},
+                               animation_state));
 
   EXPECT_TRUE(transform.child1->Changed(
       PaintPropertyChangeType::kChangedOnlySimpleValues, *transform.root));

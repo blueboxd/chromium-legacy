@@ -178,6 +178,22 @@ Color::Color(int r, int g, int b, int a) {
 }
 
 // static
+Color Color::FromRGBALegacy(absl::optional<int> r,
+                            absl::optional<int> g,
+                            absl::optional<int> b,
+                            absl::optional<int> a) {
+  Color result =
+      Color(ClampInt(a.value_or(0.f)) << 24 | ClampInt(r.value_or(0.f)) << 16 |
+            ClampInt(g.value_or(0.f)) << 8 | ClampInt(b.value_or(0.f)));
+  result.param0_is_none_ = !r;
+  result.param1_is_none_ = !g;
+  result.param2_is_none_ = !b;
+  result.alpha_is_none_ = !a;
+  result.color_space_ = ColorSpace::kRGBLegacy;
+  return result;
+}
+
+// static
 Color Color::FromHSLA(absl::optional<float> h,
                       absl::optional<float> s,
                       absl::optional<float> l,
@@ -406,19 +422,9 @@ Color Color::InterpolateColors(
     Color color1,
     Color color2,
     float percentage) {
+  // TODO(juanmihd): Add unit tests that cover "none" values for hue, hsl and
+  // hwb colorspaces.
   DCHECK(percentage >= 0.0f && percentage <= 1.0f);
-  // TODO(1092638) : HSL, HWB and LegacyRGB don't support yet the "none"
-  // interpolation.
-  // TODO(1092638) : HSL, HWB don't support interpolation yet.
-  if (interpolation_space == ColorInterpolationSpace::kHSL ||
-      interpolation_space == ColorInterpolationSpace::kHWB)
-    return color1;
-
-  if (interpolation_space == ColorInterpolationSpace::kHSL ||
-      interpolation_space == ColorInterpolationSpace::kHWB ||
-      interpolation_space == ColorInterpolationSpace::kLch ||
-      interpolation_space == ColorInterpolationSpace::kOklch)
-    DCHECK(hue_method.has_value());
 
   color1.ConvertToColorInterpolationSpace(interpolation_space);
   color2.ConvertToColorInterpolationSpace(interpolation_space);
@@ -477,7 +483,8 @@ Color Color::InterpolateColors(
   Color result;
   ColorSpace result_color_space =
       ColorInterpolationSpaceToColorSpace(interpolation_space);
-  // TODO: Write a FromColorSpace function that accounts for all these options.
+  // TODO(crbug.com/1333988): Write a FromColorSpace function that accounts for
+  // all these options.
   if (ValidColorSpaceForFromColorFunction(result_color_space)) {
     result =
         FromColorFunction(result_color_space, param0, param1, param2, alpha);
@@ -496,14 +503,10 @@ Color Color::InterpolateColors(
         result = FromOklch(param0, param1, param2, alpha);
         break;
       case ColorSpace::kHSL:
-        // TODO: Accept optionals
-        result = FromHSLA(param0.value(), param1.value(), param2.value(),
-                          alpha.value());
+        result = FromHSLA(param0, param1, param2, alpha);
         break;
       case ColorSpace::kHWB:
-        // TODO: Accept optionals
-        result = FromHWBA(param0.value(), param1.value(), param2.value(),
-                          alpha.value());
+        result = FromHWBA(param0, param1, param2, alpha);
         break;
       default:
         NOTREACHED();

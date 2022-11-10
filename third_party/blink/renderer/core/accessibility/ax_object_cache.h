@@ -226,7 +226,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // |event_from| and |event_from_action| annotate this node change with info
   // about the event which caused the change. For example, an event from a user
   // or an event from a focus action.
-  virtual void MarkAXObjectDirty(
+  virtual void MarkAXObjectDirtyWithDetails(
       AXObject* obj,
       bool subtree,
       ax::mojom::blink::EventFrom event_from,
@@ -254,7 +254,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                bool insert_at_beginning) = 0;
 
   // Ensure that a call to ProcessDeferredAccessibilityEvents() will occur soon.
-  virtual void ScheduleVisualUpdate(Document& document) = 0;
+  virtual void ScheduleAXUpdate() = 0;
 
  protected:
   friend class ScopedBlinkAXEventIntent;

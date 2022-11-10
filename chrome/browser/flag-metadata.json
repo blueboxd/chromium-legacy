@@ -31,7 +31,7 @@
   {
     "name": "3p-intents-in-incognito",
     "owners": ["qpubert@google.com", "djean@google.com"],
-    "expiry_milestone": 110
+    "expiry_milestone": 113
   },
   {
     "name": "accessible-pdf-form",
@@ -103,17 +103,17 @@
    {
     "name": "allow-dsp-based-aec",
     "owners": [ "peah" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 118
   },
   {
     "name": "allow-dsp-based-agc",
     "owners": [ "peah" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 118
   },
   {
     "name": "allow-dsp-based-ns",
     "owners": [ "peah" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 118
   },
   {
     "name": "allow-insecure-localhost",
@@ -750,17 +750,17 @@
   {
     "name": "bookmark-bottom-sheet",
     "owners": [ "wylieb" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 115
   },
   {
     "name": "bookmarks-improved-save-flow",
     "owners": ["wylieb", "fgorski", "mdjones"],
-    "expiry_milestone": 107
+    "expiry_milestone": 115
   },
   {
     "name": "bookmarks-refresh",
     "owners": ["wylieb", "fgorski", "mdjones"],
-    "expiry_milestone": 107
+    "expiry_milestone": 115
   },
   {
     "name": "borealis-big-gl",
@@ -1173,6 +1173,11 @@
     "name": "cros-labs-float-window",
     "owners": [ "shidi", "afakhry" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "cros-libassistant-v2-migration",
+    "owners": ["wutao@chromium.com", "assistive-eng@google.com"],
+    "expiry_milestone": 112
   },
   {
     "name": "cros-privacy-hub-v0",
@@ -1926,6 +1931,11 @@
     "name": "enable-cros-diacritics-on-physical-keyboard-longpress",
     "owners": ["jhtin", "essential-inputs-team@google.com" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "enable-cros-first-party-vietnamese-input",
+    "owners": ["jhtin", "essential-inputs-team@google.com" ],
+    "expiry_milestone": 122
   },
   {
     "name": "enable-cros-hindi-inscript-layout",
@@ -3481,22 +3491,22 @@
   {
     "name": "enforce-system-aec",
     "owners": [ "peah" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 118
   },
   {
     "name": "enforce-system-aec-agc",
     "owners": [ "peah" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 118
   },
   {
     "name": "enforce-system-aec-ns",
     "owners": [ "peah" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 118
   },
   {
     "name": "enforce-system-aec-ns-agc",
     "owners": [ "peah" ],
-    "expiry_milestone": 107
+    "expiry_milestone": 118
   },
   {
     "name": "enhanced_clipboard_nudge_session_reset",
@@ -3527,6 +3537,11 @@
     "name": "expanded-tab-strip",
     "owners": [ "rkgibson@google.com", "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "experience-kit-apple-calendar",
+    "owners": [ "djean@google.com", "olivierrobin", "bling-flags@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "experience-kit-calendar",
@@ -4766,11 +4781,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "new-instance-from-dragged-link",
-    "owners": [ "aishwaryarj", "clank-app-team@google.com" ],
-    "expiry_milestone": 106
-  },
-  {
     "name": "new-mobile-identity-consistency-fre",
     "owners": [ "jlebel", "chrome-signin-team" ],
     "expiry_milestone": 112
@@ -5996,6 +6006,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "revamped-password-management-bubble",
+    "owners": [ "mamir", "derinel@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "revoke-notifications-permission-if-disabled-on-app-level",
     "owners": [ "elklm", "//components/permissions/PERMISSIONS_OWNERS" ],
     "expiry_milestone": 110
@@ -6982,6 +6997,11 @@
     "name": "view-transition",
     "owners": [ "khushalsagar", "vmpstr", "chrishtr" ],
     "expiry_milestone" : 110
+  },
+  {
+    "name": "view-transition-on-navigation",
+    "owners": [ "khushalsagar", "vmpstr", "chrishtr" ],
+    "expiry_milestone" : 118
   },
   {
     "name": "vm-per-boot-shader-cache",

@@ -23,16 +23,40 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <variants name="CleanupHandler">
-  <variant name="BrowsingData" summary="Handler for browsing data"/>
+  <variant name="Browser"
+      summary="Handler for open browser windows and browsing data"/>
+  <variant name="BrowsingData" summary="Handler for browsing data">
+    <obsolete>
+      Deprecated in M109. Instead use Browser variant which joins BrowsingData
+      and OpenWindows variants.
+    </obsolete>
+  </variant>
   <variant name="Clipboard" summary="Handler for clipboard"/>
   <variant name="Extension" summary="Handler for extensions"/>
   <variant name="Files" summary="Handler for files"/>
   <variant name="Lacros" summary="Handler which calls cleanup on Lacros"/>
-  <variant name="LacrosBrowsingData" summary="Handler for files on Lacros"/>
+  <variant name="LacrosBrowser"
+      summary="Handler for open browser windows and browsing data on Lacros"/>
+  <variant name="LacrosBrowsingData" summary="Handler for files on Lacros">
+    <obsolete>
+      Deprecated in M109. Instead use LacrosBrowser variant which joins
+      LacrosBrowsingData and LacrosOpenWindows variants.
+    </obsolete>
+  </variant>
   <variant name="LacrosExtension" summary="Handler for extensions on Lacros"/>
   <variant name="LacrosOpenWindows"
-      summary="Handler for open browser windows on Lacros"/>
-  <variant name="OpenWindows" summary="Handler for open browser windows"/>
+      summary="Handler for open browser windows on Lacros">
+    <obsolete>
+      Deprecated in M109. Instead use LacrosBrowser variant which joins
+      LacrosBrowsingData and LacrosOpenWindows variants.
+    </obsolete>
+  </variant>
+  <variant name="OpenWindows" summary="Handler for open browser windows">
+    <obsolete>
+      Deprecated in M109. Instead use Browser variant which joins BrowsingData
+      and OpenWindows variants.
+    </obsolete>
+  </variant>
   <variant name="PrintJobs" summary="Handler for print jobs"/>
 </variants>
 
@@ -1000,6 +1024,26 @@ chromium-metrics-reviews@google.com.
     <variant name="Context" summary="Context"/>
     <variant name="Full" summary="full set of"/>
   </token>
+</histogram>
+
+<histogram name="Enterprise.DeviceTrust.SyncSigningKey.ClientError"
+    enum="DTSynchronizationError" expires_after="2023-07-01">
+  <owner>seblalancette@chromium.org</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Captures any client-side errors that caused a key synchronization flow to
+    fail.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.DeviceTrust.SyncSigningKey.UploadCode"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-07-01">
+  <owner>seblalancette@chromium.org</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    HTTP status code of the key upload request recorded when a device issues a
+    key synchronization request.
+  </summary>
 </histogram>
 
 <histogram name="Enterprise.Dlp.ActiveFileEventsCount" units="entries"
@@ -2270,9 +2314,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PublicSession.SessionLength" units="minutes"
-    expires_after="2021-10-04">
-  <owner>marcgrimme@chromium.org</owner>
-  <owner>managed-devices@google.com</owner>
+    expires_after="2023-07-01">
+  <owner>bfranz@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@google.com</owner>
   <summary>
     A public session starts when a user signs in using the policy configured
     public account. It stops when the user signs out. Session length is the
@@ -2295,9 +2339,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.RegularUserSession.SessionLength" units="minutes"
-    expires_after="2021-08-09">
-  <owner>marcgrimme@chromium.org</owner>
-  <owner>managed-devices@google.com</owner>
+    expires_after="2023-07-01">
+  <owner>bfranz@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@google.com</owner>
   <summary>
     A regular user session starts when a user signs in using his/her user
     account. It stops when the user signs out. Session length is the duration
@@ -2424,7 +2468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.ChildUser.OAuthTokenError"
-    enum="GoogleServiceAuthError" expires_after="2023-03-05">
+    enum="GoogleServiceAuthError" expires_after="2023-05-07">
   <owner>agawronska@chromium.org</owner>
   <owner>michaelpg@chromium.org</owner>
   <summary>Failure reason for OAuth token fetch for child user.</summary>

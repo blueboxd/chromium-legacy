@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/css/calculation_expression_anchor_query_node.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
@@ -36,6 +37,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -2898,6 +2900,219 @@ TEST_F(StyleResolverTestCQ, ContainerUnitContext) {
 
   EXPECT_DOUBLE_EQ(200.0, state.CssToLengthConversionData().ContainerWidth());
   EXPECT_DOUBLE_EQ(200.0, state.CssToLengthConversionData().ContainerHeight());
+}
+
+TEST_F(StyleResolverTest, ScopedAnchorName) {
+  GetDocument()
+      .documentElement()
+      ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id="outer-anchor" style="anchor-name: --outer"></div>
+    <style>#host::part(anchor) { anchor-name: --part; }</style>
+    <div id="host">
+      <template shadowroot=open>
+        <style>:host { anchor-name: --host; }</style>
+        <div id="part" part="anchor"></div>
+        <div id="inner-anchor" style="anchor-name: --inner"></div>
+      </template>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* outer_anchor = GetElementById("outer-anchor");
+  Element* host = GetElementById("host");
+  ShadowRoot* shadow = host->GetShadowRoot();
+  Element* part = shadow->getElementById("part");
+  Element* inner_anchor = shadow->getElementById("inner-anchor");
+
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--outer", &GetDocument()),
+            *outer_anchor->ComputedStyleRef().AnchorName());
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--host", shadow),
+            *host->ComputedStyleRef().AnchorName());
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--part", &GetDocument()),
+            *part->ComputedStyleRef().AnchorName());
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--inner", shadow),
+            *inner_anchor->ComputedStyleRef().AnchorName());
+}
+
+TEST_F(StyleResolverTest, ScopedAnchorScroll) {
+  GetDocument()
+      .documentElement()
+      ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id="outer-anchor" style="anchor-scroll: --outer"></div>
+    <style>#host::part(anchor) { anchor-scroll: --part; }</style>
+    <div id="host">
+      <template shadowroot=open>
+        <style>:host { anchor-scroll: --host; }</style>
+        <div id="part" part="anchor"></div>
+        <div id="inner-anchor" style="anchor-scroll: --inner"></div>
+      </template>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* outer_anchor = GetElementById("outer-anchor");
+  Element* host = GetElementById("host");
+  ShadowRoot* shadow = host->GetShadowRoot();
+  Element* part = shadow->getElementById("part");
+  Element* inner_anchor = shadow->getElementById("inner-anchor");
+
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--outer", &GetDocument()),
+            *outer_anchor->ComputedStyleRef().AnchorScroll());
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--host", shadow),
+            *host->ComputedStyleRef().AnchorScroll());
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--part", &GetDocument()),
+            *part->ComputedStyleRef().AnchorScroll());
+  EXPECT_EQ(*MakeGarbageCollected<ScopedCSSName>("--inner", shadow),
+            *inner_anchor->ComputedStyleRef().AnchorScroll());
+}
+
+// |length| must be a calculated value of a single anchor query node.
+static const TreeScope* GetAnchorQueryTreeScope(const Length& length) {
+  DCHECK(length.IsCalculated());
+  DCHECK(length.GetCalculationValue().IsExpression());
+  const auto& query = To<CalculationExpressionAnchorQueryNode>(
+      *length.GetCalculationValue().GetOrCreateExpression());
+  return query.AnchorName().GetTreeScope();
+}
+
+TEST_F(StyleResolverTest, ScopedAnchorFunction) {
+  GetDocument()
+      .documentElement()
+      ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <style>
+      div { position: absolute; }
+      #left { left: anchor(--a left); }
+      #bottom::part(right) { right: anchor(--a right); }
+    </style>
+    <div id="left"></div>
+    <div id="bottom">
+      <template shadowroot=open>
+        <style>
+          div { position: absolute; }
+          #top { top: anchor(--a top); }
+          :host { bottom: anchor(--a bottom); }
+        </style>
+        <div id="top"></div>
+        <div id="right" part="right"></div>
+      </template>
+    </div>
+
+    <style>
+      #inline-start { inset-inline-start: anchor(--a left); }
+      #block-end::part(inline-end) { inset-inline-end: anchor(--a right); }
+    </style>
+    <div id="inline-start"></div>
+    <div id="block-end">
+      <template shadowroot=open>
+        <style>
+          div { position: absolute }
+          :host { inset-block-end: anchor(--a bottom); }
+          #block-start { inset-block-start: anchor(--a top); }
+        </style>
+        <div id="block-start"></div>
+        <div id="inline-end" part="inline-end"></div>
+      </template>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  {
+    Element* left = GetElementById("left");
+    Element* bottom = GetElementById("bottom");
+    ShadowRoot* shadow = bottom->GetShadowRoot();
+    Element* top = shadow->getElementById("top");
+    Element* right = shadow->getElementById("right");
+
+    EXPECT_EQ(&GetDocument(),
+              GetAnchorQueryTreeScope(left->ComputedStyleRef().Left()));
+    EXPECT_EQ(&GetDocument(),
+              GetAnchorQueryTreeScope(right->ComputedStyleRef().Right()));
+    EXPECT_EQ(shadow, GetAnchorQueryTreeScope(top->ComputedStyleRef().Top()));
+    EXPECT_EQ(shadow,
+              GetAnchorQueryTreeScope(bottom->ComputedStyleRef().Bottom()));
+  }
+
+  {
+    // Verify that it also works for logical properties.
+    Element* inline_start = GetElementById("inline-start");
+    Element* block_end = GetElementById("block-end");
+    ShadowRoot* shadow = block_end->GetShadowRoot();
+    Element* block_start = shadow->getElementById("block-start");
+    Element* inline_end = shadow->getElementById("inline-end");
+
+    EXPECT_EQ(&GetDocument(),
+              GetAnchorQueryTreeScope(inline_start->ComputedStyleRef().Left()));
+    EXPECT_EQ(&GetDocument(),
+              GetAnchorQueryTreeScope(inline_end->ComputedStyleRef().Right()));
+    EXPECT_EQ(shadow,
+              GetAnchorQueryTreeScope(block_start->ComputedStyleRef().Top()));
+    EXPECT_EQ(shadow,
+              GetAnchorQueryTreeScope(block_end->ComputedStyleRef().Bottom()));
+  }
+}
+
+TEST_F(StyleResolverTest, ScopedAnchorSizeFunction) {
+  GetDocument()
+      .documentElement()
+      ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <style>
+      div { position: absolute; }
+      #width { width: anchor-size(--a width); }
+    </style>
+    <div id="width">
+      <template shadowroot=open>
+        <style>
+          div { position: absolute; }
+          #height { height: anchor-size(--a height); }
+        </style>
+        <div id="height"></div>
+      </template>
+    </div>
+
+    <style>
+      #min-width { min-width: anchor-size(--a width); }
+      #max-width::part(max-height) { max-height: anchor-size(--a height); }
+    </style>
+    <div id="min-width"></div>
+    <div id="max-width">
+      <template shadowroot=open>
+        <style>
+          div { position: absolute; }
+          #min-height { min-height: anchor-size(--a height); }
+          :host { max-width: anchor-size(--a width); }
+        </style>
+        <div id="min-height"></div>
+        <div id="max-height" part="max-height"></div>
+      </template>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* width = GetElementById("width");
+  Element* min_width = GetElementById("min-width");
+  Element* max_width = GetElementById("max-width");
+  ShadowRoot* shadow1 = width->GetShadowRoot();
+  ShadowRoot* shadow2 = max_width->GetShadowRoot();
+  Element* height = shadow1->getElementById("height");
+  Element* min_height = shadow2->getElementById("min-height");
+  Element* max_height = shadow2->getElementById("max-height");
+
+  EXPECT_EQ(&GetDocument(),
+            GetAnchorQueryTreeScope(width->ComputedStyleRef().Width()));
+  EXPECT_EQ(shadow1,
+            GetAnchorQueryTreeScope(height->ComputedStyleRef().Height()));
+  EXPECT_EQ(&GetDocument(),
+            GetAnchorQueryTreeScope(min_width->ComputedStyleRef().MinWidth()));
+  EXPECT_EQ(shadow2,
+            GetAnchorQueryTreeScope(max_width->ComputedStyleRef().MaxWidth()));
+  EXPECT_EQ(shadow2, GetAnchorQueryTreeScope(
+                         min_height->ComputedStyleRef().MinHeight()));
+  EXPECT_EQ(&GetDocument(), GetAnchorQueryTreeScope(
+                                max_height->ComputedStyleRef().MaxHeight()));
 }
 
 }  // namespace blink

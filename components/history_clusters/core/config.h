@@ -227,7 +227,7 @@ struct Config {
   bool keyword_filter_on_noisy_visits = false;
 
   // If enabled, adds the search terms of the visits that have them.
-  bool keyword_filter_on_search_terms = false;
+  bool keyword_filter_on_search_terms = true;
 
   // Maximum number of keywords to keep per cluster.
   size_t max_num_keywords_per_cluster = 20;
@@ -374,6 +374,9 @@ struct Config {
   // should only be set to true via command line.
   bool should_show_all_clusters_unconditionally_on_prominent_ui_surfaces =
       false;
+
+  // Whether to include synced visits in clusters.
+  bool include_synced_visits = false;
 
   // Order consistently with features.h.
 

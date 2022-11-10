@@ -14,11 +14,12 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -463,7 +464,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           AttributionTrigger::AggregatableResult::kSuccess,
           /*replaced_event_level_report=*/absl::nullopt,
           /*new_event_level_report=*/IrreleventEventLevelReport(),
-          /*new_aggregatable_report=*/IrreleventAggregatableReport()),
+          /*new_aggregatable_report=*/IrreleventAggregatableReport(),
+          /*source=*/SourceBuilder().BuildStored()),
       /*cleared_debug_key=*/1234);
 
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
@@ -590,7 +592,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               .SetReportTime(now + base::Hours(1))
               .SetPriority(11)
               .Build(),
-          /*new_event_level_report=*/IrreleventEventLevelReport()));
+          /*new_event_level_report=*/IrreleventEventLevelReport(),
+          /*new_aggregatable_report=*/absl::nullopt,
+          /*source=*/SourceBuilder().BuildStored()));
 
   {
     static constexpr char wait_script[] = R"(
@@ -1019,14 +1023,14 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       /*debug_key=*/1,
       /*aggregatable_dedup_key=*/18,
       {
-          AttributionTrigger::EventTriggerData(
+          attribution_reporting::EventTriggerData(
               /*data=*/2,
               /*priority=*/3,
               /*dedup_key=*/absl::nullopt,
               /*filters=*/
               *AttributionFilters::Create({{"c", {"d"}}}),
               /*not_filters=*/AttributionFilters()),
-          AttributionTrigger::EventTriggerData(
+          attribution_reporting::EventTriggerData(
               /*data=*/4,
               /*priority=*/5,
               /*dedup_key=*/6,
@@ -1034,21 +1038,22 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               /*not_filters=*/
               *AttributionFilters::Create({{"e", {"f"}}})),
       },
-      {AttributionAggregatableTriggerData::CreateForTesting(
+      {*attribution_reporting::AggregatableTriggerData::Create(
            /*key_piece=*/345,
            /*source_keys=*/{"a"},
            /*filters=*/
            *AttributionFilters::Create({{"c", {"d"}}}),
            /*not_filters=*/AttributionFilters()),
-       AttributionAggregatableTriggerData::CreateForTesting(
+       *attribution_reporting::AggregatableTriggerData::Create(
            /*key_piece=*/678,
            /*source_keys=*/{"b"},
            /*filters=*/AttributionFilters(),
            /*not_filters=*/
            *AttributionFilters::Create({{"e", {"f"}}}))},
       /*aggregatable_values=*/
-      AttributionAggregatableValues::CreateForTesting(
-          {{"a", 123}, {"b", 456}}));
+      *attribution_reporting::AggregatableValues::Create(
+          {{"a", 123}, {"b", 456}}),
+      /*is_within_fenced_frame=*/false, /*debug_reporting=*/false);
 
   static constexpr char kWantEventTriggerJSON[] =
       R"json([ {  "data": "2",  "priority": "3",  "filters": {   "c": [    "d"   ]  } }, {  "data": "4",  "priority": "5",  "deduplication_key": "6",  "not_filters": {   "e": [    "f"   ]  } }])json";
@@ -1092,7 +1097,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                 event_status, aggregatable_status,
                 /*replaced_event_level_report=*/absl::nullopt,
                 /*new_event_level_report=*/IrreleventEventLevelReport(),
-                /*new_aggregatable_report=*/IrreleventAggregatableReport()));
+                /*new_aggregatable_report=*/IrreleventAggregatableReport(),
+                /*source=*/SourceBuilder().BuildStored()));
       };
 
   notify_trigger_handled(AttributionTrigger::EventLevelResult::kSuccess,

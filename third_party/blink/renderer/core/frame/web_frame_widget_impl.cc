@@ -121,8 +121,8 @@
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
-#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -1618,6 +1618,10 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
   // hierarchy via the VisualProperties waterfall.
   widget_base_->SetVisibleViewportSizeInDIPs(
       visual_properties.visible_viewport_size);
+
+  virtual_keyboard_resize_height_physical_px_ =
+      visual_properties.virtual_keyboard_resize_height_physical_px;
+  DCHECK(!virtual_keyboard_resize_height_physical_px_ || ForTopMostMainFrame());
 
   if (ForMainFrame()) {
     if (!AutoResizeMode()) {
@@ -4378,6 +4382,11 @@ void WebFrameWidgetImpl::SetMayThrottleIfUndrawnFrames(
     return;
   widget_base_->LayerTreeHost()->SetMayThrottleIfUndrawnFrames(
       may_throttle_if_undrawn_frames);
+}
+
+int WebFrameWidgetImpl::GetVirtualKeyboardResizeHeight() const {
+  DCHECK(!virtual_keyboard_resize_height_physical_px_ || ForTopMostMainFrame());
+  return virtual_keyboard_resize_height_physical_px_;
 }
 
 bool WebFrameWidgetImpl::GetMayThrottleIfUndrawnFramesForTesting() {

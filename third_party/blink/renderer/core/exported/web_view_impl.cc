@@ -154,8 +154,8 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/paint_timing.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -3132,15 +3132,14 @@ void WebViewImpl::SetCompositorDeviceScaleFactorOverride(
   }
 }
 
-void WebViewImpl::SetDeviceEmulationTransform(
-    const TransformationMatrix& transform) {
+void WebViewImpl::SetDeviceEmulationTransform(const gfx::Transform& transform) {
   if (transform == device_emulation_transform_)
     return;
   device_emulation_transform_ = transform;
   UpdateDeviceEmulationTransform();
 }
 
-TransformationMatrix WebViewImpl::GetDeviceEmulationTransform() const {
+gfx::Transform WebViewImpl::GetDeviceEmulationTransform() const {
   return device_emulation_transform_;
 }
 
@@ -3150,7 +3149,7 @@ void WebViewImpl::EnableDeviceEmulation(const DeviceEmulationParams& params) {
 
 void WebViewImpl::ActivateDevToolsTransform(
     const DeviceEmulationParams& params) {
-  TransformationMatrix device_emulation_transform =
+  gfx::Transform device_emulation_transform =
       dev_tools_emulator_->EnableDeviceEmulation(params);
   SetDeviceEmulationTransform(device_emulation_transform);
 }
@@ -3161,7 +3160,7 @@ void WebViewImpl::DisableDeviceEmulation() {
 
 void WebViewImpl::DeactivateDevToolsTransform() {
   dev_tools_emulator_->DisableDeviceEmulation();
-  SetDeviceEmulationTransform(TransformationMatrix());
+  SetDeviceEmulationTransform(gfx::Transform());
 }
 
 void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {
@@ -3609,7 +3608,7 @@ void WebViewImpl::PageScaleFactorChanged() {
     // not, we can enforce that when setting it and DCHECK IsOutermostMainFrame
     // instead.
     if (MainFrameImpl()->IsOutermostMainFrame()) {
-      TransformationMatrix device_emulation_transform =
+      gfx::Transform device_emulation_transform =
           dev_tools_emulator_->OutermostMainFrameScrollOrScaleChanged();
       SetDeviceEmulationTransform(device_emulation_transform);
     }
@@ -3620,7 +3619,7 @@ void WebViewImpl::OutermostMainFrameScrollOffsetChanged() {
   DCHECK(MainFrameImpl());
   DCHECK(MainFrameImpl()->IsOutermostMainFrame());
   if (dev_tools_emulator_->HasViewportOverride()) {
-    TransformationMatrix device_emulation_transform =
+    gfx::Transform device_emulation_transform =
         dev_tools_emulator_->OutermostMainFrameScrollOrScaleChanged();
     SetDeviceEmulationTransform(device_emulation_transform);
   }

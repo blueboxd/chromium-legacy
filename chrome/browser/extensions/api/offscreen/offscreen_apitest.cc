@@ -11,16 +11,16 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "components/version_info/channel.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/browser/api/offscreen/audio_lifetime_enforcer.h"
 #include "extensions/browser/api/offscreen/offscreen_document_manager.h"
 #include "extensions/browser/background_script_executor.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/offscreen_document_host.h"
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_background_page_waiter.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -29,6 +29,37 @@
 namespace extensions {
 
 namespace {
+
+// A helper class to wait until a given WebContents is audible or inaudible.
+// TODO(devlin): Put this somewhere common? //content/public/test/?
+class AudioWaiter : public content::WebContentsObserver {
+ public:
+  explicit AudioWaiter(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {}
+
+  void WaitForAudible() {
+    if (web_contents()->IsCurrentlyAudible())
+      return;
+    expected_state_ = true;
+    run_loop_.Run();
+  }
+
+  void WaitForInaudible() {
+    if (!web_contents()->IsCurrentlyAudible())
+      return;
+    expected_state_ = false;
+    run_loop_.Run();
+  }
+
+ private:
+  void OnAudioStateChanged(bool audible) override {
+    EXPECT_EQ(expected_state_, audible);
+    run_loop_.QuitWhenIdle();
+  }
+
+  base::RunLoop run_loop_;
+  bool expected_state_ = false;
+};
 
 // Sets the extension to be enabled in incognito mode.
 scoped_refptr<const Extension> SetExtensionIncognitoEnabled(
@@ -68,15 +99,13 @@ void WakeUpServiceWorker(const Extension& extension, Profile& profile) {
 
 class OffscreenApiTest : public ExtensionApiTest {
  public:
-  OffscreenApiTest() {
-    feature_list_.InitAndEnableFeature(
-        extensions_features::kExtensionsOffscreenDocuments);
-  }
+  OffscreenApiTest() = default;
   ~OffscreenApiTest() override = default;
 
   // Creates a new offscreen document through an API call, expecting success.
   void ProgrammaticallyCreateOffscreenDocument(const Extension& extension,
-                                               Profile& profile) {
+                                               Profile& profile,
+                                               const char* reason = "TESTING") {
     static constexpr char kScript[] =
         R"((async () => {
              let message;
@@ -84,7 +113,7 @@ class OffscreenApiTest : public ExtensionApiTest {
                await chrome.offscreen.createDocument(
                    {
                      url: 'offscreen.html',
-                     reasons: ['TESTING'],
+                     reasons: ['%s'],
                      justification: 'testing'
                    });
                message = 'success';
@@ -93,8 +122,9 @@ class OffscreenApiTest : public ExtensionApiTest {
              }
              chrome.test.sendScriptResult(message);
            })();)";
+    std::string script = base::StringPrintf(kScript, reason);
     base::Value result = BackgroundScriptExecutor::ExecuteScript(
-        &profile, extension.id(), kScript,
+        &profile, extension.id(), script,
         BackgroundScriptExecutor::ResultCapture::kSendScriptResult);
     ASSERT_TRUE(result.is_string());
     EXPECT_EQ("success", result.GetString());
@@ -141,12 +171,6 @@ class OffscreenApiTest : public ExtensionApiTest {
     EXPECT_TRUE(result.is_bool()) << result;
     return result.is_bool() && result.GetBool();
   }
-
- private:
-  // The `offscreen` API is currently behind both a feature and a channel
-  // restriction.
-  base::test::ScopedFeatureList feature_list_;
-  ScopedCurrentChannel current_channel_override_{version_info::Channel::CANARY};
 };
 
 // Tests the general flow of creating an offscreen document.
@@ -289,14 +313,97 @@ IN_PROC_BROWSER_TEST_F(OffscreenApiTest, IncognitoModeHandling_SpanningMode) {
             incognito_manager->GetOffscreenDocumentForExtension(*extension));
 }
 
+IN_PROC_BROWSER_TEST_F(OffscreenApiTest, LifetimeEnforcement) {
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Offscreen Document Test",
+           "manifest_version": 3,
+           "version": "0.1",
+           "background": {"service_worker": "background.js"},
+           "permissions": ["offscreen"]
+         })";
+  // An offscreen document that knows how to play audio.
+  static constexpr char kOffscreenJs[] =
+      R"(function playAudio() {
+           const audioTag = document.createElement('audio');
+           audioTag.src = '_test_resources/long_audio.ogg';
+           document.body.appendChild(audioTag);
+           audioTag.play();
+         }
+
+         function stopAudio() {
+           document.body.getElementsByTagName('audio')[0].pause();
+         }
+
+         chrome.runtime.onMessage.addListener((msg) => {
+           if (msg == 'play')
+             playAudio();
+           else if (msg == 'stop')
+             stopAudio();
+           else
+             console.error('Unexpected message: ' + msg);
+         }))";
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "// Blank.");
+  test_dir.WriteFile(FILE_PATH_LITERAL("offscreen.html"),
+                     R"(<html><script src="offscreen.js"></script></html>)");
+  test_dir.WriteFile(FILE_PATH_LITERAL("offscreen.js"), kOffscreenJs);
+
+  scoped_refptr<const Extension> extension =
+      LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Create a new offscreen document for audio playback and wait for it to load.
+  OffscreenDocumentManager* manager = OffscreenDocumentManager::Get(profile());
+  ProgrammaticallyCreateOffscreenDocument(*extension, *profile(),
+                                          "AUDIO_PLAYBACK");
+  OffscreenDocumentHost* document =
+      manager->GetOffscreenDocumentForExtension(*extension);
+  ASSERT_TRUE(document);
+  content::WaitForLoadStop(document->host_contents());
+
+  // Begin the audio playback.
+  {
+    AudioWaiter audio_waiter(document->host_contents());
+    BackgroundScriptExecutor::ExecuteScriptAsync(
+        profile(), extension->id(), "chrome.runtime.sendMessage('play');");
+    audio_waiter.WaitForAudible();
+  }
+
+  // The document should be kept alive.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(manager->GetOffscreenDocumentForExtension(*extension));
+
+  // Override the timeout. We can't do this at the top of the test because
+  // otherwise, the document would immediately be considered inactive.
+  auto timeout_override =
+      AudioLifetimeEnforcer::SetTimeoutForTesting(base::Seconds(0));
+
+  // Now, stop the audio.
+  {
+    AudioWaiter audio_waiter(document->host_contents());
+    BackgroundScriptExecutor::ExecuteScriptAsync(
+        profile(), extension->id(), "chrome.runtime.sendMessage('stop');");
+    audio_waiter.WaitForInaudible();
+  }
+
+  // The offscreen document should be closed since it is no longer active.
+  // `document` is now unsafe to use.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(manager->GetOffscreenDocumentForExtension(*extension));
+}
+
 class OffscreenApiTestWithoutFeature : public ExtensionApiTest {
  public:
-  OffscreenApiTestWithoutFeature() = default;
+  OffscreenApiTestWithoutFeature() {
+    feature_list_.InitAndDisableFeature(
+        extensions_features::kExtensionsOffscreenDocuments);
+  }
   ~OffscreenApiTestWithoutFeature() override = default;
 
  private:
-  ScopedCurrentChannel current_channel_override_{
-      version_info::Channel::UNKNOWN};
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that the `offscreen` API is unavailable if the requisite feature

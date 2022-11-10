@@ -955,30 +955,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewComponentUI<ash::file_manager::FileManagerUI,
                            ChromeFileManagerUIDelegate>;
   }
-  if (url.host_piece() == chrome::kChromeUICloudUploadHost) {
-    if (!ash::features::IsUploadOfficeToCloudEnabled()) {
-      return nullptr;
-    }
-    return &NewWebUI<ash::cloud_upload::CloudUploadUI>;
-  }
-  if (url.host_piece() == chrome::kChromeUIAudioHost &&
-      base::FeatureList::IsEnabled(chromeos::features::kAudioUrl)) {
-    return &NewWebUI<ash::AudioUI>;
-  }
   if (url.host_piece() == ash::kChromeUIConnectivityDiagnosticsHost)
     return &NewWebUI<ash::ConnectivityDiagnosticsUI>;
   if (url.host_piece() == ash::kChromeUIGuestOSInstallerHost)
     return &NewWebUI<ash::GuestOSInstallerUI>;
   if (url.host_piece() == ash::kChromeUIFilesInternalsHost)
     return &NewWebUI<ash::FilesInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUILauncherInternalsHost)
-    return &NewWebUI<ash::LauncherInternalsUI>;
   if (url.host_piece() == ash::kChromeUIHelpAppHost)
     return &NewComponentUI<ash::HelpAppUI, ash::ChromeHelpAppUIDelegate>;
-  if (url.host_piece() == chrome::kChromeUIManageMirrorSyncHost &&
-      ash::features::IsDriveFsMirroringEnabled()) {
-    return &NewWebUI<ash::ManageMirrorSyncUI>;
-  }
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<ash::cellular_setup::MobileSetupUI>;
   if (url.host_piece() == chrome::kChromeUIOobeHost) {
@@ -1009,12 +993,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       !profile->IsOffTheRecord()) {
     return &NewWebUI<ash::multidevice::ProximityAuthUI>;
   }
-  if (NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
-          profile) &&
-      url.host_piece() == chrome::kChromeUINearbyShareHost &&
-      !profile->IsOffTheRecord()) {
-    return &NewWebUI<nearby_share::NearbyShareDialogUI>;
-  }
   if (url.host_piece() == ash::kChromeUIProjectorAppHost &&
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorUI>;
@@ -1024,8 +1002,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
   }
-  if (url.host_piece() == chrome::kChromeUINearbyInternalsHost)
-    return &NewWebUI<NearbyInternalsUI>;
   if (arc::IsArcAllowedForProfile(profile)) {
     if (url.host_piece() == chrome::kChromeUIArcGraphicsTracingHost) {
       return &NewWebUI<
@@ -1047,22 +1023,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       ash::personalization_app::kChromeUIPersonalizationAppHost) {
     return &NewWebUI<ash::personalization_app::PersonalizationAppUI>;
   }
-  if (url.host_piece() == ash::kChromeUISystemExtensionsInternalsHost &&
-      base::FeatureList::IsEnabled(ash::features::kSystemExtensions)) {
-    return &NewWebUI<ash::SystemExtensionsInternalsUI>;
-  }
-  if (url.host_piece() == ash::kChromeUIColorInternalsHost) {
-    return &NewWebUI<ash::ColorInternalsUI>;
-  }
-
-#if !defined(OFFICIAL_BUILD)
-#if !defined(USE_REAL_DBUS_CLIENTS)
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
-    if (url.host_piece() == chrome::kChromeUIDeviceEmulatorHost)
-      return &NewWebUI<ash::DeviceEmulatorUI>;
-  }
-#endif  // !defined(USE_REAL_DBUS_CLIENTS)
-#endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (url.host_piece() == chrome::kChromeUIWebUIJsErrorHost)

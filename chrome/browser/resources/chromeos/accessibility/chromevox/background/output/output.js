@@ -16,6 +16,7 @@ import {EventSourceType} from '../../common/event_source_type.js';
 import {LocaleOutputHelper} from '../../common/locale_output_helper.js';
 import {LogType} from '../../common/log_types.js';
 import {Msgs} from '../../common/msgs.js';
+import {CustomRole} from '../../common/role_type.js';
 import {Spannable} from '../../common/spannable.js';
 import {QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_interface.js';
 import {ValueSelectionSpan, ValueSpan} from '../braille/spans.js';
@@ -672,53 +673,10 @@ export class Output {
         type, buff, formatLog);
   }
 
-  /**
-   * Format the node given the format specifier.
-   * @param {!outputTypes.OutputFormattingData} params All the required and
-   *     optional parameters for formatting.
-   * @private
-   */
+  /** @override */
   format_(params) {
     const formatter = new OutputFormatter(this, params);
     new OutputFormatParser(formatter).parse(params.outputFormat);
-  }
-
-  /** @override */
-  formatNameFromNode_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    if (node.nameFrom === NameFromType.CONTENTS) {
-      return;
-    }
-
-    options.annotation.push('name');
-    this.append_(buff, node.name || '', options);
-    formatLog.writeTokenWithValue(token, node.name);
-  }
-
-  /** @override */
-  formatNameOrDescendants_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    options.annotation.push(token);
-    if (node.name &&
-        (node.nameFrom !== NameFromType.CONTENTS ||
-         node.children.every(child => child.role === RoleType.STATIC_TEXT))) {
-      this.append_(buff, node.name || '', options);
-      formatLog.writeTokenWithValue(token, node.name);
-    } else {
-      formatLog.writeToken(token);
-      this.format_({
-        node,
-        outputFormat: '$descendants',
-        outputBuffer: buff,
-        outputFormatLogger: formatLog,
-      });
-    }
   }
 
   /** @override */
@@ -1608,13 +1566,15 @@ export class Output {
       }
 
       const parentRole = roleInfo.inherits;
-      if (eventBlock[formatNode.role] &&
+      if (formatNode.role && eventBlock[formatNode.role] &&
           eventBlock[formatNode.role][formatName]) {
         rule.role = formatNode.role;
-      } else if (eventBlock[parentRole] && eventBlock[parentRole][formatName]) {
+      } else if (
+          parentRole && eventBlock[parentRole] &&
+          eventBlock[parentRole][formatName]) {
         rule.role = parentRole;
       } else {
-        rule.role = 'default';
+        rule.role = CustomRole.DEFAULT;
       }
 
       if (eventBlock[rule.role][formatName]) {
@@ -1671,18 +1631,19 @@ export class Output {
 
     const rule = new OutputRule(type);
     const eventBlock = OutputRule.RULES[rule.event];
-    const parentRole = (OutputRoleInfo[node.role] || {}).inherits || '';
+    const parentRole =
+        (OutputRoleInfo[node.role] || {}).inherits || CustomRole.NO_ROLE;
     /**
      * Use OutputRule.RULES for node.role if exists.
      * If not, use OutputRule.RULES for parentRole if exists.
-     * If not, use OutputRule.RULES for 'default'.
+     * If not, use OutputRule.RULES for CustomRole.DEFAULT.
      */
     if (node.role && (eventBlock[node.role] || {}).speak !== undefined) {
       rule.role = node.role;
     } else if ((eventBlock[parentRole] || {}).speak !== undefined) {
       rule.role = parentRole;
     } else {
-      rule.role = 'default';
+      rule.role = CustomRole.DEFAULT;
     }
     rule.output = 'speak';
     if (this.formatOptions_.braille) {

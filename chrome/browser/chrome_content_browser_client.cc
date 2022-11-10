@@ -4069,6 +4069,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       prefs->GetBoolean(prefs::kWebXRImmersiveArEnabled);
 #endif
 
+#if BUILDFLAG(IS_FUCHSIA)
+  // Disable WebSQL support since it is being removed from the web platform
+  // and does not work. See crbug.com/1317431.
+  web_prefs->databases_enabled = false;
+#endif
+
   for (ChromeContentBrowserClientParts* parts : extra_parts_)
     parts->OverrideWebkitPrefs(web_contents, web_prefs);
 }
@@ -4288,10 +4294,10 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   storage::ExternalMountPoints* external_mount_points =
       browser_context->GetMountPoints();
   DCHECK(external_mount_points);
-  auto backend = std::make_unique<chromeos::FileSystemBackend>(
+  auto backend = std::make_unique<ash::FileSystemBackend>(
       Profile::FromBrowserContext(browser_context),
       std::make_unique<ash::file_system_provider::BackendDelegate>(),
-      std::make_unique<chromeos::MTPFileSystemBackendDelegate>(
+      std::make_unique<ash::MTPFileSystemBackendDelegate>(
           storage_partition_path),
       std::make_unique<arc::ArcContentFileSystemBackendDelegate>(),
       std::make_unique<arc::ArcDocumentsProviderBackendDelegate>(),
@@ -5333,7 +5339,7 @@ void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   Profile* profile = Profile::FromBrowserContext(browser_context);
   factories->emplace(content::kExternalFileScheme,
-                     chromeos::ExternalFileURLLoaderFactory::Create(
+                     ash::ExternalFileURLLoaderFactory::Create(
                          profile, content::ChildProcessHost::kInvalidUniqueID));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if !BUILDFLAG(IS_ANDROID)
@@ -5584,9 +5590,9 @@ void ChromeContentBrowserClient::
   if (web_contents) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    factories->emplace(content::kExternalFileScheme,
-                       chromeos::ExternalFileURLLoaderFactory::Create(
-                           profile, render_process_id));
+    factories->emplace(
+        content::kExternalFileScheme,
+        ash::ExternalFileURLLoaderFactory::Create(profile, render_process_id));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

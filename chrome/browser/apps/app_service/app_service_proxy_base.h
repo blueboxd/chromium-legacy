@@ -180,7 +180,8 @@ class AppServiceProxyBase : public KeyedService,
                         int32_t event_flags,
                         GURL url,
                         LaunchSource launch_source,
-                        WindowInfoPtr window_info = nullptr);
+                        WindowInfoPtr window_info = nullptr,
+                        LaunchCallback callback = base::DoNothing());
 
   // Launches an app for the given |params.app_id|. The |params| can also
   // contain other param such as launch container, window diposition, etc.
@@ -410,6 +411,17 @@ class AppServiceProxyBase : public KeyedService,
 
   virtual void OnLaunched(LaunchCallback callback,
                           LaunchResult&& launch_result);
+
+  // Returns true if we should read icon image files from the local app_service
+  // icon directory on disk, e.g. for ChromeOS. Otherwise, returns false.
+  virtual bool ShouldReadIcons();
+
+  // Reads icon image files from the local app_service icon directory on disk.
+  virtual void ReadIcons(const std::string& app_id,
+                         int32_t size_hint_in_dip,
+                         const IconKey& icon_key,
+                         IconType icon_type,
+                         LoadIconCallback callback) {}
 
   base::flat_map<AppType, AppPublisher*> publishers_;
 

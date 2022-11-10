@@ -2937,6 +2937,8 @@ constexpr char kWallpaperFullScreenPreviewInternalName[] =
 constexpr char kWallpaperGooglePhotosIntegrationInternalName[] =
     "wallpaper-google-photos-integration";
 constexpr char kWallpaperPerDeskName[] = "per-desk-wallpaper";
+constexpr char kLibAssistantV2MigrationInternalName[] =
+    "cros-libassistant-v2-migration";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2956,7 +2958,6 @@ constexpr char kBorealisStorageBallooningInternalName[] =
 constexpr char kVmPerBootShaderCacheName[] = "vm-per-boot-shader-cache";
 constexpr char kClipboardHistoryReorderInternalName[] =
     "clipboard-history-reorder";
-constexpr char kQsRevampInternalName[] = "qs-revamp";
 constexpr char kWelcomeScreenInternalName[] = "welcome-screen";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -4001,7 +4002,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOsSettingsSearchFeedbackName,
      flag_descriptions::kOsSettingsSearchFeedbackDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kOsSettingsSearchFeedback)},
-    {kQsRevampInternalName, flag_descriptions::kQsRevampName,
+    {"qs-revamp", flag_descriptions::kQsRevampName,
      flag_descriptions::kQsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQsRevamp)},
     {"quick-settings-network-revamp",
@@ -4927,6 +4928,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"view-transition", flag_descriptions::kViewTransitionName,
      flag_descriptions::kViewTransitionDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kViewTransition)},
+    {"view-transition-on-navigation",
+     flag_descriptions::kViewTransitionOnNavigationName,
+     flag_descriptions::kViewTransitionOnNavigationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kViewTransitionOnNavigation)},
 #if BUILDFLAG(IS_WIN)
     {"use-winrt-midi-api", flag_descriptions::kUseWinrtMidiApiName,
      flag_descriptions::kUseWinrtMidiApiDescription, kOsWin,
@@ -5112,6 +5117,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kDiacriticsOnPhysicalKeyboardLongpress)},
+    {"enable-cros-first-party-vietnamese-input",
+     flag_descriptions::kFirstPartyVietnameseInputName,
+     flag_descriptions::kFirstPartyVietnameseInputDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFirstPartyVietnameseInput)},
     {"enable-cros-hindi-inscript-layout",
      flag_descriptions::kHindiInscriptLayoutName,
      flag_descriptions::kHindiInscriptLayoutDescription, kOsCrOS,
@@ -6986,10 +6995,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(switches::kTangibleSync,
                                     kTangibleSyncVariations,
                                     "TangibleSyncVariations")},
-
-    {"enable-cbd-sign-out", flag_descriptions::kEnableCbdSignOutName,
-     flag_descriptions::kEnableCbdSignOutDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(switches::kEnableCbdSignOut)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-use-improved-label-disambiguation",
@@ -7539,9 +7544,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_MAC)
-    {"metal", flag_descriptions::kMetalName,
-     flag_descriptions::kMetalDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kMetal)},
     {"screentime", flag_descriptions::kScreenTimeName,
      flag_descriptions::kScreenTimeDescription, kOsMac,
      FEATURE_VALUE_TYPE(screentime::kScreenTime)},
@@ -8968,6 +8970,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(share::kUpcomingSharingFeatures)},
 
 #if defined(TOOLKIT_VIEWS)
+    {"revamped-password-management-bubble",
+     flag_descriptions::kRevampedPasswordManagementBubbleName,
+     flag_descriptions::kRevampedPasswordManagementBubbleDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kRevampedPasswordManagementBubble)},
+
     {"side-search", flag_descriptions::kSideSearchName,
      flag_descriptions::kSideSearchDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSideSearch)},
@@ -9155,11 +9164,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchDragAndContextMenuName,
      flag_descriptions::kTouchDragAndContextMenuDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kTouchDragAndContextMenu)},
-
-    {"new-instance-from-dragged-link",
-     flag_descriptions::kNewInstanceFromDraggedLinkName,
-     flag_descriptions::kNewInstanceFromDraggedLinkDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNewInstanceFromDraggedLink)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-enable-update-virtual-card-enrollment",
@@ -9912,6 +9916,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(enterprise_auth::kCloudApAuth)},
 #endif  // BUILDFLAG(IS_WIN)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {kLibAssistantV2MigrationInternalName,
+     flag_descriptions::kLibAssistantV2MigrationName,
+     flag_descriptions::kLibAssistantV2MigrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::assistant::features::kEnableLibAssistantV2)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -10059,9 +10070,12 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
     return channel == version_info::Channel::STABLE;
   }
 
-  // Skip quick-settings revamp flag on stable channel.
-  if (!strcmp(kQsRevampInternalName, entry.internal_name)) {
-    return channel == version_info::Channel::STABLE;
+  // Only show LibAssistant V2 migration flag if channel is one of
+  // Dev/Canary/Unknown.
+  if (!strcmp(kLibAssistantV2MigrationInternalName, entry.internal_name)) {
+    return (channel != version_info::Channel::DEV &&
+            channel != version_info::Channel::CANARY &&
+            channel != version_info::Channel::UNKNOWN);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

@@ -71,7 +71,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
 
   Document& owner_document = owner_element->GetDocument();
   gfx::Rect viewport_intersection, mainframe_intersection;
-  TransformationMatrix main_frame_transform_matrix;
+  gfx::Transform main_frame_transform_matrix;
   DocumentLifecycle::LifecycleState parent_lifecycle_state =
       owner_document.Lifecycle().GetState();
   mojom::blink::FrameOcclusionState occlusion_state =
@@ -129,7 +129,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     // child frame.
     parent_frame_to_iframe_content_transform.Move(
         owner_layout_object->PhysicalContentBoxOffset());
-    TransformationMatrix matrix =
+    gfx::Transform matrix =
         parent_frame_to_iframe_content_transform.AccumulatedTransform()
             .InverseOrIdentity();
     if (geometry.IsIntersecting()) {
@@ -215,14 +215,13 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
 
   // An iframe's content is always pixel-snapped, even if the iframe element has
   // non-pixel-aligned location.
-  gfx::Transform main_frame_gfx_transform =
-      main_frame_transform_matrix.ToTransform();
-  main_frame_gfx_transform.Round2dTranslationComponents();
+  gfx::Transform pixel_snapped_transform = main_frame_transform_matrix;
+  pixel_snapped_transform.Round2dTranslationComponents();
 
   SetViewportIntersection(mojom::blink::ViewportIntersectionState(
       viewport_intersection, mainframe_intersection, gfx::Rect(),
       occlusion_state, frame.GetOutermostMainFrameSize(),
-      frame.GetOutermostMainFrameScrollPosition(), main_frame_gfx_transform));
+      frame.GetOutermostMainFrameScrollPosition(), pixel_snapped_transform));
 
   UpdateFrameVisibility(!viewport_intersection.IsEmpty());
 

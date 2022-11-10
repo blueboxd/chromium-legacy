@@ -187,15 +187,16 @@ ElementAnimations* GetElementAnimations(const StyleResolverState& state) {
 }
 
 bool HasAnimationsOrTransitions(const StyleResolverState& state) {
-  return state.Style()->Animations() || state.Style()->Transitions() ||
+  return state.StyleBuilder().Animations() ||
+         state.StyleBuilder().Transitions() ||
          (state.GetAnimatingElement() &&
           state.GetAnimatingElement()->HasAnimations());
 }
 
 bool HasTimelines(const StyleResolverState& state) {
-  if (!state.Style()->ScrollTimelineName().empty())
+  if (!state.StyleBuilder().ScrollTimelineName().empty())
     return true;
-  if (!state.Style()->ViewTimelineName().empty())
+  if (!state.StyleBuilder().ViewTimelineName().empty())
     return true;
   if (ElementAnimations* element_animations = GetElementAnimations(state))
     return element_animations->CssAnimations().HasTimelines();
@@ -285,7 +286,7 @@ void PreserveTextAutosizingMultiplierIfNeeded(
     const StyleRequest& style_request) {
   const ComputedStyle* old_style = state.GetElement().GetComputedStyle();
   if (!style_request.IsPseudoStyleRequest() && old_style) {
-    state.Style()->SetTextAutosizingMultiplier(
+    state.StyleBuilder().SetTextAutosizingMultiplier(
         old_style->TextAutosizingMultiplier());
   }
 }
@@ -1084,7 +1085,8 @@ void StyleResolver::InitStyleAndApplyInheritance(
         style_request.originating_element_style->InForcedColorsMode());
     state.StyleBuilder().SetForcedColorAdjust(
         style_request.originating_element_style->ForcedColorAdjust());
-    state.Style()->SetFont(style_request.originating_element_style->GetFont());
+    state.StyleBuilder().SetFont(
+        style_request.originating_element_style->GetFont());
     state.StyleBuilder().SetLineHeight(
         style_request.originating_element_style->LineHeight());
   }
@@ -1322,17 +1324,19 @@ void StyleResolver::ApplyBaseStyleNoCache(
   const MatchResult& match_result = collector.MatchedResult();
 
   if (match_result.HasFlag(MatchFlag::kAffectedByDrag))
-    state.Style()->SetAffectedByDrag();
+    state.StyleBuilder().SetAffectedByDrag();
   if (match_result.HasFlag(MatchFlag::kAffectedByFocusWithin))
-    state.Style()->SetAffectedByFocusWithin();
+    state.StyleBuilder().SetAffectedByFocusWithin();
   if (match_result.HasFlag(MatchFlag::kAffectedByHover))
-    state.Style()->SetAffectedByHover();
+    state.StyleBuilder().SetAffectedByHover();
   if (match_result.HasFlag(MatchFlag::kAffectedByActive))
-    state.Style()->SetAffectedByActive();
+    state.StyleBuilder().SetAffectedByActive();
   if (match_result.DependsOnSizeContainerQueries())
     state.Style()->SetDependsOnSizeContainerQueries(true);
   if (match_result.DependsOnStyleContainerQueries())
     state.Style()->SetDependsOnStyleContainerQueries(true);
+  if (match_result.FirstLineDependsOnSizeContainerQueries())
+    state.StyleBuilder().SetFirstLineDependsOnSizeContainerQueries(true);
   if (match_result.DependsOnStaticViewportUnits())
     state.Style()->SetHasStaticViewportUnits();
   if (match_result.DependsOnDynamicViewportUnits())
@@ -1341,6 +1345,14 @@ void StyleResolver::ApplyBaseStyleNoCache(
     state.Style()->SetHasRemUnits();
   if (match_result.ConditionallyAffectsAnimations())
     state.SetCanAffectAnimations();
+  if (match_result.HasNonUniversalHighlightPseudoStyles())
+    state.StyleBuilder().SetHasNonUniversalHighlightPseudoStyles(true);
+  if (match_result.HasNonUaHighlightPseudoStyles())
+    state.StyleBuilder().SetHasNonUaHighlightPseudoStyles(true);
+  if (!match_result.CustomHighlightNames().empty()) {
+    state.StyleBuilder().SetCustomHighlightNames(
+        match_result.CustomHighlightNames());
+  }
 
   ApplyCallbackSelectors(state);
 
@@ -1572,8 +1584,6 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
   StyleEngine& engine = GetDocument().GetStyleEngine();
 
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
-  ComputedStyle* initial_style = builder.MutableInternalStyle();
-
   builder.SetRtlOrdering(GetDocument().VisuallyOrdered() ? EOrder::kVisual
                                                          : EOrder::kLogical);
   builder.SetZoom(InitialZoom());
@@ -1586,21 +1596,20 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
                              engine.GetPreferredColorScheme(),
                              engine.GetForceDarkModeEnabled());
 
-  FontDescription document_font_description =
-      initial_style->GetFontDescription();
+  FontDescription document_font_description = builder.GetFontDescription();
   document_font_description.SetLocale(
       LayoutLocale::Get(GetDocument().ContentLanguage()));
 
-  initial_style->SetFontDescription(document_font_description);
-  initial_style->SetUserModify(GetDocument().InDesignMode()
-                                   ? EUserModify::kReadWrite
-                                   : EUserModify::kReadOnly);
-  FontBuilder(&GetDocument()).CreateInitialFont(*initial_style);
+  builder.SetFontDescription(document_font_description);
+  builder.MutableInternalStyle()->SetUserModify(GetDocument().InDesignMode()
+                                                    ? EUserModify::kReadWrite
+                                                    : EUserModify::kReadOnly);
+  FontBuilder(&GetDocument()).CreateInitialFont(builder);
 
   scoped_refptr<StyleInitialData> initial_data =
       engine.MaybeCreateAndGetInitialData();
   if (initial_data)
-    initial_style->SetInitialData(std::move(initial_data));
+    builder.MutableInternalStyle()->SetInitialData(std::move(initial_data));
 
   return builder;
 }
@@ -1937,9 +1946,9 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
       // so CopyNonInheritedFromCached will clobber them despite custom_copy.
       // TODO(crbug.com/1024156): do this for CustomHighlightNames too, so we
       // can remove the cache-busting for ::highlight() in IsStyleCacheable
-      state.Style()->SetHasNonUniversalHighlightPseudoStyles(
+      state.StyleBuilder().SetHasNonUniversalHighlightPseudoStyles(
           non_universal_highlights);
-      state.Style()->SetHasNonUaHighlightPseudoStyles(non_ua_highlights);
+      state.StyleBuilder().SetHasNonUaHighlightPseudoStyles(non_ua_highlights);
 
       // If the child style is a cache hit, we'll never reach StyleBuilder::
       // ApplyProperty, hence we'll never set the flag on the parent.
@@ -2058,8 +2067,9 @@ FilterOperations StyleResolver::ComputeFilterOperations(
     Element* element,
     const Font& font,
     const CSSValue& filter_value) {
-  scoped_refptr<ComputedStyle> parent = CreateComputedStyle();
-  parent->SetFont(font);
+  ComputedStyleBuilder parent_builder = CreateComputedStyleBuilder();
+  parent_builder.SetFont(font);
+  scoped_refptr<const ComputedStyle> parent = parent_builder.TakeStyle();
 
   StyleResolverState state(GetDocument(), *element,
                            nullptr /* StyleRecalcContext */,
@@ -2523,10 +2533,8 @@ void StyleResolver::PropagateStyleToViewport() {
       GetDocument(), document_element_style, new_viewport_style_builder);
 
   if (changed) {
-    ComputedStyle* new_viewport_style =
-        new_viewport_style_builder.MutableInternalStyle();
-    new_viewport_style->UpdateFontOrientation();
-    FontBuilder(&GetDocument()).CreateInitialFont(*new_viewport_style);
+    new_viewport_style_builder.UpdateFontOrientation();
+    FontBuilder(&GetDocument()).CreateInitialFont(new_viewport_style_builder);
   }
   if (changed || update_scrollbar_style) {
     GetDocument().GetLayoutView()->SetStyle(
@@ -2566,7 +2574,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
   ComputedStyle* style = builder.MutableInternalStyle();
   if (default_font)
-    style->SetFontDescription(*default_font);
+    builder.SetFontDescription(*default_font);
   else  // parent_style
     style->InheritFrom(*parent_style);
   builder.SetDisplay(is_text_run ? EDisplay::kInline : EDisplay::kBlock);
@@ -2644,17 +2652,15 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForInitialLetterText(
     const ComputedStyle& paragraph_style) {
   DCHECK(paragraph_style.InitialLetter().IsNormal());
   DCHECK(!initial_letter_box_style.InitialLetter().IsNormal());
-  ComputedStyleBuilder initial_letter_text_style_builder =
-      CreateComputedStyleBuilder();
-  ComputedStyle* initial_letter_text_style =
-      initial_letter_text_style_builder.MutableInternalStyle();
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  ComputedStyle* initial_letter_text_style = builder.MutableInternalStyle();
   initial_letter_text_style->InheritFrom(initial_letter_box_style);
-  initial_letter_text_style->SetFont(
+  builder.SetFont(
       ComputeInitialLetterFont(initial_letter_box_style, paragraph_style));
-  initial_letter_text_style_builder.SetLineHeight(
+  builder.SetLineHeight(
       Length::Fixed(initial_letter_text_style->GetFontHeight().LineHeight()));
-  initial_letter_text_style->SetVerticalAlign(EVerticalAlign::kBaseline);
-  return initial_letter_text_style_builder.TakeStyle();
+  builder.SetVerticalAlign(EVerticalAlign::kBaseline);
+  return builder.TakeStyle();
 }
 
 Element& StyleResolver::EnsureElementForFormattedText() {

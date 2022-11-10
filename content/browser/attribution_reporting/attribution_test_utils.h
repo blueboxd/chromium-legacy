@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -22,14 +23,13 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_trigger_data.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_values.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
@@ -55,6 +55,11 @@
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/origin.h"
+
+namespace attribution_reporting {
+class AggregatableTriggerData;
+struct EventTriggerData;
+}  // namespace attribution_reporting
 
 namespace mojo {
 
@@ -441,6 +446,8 @@ class SourceBuilder {
 
   SourceBuilder& SetDestinationOrigin(url::Origin origin);
 
+  SourceBuilder& SetDestinationOrigins(base::flat_set<url::Origin>);
+
   SourceBuilder& SetReportingOrigin(url::Origin origin);
 
   SourceBuilder& SetSourceType(AttributionSourceType source_type);
@@ -486,7 +493,7 @@ class SourceBuilder {
   absl::optional<base::TimeDelta> event_report_window_;
   absl::optional<base::TimeDelta> aggregatable_report_window_;
   url::Origin source_origin_;
-  url::Origin destination_origin_;
+  base::flat_set<url::Origin> destination_origins_;
   url::Origin reporting_origin_;
   AttributionSourceType source_type_ = AttributionSourceType::kNavigation;
   int64_t priority_ = 0;
@@ -539,14 +546,17 @@ class TriggerBuilder {
   TriggerBuilder& SetDebugKey(absl::optional<uint64_t> debug_key);
 
   TriggerBuilder& SetAggregatableTriggerData(
-      std::vector<AttributionAggregatableTriggerData>
-          aggregatable_trigger_data);
+      std::vector<attribution_reporting::AggregatableTriggerData>);
 
   TriggerBuilder& SetAggregatableValues(
-      AttributionAggregatableValues aggregatable_values);
+      attribution_reporting::AggregatableValues);
 
   TriggerBuilder& SetAggregatableDedupKey(
       absl::optional<uint64_t> aggregatable_dedup_key);
+
+  TriggerBuilder& SetIsWithinFencedFrame(bool is_within_fenced_frame);
+
+  TriggerBuilder& SetDebugReporting(bool debug_reporting);
 
   AttributionTrigger Build(bool generate_event_trigger_data = true) const;
 
@@ -558,9 +568,12 @@ class TriggerBuilder {
   int64_t priority_ = 0;
   absl::optional<uint64_t> dedup_key_;
   absl::optional<uint64_t> debug_key_;
-  std::vector<AttributionAggregatableTriggerData> aggregatable_trigger_data_;
-  AttributionAggregatableValues aggregatable_values_;
+  std::vector<attribution_reporting::AggregatableTriggerData>
+      aggregatable_trigger_data_;
+  attribution_reporting::AggregatableValues aggregatable_values_;
   absl::optional<uint64_t> aggregatable_dedup_key_;
+  bool is_within_fenced_frame_ = false;
+  bool debug_reporting_ = false;
 };
 
 // Helper class to construct an `AttributionInfo` for tests using default data.
@@ -623,9 +636,6 @@ class ReportBuilder {
   std::vector<AggregatableHistogramContribution> contributions_;
 };
 
-bool operator==(const AttributionTrigger::EventTriggerData& a,
-                const AttributionTrigger::EventTriggerData& b);
-
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
 
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b);
@@ -655,12 +665,6 @@ bool operator==(const AttributionReport& a, const AttributionReport& b);
 
 bool operator==(const SendResult& a, const SendResult& b);
 
-bool operator==(const AttributionAggregatableTriggerData& a,
-                const AttributionAggregatableTriggerData& b);
-
-bool operator==(const AttributionAggregatableValues& a,
-                const AttributionAggregatableValues& b);
-
 std::ostream& operator<<(std::ostream& out,
                          AttributionTrigger::EventLevelResult status);
 
@@ -668,10 +672,6 @@ std::ostream& operator<<(std::ostream& out,
                          AttributionTrigger::AggregatableResult status);
 
 std::ostream& operator<<(std::ostream& out, RateLimitResult result);
-
-std::ostream& operator<<(
-    std::ostream& out,
-    const AttributionTrigger::EventTriggerData& event_trigger);
 
 std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion);
@@ -714,13 +714,6 @@ std::ostream& operator<<(std::ostream& out,
                          StoredSource::ActiveState active_state);
 
 std::ostream& operator<<(std::ostream& out, StorableSource::Result status);
-
-std::ostream& operator<<(
-    std::ostream& out,
-    const AttributionAggregatableTriggerData& trigger_data);
-
-std::ostream& operator<<(std::ostream& out,
-                         const AttributionAggregatableValues& values);
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(
     AttributionManager* manager);
@@ -892,6 +885,11 @@ MATCHER_P(NewAggregatableReportIs, matcher, "") {
                             result_listener);
 }
 
+MATCHER_P(DroppedEventLevelReportIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.dropped_event_level_report(),
+                            result_listener);
+}
+
 struct EventTriggerDataMatcherConfig {
   ::testing::Matcher<uint64_t> data;
   ::testing::Matcher<int64_t> priority;
@@ -900,7 +898,7 @@ struct EventTriggerDataMatcherConfig {
   ::testing::Matcher<const attribution_reporting::Filters&> not_filters;
 
   EventTriggerDataMatcherConfig() = delete;
-  EventTriggerDataMatcherConfig(
+  explicit EventTriggerDataMatcherConfig(
       ::testing::Matcher<uint64_t> data = ::testing::_,
       ::testing::Matcher<int64_t> priority = ::testing::_,
       ::testing::Matcher<absl::optional<uint64_t>> dedup_key = ::testing::_,
@@ -911,7 +909,7 @@ struct EventTriggerDataMatcherConfig {
   ~EventTriggerDataMatcherConfig();
 };
 
-::testing::Matcher<const AttributionTrigger::EventTriggerData&>
+::testing::Matcher<const attribution_reporting::EventTriggerData&>
 EventTriggerDataMatches(const EventTriggerDataMatcherConfig&);
 
 struct AttributionTriggerMatcherConfig {
@@ -920,10 +918,13 @@ struct AttributionTriggerMatcherConfig {
   ::testing::Matcher<const attribution_reporting::Filters&> filters =
       ::testing::_;
   ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_;
-  ::testing::Matcher<const std::vector<AttributionTrigger::EventTriggerData>&>
+  ::testing::Matcher<
+      const std::vector<attribution_reporting::EventTriggerData>&>
       event_triggers = ::testing::_;
   ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key =
       ::testing::_;
+  ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_;
+  ::testing::Matcher<bool> debug_reporting = ::testing::_;
 
   AttributionTriggerMatcherConfig() = delete;
   AttributionTriggerMatcherConfig(
@@ -932,10 +933,13 @@ struct AttributionTriggerMatcherConfig {
       ::testing::Matcher<const attribution_reporting::Filters&> filters =
           ::testing::_,
       ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_,
-      ::testing::Matcher<const std::vector<
-          AttributionTrigger::EventTriggerData>&> event_triggers = ::testing::_,
+      ::testing::Matcher<
+          const std::vector<attribution_reporting::EventTriggerData>&>
+          event_triggers = ::testing::_,
       ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key =
-          ::testing::_);
+          ::testing::_,
+      ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_,
+      ::testing::Matcher<bool> debug_reporting = ::testing::_);
   ~AttributionTriggerMatcherConfig();
 };
 

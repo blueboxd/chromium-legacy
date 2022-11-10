@@ -12,13 +12,19 @@ mojom("source_registration_error_mojom") {
 
 component("attribution_reporting") {
   sources = [
+    "aggregatable_trigger_data.cc",
+    "aggregatable_trigger_data.h",
+    "aggregatable_values.cc",
+    "aggregatable_values.h",
     "aggregation_keys.cc",
     "aggregation_keys.h",
     "constants.h",
+    "event_trigger_data.cc",
+    "event_trigger_data.h",
     "filters.cc",
     "filters.h",
-    "parse.cc",
-    "parse.h",
+    "os_registration.cc",
+    "os_registration.h",
     "source_registration.cc",
     "source_registration.h",
   ]
@@ -43,7 +49,7 @@ source_set("unit_tests") {
   sources = [
     "aggregation_keys_unittest.cc",
     "filters_unittest.cc",
-    "parse_unittest.cc",
+    "os_registration_unittest.cc",
     "source_registration_unittest.cc",
   ]
 

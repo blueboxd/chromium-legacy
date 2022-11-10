@@ -243,11 +243,15 @@ void FastPairPairerImpl::StartPairing() {
 
       if (bt_device) {
         if (bt_device->IsBonded()) {
-          // TODO(b/256885576): Add metric to capture this case.
           QP_LOG(INFO) << __func__
                        << ": Trying to pair to device that is already paired; "
                           "returning success.";
           std::move(paired_callback_).Run(device_);
+          // In addition to recording kPairingSuccess in the callback above,
+          // also record that the device was already paired.
+          AttemptRecordingFastPairEngagementFlow(
+              *device_,
+              FastPairEngagementFlowEvent::kPairingSucceededAlreadyPaired);
           AttemptSendAccountKey();
           return;
         }
@@ -419,9 +423,8 @@ void FastPairPairerImpl::OnParseDecryptedPasskey(
 
   QP_LOG(INFO) << __func__ << ": Passkeys match, confirming pairing";
   pairing_device->ConfirmPairing();
-  std::move(paired_callback_).Run(device_);
-  adapter_->RemovePairingDelegate(this);
-  AttemptSendAccountKey();
+  // DevicePairedChanged() is expected to be called following pairing
+  // confirmation.
 }
 
 void FastPairPairerImpl::AttemptSendAccountKey() {
@@ -628,14 +631,23 @@ void FastPairPairerImpl::DevicePairedChanged(device::BluetoothAdapter* adapter,
   if (!new_paired_status || !paired_callback_)
     return;
 
-  // This covers the case where we are pairing a v1 device and are using the
-  // Bluetooth pairing dialog to do it.
   if (device->GetAddress() == device_->ble_address ||
       device->GetAddress() == device_->classic_address()) {
-    QP_LOG(INFO) << __func__ << ": Completing pairing procedure";
+    QP_LOG(INFO) << __func__ << ": Completing pairing procedure " << device_;
     std::move(paired_callback_).Run(device_);
 
-    if (pairing_procedure_complete_) {
+    // For V2 devices we still need to remove the Pairing Delegate and write the
+    // account key. `AttemptSendAccountKey()` will call
+    // |pairing_procedure_complete_| whereas V1 devices need to run the callback
+    // in this function since they don't write account keys, and their pairing
+    // procedure is not complete at this point.
+    if (device_->version().has_value() &&
+        device_->version().value() == DeviceFastPairVersion::kHigherThanV1) {
+      adapter_->RemovePairingDelegate(this);
+      AttemptSendAccountKey();
+    } else if (pairing_procedure_complete_) {
+      // This covers the case where we are pairing a v1 device and are using the
+      // Bluetooth pairing dialog to do it.
       std::move(pairing_procedure_complete_).Run(device_);
     }
   }

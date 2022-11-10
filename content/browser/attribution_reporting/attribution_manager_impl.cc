@@ -174,10 +174,11 @@ void RecordStoreSourceStatus(AttributionStorage::StoreSourceResult result) {
 }
 
 void RecordCreateReportStatus(CreateReportResult result) {
-  static_assert(AttributionTrigger::EventLevelResult::kMaxValue ==
-                    AttributionTrigger::EventLevelResult::kExcessiveReports,
-                "Bump version of Conversions.CreateReportStatus4 histogram.");
-  base::UmaHistogramEnumeration("Conversions.CreateReportStatus4",
+  static_assert(
+      AttributionTrigger::EventLevelResult::kMaxValue ==
+          AttributionTrigger::EventLevelResult::kFalselyAttributedSource,
+      "Bump version of Conversions.CreateReportStatus5 histogram.");
+  base::UmaHistogramEnumeration("Conversions.CreateReportStatus5",
                                 result.event_level_status());
   static_assert(
       AttributionTrigger::AggregatableResult::kMaxValue ==
@@ -543,12 +544,13 @@ void AttributionManagerImpl::HandleTrigger(AttributionTrigger trigger) {
 
 void AttributionManagerImpl::StoreTrigger(
     AttributionTrigger trigger,
-    absl::optional<uint64_t> cleared_debug_key) {
+    absl::optional<uint64_t> cleared_debug_key,
+    bool is_debug_cookie_set) {
   attribution_storage_.AsyncCall(&AttributionStorage::MaybeCreateAndStoreReport)
       .WithArgs(trigger)
       .Then(base::BindOnce(&AttributionManagerImpl::OnReportStored,
                            weak_factory_.GetWeakPtr(), std::move(trigger),
-                           cleared_debug_key));
+                           cleared_debug_key, is_debug_cookie_set));
 }
 
 void AttributionManagerImpl::MaybeEnqueueEvent(SourceOrTrigger event) {
@@ -576,12 +578,14 @@ void AttributionManagerImpl::ProcessEvents() {
     const url::Origin* cookie_origin =
         absl::visit(base::Overloaded{
                         [](const StorableSource& source) {
-                          return source.common_info().debug_key().has_value()
+                          return source.common_info().debug_key().has_value() ||
+                                         source.debug_reporting()
                                      ? &source.common_info().reporting_origin()
                                      : nullptr;
                         },
                         [](const AttributionTrigger& trigger) {
-                          return trigger.debug_key().has_value()
+                          return trigger.debug_key().has_value() ||
+                                         trigger.debug_reporting()
                                      ? &trigger.reporting_origin()
                                      : nullptr;
                         },
@@ -653,7 +657,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
             if (!allowed) {
               this->OnReportStored(
                   std::move(trigger),
-                  /*cleared_debug_key=*/absl::nullopt,
+                  /*cleared_debug_key=*/absl::nullopt, is_debug_cookie_set,
                   CreateReportResult(/*trigger_time=*/base::Time::Now(),
                                      AttributionTrigger::EventLevelResult::
                                          kProhibitedByBrowserPolicy,
@@ -668,7 +672,8 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
               trigger.ClearDebugKey();
             }
 
-            this->StoreTrigger(std::move(trigger), cleared_debug_key);
+            this->StoreTrigger(std::move(trigger), cleared_debug_key,
+                               is_debug_cookie_set);
           },
       },
       std::move(event));
@@ -677,6 +682,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
 void AttributionManagerImpl::OnReportStored(
     const AttributionTrigger trigger,
     absl::optional<uint64_t> cleared_debug_key,
+    bool is_debug_cookie_set,
     CreateReportResult result) {
   RecordCreateReportStatus(result);
 
@@ -711,6 +717,8 @@ void AttributionManagerImpl::OnReportStored(
 
   for (auto& observer : observers_)
     observer.OnTriggerHandled(trigger, cleared_debug_key, result);
+
+  MaybeSendVerboseDebugReport(trigger, is_debug_cookie_set, result);
 }
 
 void AttributionManagerImpl::MaybeSendDebugReport(AttributionReport&& report) {
@@ -1024,6 +1032,17 @@ void AttributionManagerImpl::MaybeSendVerboseDebugReport(
     const AttributionStorage::StoreSourceResult& result) {
   if (absl::optional<AttributionDebugReport> debug_report =
           AttributionDebugReport::Create(source, is_debug_cookie_set, result)) {
+    report_sender_->SendReport(std::move(*debug_report));
+  }
+}
+
+void AttributionManagerImpl::MaybeSendVerboseDebugReport(
+    const AttributionTrigger& trigger,
+    bool is_debug_cookie_set,
+    const CreateReportResult& result) {
+  if (absl::optional<AttributionDebugReport> debug_report =
+          AttributionDebugReport::Create(trigger, is_debug_cookie_set,
+                                         result)) {
     report_sender_->SendReport(std::move(*debug_report));
   }
 }

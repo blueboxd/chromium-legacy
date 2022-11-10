@@ -456,7 +456,7 @@
       status: "experimental",
     },
     {
-      name: "CanvasColorManagementV2",
+      name: "CanvasFloatingPoint",
       status: "experimental",
     },
     {
@@ -646,8 +646,10 @@
     {
       // Support for CSS Color Module Level 4
       // https://www.w3.org/TR/css-color-4/
+      // It has a kill-switch in case we see that something is not proplery working"
       name: "CSSColor4",
-      status:  "experimental",
+      status:  "stable",
+      base_feature: "CSSColor4",
     },
     {
       name: "CSSColorContrast",
@@ -1544,6 +1546,8 @@
       name: "LayoutMediaNGContainer",
       // This feature doesn't work in the legacy layout.
       depends_on: ["LayoutNGPrinting"],
+      status: "test",
+      base_feature: "LayoutMediaNGContainer",
     },
     {
       // LayoutNG has been enabled in M76, but we still keep this flag for
@@ -3068,10 +3072,6 @@
       base_feature: "WebFontResizeLCP",
     },
     {
-      name: "WebGLColorManagement",
-      status: "stable",
-    },
-    {
       name: "WebGLDeveloperExtensions",
       public: true,
       status: "experimental",
@@ -3081,6 +3081,10 @@
       // platform features.
       name: "WebGLDraftExtensions",
       public: true,
+    },
+    {
+      name: "WebGLDrawingBufferStorage",
+      status: "experimental",
     },
     {
       name: "WebGLImageChromium",

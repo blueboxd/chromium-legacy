@@ -1623,6 +1623,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         return new ToolbarSnapshotState(getTint().getDefaultColor(),
                 mTabCountProvider.getTabCount(), mButtonData, mVisualState,
                 getToolbarDataProvider().getCurrentUrl(),
+                mLocationBar.getOmniboxVisibleTextPrefixHint(),
                 getToolbarDataProvider().getSecurityIconResource(false),
                 ImageViewCompat.getImageTintList(mHomeButton),
                 getMenuButtonCoordinator().isShowingUpdateBadge(),
@@ -1799,7 +1800,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         // The width of location bar depends on mTabSwitcherState so layout request is needed. See
         // crbug.com/974745.
-        requestLayout();
+        ViewUtils.requestLayout(this, "ToolbarPhone.setTabSwitcherMode");
 
         mLocationBar.setUrlBarFocusable(false);
 
@@ -1894,7 +1895,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         // The width of location bar depends on mTabSwitcherState so layout request is needed. See
         // crbug.com/974745.
-        requestLayout();
+        ViewUtils.requestLayout(this, "ToolbarPhone.onTabSwitcherTransitionFinished");
         finishAnimations();
         updateVisualsForLocationBarState();
         updateViewsForTabSwitcherMode();
@@ -2064,7 +2065,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                     mDisableLocationBarRelayout = true;
                 } else {
                     mLayoutLocationBarInFocusedMode = true;
-                    requestLayout();
+                    ViewUtils.requestLayout(ToolbarPhone.this,
+                            "ToolbarPhone.triggerUrlFocusAnimation.CancelAwareAnimatorListener.onStart");
                 }
             }
 
@@ -2080,7 +2082,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 if (!hasFocus) {
                     mDisableLocationBarRelayout = false;
                     mLayoutLocationBarInFocusedMode = false;
-                    requestLayout();
+                    ViewUtils.requestLayout(ToolbarPhone.this,
+                            "ToolbarPhone.triggerUrlFocusAnimation.CancelAwareAnimatorListener.onEnd");
                 }
                 mLocationBar.finishUrlFocusChange(hasFocus, shouldShowKeyboard,
                         getToolbarDataProvider().shouldShowLocationBarInOverviewMode());
@@ -2214,7 +2217,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         ntpDelegate.setSearchBoxScrollListener(this::onNtpScrollChanged);
         if (ntpDelegate.isLocationBarShown()) {
             updateToNtpBackground();
-            requestLayout();
+            ViewUtils.requestLayout(
+                    this, "ToolbarPhone.updateNtpAnimationState showing LocationBar");
         } else if (wasShowingNtp) {
             // Convert the previous NTP scroll progress to URL focus progress because that
             // will give a nicer transition animation from the expanded NTP omnibox to the
@@ -2224,7 +2228,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                         Math.max(previousNtpScrollFraction, mUrlFocusChangeFraction);
                 triggerUrlFocusAnimation(false);
             }
-            requestLayout();
+            ViewUtils.requestLayout(this, "ToolbarPhone.updateNtpAnimationState showing ntp");
         }
     }
 
@@ -2475,7 +2479,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                     case TransitionType.COLLAPSING_ACTION_CHIP:
                     case TransitionType.HIDING:
                         mLayoutLocationBarWithoutExtraButton = true;
-                        requestLayout();
+                        ViewUtils.requestLayout(this,
+                                "ToolbarPhone.initializeOptionalButton.mOptionalButton.setTransitionStartedCallback");
                         break;
                     case TransitionType.EXPANDING_ACTION_CHIP:
                     case TransitionType.SHOWING:
@@ -2495,7 +2500,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 mOptionalButtonAnimationRunning = false;
                 allowBrowserControlsHide();
                 if (mLayoutUpdater != null) mLayoutUpdater.run();
-                requestLayout();
+                ViewUtils.requestLayout(this,
+                        "ToolbarPhone.initializeOptionalButton.mOptionalButton.setTransitionFinishedCallback");
             });
         }
     }

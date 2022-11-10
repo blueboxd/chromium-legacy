@@ -100,6 +100,7 @@ class CORE_EXPORT StyleResolverState {
     return *Style();
   }
   ComputedStyleBuilder& StyleBuilder() { return style_builder_; }
+  const ComputedStyleBuilder& StyleBuilder() const { return style_builder_; }
   scoped_refptr<ComputedStyle> TakeStyle();
 
   const CSSToLengthConversionData& CssToLengthConversionData() const {
@@ -107,6 +108,12 @@ class CORE_EXPORT StyleResolverState {
   }
   CSSToLengthConversionData FontSizeConversionData() const;
   CSSToLengthConversionData UnzoomedLengthConversionData() const;
+
+  ScopedCSSToLengthConversionData GetScopedCSSToLengthConversionData(
+      const TreeScope* scope) const {
+    return ScopedCSSToLengthConversionData(css_to_length_conversion_data_,
+                                           scope);
+  }
 
   void SetConversionFontSizes(
       const CSSToLengthConversionData::FontSizes& font_sizes) {

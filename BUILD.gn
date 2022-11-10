@@ -964,13 +964,15 @@ if (is_win) {
       "//components/policy:pack_policy_templates",
       "//components/zucchini",
       "//courgette",
-      "//courgette:copy_courgette_binaries",
       "//third_party/hyphenation-patterns",
       "//tools/metrics:metrics_metadata",
     ]
 
     if (target_cpu == "x86") {
-      deps += [ "//courgette(//build/toolchain/win:win_clang_x64)" ]
+      deps += [
+        "//courgette:copy_courgette_binaries",
+        "//courgette(//build/toolchain/win:win_clang_x64)",
+      ]
     }
     if (is_chrome_branded) {
       deps += [ "//remoting/host:remoting_host_installation" ]
@@ -1133,6 +1135,7 @@ if (!is_ios) {
         "//chrome/test/chromedriver/test/run_webdriver_tests.py",
         "//chrome/test/chromedriver/util.py",
         "//third_party/blink/tools/blinkpy/",
+        "//third_party/blink/web_tests/external/wpt/config.json",
         "//third_party/blink/web_tests/external/wpt/webdriver/",
         "//third_party/blink/web_tests/VirtualTestSuites",
         "//third_party/blink/web_tests/WebDriverExpectations",
@@ -1241,6 +1244,7 @@ if (!is_ios) {
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
       "//third_party/blink/tools/",
+      "//third_party/blink/web_tests/external/wpt/config.json",
       "//third_party/blink/web_tests/resources/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
       "//third_party/test_fonts/test_fonts/",

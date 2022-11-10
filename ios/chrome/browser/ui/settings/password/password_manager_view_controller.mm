@@ -528,8 +528,9 @@ NSInteger kTrailingSymbolSize = 18;
 
   [self showOrHideEmptyView];
 
-  // If we don't have data or settings to show, add an empty state, then stop
-  // so that we don't add anything that overlaps the illustrated background.
+  // If we don't have data or settings to show, add an empty state, then
+  // stop so that we don't add anything that overlaps the illustrated
+  // background.
   if ([self shouldShowEmptyStateView]) {
     return;
   }
@@ -1218,6 +1219,12 @@ NSInteger kTrailingSymbolSize = 18;
 }
 
 - (void)updatePasswordManagerUI {
+  if ([self shouldShowEmptyStateView]) {
+    [self setEditing:NO animated:YES];
+    [self reloadData];
+    return;
+  }
+
   TableViewModel* model = self.tableViewModel;
   NSMutableIndexSet* sectionsToUpdate = [NSMutableIndexSet indexSet];
 
@@ -1938,28 +1945,47 @@ NSInteger kTrailingSymbolSize = 18;
   std::vector<password_manager::CredentialUIEntry> credentialsToDelete;
 
   for (NSIndexPath* indexPath in indexPaths) {
-    password_manager::CredentialUIEntry credential =
-        base::mac::ObjCCastStrict<PasswordFormContentItem>(
-            [self.tableViewModel itemAtIndexPath:indexPath])
-            .credential;
     // Only form items are editable.
     NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
-    auto removeCredential =
-        [](std::vector<password_manager::CredentialUIEntry>& credentials,
-           const password_manager::CredentialUIEntry& credential) {
-          auto iterator = base::ranges::find(credentials, credential);
-          if (iterator != credentials.end())
-            credentials.erase(iterator);
-        };
+    // Remove affiliated group.
+    if (IsPasswordGroupingEnabled() && itemType == ItemTypeSavedPassword) {
+      password_manager::AffiliatedGroup affiliatedGroup =
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath])
+              .affiliatedGroup;
 
-    if (itemType == ItemTypeBlocked) {
-      removeCredential(_blockedSites, credential);
+      // Remove from local cache.
+      auto iterator = base::ranges::find(_affiliatedGroups, affiliatedGroup);
+      if (iterator != _affiliatedGroups.end())
+        _affiliatedGroups.erase(iterator);
+
+      // Add to the credentials to delete vector to remove from store.
+      credentialsToDelete.insert(credentialsToDelete.end(),
+                                 affiliatedGroup.GetCredentials().begin(),
+                                 affiliatedGroup.GetCredentials().end());
     } else {
-      removeCredential(_passwords, credential);
-    }
+      password_manager::CredentialUIEntry credential =
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath])
+              .credential;
 
-    credentialsToDelete.push_back(std::move(credential));
+      auto removeCredential =
+          [](std::vector<password_manager::CredentialUIEntry>& credentials,
+             const password_manager::CredentialUIEntry& credential) {
+            auto iterator = base::ranges::find(credentials, credential);
+            if (iterator != credentials.end())
+              credentials.erase(iterator);
+          };
+
+      if (itemType == ItemTypeBlocked) {
+        removeCredential(_blockedSites, credential);
+      } else {
+        removeCredential(_passwords, credential);
+      }
+
+      credentialsToDelete.push_back(std::move(credential));
+    }
   }
 
   // Remove empty sections.

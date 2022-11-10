@@ -138,7 +138,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   // Updates the IdpSigninStatus in case of accounts fetch failure and shows a
   // failure UI if applicable.
   void HandleAccountsFetchFailure(
-      const GURL& idp_url,
+      const url::Origin& idp_origin,
       blink::mojom::FederatedAuthRequestResult result,
       absl::optional<content::FedCmRequestIdTokenStatus> token_status);
 
@@ -221,15 +221,6 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
   std::unique_ptr<FedCmMetrics> fedcm_metrics_;
 
   bool prefer_auto_sign_in_;
-
-  // Fetched from the IDP FedCM manifest configuration.
-  struct {
-    GURL idp;
-    GURL token;
-    GURL accounts;
-    GURL client_metadata;
-    GURL metrics;
-  } endpoints_;
 
   base::flat_map<GURL, IdentityProviderInfo> idp_info_;
 

@@ -79,6 +79,7 @@ import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.EventOffsetHandler;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.VirtualKeyboardMode;
 import org.chromium.ui.resources.ResourceManager;
@@ -1164,7 +1165,8 @@ public class CompositorViewHolder extends FrameLayout
                             || layoutParams.bottomMargin != (int) bottomMargin)) {
                 layoutParams.topMargin = (int) topMargin;
                 layoutParams.bottomMargin = (int) bottomMargin;
-                child.requestLayout();
+                ViewUtils.requestLayout(
+                        child, "CompositorViewHolder.applyMarginToFullscreenChildViews");
                 TraceEvent.instant("FullscreenManager:child.requestLayout()");
             }
         }
@@ -1868,6 +1870,22 @@ public class CompositorViewHolder extends FrameLayout
 
     void setCompositorViewForTesting(CompositorView compositorView) {
         mCompositorView = compositorView;
+    }
+
+    /**
+     * Returns its height, in physical pixels, of the virtual keyboard if shown or 0 if hidden.
+     */
+    public int getVirtualKeyboardHeight() {
+        // TODO(https://crbug.com/1211066): This class shouldn't know so much about bottom insets.
+        // Make this an external value that CompositorViewHolder consumes.
+        int keyboardHeight = KeyboardVisibilityDelegate.getInstance().calculateKeyboardHeight(
+                this.getRootView());
+        int keyboardAccessoriesHeight = mAutofillUiBottomInsetSupplier != null
+                        && mAutofillUiBottomInsetSupplier.get() != null
+                ? mAutofillUiBottomInsetSupplier.get()
+                : 0;
+
+        return keyboardHeight + keyboardAccessoriesHeight;
     }
 
     @VirtualKeyboardMode.EnumType

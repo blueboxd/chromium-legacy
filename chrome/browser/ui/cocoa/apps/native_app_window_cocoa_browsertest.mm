@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
 #include "extensions/browser/app_window/native_app_window.h"
 
 #import <Cocoa/Cocoa.h>
 #include <memory>
 
+#include "base/functional/callback_helpers.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -69,10 +70,12 @@ class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
       content::CreateAndLoadWebContentsObserver app_loaded_observer;
       apps::AppServiceProxyFactory::GetForProfile(profile())
           ->BrowserAppLauncher()
-          ->LaunchAppWithParams(apps::AppLaunchParams(
-              app->id(), apps::LaunchContainer::kLaunchContainerNone,
-              WindowOpenDisposition::NEW_WINDOW,
-              apps::LaunchSource::kFromTest));
+          ->LaunchAppWithParams(
+              apps::AppLaunchParams(app->id(),
+                                    apps::LaunchContainer::kLaunchContainerNone,
+                                    WindowOpenDisposition::NEW_WINDOW,
+                                    apps::LaunchSource::kFromTest),
+              base::DoNothing());
       app_loaded_observer.Wait();
     }
   }

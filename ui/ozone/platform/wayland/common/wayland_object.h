@@ -10,12 +10,6 @@
 #include "base/check.h"
 #include "ui/ozone/platform/wayland/common/wayland.h"
 
-#define CHROME_WAYLAND_CHECK_VERSION(x, y, z)                   \
-  (WAYLAND_VERSION_MAJOR > x ||                                 \
-   (WAYLAND_VERSION_MAJOR == x && WAYLAND_VERSION_MINOR > y) || \
-   (WAYLAND_VERSION_MAJOR == x && WAYLAND_VERSION_MINOR == y && \
-    WAYLAND_VERSION_MICRO >= z))
-
 struct wl_proxy;
 
 namespace ui {
@@ -223,11 +217,6 @@ DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_exporter_v2)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_exported_v2)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_output_manager_v1)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_output_v1)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_popup_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_positioner_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_shell_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_surface_v6)
-DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_toplevel_v6)
 DECLARE_WAYLAND_OBJECT_TRAITS(zxdg_toplevel_decoration_v1)
 
 #endif  // UI_OZONE_PLATFORM_WAYLAND_COMMON_WAYLAND_OBJECT_H_

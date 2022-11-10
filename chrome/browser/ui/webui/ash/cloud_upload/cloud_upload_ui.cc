@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
@@ -16,6 +17,11 @@
 
 namespace ash::cloud_upload {
 
+bool CloudUploadUIConfig::IsWebUIEnabled(
+    content::BrowserContext* browser_context) {
+  return ash::features::IsUploadOfficeToCloudEnabled();
+}
+
 CloudUploadUI::CloudUploadUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI{web_ui} {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
@@ -26,6 +32,10 @@ CloudUploadUI::CloudUploadUI(content::WebUI* web_ui)
 }
 
 CloudUploadUI::~CloudUploadUI() = default;
+
+void CloudUploadUI::SetDialogArgs(mojom::DialogArgsPtr args) {
+  dialog_args_ = std::move(args);
+}
 
 void CloudUploadUI::BindInterface(
     mojo::PendingReceiver<mojom::PageHandlerFactory> pending_receiver) {
@@ -38,7 +48,7 @@ void CloudUploadUI::BindInterface(
 void CloudUploadUI::CreatePageHandler(
     mojo::PendingReceiver<mojom::PageHandler> receiver) {
   page_handler_ = std::make_unique<CloudUploadPageHandler>(
-      std::move(receiver),
+      std::move(dialog_args_), std::move(receiver),
       // base::Unretained() because |page_handler_| will not out-live |this|.
       base::BindOnce(&CloudUploadUI::RespondAndCloseDialog,
                      base::Unretained(this)));

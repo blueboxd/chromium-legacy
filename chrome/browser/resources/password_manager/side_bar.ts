@@ -47,6 +47,23 @@ export class PasswordManagerSideBarElement extends RouteObserverMixin
   private onSelectorActivate_(event: CustomEvent<{selected: Page}>) {
     Router.getInstance().navigateTo(event.detail.selected);
   }
+
+  private getSelectedPage_(): string {
+    switch (this.selectedPage_) {
+      case Page.PASSWORD_DETAILS:
+        return Page.PASSWORDS;
+      default:
+        return this.selectedPage_;
+    }
+  }
+
+  /**
+   * Prevent clicks on sidebar items from navigating. These are only links for
+   * accessibility purposes, taps are handled separately by <iron-selector>.
+   */
+  private onItemClick_(e: Event) {
+    e.preventDefault();
+  }
 }
 
 declare global {

@@ -835,6 +835,12 @@ const char kViewTransitionName[] = "viewTransition API";
 const char kViewTransitionDescription[] =
     "Controls the availability of the viewTransition JavaScript API.";
 
+const char kViewTransitionOnNavigationName[] =
+    "viewTransition API for navigations";
+const char kViewTransitionOnNavigationDescription[] =
+    "Controls the availability of the viewTransition API on document "
+    "navigations.";
+
 const char kEnableAutoDisableAccessibilityName[] = "Auto-disable Accessibility";
 const char kEnableAutoDisableAccessibilityDescription[] =
     "When accessibility APIs are no longer being requested, automatically "
@@ -3529,12 +3535,6 @@ const char kDiscardOccludedBitmapsDescription[] =
     "Proactively discard cached bitmaps that are occluded/offscreen. Applies "
     "to several UI surfaces. May introduce jank if the bitmap is needed again.";
 
-const char kEnableCbdSignOutName[] =
-    "Decouple Sign out from clearing browsing data";
-const char kEnableCbdSignOutDescription[] =
-    "Enable additional affordance to sign out when clearing browsing data and "
-    "ensure consistent behavior for all signed-in users.";
-
 const char kCloseTabSuggestionsName[] = "Suggest to close Tabs";
 const char kCloseTabSuggestionsDescription[] =
     "Suggests to the user to close Tabs that haven't been used beyond a "
@@ -3778,11 +3778,6 @@ const char kNetworkServiceInProcessName[] =
 const char kNetworkServiceInProcessDescription[] =
     "When enabled, the network service runs on the browser process. Otherwise, "
     "it runs on a dedicated process.";
-
-const char kNewInstanceFromDraggedLinkName[] =
-    "New instance creation from a dragged link";
-const char kNewInstanceFromDraggedLinkDescription[] =
-    "Enables creation of a new instance when a link is dragged out of Chrome.";
 
 const char kNewTabPageTilesTitleWrapAroundName[] =
     "NTP Tiles Title wrap around";
@@ -4585,11 +4580,6 @@ const char kImmersiveFullscreenDescription[] =
 const char kMacSyscallSandboxName[] = "Mac Syscall Filtering Sandbox";
 const char kMacSyscallSandboxDescription[] =
     "Controls whether the macOS sandbox filters syscalls.";
-
-const char kMetalName[] = "Metal";
-const char kMetalDescription[] =
-    "Use Metal instead of OpenGL for rasterization (if out-of-process "
-    "rasterization is enabled) and display (if the Skia renderer is enabled)";
 
 const char kScreenTimeName[] = "Screen Time";
 const char kScreenTimeDescription[] =
@@ -5510,6 +5500,11 @@ const char kFiltersInRecentsV2Name[] = "Filters in Recents enhancement";
 const char kFiltersInRecentsV2Description[] =
     "More enhancements for the filters in Recents.";
 
+const char kFirstPartyVietnameseInputName[] =
+    "First party Vietnamese Input Method";
+const char kFirstPartyVietnameseInputDescription[] =
+    "Use first party input method for Vietnamese VNI and Telex";
+
 const char kFocusFollowsCursorName[] = "Focus follows cursor";
 const char kFocusFollowsCursorDescription[] =
     "Enable window focusing by moving the cursor.";
@@ -6166,6 +6161,10 @@ const char kOobeMaterialNextName[] = "Material Next design for OOBE";
 const char kOobeMaterialNextDescription[] =
     "Feature to enable the Material Next design in out of box experience.";
 
+const char kLibAssistantV2MigrationName[] = "LibAssistant V2 migration";
+const char kLibAssistantV2MigrationDescription[] =
+    "Enables loading LibAssistant V2 for Assistant on ChromeOS.";
+
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6394,6 +6393,12 @@ const char kZeroCopyVideoCaptureDescription[] =
 
 #if defined(TOOLKIT_VIEWS)
 
+const char kRevampedPasswordManagementBubbleName[] =
+    "Revamped Password Managment Bubble (Desktop)";
+const char kRevampedPasswordManagementBubbleDescription[] =
+    "Enable the new password managment bubble triggered by clicking the key "
+    "icon in the omnibox.";
+
 const char kSideSearchName[] = "Side search";
 const char kSideSearchDescription[] =
     "Enables an easily accessible way to access your most recent Google search "
@@ -6497,7 +6502,8 @@ const char kDcheckIsFatalDescription[] =
 #if BUILDFLAG(ENABLE_JXL_DECODER)
 const char kEnableJXLName[] = "Enable JXL image format";
 const char kEnableJXLDescription[] =
-    "Adds image decoding support for the JPEG XL image format.";
+    "Adds image decoding support for the JPEG XL image format. NOTE: JPEG XL "
+    "format will be removed in Chrome 110 release.";
 #endif  // BUILDFLAG(ENABLE_JXL_DECODER)
 
 #if BUILDFLAG(ENABLE_NACL)

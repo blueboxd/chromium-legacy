@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/linux/linux_ui.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_button_order_provider.h"
@@ -29,6 +30,14 @@ BrowserFrameViewLinux::BrowserFrameViewLinux(
 }
 
 BrowserFrameViewLinux::~BrowserFrameViewLinux() = default;
+
+gfx::Insets BrowserFrameViewLinux::MirroredFrameBorderInsets() const {
+  return layout_->MirroredFrameBorderInsets();
+}
+
+gfx::Insets BrowserFrameViewLinux::GetInputInsets() const {
+  return layout_->GetInputInsets();
+}
 
 SkRRect BrowserFrameViewLinux::GetRestoredClipRegion() const {
   gfx::RectF bounds_dip(GetLocalBounds());

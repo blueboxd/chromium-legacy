@@ -99,6 +99,7 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/pref_names.h"
 #include "components/embedder_support/origin_trials/origin_trial_prefs.h"
+#include "components/enterprise/browser/identifiers/identifiers_prefs.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
@@ -468,6 +469,10 @@
 #include "chrome/browser/lacros/net/proxy_config_service_lacros.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/startup/first_run_service.h"
+#endif
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/device_identity/device_oauth2_token_store_desktop.h"
 #include "chrome/browser/downgrade/downgrade_prefs.h"
@@ -766,6 +771,13 @@ const char kChromeCreatedLoginItem[] =
 const char kMigratedLoginItemPref[] =
     "background_mode.migrated_login_item_pref";
 #endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+const char kPrimaryProfileFirstRunFinished[] =
+    "lacros.primary_profile_first_run_finished";
+#endif
+
+// Deprecated 11/2022.
+const char kLocalConsentsDictionary[] = "local_consents";
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -828,6 +840,13 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kChromeCreatedLoginItem, false);
   registry->RegisterBooleanPref(kMigratedLoginItemPref, false);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  registry->RegisterBooleanPref(kPrimaryProfileFirstRunFinished, false);
+#endif
+
+  // Deprecated 11/2022.
+  registry->RegisterDictionaryPref(kLocalConsentsDictionary);
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1115,6 +1134,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   WhatsNewUI::RegisterLocalStatePrefs(registry);
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
+  FirstRunService::RegisterLocalStatePrefs(registry);
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   arc::prefs::RegisterLocalStatePrefs(registry);
   ChromeOSMetricsProvider::RegisterPrefs(registry);
@@ -1275,6 +1298,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chrome_prefs::RegisterProfilePrefs(registry);
   commerce::RegisterPrefs(registry);
   DocumentProvider::RegisterProfilePrefs(registry);
+  enterprise::RegisterIdentifiersProfilePrefs(registry);
   enterprise_reporting::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   dom_distiller::RegisterProfilePrefs(registry);
@@ -1600,9 +1624,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
                                 base::i18n::IsRTL() ? false : true);
 #endif
 
+  registry->RegisterBooleanPref(webauthn::pref_names::kAllowWithBrokenCerts,
+                                false);
+
   registry->RegisterBooleanPref(prefs::kPrivacyGuideViewed, false);
-  registry->RegisterBooleanPref(policy::policy_prefs::kUrlParamFilterEnabled,
-                                true);
 
 #if BUILDFLAG(IS_MAC)
   registry->RegisterBooleanPref(policy::policy_prefs::kScreenTimeEnabled, true);
@@ -1618,6 +1643,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterBooleanPref(prefs::kVirtualKeyboardResizesLayoutByDefault,
                                 false);
 #endif
+
+  registry->RegisterTimePref(prefs::kDIPSTimerLastUpdate, base::Time());
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -1727,6 +1754,16 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kChromeCreatedLoginItem);
   local_state->ClearPref(kMigratedLoginItemPref);
 #endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (local_state->HasPrefPath(kPrimaryProfileFirstRunFinished)) {
+    bool old_value = local_state->GetBoolean(kPrimaryProfileFirstRunFinished);
+    local_state->ClearPref(kPrimaryProfileFirstRunFinished);
+    local_state->SetBoolean(prefs::kFirstRunFinished, old_value);
+  }
+#endif
+
+  // Added 11/2022.
+  local_state->ClearPref(kLocalConsentsDictionary);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS

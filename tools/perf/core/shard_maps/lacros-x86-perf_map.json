@@ -8,15 +8,6 @@
                 "abridged": false
             },
             "blink_perf.css": {
-                "end": 29,
-                "abridged": false
-            }
-        }
-    },
-    "1": {
-        "benchmarks": {
-            "blink_perf.css": {
-                "begin": 29,
                 "abridged": false
             },
             "blink_perf.dom": {
@@ -29,15 +20,15 @@
                 "abridged": false
             },
             "blink_perf.layout": {
-                "end": 48,
+                "end": 44,
                 "abridged": false
             }
         }
     },
-    "2": {
+    "1": {
         "benchmarks": {
             "blink_perf.layout": {
-                "begin": 48,
+                "begin": 44,
                 "abridged": false
             },
             "blink_perf.owp_storage": {
@@ -47,15 +38,6 @@
                 "abridged": false
             },
             "blink_perf.parser": {
-                "end": 20,
-                "abridged": false
-            }
-        }
-    },
-    "3": {
-        "benchmarks": {
-            "blink_perf.parser": {
-                "begin": 20,
                 "abridged": false
             },
             "blink_perf.shadow_dom": {
@@ -71,18 +53,18 @@
                 "abridged": false
             },
             "blink_perf.webgl": {
-                "abridged": false
-            },
-            "blink_perf.webgl_fast_call": {
                 "end": 3,
                 "abridged": false
             }
         }
     },
-    "4": {
+    "2": {
         "benchmarks": {
-            "blink_perf.webgl_fast_call": {
+            "blink_perf.webgl": {
                 "begin": 3,
+                "abridged": false
+            },
+            "blink_perf.webgl_fast_call": {
                 "abridged": false
             },
             "desktop_ui": {
@@ -104,15 +86,6 @@
                 "abridged": false
             },
             "loading.desktop": {
-                "end": 66,
-                "abridged": false
-            }
-        }
-    },
-    "5": {
-        "benchmarks": {
-            "loading.desktop": {
-                "begin": 66,
                 "abridged": false
             },
             "media.desktop": {
@@ -128,45 +101,27 @@
                 "abridged": false
             },
             "rasterize_and_record_micro.top_25": {
-                "end": 11,
+                "end": 9,
                 "abridged": false
             }
         }
     },
-    "6": {
+    "3": {
         "benchmarks": {
             "rasterize_and_record_micro.top_25": {
-                "begin": 11,
+                "begin": 9,
                 "abridged": false
             },
             "rendering.desktop": {
-                "end": 86,
+                "end": 184,
                 "abridged": false
             }
         }
     },
-    "7": {
+    "4": {
         "benchmarks": {
             "rendering.desktop": {
-                "begin": 86,
-                "end": 185,
-                "abridged": false
-            }
-        }
-    },
-    "8": {
-        "benchmarks": {
-            "rendering.desktop": {
-                "begin": 185,
-                "end": 285,
-                "abridged": false
-            }
-        }
-    },
-    "9": {
-        "benchmarks": {
-            "rendering.desktop": {
-                "begin": 285,
+                "begin": 184,
                 "abridged": false
             },
             "rendering.desktop.notracing": {
@@ -193,22 +148,13 @@
             }
         }
     },
-    "10": {
+    "5": {
         "benchmarks": {
             "system_health.common_desktop": {
                 "begin": 49,
                 "abridged": false
             },
             "system_health.memory_desktop": {
-                "end": 68,
-                "abridged": false
-            }
-        }
-    },
-    "11": {
-        "benchmarks": {
-            "system_health.memory_desktop": {
-                "begin": 68,
                 "abridged": false
             },
             "system_health.pcscan": {
@@ -235,22 +181,16 @@
         }
     },
     "extra_infos": {
-        "num_stories": 1191,
-        "predicted_min_shard_time": 990,
-        "predicted_min_shard_index": 0,
-        "predicted_max_shard_time": 1000,
-        "predicted_max_shard_index": 6,
-        "shard #0": 990,
-        "shard #1": 990,
-        "shard #2": 990,
-        "shard #3": 990,
-        "shard #4": 990,
-        "shard #5": 990,
-        "shard #6": 1000,
-        "shard #7": 990,
-        "shard #8": 1000,
-        "shard #9": 990,
-        "shard #10": 1000,
-        "shard #11": 990
+        "num_stories": 1199,
+        "predicted_min_shard_time": 1990,
+        "predicted_min_shard_index": 5,
+        "predicted_max_shard_time": 2000,
+        "predicted_max_shard_index": 0,
+        "shard #0": 2000,
+        "shard #1": 2000,
+        "shard #2": 2000,
+        "shard #3": 2000,
+        "shard #4": 2000,
+        "shard #5": 1990
     }
 }

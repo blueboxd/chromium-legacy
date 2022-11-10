@@ -402,7 +402,7 @@ TEST_P(WaylandSurfaceFactoryTest,
   Sync();
 
   auto params_vector2 = server_.zwp_linux_dmabuf_v1()->buffer_params();
-  ASSERT_EQ(params_vector.size(), 2u);
+  ASSERT_EQ(params_vector2.size(), 1u);
   for (auto* mock_params : params_vector2) {
     zwp_linux_buffer_params_v1_send_created(mock_params->resource(),
                                             mock_params->buffer_resource());
@@ -473,7 +473,7 @@ TEST_P(WaylandSurfaceFactoryTest,
   Sync();
 
   auto params_vector3 = server_.zwp_linux_dmabuf_v1()->buffer_params();
-  ASSERT_EQ(params_vector.size(), 2u);
+  ASSERT_EQ(params_vector3.size(), 1u);
   for (auto* mock_params : params_vector3) {
     zwp_linux_buffer_params_v1_send_created(mock_params->resource(),
                                             mock_params->buffer_resource());
@@ -1039,13 +1039,7 @@ TEST_P(WaylandSurfaceFactoryCompositorV3, SurfaceDamageTest) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandSurfaceFactoryTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kStable}));
-
-INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
-                         WaylandSurfaceFactoryTest,
-                         Values(wl::ServerConfig{
-                             .shell_version = wl::ShellVersion::kV6}));
+                         Values(wl::ServerConfig{}));
 
 INSTANTIATE_TEST_SUITE_P(
     CompositorVersionV3Test,

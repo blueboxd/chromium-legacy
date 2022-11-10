@@ -256,14 +256,16 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       const AttributionTrigger& trigger,
       bool top_level_filters_match,
       absl::optional<AttributionReport>& report,
-      absl::optional<uint64_t>& dedup_key)
+      absl::optional<uint64_t>& dedup_key,
+      absl::optional<int>& max_event_level_reports_per_destination)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::EventLevelResult MaybeStoreEventLevelReport(
       AttributionReport& report,
       absl::optional<uint64_t> dedup_key,
       int num_conversions,
-      absl::optional<AttributionReport>& replaced_report)
+      absl::optional<AttributionReport>& replaced_report,
+      absl::optional<AttributionReport>& dropped_report)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Initializes the database if necessary, and returns whether the database is
@@ -351,13 +353,16 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       const AttributionInfo& attribution_info,
       const AttributionTrigger& trigger,
       bool top_level_filters_match,
-      absl::optional<AttributionReport>& report)
+      absl::optional<AttributionReport>& report,
+      absl::optional<int>& max_aggregatable_reports_per_destination)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::AggregatableResult
-  MaybeStoreAggregatableAttributionReport(AttributionReport& report,
-                                          int64_t aggregatable_budget_consumed,
-                                          absl::optional<uint64_t> dedup_key)
+  MaybeStoreAggregatableAttributionReport(
+      AttributionReport& report,
+      int64_t aggregatable_budget_consumed,
+      absl::optional<uint64_t> dedup_key,
+      absl::optional<int64_t>& aggregatable_budget_per_source)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] bool StoreAggregatableAttributionReport(

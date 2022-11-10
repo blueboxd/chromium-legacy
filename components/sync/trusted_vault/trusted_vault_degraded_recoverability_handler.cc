@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
+#include "components/sync/driver/trusted_vault_histograms.h"
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
 
@@ -80,7 +81,9 @@ TrustedVaultDegradedRecoverabilityHandler::
     ~TrustedVaultDegradedRecoverabilityHandler() = default;
 
 void TrustedVaultDegradedRecoverabilityHandler::
-    HintDegradedRecoverabilityChanged() {
+    HintDegradedRecoverabilityChanged(
+        TrustedVaultHintDegradedRecoverabilityChangedReasonForUMA reason) {
+  RecordTrustedVaultHintDegradedRecoverabilityChangedReason(reason);
   RefreshImmediately();
 }
 
@@ -122,6 +125,8 @@ void TrustedVaultDegradedRecoverabilityHandler::Refresh() {
 void TrustedVaultDegradedRecoverabilityHandler::
     OnRecoverabilityIsDegradedDownloaded(
         TrustedVaultRecoverabilityStatus status) {
+  base::UmaHistogramEnumeration(
+      "Sync.TrustedVaultRecoverabilityStatusOnRequestCompletion", status);
   sync_pb::DegradedRecoverabilityValue old_degraded_recoverability_value =
       degraded_recoverability_value_;
   switch (status) {

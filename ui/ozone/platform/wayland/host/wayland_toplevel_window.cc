@@ -111,7 +111,6 @@ bool WaylandToplevelWindow::CreateShellToplevel() {
     zaura_surface_set_frame(aura_surface_.get(),
                             ZAURA_SURFACE_FRAME_TYPE_SHADOW);
   }
-
   if (screen_coordinates_enabled_)
     SetBoundsInDIP(GetBoundsInDIP());
 
@@ -178,6 +177,9 @@ void WaylandToplevelWindow::Hide() {
                            ZAURA_SURFACE_RELEASE_SINCE_VERSION) {
     aura_surface_.reset();
   }
+  if (gtk_surface1_)
+    gtk_surface1_.reset();
+
   shell_toplevel_.reset();
   connection()->Flush();
 }
@@ -399,8 +401,9 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   // Store the old state to propagte state changes if Wayland decides to change
   // the state to something else.
   PlatformWindowState old_state = state_;
-  if (state_ == PlatformWindowState::kMinimized &&
-      !window_states.is_activated) {
+  if ((state_ == PlatformWindowState::kMinimized &&
+       !window_states.is_activated) ||
+      window_states.is_minimized) {
     state_ = PlatformWindowState::kMinimized;
   } else if (window_states.is_fullscreen) {
     state_ = PlatformWindowState::kFullScreen;
@@ -961,7 +964,9 @@ void WaylandToplevelWindow::SetUpShellIntegration() {
     UpdateSystemModal();
   }
 
-  if (connection()->gtk_shell1()) {
+  // We must not request a new GtkSurface if we already have one, else we get a
+  // "gtk_shell::get_gtk_surface already requested" error. (crbug.com/1380419)
+  if (connection()->gtk_shell1() && !gtk_surface1_) {
     gtk_surface1_ =
         connection()->gtk_shell1()->GetGtkSurface1(root_surface()->surface());
   }

@@ -72,6 +72,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+namespace gfx {
+class Transform;
+}
+
 namespace blink {
 
 using std::max;
@@ -100,7 +104,6 @@ class StyleInitialData;
 class StyleResolver;
 class StyleResolverState;
 class StyleSelfAlignmentData;
-class TransformationMatrix;
 
 namespace css_longhand {
 
@@ -281,8 +284,6 @@ class ComputedStyle : public ComputedStyleBase,
   friend class ColorPropertyFunctions;
   // Edits the background for media controls and accesses UserModify().
   friend class StyleAdjuster;
-  // Access to private SetFontInternal().
-  friend class FontBuilder;
   // Access to GetCurrentColor(). (drop-shadow() does not resolve 'currentcolor'
   // at use-time.)
   friend class FilterOperationResolver;
@@ -462,7 +463,6 @@ class ComputedStyle : public ComputedStyleBase,
   HashSet<AtomicString>* CustomHighlightNames() const {
     return CustomHighlightNamesInternal().get();
   }
-  void SetHasCustomHighlightName(const AtomicString&);
 
   /**
    * ComputedStyle properties
@@ -490,6 +490,16 @@ class ComputedStyle : public ComputedStyleBase,
    * Utility functions should go in a separate section at the end of the
    * class, and be kept to a minimum.
    */
+
+  // anchor-name
+  bool AnchorNameDataEquivalent(const ComputedStyle& o) const {
+    return base::ValuesEquivalent(AnchorName(), o.AnchorName());
+  }
+
+  // anchor-scroll
+  bool AnchorScrollDataEquivalent(const ComputedStyle& o) const {
+    return base::ValuesEquivalent(AnchorScroll(), o.AnchorScroll());
+  }
 
   const FilterOperations& BackdropFilter() const {
     DCHECK(BackdropFilterInternal().Get());
@@ -728,13 +738,6 @@ class ComputedStyle : public ComputedStyleBase,
   EVerticalAlign VerticalAlign() const {
     return static_cast<EVerticalAlign>(VerticalAlignInternal());
   }
-  void SetVerticalAlign(EVerticalAlign v) {
-    SetVerticalAlignInternal(static_cast<unsigned>(v));
-  }
-  void SetVerticalAlignLength(const Length& length) {
-    SetVerticalAlignInternal(static_cast<unsigned>(EVerticalAlign::kLength));
-    SetVerticalAlignLengthInternal(length);
-  }
 
   // This returns the z-index if it applies (i.e. positioned element or grid or
   // flex children), and 0 otherwise. Note that for most situations,
@@ -797,19 +800,13 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Text emphasis properties.
   TextEmphasisMark GetTextEmphasisMark() const;
-  void SetTextEmphasisMark(TextEmphasisMark mark) {
-    SetTextEmphasisMarkInternal(mark);
-  }
   const AtomicString& TextEmphasisMarkString() const;
   LineLogicalSide GetTextEmphasisLineLogicalSide() const;
 
   // Font properties.
-  CORE_EXPORT const Font& GetFont() const { return FontInternal(); }
-  CORE_EXPORT void SetFont(const Font& font) { SetFontInternal(font); }
   CORE_EXPORT const FontDescription& GetFontDescription() const {
-    return FontInternal().GetFontDescription();
+    return GetFont().GetFontDescription();
   }
-  CORE_EXPORT bool SetFontDescription(const FontDescription&);
   bool HasIdenticalAscentDescentAndLineGap(const ComputedStyle& other) const;
   bool HasFontRelativeUnits() const {
     return HasEmUnits() || HasRemUnits() || HasGlyphRelativeUnits();
@@ -862,30 +859,17 @@ class ComputedStyle : public ComputedStyleBase,
     return GetFontHeight(GetFontBaseline());
   }
 
-  // Compute FontOrientation from this style. It is derived from WritingMode and
-  // TextOrientation.
-  FontOrientation ComputeFontOrientation() const;
-
-  // Update FontOrientation in FontDescription if it is different. FontBuilder
-  // takes care of updating it, but if WritingMode or TextOrientation were
-  // changed after the style was constructed, this function synchronizes
-  // FontOrientation to match to this style.
-  void UpdateFontOrientation();
-
   // -webkit-locale
   const AtomicString& Locale() const {
     return LayoutLocale::LocaleString(GetFontDescription().Locale());
   }
   AtomicString LocaleForLineBreakIterator() const;
 
-  // FIXME: Remove letter-spacing/word-spacing and replace them with respective
-  // FontBuilder calls.  letter-spacing
+  // letter-spacing
   float LetterSpacing() const { return GetFontDescription().LetterSpacing(); }
-  void SetLetterSpacing(float);
 
   // word-spacing
   float WordSpacing() const { return GetFontDescription().WordSpacing(); }
-  void SetWordSpacing(float);
 
   // fill helpers
   bool HasFill() const { return !FillPaint().IsNone(); }
@@ -992,9 +976,6 @@ class ComputedStyle : public ComputedStyleBase,
   const CSSTransitionData* Transitions() const {
     return TransitionsInternal().get();
   }
-
-  // Non-property flags.
-  CORE_EXPORT void SetTextAutosizingMultiplier(float);
 
   // Column utility functions.
   bool SpecifiesColumns() const {
@@ -1980,13 +1961,13 @@ class ComputedStyle : public ComputedStyleBase,
     kIncludeTransformOperations,
     kExcludeTransformOperations
   };
-  void ApplyTransform(TransformationMatrix&,
+  void ApplyTransform(gfx::Transform&,
                       const LayoutSize& border_box_data_size,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
-  void ApplyTransform(TransformationMatrix&,
+  void ApplyTransform(gfx::Transform&,
                       const gfx::RectF& bounding_box,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
@@ -2533,7 +2514,7 @@ class ComputedStyle : public ComputedStyleBase,
   void ApplyMotionPathTransform(float origin_x,
                                 float origin_y,
                                 const gfx::RectF& bounding_box,
-                                TransformationMatrix&) const;
+                                gfx::Transform&) const;
 
   bool ScrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
                                             const StyleDifference&) const;
@@ -2882,6 +2863,24 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       MutableFilterInternal()->operations_ = v;
   }
 
+  // font
+  void SetFontDescription(const FontDescription& v) {
+    if (GetFont().GetFontDescription() != v)
+      SetFont(Font(v, GetFont().GetFontSelector()));
+  }
+  const FontDescription& GetFontDescription() const {
+    return GetFont().GetFontDescription();
+  }
+  FontOrientation ComputeFontOrientation() const;
+  void UpdateFontOrientation();
+
+  // letter-spacing
+  void SetLetterSpacing(float letter_spacing) {
+    FontDescription description(GetFontDescription());
+    description.SetLetterSpacing(letter_spacing);
+    SetFontDescription(description);
+  }
+
   // margin-*
   void SetMarginTop(const Length& v) {
     if (MarginTop() != v) {
@@ -3046,8 +3045,24 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
         std::min(std::numeric_limits<unsigned>::max() - 1, ordinal_group));
   }
 
+  // vertical-align
+  void SetVerticalAlign(EVerticalAlign v) {
+    SetVerticalAlignInternal(static_cast<unsigned>(v));
+  }
+  void SetVerticalAlignLength(const Length& length) {
+    SetVerticalAlignInternal(static_cast<unsigned>(EVerticalAlign::kLength));
+    SetVerticalAlignLengthInternal(length);
+  }
+
   // widows
   void SetWidows(int16_t w) { SetWidowsInternal(ClampTo<int16_t>(w, 1)); }
+
+  // word-spacing
+  void SetWordSpacing(float word_spacing) {
+    FontDescription description(GetFontDescription());
+    description.SetWordSpacing(word_spacing);
+    SetFontDescription(description);
+  }
 
   // z-index
   void SetZIndex(int v) {
@@ -3068,12 +3083,22 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       MutableCallbackSelectorsInternal().push_back(selector);
   }
 
+  // CustomHighlightNames
+  void SetCustomHighlightNames(
+      const HashSet<AtomicString>& custom_highlight_names) {
+    SetCustomHighlightNamesInternal(
+        std::make_unique<HashSet<AtomicString>>(custom_highlight_names));
+  }
+
   // PaintImage
   void AddPaintImage(StyleImage* image) {
     if (!PaintImagesInternal())
       SetPaintImagesInternal(std::make_unique<PaintImages>());
     MutablePaintImagesInternal()->push_back(image);
   }
+
+  // TextAutosizingMultiplier
+  CORE_EXPORT void SetTextAutosizingMultiplier(float);
 
   // ColorScheme and ForcedColors
   bool ShouldPreserveParentColor() const {

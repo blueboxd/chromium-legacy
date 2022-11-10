@@ -99,6 +99,12 @@ const base::FeatureParam<bool> kUseSelectionIconWithImage{
 const base::FeatureParam<bool> kUseAltChipString{
     &kLensInstructionChipImprovements, "use-alt-chip-string", false};
 
+// Default is set to true but it is only enabled if kLensSearchOptimizations is
+// enabled. This setup allows us to have fullscreen search as a toggleable
+// experience in chrome://flags
+const base::FeatureParam<bool> kEnableLensFullscreenSearch{
+    &kLensSearchOptimizations, "enable-lens-fullscreen-search", true};
+
 const base::FeatureParam<bool> kUseWebpInImageSearch{
     &kLensImageFormatOptimizations, "use-webp-image-search", true};
 
@@ -177,7 +183,8 @@ bool UseGoogleAsVisualSearchProvider() {
 
 bool IsLensFullscreenSearchEnabled() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensSearchOptimizations);
+         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
+         kEnableLensFullscreenSearch.Get();
 }
 
 bool IsLensSidePanelEnabled() {

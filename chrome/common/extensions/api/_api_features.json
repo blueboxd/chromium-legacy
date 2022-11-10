@@ -987,9 +987,9 @@
     // given the blessed_extension denomination. Confusing.
     "contexts": ["blessed_extension"]
   }, {
-    "channel": "dev",
+    "channel": "stable",
     "contexts": ["web_page"],
-    "matches": ["https://webstore.google.com/*"],
+    "matches": ["https://chromewebstore.google.com/*"],
     "feature_flag": "NewWebstoreDomain"
   }],
   "webviewTag": {

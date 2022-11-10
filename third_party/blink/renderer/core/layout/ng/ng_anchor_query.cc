@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_anchor_query.h"
 
+#include "third_party/blink/renderer/core/css/calculation_expression_anchor_query_node.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_anchor_query_map.h"
@@ -50,8 +51,8 @@ const NGLogicalAnchorQuery& NGLogicalAnchorQuery::Empty() {
 }
 
 const NGPhysicalAnchorReference* NGPhysicalAnchorQuery::AnchorReference(
-    const AtomicString& name) const {
-  const auto& it = anchor_references_.find(name);
+    const ScopedCSSName& name) const {
+  const auto& it = anchor_references_.find(&name);
   if (it != anchor_references_.end()) {
     const NGPhysicalAnchorReference& result = *it->value;
     if (!result.is_invalid)
@@ -61,22 +62,22 @@ const NGPhysicalAnchorReference* NGPhysicalAnchorQuery::AnchorReference(
 }
 
 const PhysicalRect* NGPhysicalAnchorQuery::Rect(
-    const AtomicString& name) const {
+    const ScopedCSSName& name) const {
   if (const NGPhysicalAnchorReference* reference = AnchorReference(name))
     return &reference->rect;
   return nullptr;
 }
 
 const NGPhysicalFragment* NGPhysicalAnchorQuery::Fragment(
-    const AtomicString& name) const {
+    const ScopedCSSName& name) const {
   if (const NGPhysicalAnchorReference* reference = AnchorReference(name))
     return reference->fragment.Get();
   return nullptr;
 }
 
 const NGLogicalAnchorReference* NGLogicalAnchorQuery::AnchorReference(
-    const AtomicString& name) const {
-  const auto& it = anchor_references_.find(name);
+    const ScopedCSSName& name) const {
+  const auto& it = anchor_references_.find(&name);
   if (it != anchor_references_.end()) {
     for (const NGLogicalAnchorReference* result = it->value; result;
          result = result->next) {
@@ -87,20 +88,20 @@ const NGLogicalAnchorReference* NGLogicalAnchorQuery::AnchorReference(
   return nullptr;
 }
 
-const LogicalRect* NGLogicalAnchorQuery::Rect(const AtomicString& name) const {
+const LogicalRect* NGLogicalAnchorQuery::Rect(const ScopedCSSName& name) const {
   if (const NGLogicalAnchorReference* reference = AnchorReference(name))
     return &reference->rect;
   return nullptr;
 }
 
 const NGPhysicalFragment* NGLogicalAnchorQuery::Fragment(
-    const AtomicString& name) const {
+    const ScopedCSSName& name) const {
   if (const NGLogicalAnchorReference* reference = AnchorReference(name))
     return reference->fragment;
   return nullptr;
 }
 
-void NGLogicalAnchorQuery::Set(const AtomicString& name,
+void NGLogicalAnchorQuery::Set(const ScopedCSSName& name,
                                const NGPhysicalFragment& fragment,
                                const LogicalRect& rect,
                                SetOptions options) {
@@ -111,12 +112,12 @@ void NGLogicalAnchorQuery::Set(const AtomicString& name,
       options == SetOptions::kValidOutOfOrder);
 }
 
-void NGLogicalAnchorQuery::Set(const AtomicString& name,
+void NGLogicalAnchorQuery::Set(const ScopedCSSName& name,
                                NGLogicalAnchorReference* reference,
                                bool maybe_out_of_order) {
   DCHECK(reference);
   DCHECK(!reference->next);
-  const auto result = anchor_references_.insert(name, reference);
+  const auto result = anchor_references_.insert(&name, reference);
   if (result.is_new_entry)
     return;
 
@@ -178,7 +179,7 @@ void NGLogicalAnchorQuery::SetFromPhysical(
   for (const auto& it : physical_query.anchor_references_) {
     LogicalRect rect = converter.ToLogical(it.value->rect);
     rect.offset += additional_offset;
-    Set(it.key,
+    Set(*it.key,
         MakeGarbageCollected<NGLogicalAnchorReference>(
             *it.value->fragment, rect, options == SetOptions::kInvalid),
         options == SetOptions::kValidOutOfOrder);
@@ -186,7 +187,7 @@ void NGLogicalAnchorQuery::SetFromPhysical(
 }
 
 absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateAnchor(
-    const AtomicString& anchor_name,
+    const ScopedCSSName& anchor_name,
     AnchorValue anchor_value,
     LayoutUnit available_size,
     const WritingModeConverter& container_converter,
@@ -239,7 +240,7 @@ absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateAnchor(
 }
 
 absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateSize(
-    const AtomicString& anchor_name,
+    const ScopedCSSName& anchor_name,
     AnchorSizeValue anchor_size_value,
     WritingMode container_writing_mode,
     WritingMode self_writing_mode) const {
@@ -288,10 +289,25 @@ const NGLogicalAnchorQuery* NGAnchorEvaluatorImpl::AnchorQuery() const {
   return nullptr;
 }
 
+absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::Evaluate(
+    const CalculationExpressionNode& node) const {
+  DCHECK(node.IsAnchorQuery());
+  const auto& anchor_query = To<CalculationExpressionAnchorQueryNode>(node);
+  switch (anchor_query.Type()) {
+    case AnchorQueryType::kAnchor:
+      return EvaluateAnchor(anchor_query.AnchorName(),
+                            anchor_query.AnchorSide());
+    case AnchorQueryType::kAnchorSize:
+      return EvaluateAnchorSize(anchor_query.AnchorName(),
+                                anchor_query.AnchorSize());
+  }
+}
+
 absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchor(
-    const AtomicString& anchor_name,
+    const ScopedCSSName& anchor_name,
     AnchorValue anchor_value) const {
   has_anchor_functions_ = true;
+  // TODO(crbug.com/1380112): Support implicit anchor.
   if (const NGLogicalAnchorQuery* anchor_query = AnchorQuery()) {
     return anchor_query->EvaluateAnchor(
         anchor_name, anchor_value, available_size_, container_converter_,
@@ -301,9 +317,10 @@ absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchor(
 }
 
 absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchorSize(
-    const AtomicString& anchor_name,
+    const ScopedCSSName& anchor_name,
     AnchorSizeValue anchor_size_value) const {
   has_anchor_functions_ = true;
+  // TODO(crbug.com/1380112): Support implicit anchor.
   if (const NGLogicalAnchorQuery* anchor_query = AnchorQuery()) {
     return anchor_query->EvaluateSize(anchor_name, anchor_size_value,
                                       container_converter_.GetWritingMode(),

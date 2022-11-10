@@ -104,6 +104,30 @@ chrome.test.runTests([
     chrome.test.succeed();
   },
 
+  async function callingCreateDocumentWithNoReasonsRejects() {
+    await chrome.test.assertPromiseRejects(
+        chrome.offscreen.createDocument(
+        {
+          url: 'offscreen.html',
+          reasons: [],
+          justification: 'ignored',
+        }),
+        'Error: A `reason` must be provided.');
+    chrome.test.succeed();
+  },
+
+  async function callingCreateDocumentWithMultipleReasonsRejects() {
+    await chrome.test.assertPromiseRejects(
+        chrome.offscreen.createDocument(
+        {
+          url: 'offscreen.html',
+          reasons: ['TESTING', 'AUDIO_PLAYBACK'],
+          justification: 'ignored',
+        }),
+        'Error: Only a single `reason` is currently supported.');
+    chrome.test.succeed();
+  },
+
   async function nonexistentRelativePathIsAccepted() {
     chrome.test.assertFalse(await chrome.offscreen.hasDocument());
     // Questionable behavior: A non-existent relative path is accepted and the

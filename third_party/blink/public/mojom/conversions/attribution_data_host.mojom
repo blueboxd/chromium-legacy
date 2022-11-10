@@ -17,16 +17,32 @@ struct AttributionDebugKey {
 // See https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#optional-attribution-filters
 // for details.
 struct AttributionFilterData {
-  // Map of filter name to a possibly empty set of values.
+  // Map of filter name to a possibly empty set of values. Must not contain a
+  // `source_type` key.
   map<string, array<string>> filter_values;
+};
+
+// Filters for selectively matching attribution sources and triggers.
+// See https://github.com/WICG/attribution-reporting-api/blob/main/EVENT.md#optional-attribution-filters
+// for details.
+struct AttributionFilters {
+  // Map of filter name to a possibly empty set of values. May contain a
+  // `source_type` key.
+  map<string, array<string>> filter_values;
+};
+
+// See https://github.com/WICG/attribution-reporting-api/blob/main/AGGREGATE.md#attribution-source-registration
+// for details.
+struct AttributionAggregationKeys {
+  map<string, mojo_base.mojom.Uint128> keys;
 };
 
 // Struct containing the trigger-side aggregatable data.
 struct AttributionAggregatableTriggerData {
   mojo_base.mojom.Uint128 key_piece;
   array<string> source_keys;
-  AttributionFilterData filters;
-  AttributionFilterData not_filters;
+  AttributionFilters filters;
+  AttributionFilters not_filters;
 };
 
 struct AttributionSourceData {
@@ -63,7 +79,7 @@ struct AttributionSourceData {
 
   AttributionFilterData filter_data;
 
-  map<string, mojo_base.mojom.Uint128> aggregation_keys;
+  AttributionAggregationKeys aggregation_keys;
 
   // Specifies whether to enable verbose debug reporting.
   bool debug_reporting = false;
@@ -95,11 +111,11 @@ struct EventTriggerData {
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data matches.
-  AttributionFilterData filters;
+  AttributionFilters filters;
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data does *NOT* match.
-  AttributionFilterData not_filters;
+  AttributionFilters not_filters;
 };
 
 // Represents a request from a reporting origin to trigger attribution on a
@@ -116,11 +132,11 @@ struct AttributionTriggerData {
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data matches.
-  AttributionFilterData filters;
+  AttributionFilters filters;
 
   // If non-empty, this trigger will be ignored unless the attributed source's
   // filter data does *NOT* match.
-  AttributionFilterData not_filters;
+  AttributionFilters not_filters;
 
   // List of all aggregatable trigger data objects declared by the trigger
   // header.
@@ -136,6 +152,9 @@ struct AttributionTriggerData {
   // Key which allows deduplication against existing aggregatable reports for
   // the same source.
   AttributionTriggerDedupKey? aggregatable_dedup_key;
+
+  // Specifies whether to enable verbose debug reporting.
+  bool debug_reporting = false;
 };
 
 struct AttributionOsSource {

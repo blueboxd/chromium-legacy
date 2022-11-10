@@ -22,28 +22,42 @@ import pyyaml
 
 
 _CACHED_FILES = {}
+_CACHED_POLICY_CHANGE_LIST = []
 
 _TEST_CASES_DEPOT_PATH = os.path.join(
       'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
 _PRESUBMIT_PATH = os.path.join(
       'components', 'policy', 'resources', 'PRESUBMIT.py')
-_POLICIES_YAML_PATH = os.path.join(
-      'components', 'policy', 'resources', 'templates', 'policies.yaml')
+_TEMPLATES_PATH = os.path.join(
+      'components', 'policy', 'resources',
+      'templates')
+_MESSAGES_PATH = os.path.join(_TEMPLATES_PATH, 'messages.yaml')
+_POLICIES_DEFINITIONS_PATH = os.path.join(_TEMPLATES_PATH, 'policy_definitions')
+_POLICIES_YAML_PATH = os.path.join(_TEMPLATES_PATH, 'policies.yaml')
 _HISTOGRAMS_PATH = os.path.join(
       'tools', 'metrics', 'histograms', 'enums.xml')
 _DEVICE_POLICY_PROTO_PATH = os.path.join(
       'components', 'policy', 'proto', 'chrome_device_policy.proto')
 _DEVICE_POLICY_PROTO_MAP_PATH = os.path.join(
-      'components', 'policy', 'resources', 'templates',
-      'device_policy_proto_map.yaml')
+      _TEMPLATES_PATH, 'device_policy_proto_map.yaml')
 _LEGACY_DEVICE_POLICY_PROTO_MAP_PATH = os.path.join(
-      'components', 'policy', 'resources', 'templates',
-      'legacy_device_policy_proto_map.yaml')
+      _TEMPLATES_PATH, 'legacy_device_policy_proto_map.yaml')
 
 
 def _SkipPresubmitChecks(input_api, files_watchlist):
-  return not input_api.change.AffectedFiles(
-    file_filter=lambda f: f.LocalPath() in files_watchlist)
+  '''Returns True if no file or file under the directories specified was
+     affected in this change.
+     Args:
+       input_api
+       files_watchlist: List of files or directories
+  '''
+  for file in files_watchlist:
+    if any(os.path.commonpath([file, f.LocalPath()]) == file for f in
+           input_api.change.AffectedFiles()):
+      return False
+
+  return True
+
 
 def _LoadYamlFile(root, path):
   str_path = str(path)
@@ -53,16 +67,53 @@ def _LoadYamlFile(root, path):
   return _CACHED_FILES[str_path]
 
 
+def _GetPolicyChangeList(input_api):
+  '''Returns a list of policies modified inthe changelist with their old schema
+     next to their new schemas.
+     Args:
+       input_api
+      Returns:
+        object with the following schema:
+        { 'name': 'string', 'old_policy': dict, 'new_policy': dict }
+        The policies are the values loaded from their yaml files.
+  '''
+  if _CACHED_POLICY_CHANGE_LIST:
+    return _CACHED_POLICY_CHANGE_LIST
+  policies_dir = input_api.os_path.join(input_api.change.RepositoryRoot(),
+                                        _POLICIES_DEFINITIONS_PATH)
+  template_affected_files = [f for f in input_api.change.AffectedFiles()
+    if os.path.commonpath([policies_dir,
+      f.AbsoluteLocalPath()]) ==  policies_dir]
+
+  for affected_file in template_affected_files:
+    path = affected_file.AbsoluteLocalPath()
+    filename = os.path.basename(path)
+    filename_no_extension = os.path.splitext(filename)[0]
+    if (filename == '.group.details.yaml' or
+        filename == 'policy_atomic_groups.yaml'):
+      continue
+    old_policy = None
+    new_policy = None
+    if affected_file.Action() in ['M', 'D']:
+      try:
+        old_policy = pyyaml.safe_load('\n'.join(affected_file.OldContents()))
+      except:
+        old_policy = None
+    if affected_file.Action() != 'D':
+      new_policy = pyyaml.safe_load('\n'.join(affected_file.NewContents()))
+    _CACHED_POLICY_CHANGE_LIST.append({
+      'policy': filename_no_extension,
+      'old_policy': old_policy,
+      'new_policy': new_policy})
+  return _CACHED_POLICY_CHANGE_LIST
+
+
 def _CheckPolicyTemplatesSyntax(input_api, output_api, legacy_policy_template):
 
   local_path = input_api.PresubmitLocalPath()
   template_dir = input_api.os_path.join(input_api.change.RepositoryRoot(),
                                         'components', 'policy', 'resources',
                                         'templates')
-  policies_dir = input_api.os_path.join(input_api.change.RepositoryRoot(),
-                                        'components', 'policy', 'resources',
-                                        'templates', 'policy_definitions')
-
   old_sys_path = sys.path
   try:
     tools_path = input_api.os_path.normpath(
@@ -88,36 +139,6 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api, legacy_policy_template):
     except:
       pass
 
-    template_affected_files = [f for f in input_api.change.AffectedFiles()
-      if os.path.commonpath([policies_dir,
-        f.AbsoluteLocalPath()]) ==  policies_dir]
-
-    policy_change_list = []
-    policy_errors = []
-    policy_warnings = []
-    for affected_file in template_affected_files:
-      path = affected_file.AbsoluteLocalPath()
-      filename = os.path.basename(path)
-      filename_no_extension = os.path.splitext(filename)[0]
-      if (filename == '.group.details.yaml' or
-          filename == 'policy_atomic_groups.yaml'):
-        continue
-      old_policy = None
-      new_policy = None
-      if affected_file.Action() in ['M', 'D']:
-        try:
-          old_policy = pyyaml.safe_load('\n'.join(affected_file.OldContents()))
-        except:
-          old_policy = None
-          policy_warnings.append(
-            f'Warning: Failed to load old version of {filename_no_extension}')
-      if affected_file.Action() != 'D':
-        new_policy = pyyaml.safe_load('\n'.join(affected_file.NewContents()))
-      policy_change_list.append({
-        'policy': filename_no_extension,
-        'old_policy': old_policy,
-        'new_policy': new_policy})
-
     # Check if there is a tag that allows us to bypass compatibility checks.
     # This can be used in situations where there is a bug in the validation
     # code or if a policy change needs to urgently be submitted.
@@ -126,21 +147,20 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api, legacy_policy_template):
 
     checker = syntax_check_policy_template_json.PolicyTemplateChecker()
     errors, warnings = checker.Run(args, legacy_policy_template,
-                                   policy_change_list, current_version,
+                                   _GetPolicyChangeList(input_api),
+                                   current_version,
                                    skip_compatibility_check)
-    policy_errors += errors
-    policy_warnings += warnings
 
     # PRESUBMIT won't print warning if there is any error. Append warnings to
     # error for policy_templates.json so that they can always be printed
     # together.
-    if policy_errors:
-      error_msgs = "\n".join(policy_errors+policy_warnings)
+    if errors:
+      error_msgs = "\n".join(errors+warnings)
       return [output_api.PresubmitError('Syntax error(s) in file:',
                                         [template_dir],
                                         error_msgs)]
-    elif policy_warnings:
-      warning_msgs = "\n".join(policy_warnings)
+    elif warnings:
+      warning_msgs = "\n".join(warnings)
       return [output_api.PresubmitPromptWarning('Syntax warning(s) in file:',
                                                 [template_dir],
                                                 warning_msgs)]
@@ -174,12 +194,12 @@ def CheckPolicyTestCases(input_api, output_api):
   # Finally check if any policies are missing.
   missing = policy_names - tested_policies
   extra = tested_policies - policy_names
-  error_missing = ('Policy \'%s\' was added to policy_templates.json but not '
-                   'to src/chrome/test/data/policy/policy_test_cases.json. '
-                   'Please update both files.')
-  error_extra = ('Policy \'%s\' is tested by '
-                 'src/chrome/test/data/policy/policy_test_cases.json but is not'
-                 ' defined in policy_templates.json. Please update both files.')
+  error_missing = ("Policy '%s' was added to policy_templates.json but not "
+                   "to src/chrome/test/data/policy/policy_test_cases.json. "
+                   "Please update both files.")
+  error_extra = ("Policy '%s' is tested by "
+                 "src/chrome/test/data/policy/policy_test_cases.json but is not"
+                 " defined in policy_templates.json. Please update both files.")
   results = []
   for policy in missing:
     results.append(output_api.PresubmitError(error_missing % policy))
@@ -220,17 +240,17 @@ def CheckPolicyHistograms(input_api, output_api):
   missing_ids = policy_ids - policy_enum_ids
   extra_ids = policy_enum_ids - policy_ids
 
-  error_missing = ('Policy \'%s\' (id %d) was added to '
-                   'policy_templates.json but not to '
-                   'src/tools/metrics/histograms/enums.xml. Please update '
-                   'both files. To regenerate the policy part of enums.xml, '
-                   'run:\n'
-                   'python tools/metrics/histograms/update_policies.py')
-  error_extra = ('Policy id %d was found in '
-                 'src/tools/metrics/histograms/enums.xml, but no policy with '
-                 'this id exists in policy_templates.json. To regenerate the '
-                 'policy part of enums.xml, run:\n'
-                 'python tools/metrics/histograms/update_policies.py')
+  error_missing = ("Policy '%s' (id %d) was added to "
+                   "policy_templates.json but not to "
+                   "src/tools/metrics/histograms/enums.xml. Please update "
+                   "both files. To regenerate the policy part of enums.xml, "
+                   "run:\n"
+                   "python tools/metrics/histograms/update_policies.py")
+  error_extra = ("Policy id %d was found in "
+                 "src/tools/metrics/histograms/enums.xml, but no policy with "
+                 "this id exists in policy_templates.json. To regenerate the "
+                 "policy part of enums.xml, run:\n"
+                 "python tools/metrics/histograms/update_policies.py")
   results = []
   for policy_id in missing_ids:
     results.append(
@@ -241,11 +261,20 @@ def CheckPolicyHistograms(input_api, output_api):
   return results
 
 
-def _CheckPolicyAtomicGroupsHistograms(input_api, output_api, atomic_groups):
+def CheckPolicyAtomicGroupsHistograms(input_api, output_api):
+  '''Verifies that the all policy atomic groups have a histogram entry.
+  This is ran when policies.yaml, tools/metrics/histograms/enums.xml or this
+  PRESUBMIT.py file are modified.
+  '''
+  results = []
+  if _SkipPresubmitChecks(
+      input_api,
+      [_HISTOGRAMS_PATH, _POLICIES_YAML_PATH, _PRESUBMIT_PATH]):
+    return results
+
   root = input_api.change.RepositoryRoot()
-  histograms = input_api.os_path.join(
-      root, 'tools', 'metrics', 'histograms', 'enums.xml')
-  with open(histograms, encoding='utf-8') as f:
+
+  with open(os.path.join(root, _HISTOGRAMS_PATH), encoding='utf-8') as f:
     tree = minidom.parseString(f.read())
   enums = (tree.getElementsByTagName('histogram-configuration')[0]
                .getElementsByTagName('enums')[0]
@@ -255,37 +284,104 @@ def _CheckPolicyAtomicGroupsHistograms(input_api, output_api, atomic_groups):
   atomic_group_enum_ids = frozenset(int(e.getAttribute('value'))
                               for e in atomic_group_enum
                                 .getElementsByTagName('int'))
-  atomic_group_id_to_name = {policy['id']: policy['name']
-                                    for policy in atomic_groups}
-  atomic_group_ids = frozenset(atomic_group_id_to_name.keys())
+  policies_yaml = _LoadYamlFile(root, _POLICIES_YAML_PATH)
+  atomic_groups = policies_yaml['atomic_groups']
+  atomic_group_ids = frozenset(
+    [id for id, name in atomic_groups.items() if name])
 
   missing_ids = atomic_group_ids - atomic_group_enum_ids
   extra_ids = atomic_group_enum_ids - atomic_group_ids
 
-  error_missing = ('Policy atomic group \'%s\' (id %d) was added to '
-                   'policy_templates.json but not to '
-                   'src/tools/metrics/histograms/enums.xml. Please update '
-                   'both files. To regenerate the policy part of enums.xml, '
-                   'run:\n'
-                   'python tools/metrics/histograms/update_policies.py')
-  error_extra = ('Policy atomic group id %d was found in '
-                 'src/tools/metrics/histograms/enums.xml, but no policy with '
-                 'this id exists in policy_templates.json. To regenerate the '
-                 'policy part of enums.xml, run:\n'
-                 'python tools/metrics/histograms/update_policies.py')
+  error_missing = ("Policy atomic group '%s' (id %d) was added to "
+                   "policy_templates.json but not to "
+                   "src/tools/metrics/histograms/enums.xml. Please update "
+                   "both files. To regenerate the policy part of enums.xml, "
+                   "run:\n"
+                   "python tools/metrics/histograms/update_policies.py")
+  error_extra = ("Policy atomic group id %d was found in "
+                 "src/tools/metrics/histograms/enums.xml, but no policy with "
+                 "this id exists in policy_templates.json. To regenerate the "
+                 "policy part of enums.xml, run:\n"
+                 "python tools/metrics/histograms/update_policies.py")
   results = []
   for atomic_group_id in missing_ids:
     results.append(output_api.PresubmitError(error_missing %
-                              (atomic_group_id_to_name[atomic_group_id],
+                              (atomic_groups[atomic_group_id],
                               atomic_group_id)))
   for atomic_group_id in extra_ids:
     results.append(output_api.PresubmitError(error_extra % atomic_group_id))
   return results
 
-def _CheckMissingPlaceholders(input_api, output_api, legacy_template_data):
+
+# TODO(crbug/1171839): Remove this from syntax_check_policy_template_json.py
+# as this check is now duplicated.
+def CheckMessages(input_api, output_api):
+  '''Verifies that the all the messages from messages.yaml have the following
+  format: {[key: string]: {text: string, desc: string}}.
+  This is ran when messages.yaml or this PRESUBMIT.py
+  file are modified.
+  '''
   results = []
-  items = legacy_template_data['policy_definitions'] \
-          + [msg for msg in legacy_template_data['messages'].values()]
+  if _SkipPresubmitChecks(
+      input_api,
+      [_MESSAGES_PATH, _PRESUBMIT_PATH]):
+    return results
+
+  root = input_api.change.RepositoryRoot()
+  messages = _LoadYamlFile(root, _MESSAGES_PATH)
+
+  for message in messages:
+    # |key| must be a string, |value| a dict.
+    if not isinstance(message, str):
+      results.append(
+        output_api.PresubmitError(
+          f'Each message key must be a string, invalid key {message}'))
+      continue
+
+    if not isinstance(messages[message], dict):
+      results.append(
+        output_api.PresubmitError(
+          f'Each message must be a dictionary, invalid message {message}'))
+      continue
+
+    if ('desc' not in messages[message] or
+        not isinstance(messages[message]['desc'], str)):
+      results.append(
+        output_api.PresubmitError(
+          f"'desc' string key missing in message {message}"))
+
+    if ('text' not in messages[message] or
+        not isinstance(messages[message]['text'], str)):
+      results.append(
+        output_api.PresubmitError(
+          f"'text' string key missing in message {message}"))
+
+    # There should not be any unknown keys in |value|.
+    for vkey in messages[message]:
+      if vkey not in ('desc', 'text'):
+        results.append(output_api.PresubmitError(
+          f'In message {message}: Unknown key: {vkey}'))
+  return results
+
+
+def CheckMissingPlaceholders(input_api, output_api):
+  '''Verifies that the all the messages from messages.yaml, caption and
+  descriptions from files under templates/policy_definitions do not have
+  malformed placeholders.
+  This is ran when messages.yaml, files under templates/policy_definitions or
+  this PRESUBMIT.py file are modified.
+  '''
+  results = []
+  if _SkipPresubmitChecks(
+      input_api,
+      [_MESSAGES_PATH, _POLICIES_DEFINITIONS_PATH, _PRESUBMIT_PATH]):
+    return results
+
+  root = input_api.change.RepositoryRoot()
+  new_policies = [change['new_policy']
+    for change in _GetPolicyChangeList(input_api)]
+  messages = _LoadYamlFile(root, _MESSAGES_PATH)
+  items = new_policies + list(messages.values())
   for item in items:
     for key in ['desc', 'text']:
       if not key in item:
@@ -302,8 +398,8 @@ def _CheckMissingPlaceholders(input_api, output_api, legacy_template_data):
 
       for child in node.childNodes:
         if child.nodeType == minidom.Node.TEXT_NODE and '$' in child.data:
-          warning = ('Character \'$\' found outside of a placeholder in "%s". '
-                     'Should it be in a placeholder ?') % item[key]
+          warning = ("Character '$' found outside of a placeholder in '%s'. "
+                     "Should it be in a placeholder ?") % item[key]
           results.append(output_api.PresubmitPromptWarning(warning))
   return results
 
@@ -351,7 +447,7 @@ def CheckDevicePolicyProtos(input_api, output_api):
     for field in fields:
       if field not in protos:
         results.append(output_api.PresubmitError(
-         f"Policy '{policy}': Expected field \'{field}\' not found in "
+         f"Policy '{policy}': Expected field '{field}' not found in "
          "chrome_device_policy.proto."))
   return results
 
@@ -385,9 +481,6 @@ def _CommonChecks(input_api, output_api):
         output_api.PresubmitError('Unable to load the policy templates.'))
       return results
 
-    if template_changed or syntax_check_changed:
-      results.extend(_CheckMissingPlaceholders(input_api, output_api,
-          template_data))
     # chrome_device_policy.proto is hand crafted. When it is changed, we need
     # to check if it still corresponds to policy_templates.json.
     if template_changed or device_policy_proto_changed or syntax_check_changed:

@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
+#include "chrome/browser/password_manager/affiliation_service_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -46,7 +47,9 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
+#include "components/password_manager/core/browser/site_affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/sync/test/test_sync_service.h"
 #include "content/public/browser/browser_context.h"
@@ -60,7 +63,6 @@
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #include "base/test/scoped_feature_list.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -85,8 +87,8 @@ constexpr char kHistogramName[] = "PasswordManager.AccessPasswordInSettings";
 
 using MockPlaintextPasswordCallback =
     base::MockCallback<PasswordsPrivateDelegate::PlaintextPasswordCallback>;
-using MockRequestCredentialDetailsCallback = base::MockCallback<
-    PasswordsPrivateDelegate::RequestCredentialDetailsCallback>;
+using MockRequestCredentialsDetailsCallback =
+    base::MockCallback<PasswordsPrivateDelegate::UiEntriesCallback>;
 
 class MockPasswordManagerPorter : public PasswordManagerPorterInterface {
  public:
@@ -232,11 +234,12 @@ std::unique_ptr<KeyedService> BuildPasswordsPrivateEventRouter(
 
 password_manager::PasswordForm CreateSampleForm(
     password_manager::PasswordForm::Store store =
-        password_manager::PasswordForm::Store::kProfileStore) {
+        password_manager::PasswordForm::Store::kProfileStore,
+    const std::u16string& username = u"test@gmail.com") {
   password_manager::PasswordForm form;
-  form.signon_realm = "http://abc1.com";
-  form.url = GURL("http://abc1.com");
-  form.username_value = u"test@gmail.com";
+  form.signon_realm = "https://abc1.com";
+  form.url = GURL("https://abc1.com");
+  form.username_value = username;
   form.password_value = u"test";
   form.in_store = store;
   return form;
@@ -297,7 +300,10 @@ void PasswordsPrivateDelegateImplTest::SetUp() {
   test_clipboard_ = ui::TestClipboard::CreateForCurrentThread();
   biometric_authenticator_ =
       base::MakeRefCounted<device_reauth::MockBiometricAuthenticator>();
-
+  AffiliationServiceFactory::GetInstance()->SetTestingSubclassFactoryAndUse(
+      profile(), base::BindRepeating([](content::BrowserContext*) {
+        return std::make_unique<password_manager::FakeAffiliationService>();
+      }));
   SetUpRouters();
   SetUpSyncInTransportMode(profile());
 }
@@ -772,7 +778,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest,
-       TestPassedReauthOnRequestCredentialDetails) {
+       TestPassedReauthOnRequestCredentialsDetails) {
   password_manager::PasswordForm sample_form = CreateSampleForm();
   sample_form.notes.emplace_back(u"best note ever",
                                  /*date_created=*/base::Time::Now());
@@ -791,16 +797,17 @@ TEST_F(PasswordsPrivateDelegateImplTest,
           [&](password_manager::PasswordAccessAuthenticator::AuthResultCallback
                   callback) { std::move(callback).Run(true); }));
 
-  MockRequestCredentialDetailsCallback password_callback;
+  MockRequestCredentialsDetailsCallback password_callback;
   EXPECT_CALL(password_callback, Run)
-      .WillOnce(
-          [&](absl::optional<api::passwords_private::PasswordUiEntry> entry) {
-            EXPECT_THAT(entry->password, Eq("test"));
-            EXPECT_THAT(entry->username, Eq("test@gmail.com"));
-            EXPECT_THAT(entry->note, Eq("best note ever"));
-          });
+      .WillOnce([&](const std::vector<api::passwords_private::PasswordUiEntry>&
+                        entries) {
+        EXPECT_EQ(1u, entries.size());
+        EXPECT_THAT(entries[0].password, Eq("test"));
+        EXPECT_THAT(entries[0].username, Eq("test@gmail.com"));
+        EXPECT_THAT(entries[0].note, Eq("best note ever"));
+      });
 
-  delegate.RequestCredentialDetails(0, password_callback.Get(), nullptr);
+  delegate.RequestCredentialsDetails({0}, password_callback.Get(), nullptr);
 
   histogram_tester().ExpectUniqueSample(
       kHistogramName, password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
@@ -834,7 +841,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest,
-       TestFailedReauthOnRequestCredentialDetails) {
+       TestFailedReauthOnRequestCredentialsDetails) {
   SetUpPasswordStores({CreateSampleForm()});
 
   PasswordsPrivateDelegateImpl delegate(profile());
@@ -850,9 +857,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
           [&](password_manager::PasswordAccessAuthenticator::AuthResultCallback
                   callback) { std::move(callback).Run(false); }));
 
-  MockRequestCredentialDetailsCallback password_callback;
-  EXPECT_CALL(password_callback, Run(Eq(absl::nullopt)));
-  delegate.RequestCredentialDetails(0, password_callback.Get(), nullptr);
+  MockRequestCredentialsDetailsCallback password_callback;
+  EXPECT_CALL(password_callback, Run(testing::IsEmpty()));
+  delegate.RequestCredentialsDetails({0}, password_callback.Get(), nullptr);
 
   // Since Reauth had failed password was not viewed and metric wasn't recorded
   histogram_tester().ExpectTotalCount(kHistogramName, 0);
@@ -1203,6 +1210,40 @@ TEST_F(PasswordsPrivateDelegateImplTest, ShowAddShortcutDialog) {
 
   // Close the browser prior to TearDown.
   browser->tab_strip_model()->CloseAllTabs();
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, GetCredentialGroups) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kPasswordsGrouping);
+
+  PasswordsPrivateDelegateImpl delegate(profile());
+
+  password_manager::PasswordForm password1 = CreateSampleForm(
+      password_manager::PasswordForm::Store::kProfileStore, u"username1");
+  password_manager::PasswordForm password2 = CreateSampleForm(
+      password_manager::PasswordForm::Store::kProfileStore, u"username2");
+
+  SetUpPasswordStores({password1, password2});
+
+  auto groups = delegate.GetCredentialGroups();
+  EXPECT_EQ(1u, groups.size());
+  EXPECT_EQ(2u, groups[0].entries.size());
+  EXPECT_EQ("abc1.com", groups[0].name);
+  EXPECT_EQ("", groups[0].icon_url);
+
+  api::passwords_private::PasswordUiEntry expected_entry1;
+  expected_entry1.urls.link = "https://abc1.com/";
+  expected_entry1.username = "username1";
+  expected_entry1.stored_in = api::passwords_private::PASSWORD_STORE_SET_DEVICE;
+  api::passwords_private::PasswordUiEntry expected_entry2;
+  expected_entry2.urls.link = "https://abc1.com/";
+  expected_entry2.username = "username2";
+  expected_entry2.stored_in = api::passwords_private::PASSWORD_STORE_SET_DEVICE;
+  EXPECT_THAT(groups[0].entries,
+              testing::UnorderedElementsAre(
+                  PasswordUiEntryDataEquals(testing::ByRef(expected_entry1)),
+                  PasswordUiEntryDataEquals(testing::ByRef(expected_entry2))));
 }
 
 }  // namespace extensions

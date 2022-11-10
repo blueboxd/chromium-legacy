@@ -69,9 +69,9 @@
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/view_transition_shared_element_id.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/gfx/geometry/outsets_f.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace blink {
@@ -258,7 +258,7 @@ class FragmentPaintPropertyTreeBuilder {
       bool (*needs_property)(const LayoutObject&, CompositingReasons),
       void (*compute_matrix)(const ComputedStyle& style,
                              const PhysicalSize& size,
-                             TransformationMatrix& matrix),
+                             gfx::Transform& matrix),
       CompositingReasons active_animation_reason,
       CompositingReasons compositing_reasons_for_property,
       CompositorElementIdNamespace compositor_namespace,
@@ -920,15 +920,16 @@ FragmentPaintPropertyTreeBuilder::TransformAndOriginForSVGChild() const {
                 object_.LocalToSVGParentTransform());
       // For composited transform animation to work, we need to store transform
       // origin separately. It's baked in object_.LocalToSVGParentTransform().
-      return {TransformationMatrix(TransformHelper::ComputeTransform(
-                  object_, ComputedStyle::kExcludeTransformOrigin)),
+      return {TransformHelper::ComputeTransform(
+                  object_, ComputedStyle::kExcludeTransformOrigin)
+                  .ToTransform(),
               gfx::Point3F(TransformHelper::ComputeTransformOrigin(object_))};
     } else {
       // We composite the object but can't start composited animation. Still
       // keep the compositing reason because it still improves performance of
       // main thread animation, but avoid the 2d translation optimization to
       // meet the requirement of TransformPaintPropertyNode.
-      return {TransformationMatrix(object_.LocalToSVGParentTransform())};
+      return {object_.LocalToSVGParentTransform().ToTransform()};
     }
   }
   return TransformPaintPropertyNode::TransformAndOrigin(
@@ -1104,8 +1105,8 @@ static TransformPaintPropertyNode::TransformAndOrigin TransformAndOriginState(
     bool has_transform_animation_compositing_reasons,
     void (*compute_matrix)(const ComputedStyle& style,
                            const PhysicalSize& size,
-                           TransformationMatrix& matrix)) {
-  TransformationMatrix matrix;
+                           gfx::Transform& matrix)) {
+  gfx::Transform matrix;
   compute_matrix(box.StyleRef(), size, matrix);
   // If we are running transform animation on compositor, we should
   // disable 2d translation optimization to ensure that the compositor
@@ -1124,7 +1125,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
     bool (*needs_property)(const LayoutObject&, CompositingReasons),
     void (*compute_matrix)(const ComputedStyle& style,
                            const PhysicalSize& size,
-                           TransformationMatrix& matrix),
+                           gfx::Transform& matrix),
     CompositingReasons active_animation_reason,
     CompositingReasons compositing_reasons_for_property,
     CompositorElementIdNamespace compositor_namespace,
@@ -1251,7 +1252,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTranslate() {
   UpdateIndividualTransform(
       &NeedsTranslate,
       [](const ComputedStyle& style, const PhysicalSize& size,
-         TransformationMatrix& matrix) {
+         gfx::Transform& matrix) {
         if (style.Translate())
           style.Translate()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1268,7 +1269,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateRotate() {
   UpdateIndividualTransform(
       &NeedsRotate,
       [](const ComputedStyle& style, const PhysicalSize& size,
-         TransformationMatrix& matrix) {
+         gfx::Transform& matrix) {
         if (style.Rotate())
           style.Rotate()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1284,7 +1285,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScale() {
   UpdateIndividualTransform(
       &NeedsScale,
       [](const ComputedStyle& style, const PhysicalSize& size,
-         TransformationMatrix& matrix) {
+         gfx::Transform& matrix) {
         if (style.Scale())
           style.Scale()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1300,7 +1301,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
   UpdateIndividualTransform(
       &NeedsOffset,
       [](const ComputedStyle& style, const PhysicalSize& size,
-         TransformationMatrix& matrix) {
+         gfx::Transform& matrix) {
         style.ApplyTransform(
             matrix, size.ToLayoutSize(),
             ComputedStyle::kExcludeTransformOperations,
@@ -1321,7 +1322,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   UpdateIndividualTransform(
       &NeedsTransform,
       [](const ComputedStyle& style, const PhysicalSize& size,
-         TransformationMatrix& matrix) {
+         gfx::Transform& matrix) {
         style.ApplyTransform(
             matrix, size.ToLayoutSize(),
             ComputedStyle::kIncludeTransformOperations,
@@ -1449,15 +1450,25 @@ bool FragmentPaintPropertyTreeBuilder::EffectCanUseCurrentClipAsOutputClip()
 
   const auto* layer = To<LayoutBoxModelObject>(object_).Layer();
   // Out-of-flow descendants not contained by this object may escape clips.
-  if (layer->HasNonContainedAbsolutePositionDescendant() &&
-      &object_.ContainerForAbsolutePosition()->FirstFragment().ContentsClip() !=
-          context_.current.clip)
-    return false;
+  if (layer->HasNonContainedAbsolutePositionDescendant()) {
+    const auto* container = full_context_.container_for_absolute_position;
+    // Check HasLocalBorderBoxProperties() because |container| may not have
+    // updated paint properties if it appears in a later box fragment than
+    // |object|. TODO(crbug.com/1371426): fix tree walk order in the case.
+    if (!container->FirstFragment().HasLocalBorderBoxProperties() ||
+        &container->FirstFragment().ContentsClip() != context_.current.clip) {
+      return false;
+    }
+  }
   if (layer->HasFixedPositionDescendant() &&
-      !object_.CanContainFixedPositionObjects() &&
-      &object_.ContainerForFixedPosition()->FirstFragment().ContentsClip() !=
-          context_.current.clip)
-    return false;
+      !object_.CanContainFixedPositionObjects()) {
+    const auto* container = full_context_.container_for_fixed_position;
+    // Same as the absolute-position case.
+    if (!container->FirstFragment().HasLocalBorderBoxProperties() ||
+        &container->FirstFragment().ContentsClip() != context_.current.clip) {
+      return false;
+    }
+  }
 
   // Some descendants under a pagination container (e.g. composited objects
   // in SPv1 and column spanners) may escape fragment clips.
@@ -2265,7 +2276,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
       // The perspective node must not flatten (else nothing will get
       // perspective), but it should still extend the rendering context as
       // most transform nodes do.
-      TransformationMatrix matrix;
+      gfx::Transform matrix;
       matrix.ApplyPerspectiveDepth(style.UsedPerspective());
       TransformPaintPropertyNode::State state{
           TransformPaintPropertyNode::TransformAndOrigin(
@@ -4263,7 +4274,7 @@ void PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(
   auto transform_and_origin = TransformAndOriginState(
       box, size, transform->HasActiveTransformAnimation(),
       [](const ComputedStyle& style, const PhysicalSize& size,
-         TransformationMatrix& matrix) {
+         gfx::Transform& matrix) {
         style.ApplyTransform(
             matrix, size.ToLayoutSize(),
             ComputedStyle::kIncludeTransformOperations,

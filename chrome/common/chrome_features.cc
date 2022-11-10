@@ -273,7 +273,12 @@ BASE_FEATURE(kPreinstalledWebAppDuplicationFixer,
 // offline if no custom page is provided by developer.
 BASE_FEATURE(kPWAsDefaultOfflinePage,
              "PWAsDefaultOfflinePage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 // API that allows PWAs manually minimizing, maximizing and restoring windows.
 BASE_FEATURE(kDesktopPWAsAdditionalWindowingControls,
@@ -1109,6 +1114,7 @@ BASE_FEATURE(kTreatUnsafeDownloadsAsActive,
              "TreatUnsafeDownloadsAsActive",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// TrustSafetySentimentSurvey
 #if !BUILDFLAG(IS_ANDROID)
 // Enables surveying of users of Trust & Safety features with HaTS.
 BASE_FEATURE(kTrustSafetySentimentSurvey,
@@ -1218,6 +1224,31 @@ const base::FeatureParam<base::TimeDelta>
         &kTrustSafetySentimentSurvey, "transactions-password-manager-time",
         base::Seconds(20)};
 
+#endif
+
+// TrustSafetySentimentSurveyV2
+#if !BUILDFLAG(IS_ANDROID)
+// Enables the second version of the sentiment survey for users of Trust &
+// Safety features, using HaTS.
+BASE_FEATURE(kTrustSafetySentimentSurveyV2,
+             "kTrustSafetySentimentSurveyV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// The minimum and maximum time after a user has interacted with a Trust and
+// Safety feature that they are eligible to be surveyed.
+const base::FeatureParam<base::TimeDelta>
+    kTrustSafetySentimentSurveyV2MinTimeToPrompt{
+        &kTrustSafetySentimentSurveyV2, "min-time-to-prompt", base::Minutes(2)};
+const base::FeatureParam<base::TimeDelta>
+    kTrustSafetySentimentSurveyV2MaxTimeToPrompt{&kTrustSafetySentimentSurveyV2,
+                                                 "max-time-to-prompt",
+                                                 base::Minutes(60)};
+// The maximum and minimum range for the random number of NTPs that the user
+// must at least visit after interacting with a Trust and Safety feature to be
+// eligible for a survey.
+const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMinRange{
+    &kTrustSafetySentimentSurveyV2, "ntp-visits-min-range", 2};
+const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMaxRange{
+    &kTrustSafetySentimentSurveyV2, "ntp-visits-max-range", 4};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1353,7 +1384,11 @@ bool IsParentAccessCodeForOnlineLoginEnabled() {
 // Enables omnibox trigger prerendering.
 BASE_FEATURE(kOmniboxTriggerForPrerender2,
              "OmniboxTriggerForPrerender2",
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",

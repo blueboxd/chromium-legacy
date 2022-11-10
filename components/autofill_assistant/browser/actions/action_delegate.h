@@ -48,6 +48,7 @@ class UkmRecorder;
 }
 
 namespace autofill_assistant {
+class Action;
 class BatchElementChecker;
 class ClientSettingsProto;
 class ClientStatus;
@@ -62,6 +63,8 @@ class FormProto_Result;
 class LegalDisclaimerProto;
 class InfoBox;
 class PromptQrCodeScanProto;
+struct Script;
+class Service;
 class UserAction;
 class UserData;
 class UserModel;
@@ -551,6 +554,24 @@ class ActionDelegate {
   // Make a fire-and-forget call to report progress.
   virtual void ReportProgress(const std::string& payload,
                               base::OnceCallback<void(bool)> callback) = 0;
+
+  // Appends a new interrupt script to the ordered list of interrupts. This must
+  // be called outside of WaitForDom. Optionally allows providing a different
+  // service that should be used to fetch actions for that script - if not
+  // provided, the parent's service will be used instead. This is specifically
+  // intended to allow adding self-contained interrupt scripts by injecting
+  // instances of NoRoundTripService.
+  //
+  // Note: this does not check for uniqueness of script paths - be sure to not
+  // register the same script more than once!
+  virtual void AddInterruptScript(
+      std::unique_ptr<Script> interrupt_script,
+      std::unique_ptr<Service> optional_service = nullptr) = 0;
+
+  // Returns a pointer to the currently running action, or nullptr if there is
+  // none. This is a way for nested actions to access their parent action.
+  // Pointers should not be retained in any fashion.
+  virtual const Action* GetCurrentRootAction() const = 0;
 
  protected:
   ActionDelegate() = default;

@@ -487,6 +487,9 @@ extern const char kDisallowDocWrittenScriptsUiDescription[];
 extern const char kViewTransitionName[];
 extern const char kViewTransitionDescription[];
 
+extern const char kViewTransitionOnNavigationName[];
+extern const char kViewTransitionOnNavigationDescription[];
+
 extern const char kEnableAutofillAddressSavePromptName[];
 extern const char kEnableAutofillAddressSavePromptDescription[];
 
@@ -2009,9 +2012,6 @@ extern const char kChromeSharingHubLaunchAdjacentDescription[];
 extern const char kDiscardOccludedBitmapsName[];
 extern const char kDiscardOccludedBitmapsDescription[];
 
-extern const char kEnableCbdSignOutName[];
-extern const char kEnableCbdSignOutDescription[];
-
 extern const char kCloseTabSuggestionsName[];
 extern const char kCloseTabSuggestionsDescription[];
 
@@ -2167,9 +2167,6 @@ extern const char kMessagesForAndroidUpdatePasswordDescription[];
 
 extern const char kNetworkServiceInProcessName[];
 extern const char kNetworkServiceInProcessDescription[];
-
-extern const char kNewInstanceFromDraggedLinkName[];
-extern const char kNewInstanceFromDraggedLinkDescription[];
 
 extern const char kNewTabPageTilesTitleWrapAroundName[];
 extern const char kNewTabPageTilesTitleWrapAroundDescription[];
@@ -2632,9 +2629,6 @@ extern const char kImmersiveFullscreenDescription[];
 
 extern const char kMacSyscallSandboxName[];
 extern const char kMacSyscallSandboxDescription[];
-
-extern const char kMetalName[];
-extern const char kMetalDescription[];
 
 extern const char kScreenTimeName[];
 extern const char kScreenTimeDescription[];
@@ -3151,6 +3145,9 @@ extern const char kFilesTrashDescription[];
 extern const char kFiltersInRecentsV2Name[];
 extern const char kFiltersInRecentsV2Description[];
 
+extern const char kFirstPartyVietnameseInputName[];
+extern const char kFirstPartyVietnameseInputDescription[];
+
 extern const char kFloatWindow[];
 extern const char kFloatWindowDescription[];
 
@@ -3546,6 +3543,9 @@ extern const char kMacAddressRandomizationDescription[];
 extern const char kOobeMaterialNextName[];
 extern const char kOobeMaterialNextDescription[];
 
+extern const char kLibAssistantV2MigrationName[];
+extern const char kLibAssistantV2MigrationDescription[];
+
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3677,6 +3677,9 @@ extern const char kZeroCopyVideoCaptureDescription[];
 // All views-based platforms --------------------------------------------------
 
 #if defined(TOOLKIT_VIEWS)
+extern const char kRevampedPasswordManagementBubbleName[];
+extern const char kRevampedPasswordManagementBubbleDescription[];
+
 extern const char kSideSearchName[];
 extern const char kSideSearchDescription[];
 

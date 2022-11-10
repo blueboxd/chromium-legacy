@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chromeos/constants/chromeos_features.h"
 
@@ -827,7 +828,7 @@ BASE_FEATURE(kExoHapticFeedbackSupport,
 // WSI, which otherwise falls back to software rendering.
 BASE_FEATURE(kExoLinuxDmabufV3,
              "ExoLinuxDmabufV3",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables version 4 of the zwp_linux_dmabuf_v1 Wayland protocol.
 // This version adds support for dynamic feedback, allowing the compositor to
@@ -963,6 +964,11 @@ BASE_FEATURE(kFirmwareUpdaterApp,
              "FirmwareUpdaterApp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables first party Vietnamese input method.
+BASE_FEATURE(kFirstPartyVietnameseInput,
+             "FirstPartyVietnameseInput",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables Floating Workspace feature on ChromeOS
 BASE_FEATURE(kFloatingWorkspace,
              "FloatingWorkspace",
@@ -971,6 +977,12 @@ BASE_FEATURE(kFloatingWorkspace,
 // Enables or disables Floating Workspace V2 feature on ChromeOS
 BASE_FEATURE(kFloatingWorkspaceV2,
              "FloatingWorkspaceV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, makes the Projector app use server side speech
+// recognition instead of on-device speech recognition.
+BASE_FEATURE(kForceEnableServerSideSpeechRecognitionForDev,
+             "ForceEnableServerSideSpeechRecognitionForDev",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to allow keeping full screen mode after unlock.
@@ -1369,13 +1381,13 @@ BASE_FEATURE(kMediaAppCustomColors,
 // in Photos.
 BASE_FEATURE(kMediaAppPhotosIntegrationImage,
              "MediaAppPhotosIntegrationImage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Within the ChromeOS media app, reveals the button to edit the current video
 // in Photos.
 BASE_FEATURE(kMediaAppPhotosIntegrationVideo,
              "MediaAppPhotosIntegrationVideo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to continuously log PSI memory pressure data to UMA.
 BASE_FEATURE(kMemoryPressureMetricsDetail,
@@ -1686,13 +1698,23 @@ BASE_FEATURE(kProjectorUseApiKeyForTranslation,
              "ProjectorUseApiKeyForTranslation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable or disable quick settings revamped view.
+// Enable or disable quick settings revamped view. This flag only works when the
+// `QsRevampWip` flag is enabled.
 BASE_FEATURE(kQsRevamp, "QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable or disable quick settings revamped wip view.
+// TODO(b/257541368): remove this flag once the wip view is finished.
+BASE_FEATURE(kQsRevampWip, "QsRevampWip", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the Projector Viewer supports the user experience for
 // secondary account.
 BASE_FEATURE(kProjectorViewerUseSecondaryAccount,
              "ProjectorViewerUseSecondaryAccount",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether to show toast notification when account switches.
+BASE_FEATURE(kProjectorAccountSwitchNotification,
+             "ProjectorAccountSwitchNotification",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the quick dim prototype is enabled.
@@ -2551,6 +2573,15 @@ bool IsFloatingWorkspaceV2Enabled() {
   return base::FeatureList::IsEnabled(kFloatingWorkspaceV2);
 }
 
+bool ShouldForceEnableServerSideSpeechRecognitionForDev() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return base::FeatureList::IsEnabled(
+      kForceEnableServerSideSpeechRecognitionForDev);
+#else
+  return false;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING);
+}
+
 bool IsFullscreenAfterUnlockAllowed() {
   return base::FeatureList::IsEnabled(kFullscreenAfterUnlockAllowed);
 }
@@ -2655,9 +2686,14 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 }
 
 bool IsInternalServerSideSpeechRecognitionEnabled() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(b/245614967): Once ready, enable this feature under
   // kProjectorBleedingEdgeExperience flag as well.
-  return base::FeatureList::IsEnabled(kInternalServerSideSpeechRecognition);
+  return ShouldForceEnableServerSideSpeechRecognitionForDev() ||
+         base::FeatureList::IsEnabled(kInternalServerSideSpeechRecognition);
+#else
+  return false;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 bool IsJellyEnabled() {
@@ -2956,11 +2992,16 @@ bool IsProjectorUseApiKeyForTranslationEnabled() {
 }
 
 bool IsQsRevampEnabled() {
-  return base::FeatureList::IsEnabled(kQsRevamp);
+  return base::FeatureList::IsEnabled(kQsRevamp) &&
+         base::FeatureList::IsEnabled(kQsRevampWip);
 }
 
 bool IsProjectorViewerUseSecondaryAccountEnabled() {
   return base::FeatureList::IsEnabled(kProjectorViewerUseSecondaryAccount);
+}
+
+bool IsProjectorAccountSwitchNotificationEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorAccountSwitchNotification);
 }
 
 bool IsQuickDimEnabled() {

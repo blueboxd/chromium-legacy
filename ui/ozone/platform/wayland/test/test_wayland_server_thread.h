@@ -48,13 +48,11 @@ struct DisplayDeleter {
 };
 
 // Server configuration related enums and structs.
-enum class ShellVersion { kV6, kStable };
 enum class PrimarySelectionProtocol { kNone, kGtk, kZwp };
 enum class CompositorVersion { kV3, kV4 };
 enum class ShouldUseExplicitSynchronizationProtocol { kNone, kUse };
 
 struct ServerConfig {
-  ShellVersion shell_version = ShellVersion::kStable;
   CompositorVersion compositor_version = CompositorVersion::kV4;
   PrimarySelectionProtocol primary_selection_protocol =
       PrimarySelectionProtocol::kNone;
@@ -123,6 +121,13 @@ class TestWaylandServerThread : public base::Thread,
 
   template <typename T>
   T* GetObject(uint32_t id) {
+    // When the server is running in asynchronous mode, all the protocol calls
+    // must be made on the correct thread.
+    // TODO(crbug.com/1365887): this must always do thread check once all the
+    // tests are refactored.
+    if (is_async_) {
+      DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    }
     wl_resource* resource = wl_client_get_object(client_, id);
     return resource ? T::FromResource(resource) : nullptr;
   }
@@ -139,7 +144,6 @@ class TestWaylandServerThread : public base::Thread,
   TestDataDeviceManager* data_device_manager() { return &data_device_manager_; }
   TestSeat* seat() { return &seat_; }
   MockXdgShell* xdg_shell() { return &xdg_shell_; }
-  MockZxdgShellV6* zxdg_shell() { return &zxdg_shell_v6_; }
   MockZAuraShell* zaura_shell() { return &zaura_shell_; }
   TestOutput* output() { return &output_; }
   TestZcrTextInputExtensionV1* text_input_extension_v1() {
@@ -227,7 +231,6 @@ class TestWaylandServerThread : public base::Thread,
   TestSurfaceAugmenter surface_augmenter_;
   TestSeat seat_;
   MockXdgShell xdg_shell_;
-  MockZxdgShellV6 zxdg_shell_v6_;
   MockZAuraShell zaura_shell_;
   TestZcrStylus zcr_stylus_;
   TestZcrTextInputExtensionV1 zcr_text_input_extension_v1_;

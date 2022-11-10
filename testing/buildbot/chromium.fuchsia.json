@@ -374,6 +374,7 @@
           "--test-arg=--headless",
           "--test-arg=--ozone-platform=headless"
         ],
+        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1577,6 +1578,7 @@
           "--test-arg=--headless",
           "--test-arg=--ozone-platform=headless"
         ],
+        "ci_only": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

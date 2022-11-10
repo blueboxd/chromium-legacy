@@ -111,6 +111,24 @@ function multipleImagesSupported() {
 }
 
 function extractImage(item) {
+  const hostname = new URL(document.baseURI).hostname;
+  // Some merchant sites have product images as background of a div element.
+  // Below logic handles them separately.
+  if (hostname.endsWith("americastire.com")
+    || hostname.endsWith("discounttire.com")) {
+    const image = item.querySelector(".product-image__image-block");
+    if (image == null) {
+      return null;
+    }
+    return extractImageUrl(image);
+  }
+  if (hostname.endsWith("discounttiredirect.com")) {
+    const image = item.querySelector(".cart-item__product-image");
+    if (image == null) {
+      return null;
+    }
+    return extractImageUrl(image);
+  }
   // Sometimes an item contains small icons, which need to be filtered out.
   // TODO: two pass getLargeImages() is probably too slow.
   let images = getLargeImages(item, 40);
@@ -144,12 +162,15 @@ function extractImageUrl(image) {
   if (lazyUrl != null)
     return lazyUrl;
 
-  // Special handling for Google store.
-  if (image.className === "bg-img") {
+  // Special handling for Google store, America's Tire and Discount
+  // Tire Direct.
+  if (image.className === "bg-img"
+    || image.className.includes("product-image__image-block")
+    || image.className.includes("cart-item__product-image")) {
     if (image.style.backgroundImage == undefined) {
       return null;
     }
-    const matches = image.style.backgroundImage.match('\"(.*)\"');
+    const matches = image.style.backgroundImage.match('[\"\'](.*)[\"\']');
     if (matches === null) {
       return null;
     } else {
@@ -203,7 +224,8 @@ function extractUrl(item) {
   // panel after clicking on each item instead of directing to product page.
   if (document.URL.includes("samsclub.com")
       || document.URL.includes("ae.com")
-      || document.URL.includes("kiehls.com")) {
+      || document.URL.includes("kiehls.com")
+      || document.URL.includes("discounttiredirect.com")) {
     return "";
   }
   let anchors;
@@ -699,7 +721,15 @@ function isCartItem(item) {
 }
 
 function extractOneItem(item, extracted_items, processed, output,
-  savedForLaterSection) {
+  savedForLaterSection, skipFiltering) {
+  if (skipFiltering) {
+    const extraction = extractItem(item);
+    if (extraction != null) {
+      output.set(item, extraction);
+      extracted_items.push(item);
+    }
+    return;
+  }
   if (verbose > 1) {
     console.log('trying', item);
   }
@@ -931,13 +961,19 @@ async function extractAllItems(root) {
       return false;
     }
   }
-
+  let skipFiltering = true;
   if (document.URL.includes("samsclub.com")) {
     items = root.querySelectorAll(".sc-cart-item-shipping");
   } else if (document.URL.includes("kiehls.com")
     || document.URL.includes("laroche-posay.us")) {
     items = root.querySelectorAll(".c-product-table__row");
+  } else if (document.URL.includes("americastire.com")
+    || document.URL.includes("discounttire.com")) {
+    items = root.querySelectorAll("[role=\"listitem\"]");
+  } else if (document.URL.includes("discounttiredirect.com")) {
+    items = root.querySelectorAll(".cart-item");
   } else {
+    skipFiltering = false;
     // Generic pattern
     const candidates = new Set();
     items = root.querySelectorAll('a');
@@ -992,7 +1028,7 @@ async function extractAllItems(root) {
   let early_abort = false;
   for (const item of items) {
     extractOneItem(item, extracted_items, processed, outputMap,
-      savedForLaterSection);
+      savedForLaterSection, skipFiltering);
     // Checking for every item is too slow.
     if (i++ % 10 == 0) {
       await sleeper.maybeSleep();

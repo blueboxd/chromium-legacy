@@ -61,6 +61,7 @@
 #import "components/update_client/update_client.h"
 #import "components/variations/service/variations_service.h"
 #import "components/web_resource/web_resource_pref_names.h"
+#import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
@@ -120,6 +121,9 @@ const char kDataSaverEnabled[] = "spdy_proxy.enabled";
 // Deprecated 09/2022.
 const char kPrefPromoObject[] = "ios.ntppromo";
 
+// Deprecated 11/2022.
+const char kLocalConsentsDictionary[] = "local_consents";
+
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -150,6 +154,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
   [MemoryDebuggerManager registerLocalState:registry];
   [IncognitoReauthSceneAgent registerLocalState:registry];
+  [VariationsAppStateAgent registerLocalState:registry];
 
   registry->RegisterBooleanPref(prefs::kBrowsingDataMigrationHasBeenPossible,
                                 false);
@@ -199,6 +204,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   // times a user should see autofill branding animation after installation.
   registry->RegisterIntegerPref(
       prefs::kAutofillBrandingIconAnimationRemainingCountPrefName, 2);
+
+  registry->RegisterDictionaryPref(kLocalConsentsDictionary);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -347,6 +354,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
   // Added 09/2022
   prefs->ClearPref(kPrefPromoObject);
+
+  // Added 11/2022.
+  prefs->ClearPref(kLocalConsentsDictionary);
 }
 
 // This method should be periodically pruned of year+ old migrations.

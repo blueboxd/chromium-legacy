@@ -10,13 +10,17 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
+#include "ash/webui/color_internals/color_internals_ui.h"
 #include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
+#include "ash/webui/system_extensions_internals_ui/system_extensions_internals_ui.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/ui/webui/ash/account_manager/account_manager_error_ui.h"
 #include "chrome/browser/ui/webui/ash/account_manager/account_migration_welcome_ui.h"
 #include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
+#include "chrome/browser/ui/webui/ash/audio/audio_ui.h"
 #include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/ash/certificate_manager_dialog_ui.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/browser/ui/webui/ash/cryptohome_ui.h"
@@ -28,6 +32,8 @@
 #include "chrome/browser/ui/webui/ash/in_session_password_change/password_change_ui.h"
 #include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_internals/multidevice_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/ash/network_ui.h"
@@ -43,9 +49,14 @@
 #include "chrome/browser/ui/webui/ash/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/vm/vm_ui.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
+#include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
+#include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
 #if !defined(OFFICIAL_BUILD)
 #include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
+#if !defined(USE_REAL_DBUS_CLIENTS)
+#include "chrome/browser/ui/webui/ash/emulator/device_emulator_ui.h"
+#endif  // !defined(USE_REAL_DBUS_CLIENTS)
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -80,8 +91,12 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<ash::AccountMigrationWelcomeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::AddSupervisionUIConfig>());
   map.AddWebUIConfig(std::make_unique<chromeos::AssistantOptInUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::AudioUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::BluetoothPairingDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::CertificateManagerDialogUIConfig>());
+  map.AddWebUIConfig(
+      std::make_unique<ash::cloud_upload::CloudUploadUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::ColorInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::ConfirmPasswordChangeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::CrostiniInstallerUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::CrostiniUpgraderUIConfig>());
@@ -91,11 +106,16 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<ash::HumanPresenceInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::InternetConfigDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::InternetDetailDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::LauncherInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::LockScreenNetworkUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::LockScreenStartReauthUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::ManageMirrorSyncUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::MultideviceInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<
                      ash::multidevice_setup::MultiDeviceSetupDialogUIConfig>());
+  map.AddWebUIConfig(std::make_unique<NearbyInternalsUIConfig>());
+  map.AddWebUIConfig(
+      std::make_unique<nearby_share::NearbyShareDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::NetworkUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::NotificationTesterUIConfig>());
   map.AddWebUIConfig(
@@ -114,10 +134,15 @@ void RegisterAshChromeWebUIConfigs() {
       std::make_unique<ash::smb_dialog::SmbShareDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::SysInternalsUIConfig>());
   map.AddWebUIConfig(
+      std::make_unique<ash::SystemExtensionsInternalsUIConfig>());
+  map.AddWebUIConfig(
       std::make_unique<ash::UrgentPasswordExpiryNotificationUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::VmUIConfig>());
 #if !defined(OFFICIAL_BUILD)
   map.AddWebUIConfig(std::make_unique<ash::SampleSystemWebAppUIConfig>());
+#if !defined(USE_REAL_DBUS_CLIENTS)
+  map.AddWebUIConfig(std::make_unique<ash::DeviceEmulatorUIConfig>());
+#endif  // !defined(USE_REAL_DBUS_CLIENTS)
 #endif  // !defined(OFFICIAL_BUILD)
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

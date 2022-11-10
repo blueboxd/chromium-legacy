@@ -17,7 +17,7 @@
 
 # Give version.py a pattern that will expand to a GN scope consisting of
 # all values we need at once.
-_version_dictionary_template = "full = \"@MAJOR@.@MINOR@.@BUILD@.@PATCH@\" " +
+_version_dictionary_template = "full = \"@MAJOR@.@MINOR@.@BUILD@.@PATCH@.@LEGACYPATCH@\" " +
                                "major = \"@MAJOR@\" minor = \"@MINOR@\" " +
                                "build = \"@BUILD@\" patch = \"@PATCH@\" "
 

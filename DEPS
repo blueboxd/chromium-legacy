@@ -357,7 +357,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'ba4bd5b994f18f89a08908a44fe3ffeaa5643d11',
+  'freetype_revision': '63ccaef07a048db66e7ac66ee241fb3d7751736f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -816,7 +816,7 @@ deps = {
 
   'src/clank': {
     'url': 'https://chrome-internal.googlesource.com/clank/internal/apps.git' + '@' +
-    'a7b9b746c57c219596a4c2858d05fc1e29b1271f',
+    'faa9674b1fc78a279be8065a9c4e3eb4a5561498',
     'condition': 'checkout_android and checkout_src_internal and not checkout_clank_via_src_internal',
   },
 
@@ -1664,7 +1664,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '84f263253830735434985c83b3da82e955a34f3a',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '220a0b25e12272b2fcd6c607e35a2ddab11c4e05',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1960,7 +1960,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'cSjt-6yfEVsgFEvg8mNJ7Cj0QT5e1XaS2-1pDuhFNNgC',
+        'version': '3qLAqqfU1qLt-15r-G-HsAP2rnpUQKgCAVog6XE4eQAC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

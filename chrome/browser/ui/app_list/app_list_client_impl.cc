@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_notifier_impl.h"
-#include "chrome/browser/ui/app_list/app_list_notifier_impl_old.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_watcher.h"
@@ -107,13 +106,8 @@ AppListClientImpl::AppListClientImpl()
   DCHECK(!g_app_list_client_instance);
   g_app_list_client_instance = this;
 
-  if (ash::features::IsProductivityLauncherEnabled()) {
-    app_list_notifier_ =
-        std::make_unique<AppListNotifierImpl>(app_list_controller_);
-  } else {
-    app_list_notifier_ =
-        std::make_unique<AppListNotifierImplOld>(app_list_controller_);
-  }
+  app_list_notifier_ =
+      std::make_unique<AppListNotifierImpl>(app_list_controller_);
 }
 
 AppListClientImpl::~AppListClientImpl() {
@@ -384,12 +378,6 @@ void AppListClientImpl::GetContextMenuModel(
 
 void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
   app_list_target_visibility_ = visible;
-  // TODO(crbug.com/1258415): This is only used in the old launcher, and can be
-  // removed once the productivity launcher is launched.
-  if (visible && search_controller_ &&
-      !ash::features::IsProductivityLauncherEnabled()) {
-    search_controller_->StartSearch(std::u16string());
-  }
   if (!visible && search_controller_)
     search_controller_->AppListClosing();
 }

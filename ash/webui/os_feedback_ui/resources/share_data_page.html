@@ -84,13 +84,10 @@
     width: 50%;
   }
 
-  #userEmail {
-    height: 70px;
-  }
-
   .md-select {
     --md-select-side-padding: 16px;
     height: 32px;
+    margin-bottom: 8px;
     width: 248px;
   }
 
@@ -192,7 +189,8 @@
   <div id="header">
     <h1 class="page-title">[[i18n('pageTitle')]]</h1>
   </div>
-  <div id="content">
+  <div id="shadowElevation"></div>
+  <div id="content" on-scroll="onContainerScroll_">
     <!-- Attach files -->
     <div id="attachFiles">
       <div id="attachFilesLabelContainer">
@@ -299,6 +297,7 @@
     </div>
     <!-- Privacy note -->
     <div id="privacyNote" inner-h-t-m-l="[[privacyNote_]]"></div>
+    <div id="shadowShield"></div>
   </div>
   <div id="navButtons">
     <cr-button id="buttonBack" class="cancel-button"

@@ -22,13 +22,15 @@
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_header_utils.h"
+#include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
@@ -38,6 +40,7 @@ namespace content {
 
 namespace {
 
+using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceRegistrationError;
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -168,6 +171,10 @@ struct AttributionDataHostManagerImpl::FrozenContext {
 
   // Whether the attribution is registered within a fenced frame tree.
   bool is_within_fenced_frame;
+
+  // Input event associated with the navigation for navigation source data
+  // hosts, `absl::nullopt` otherwise.
+  absl::optional<AttributionInputEvent> input_event;
 };
 
 struct AttributionDataHostManagerImpl::DelayedTrigger {
@@ -190,6 +197,7 @@ struct AttributionDataHostManagerImpl::DelayedTrigger {
 struct AttributionDataHostManagerImpl::NavigationDataHost {
   mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host;
   base::TimeTicks register_time;
+  AttributionInputEvent input_event;
 };
 
 struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
@@ -208,6 +216,9 @@ struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
   // The time the first registration header was received for the redirect chain.
   // Will not change over the course of the redirect chain.
   base::TimeTicks register_time;
+
+  // Input event associated with the navigation.
+  AttributionInputEvent input_event;
 };
 
 AttributionDataHostManagerImpl::AttributionDataHostManagerImpl(
@@ -226,7 +237,7 @@ void AttributionDataHostManagerImpl::RegisterDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
     url::Origin context_origin,
     bool is_within_fenced_frame) {
-  DCHECK(network::IsOriginPotentiallyTrustworthy(context_origin));
+  DCHECK(SuitableOrigin::IsSuitable(context_origin));
 
   receivers_.Add(
       this, std::move(data_host),
@@ -239,11 +250,13 @@ void AttributionDataHostManagerImpl::RegisterDataHost(
 
 bool AttributionDataHostManagerImpl::RegisterNavigationDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-    const blink::AttributionSrcToken& attribution_src_token) {
+    const blink::AttributionSrcToken& attribution_src_token,
+    AttributionInputEvent input_event) {
   auto [it, inserted] = navigation_data_host_map_.try_emplace(
       attribution_src_token,
       NavigationDataHost{.data_host = std::move(data_host),
-                         .register_time = base::TimeTicks::Now()});
+                         .register_time = base::TimeTicks::Now(),
+                         .input_event = input_event});
   // Should only be possible with a misbehaving renderer.
   if (!inserted)
     return false;
@@ -258,9 +271,10 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
     const blink::AttributionSrcToken& attribution_src_token,
     std::string header_value,
     url::Origin reporting_origin,
-    const url::Origin& source_origin) {
-  if (!network::IsOriginPotentiallyTrustworthy(source_origin) ||
-      !network::IsOriginPotentiallyTrustworthy(reporting_origin)) {
+    const url::Origin& source_origin,
+    AttributionInputEvent input_event) {
+  if (!SuitableOrigin::IsSuitable(source_origin) ||
+      !SuitableOrigin::IsSuitable(reporting_origin)) {
     return;
   }
 
@@ -275,7 +289,8 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
   auto [it, inserted] = redirect_registrations_.try_emplace(
       attribution_src_token, NavigationRedirectSourceRegistrations{
                                  .source_origin = source_origin,
-                                 .register_time = base::TimeTicks::Now()});
+                                 .register_time = base::TimeTicks::Now(),
+                                 .input_event = input_event});
   DCHECK(!it->second.navigation_complete);
 
   // Treat ongoing redirect registrations within a chain as a data host for the
@@ -298,8 +313,8 @@ void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
     const blink::AttributionSrcToken& attribution_src_token,
     const url::Origin& source_origin,
     const url::Origin& destination_origin) {
-  if (!network::IsOriginPotentiallyTrustworthy(source_origin) ||
-      !network::IsOriginPotentiallyTrustworthy(destination_origin)) {
+  if (!SuitableOrigin::IsSuitable(source_origin) ||
+      !SuitableOrigin::IsSuitable(destination_origin)) {
     NotifyNavigationFailure(attribution_src_token);
     return;
   }
@@ -313,7 +328,8 @@ void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
         FrozenContext{.context_origin = source_origin,
                       .source_type = AttributionSourceType::kNavigation,
                       .register_time = it->second.register_time,
-                      .is_within_fenced_frame = false});
+                      .is_within_fenced_frame = false,
+                      .input_event = it->second.input_event});
 
     navigation_data_host_map_.erase(it);
     RecordNavigationDataHostStatus(NavigationDataHostStatus::kProcessed);
@@ -366,13 +382,13 @@ void AttributionDataHostManagerImpl::NotifyNavigationFailure(
 
 void AttributionDataHostManagerImpl::SourceDataAvailable(
     blink::mojom::AttributionSourceDataPtr data) {
-  if (!network::IsOriginPotentiallyTrustworthy(data->reporting_origin)) {
+  if (!SuitableOrigin::IsSuitable(data->reporting_origin)) {
     RecordSourceDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
     ReportBadMessageInsecureReportingOrigin();
     return;
   }
 
-  if (!network::IsOriginPotentiallyTrustworthy(data->destination)) {
+  if (!SuitableOrigin::IsSuitable(data->destination)) {
     RecordSourceDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
     mojo::ReportBadMessage(
         "AttributionDataHost: Destination origin must be secure.");
@@ -380,7 +396,7 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
   }
 
   FrozenContext& context = receivers_.current_context();
-  DCHECK(network::IsOriginPotentiallyTrustworthy(context.context_origin));
+  DCHECK(SuitableOrigin::IsSuitable(context.context_origin));
 
   if (context.registration_type == RegistrationType::kTrigger) {
     RecordSourceDataHandleStatus(DataHandleStatus::kContextError);
@@ -446,14 +462,14 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
 
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
     blink::mojom::AttributionTriggerDataPtr data) {
-  if (!network::IsOriginPotentiallyTrustworthy(data->reporting_origin)) {
+  if (!SuitableOrigin::IsSuitable(data->reporting_origin)) {
     RecordTriggerDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
     ReportBadMessageInsecureReportingOrigin();
     return;
   }
 
   FrozenContext& context = receivers_.current_context();
-  DCHECK(network::IsOriginPotentiallyTrustworthy(context.context_origin));
+  DCHECK(SuitableOrigin::IsSuitable(context.context_origin));
 
   if (context.source_type == AttributionSourceType::kNavigation) {
     RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
@@ -554,14 +570,18 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
 
   context.num_data_registered++;
 
-  // TODO(linnan): Parse debug reporting from response header.
-  AttributionTrigger trigger(
-      /*destination_origin=*/context.context_origin,
-      std::move(data->reporting_origin), std::move(*filters),
-      std::move(*not_filters), data->debug_key, data->aggregatable_dedup_key,
-      std::move(event_triggers), std::move(*aggregatable_trigger_data),
-      std::move(*aggregatable_values), context.is_within_fenced_frame,
-      data->debug_reporting);
+  absl::optional<attribution_reporting::TriggerRegistration> registration =
+      attribution_reporting::TriggerRegistration::Create(
+          std::move(data->reporting_origin), std::move(*filters),
+          std::move(*not_filters), data->debug_key,
+          data->aggregatable_dedup_key, std::move(event_triggers),
+          std::move(*aggregatable_trigger_data),
+          std::move(*aggregatable_values), data->debug_reporting);
+  DCHECK(registration);
+
+  AttributionTrigger trigger(std::move(*registration),
+                             /*destination_origin=*/context.context_origin,
+                             context.is_within_fenced_frame);
 
   // Handle the trigger immediately if we're not waiting for any sources to be
   // registered.

@@ -23,7 +23,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -194,17 +193,6 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   std::unique_ptr<AudioDecoderConfig> audio_config;
   std::unique_ptr<VideoDecoderConfig> video_config;
 
-#if BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(kDeprecateLowUsageCodecs)) {
-    const auto codec_id = stream->codecpar->codec_id;
-    if (codec_id == AV_CODEC_ID_AMR_NB || codec_id == AV_CODEC_ID_AMR_WB ||
-        codec_id == AV_CODEC_ID_GSM_MS) {
-      MEDIA_LOG(ERROR, media_log) << "AMR and GSM are deprecated on ChromeOS.";
-      return nullptr;
-    }
-  }
-#endif
-
   if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
     audio_config = std::make_unique<AudioDecoderConfig>();
 
@@ -261,7 +249,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
     std::unique_ptr<VideoDecoderConfig> video_config,
     MediaLog* media_log)
     : demuxer_(demuxer),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       stream_(stream),
       start_time_(kNoTimestamp),
       audio_config_(audio_config.release()),

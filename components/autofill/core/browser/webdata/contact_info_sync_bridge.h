@@ -61,6 +61,11 @@ class ContactInfoSyncBridge : public AutofillWebDataServiceObserverOnDBSequence,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
+
+  // AutofillWebDataServiceObserverOnDBSequence implementation.
+  void AutofillProfileChanged(const AutofillProfileChange& change) override;
 
  private:
   // Returns the `AutofillTable` associated with the `web_data_backend_`.
@@ -73,6 +78,10 @@ class ContactInfoSyncBridge : public AutofillWebDataServiceObserverOnDBSequence,
   // If querying the database fails, a nullptr is returned and an error raised.
   std::unique_ptr<syncer::MutableDataBatch> GetDataAndFilter(
       base::RepeatingCallback<bool(const std::string&)> filter);
+
+  // Synchronously load sync metadata from the `AutofillTable` and pass it to
+  // the processor so it can start tracking changes.
+  void LoadMetadata();
 
   // The bridge should be used on the same sequence where it has been
   // constructed.

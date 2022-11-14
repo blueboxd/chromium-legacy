@@ -3725,6 +3725,11 @@ enum WebFeature {
   kElementTogglePopover = 4384,
   kLayoutMediaInlineChildren = 4385,
   kReduceAcceptLanguage = 4386,
+  kUuidInPackageUrlNavigation = 4387,
+  kCSSValueAppearanceMediaSliderRendered = 4388,
+  kCSSValueAppearanceMediaSliderThumbRendered = 4389,
+  kCSSValueAppearanceMediaVolumeSliderRendered = 4390,
+  kCSSValueAppearanceMediaVolumeSliderThumbRendered = 4391,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

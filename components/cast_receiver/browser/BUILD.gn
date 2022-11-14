@@ -8,21 +8,45 @@ source_set("browser") {
   deps = [
     "//base",
     "//components/cast_receiver/common",
+    "//components/cast_streaming/browser",
     "//components/media_control/browser",
     "//content/public/browser",
   ]
   public = [
     "public/application_client.h",
+    "public/application_config.h",
     "public/application_state_observer.h",
     "public/content_window_controls.h",
     "public/runtime_application.h",
+    "public/streaming_config_manager.h",
     "public/streaming_resolution_observer.h",
   ]
   sources = [
     "application_client.cc",
+    "application_config.cc",
     "content_window_controls.cc",
     "runtime_application.cc",
+    "streaming_config_manager.cc",
   ]
+  friend = [ ":unit_tests" ]
+}
+
+source_set("permissions_manager") {
+  public_deps = [
+    "//third_party/blink/public/common:headers",
+    "//url",
+  ]
+  deps = [
+    "//base",
+    "//content",
+  ]
+  public = [
+    "public/permissions_manager.h",
+
+    # TODO(crbug.com/1359579): Limit visibility to just this component.
+    "permissions_manager_impl.h",
+  ]
+  sources = [ "permissions_manager_impl.cc" ]
   friend = [ ":unit_tests" ]
 }
 
@@ -64,12 +88,16 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":page_state_observer",
+    ":permissions_manager",
     "//media",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx/geometry",
   ]
-  sources = [ "application_client_unittest.cc" ]
+  sources = [
+    "application_client_unittest.cc",
+    "permissions_manager_impl_unittest.cc",
+  ]
 
   if (enable_cast_receiver || is_fuchsia) {
     deps += [ ":runtime" ]

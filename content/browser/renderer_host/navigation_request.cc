@@ -29,6 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_conversion_helper.h"
@@ -2082,7 +2083,7 @@ bool NavigationRequest::MaybeStartPrerenderingActivationChecks() {
   // Post a task to run the conditions in case BeginNavigation() is not expected
   // to run synchronously. OnPrerenderingActivationChecksComplete() will be
   // called after all the deferring conditions finish.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&NavigationRequest::RunCommitDeferringConditions,
                      weak_factory_.GetWeakPtr()));
@@ -2147,21 +2148,7 @@ FencedFrameURLMapping& NavigationRequest::GetFencedFrameURLMap() {
 
 bool NavigationRequest::NeedFencedFrameURLMapping() {
   if (frame_tree_node_->IsFencedFrameRoot()) {
-    if (blink::features::IsFencedFramesMPArchBased()) {
-      // Once ShadowDOM and loading urns in iframes are disabled, this should
-      // be the only case that remains. The other cases are a bit hacky, but we
-      // expect them to go away soon.
-      return is_embedder_initiated_fenced_frame_opaque_url_navigation_;
-    } else {
-      // In ShadowDOM, embedder-initiated navigations can take different paths
-      // for local or remote Frames, so we detect it here.
-      // Any urn:uuid navigation is assumed to be initiated by the embedder,
-      // even though we know this is not necessarily the case in ShadowDOM.
-      // But it is true in all intended use cases.
-      is_embedder_initiated_fenced_frame_navigation_ =
-          blink::IsValidUrnUuidURL(common_params_->url);
-      return is_embedder_initiated_fenced_frame_navigation_;
-    }
+    return is_embedder_initiated_fenced_frame_opaque_url_navigation_;
   } else if (!frame_tree_node_->IsMainFrame() &&
              blink::features::IsAllowURNsInIframeEnabled()) {
     // In iframes, we want to ensure that fenced frame properties are respected
@@ -2200,8 +2187,7 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
       fenced_frame_properties_->partition_nonce = absl::nullopt;
     }
   } else {
-    if (frame_tree_node_->IsFencedFrameRoot() &&
-        frame_tree_node_->frame_tree()->IsFencedFramesMPArchBased()) {
+    if (frame_tree_node_->IsFencedFrameRoot()) {
       StartNavigation();
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
@@ -4508,7 +4494,8 @@ void NavigationRequest::OnStartChecksComplete(
           upgrade_if_insecure_,
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
                                    : nullptr,
-          devtools_navigation_token(), frame_tree_node_->devtools_frame_token(),
+          devtools_navigation_token(),
+          frame_tree_node_->current_frame_host()->devtools_frame_token(),
           std::move(cors_exempt_headers), std::move(client_security_state),
           devtools_accepted_stream_types, is_pdf_, initiator_document_),
       std::move(navigation_ui_data), service_worker_handle_.get(),
@@ -5541,19 +5528,15 @@ net::Error NavigationRequest::CheckCSPDirectives(
 
   // [frame-src] or [fenced-frame-src]
   if (parent_policies) {
-    bool is_opaque_fenced_frame =
-        frame_tree_node_->frame_tree()->IsFencedFramesShadowDOMBased()
-            ? (frame_tree_node_->IsFencedFrameRoot() &&
-               frame_tree_node_->GetFencedFrameMode() ==
-                   blink::mojom::FencedFrameMode::kOpaqueAds)
-            : is_target_fenced_frame_root_originating_from_opaque_url_;
     if (!IsAllowedByCSPDirective(
             parent_policies->content_security_policies, &parent_context,
             frame_tree_node_->IsFencedFrameRoot()
                 ? network::mojom::CSPDirectiveName::FencedFrameSrc
                 : network::mojom::CSPDirectiveName::FrameSrc,
             has_followed_redirect, url_upgraded_after_redirect,
-            is_response_check, is_opaque_fenced_frame, disposition)) {
+            is_response_check,
+            is_target_fenced_frame_root_originating_from_opaque_url_,
+            disposition)) {
       error = net::ERR_BLOCKED_BY_CSP;
     }
   }
@@ -6897,11 +6880,21 @@ NavigationRequest::MakeDidCommitProvisionalLoadParamsForActivation() {
   // navigated.
   CHECK(params);
 
-  DCHECK_EQ(params->http_status_code, net::HTTP_OK);
+  if (IsPrerenderedPageActivation()) {
+    switch (params->http_status_code) {
+      case net::HTTP_OK:
+      case net::HTTP_CREATED:
+      case net::HTTP_ACCEPTED:
+      case net::HTTP_NON_AUTHORITATIVE_INFORMATION:
+        break;
+      default:
+        NOTREACHED();
+    }
+  } else {
+    DCHECK_EQ(params->http_status_code, net::HTTP_OK);
+  }
   DCHECK_EQ(params->url_is_unreachable, false);
 
-  params->should_replace_current_entry =
-      common_params().should_replace_current_entry;
   DCHECK_EQ(params->post_id, -1);
   params->navigation_token = commit_params().navigation_token;
   DCHECK_EQ(params->url, common_params().url);
@@ -8023,30 +8016,8 @@ bool NavigationRequest::
     return false;
   }
 
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // History replacement behaves a bit differently when we don't have initial
-    // NavigationEntries.
-    if (!frame_tree_node_->GetParentOrOuterDocument()) {
-      // Currently we only handle subframe and non-outermost main frames (fenced
-      // frames and portals) initial empty document replacements.
-      // TODO(https://crbug.com/1215096): Handle the outermost main frame
-      // navigations too.
-      return false;
-    }
-
-    if (!frame_tree_node_->is_on_initial_empty_document()) {
-      // Only replace if we're not on the initial empty document.
-      return false;
-    }
-
-    // If the navigation explicitly requested for history list clearing (e.g.
-    // when running layout tests), don't do a replacement (since there won't be
-    // any entry to replace after the navigation).
-    return !commit_params_->should_clear_history_list;
-  }
-
-  // If InitialNavigationEntry is enabled, we only need to check the "initial
-  // NavigationEntry" status and the "initial empty document" status.
+  // Check the "initial NavigationEntry" status and the "initial empty document"
+  // status.
 
   if (frame_tree_node_->navigator()
           .controller()

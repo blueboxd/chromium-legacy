@@ -453,6 +453,8 @@ DocumentLoader::DocumentLoader(
       response_wrapper_(response_),
       load_type_(params_->frame_load_type),
       is_client_redirect_(params_->is_client_redirect),
+      replaces_current_history_item_(load_type_ ==
+                                     WebFrameLoadType::kReplaceCurrentItem),
       data_received_(false),
       is_error_page_for_failed_navigation_(
           SchemeRegistry::ShouldTreatURLSchemeAsError(
@@ -502,20 +504,6 @@ DocumentLoader::DocumentLoader(
       view_transition_state_(std::move(params_->view_transition_state)) {
   DCHECK(frame_);
   DCHECK(params_);
-
-  // TODO(dgozman): we should get rid of this boolean field, and make client
-  // responsible for it's own view of "replaces current item", based on the
-  // frame load type.
-  replaces_current_history_item_ =
-      (load_type_ == WebFrameLoadType::kReplaceCurrentItem);
-  if (!features::IsInitialNavigationEntryEnabled()) {
-    // TODO(https://crbug.com/524208): This is needed because the browser
-    // process DCHECKs if the first entry we commit in a new frame has
-    // replacement set. It's unclear whether the DCHECK is right. Once we always
-    // have initial NavigationEntries, we can remove this check.
-    replaces_current_history_item_ &=
-        (!frame_->Loader().Opener() || !url_.IsEmpty());
-  }
 
   // See `archive_` attribute documentation.
   if (!frame_->IsMainFrame()) {
@@ -2399,7 +2387,7 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   OriginTrialContext::AddTokensFromHeader(
       frame_->DomWindow(), response_.HttpHeaderField(http_names::kOriginTrial));
 
-  if (auto* parent = frame_->Tree().Parent(FrameTreeBoundary::kFenced)) {
+  if (auto* parent = frame_->Tree().Parent()) {
     const SecurityContext* parent_context = parent->GetSecurityContext();
     security_context.SetInsecureRequestPolicy(
         parent_context->GetInsecureRequestPolicy());
@@ -3141,7 +3129,7 @@ CodeCacheHost* DocumentLoader::GetCodeCacheHost() {
     // enabled by default CodeCacheHost interface will be sent along with
     // CommitNavigation message and the following code would not be required and
     // we should just return nullptr here.
-    mojo::Remote<mojom::CodeCacheHost> remote;
+    mojo::Remote<mojom::blink::CodeCacheHost> remote;
     GetLocalFrameClient().GetBrowserInterfaceBroker().GetInterface(
         remote.BindNewPipeAndPassReceiver());
     code_cache_host_ = std::make_unique<CodeCacheHost>(std::move(remote));
@@ -3149,25 +3137,26 @@ CodeCacheHost* DocumentLoader::GetCodeCacheHost() {
   return code_cache_host_.get();
 }
 
-mojo::PendingRemote<blink::mojom::CodeCacheHost>
+mojo::PendingRemote<mojom::blink::CodeCacheHost>
 DocumentLoader::CreateWorkerCodeCacheHost() {
   if (GetDisableCodeCacheForTesting())
     return mojo::NullRemote();
-  mojo::PendingRemote<blink::mojom::CodeCacheHost> pending_code_cache_host;
+  mojo::PendingRemote<mojom::blink::CodeCacheHost> pending_code_cache_host;
   GetLocalFrameClient().GetBrowserInterfaceBroker().GetInterface(
       pending_code_cache_host.InitWithNewPipeAndPassReceiver());
   return pending_code_cache_host;
 }
 
 void DocumentLoader::SetCodeCacheHost(
-    mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) {
+    CrossVariantMojoRemote<mojom::blink::CodeCacheHostInterfaceBase>
+        code_cache_host) {
   code_cache_host_.reset();
   // When NavigationThreadingOptimizations feature is disabled, code_cache_host
   // can be a nullptr. When this feature is turned off the CodeCacheHost
   // interface is requested via BrowserBrokerInterface when required.
   if (code_cache_host) {
     code_cache_host_ = std::make_unique<CodeCacheHost>(
-        mojo::Remote<mojom::CodeCacheHost>(std::move(code_cache_host)));
+        mojo::Remote<mojom::blink::CodeCacheHost>(std::move(code_cache_host)));
   }
 }
 

@@ -1401,6 +1401,10 @@ const char kEnableWasmLazyCompilationName[] = "WebAssembly lazy compilation";
 const char kEnableWasmLazyCompilationDescription[] =
     "Enables lazy (JIT on first call) compilation of WebAssembly modules.";
 
+const char kEnableWasmRelaxedSimdName[] = "WebAssembly Relaxed SIMD";
+const char kEnableWasmRelaxedSimdDescription[] =
+    "Enables the use of WebAssembly vector operations with relaxed semantics";
+
 const char kEnableWasmTieringName[] = "WebAssembly tiering";
 const char kEnableWasmTieringDescription[] =
     "Enables tiered compilation of WebAssembly (will tier up to TurboFan if "
@@ -3893,6 +3897,14 @@ const char kRecoverFromNeverSaveAndroidDescription[] =
     "Enables showing UI which allows for easy reverting of the decision to "
     "never save passwords on a certain webiste";
 
+const char kReduceUserAgentAndroidVersionDeviceModelName[] =
+    "Reduce the device model and Android version in the andriod User-Agent "
+    "string";
+const char kReduceUserAgentAndroidVersionDeviceModelDescription[] =
+    "Enables reducing the device model and Android version in the andriod "
+    "User-Agent string. The device model will be reported as `K` and the "
+    "Android version will be reported as a static `10` string.";
+
 const char kReengagementNotificationName[] =
     "Enable re-engagement notifications";
 const char kReengagementNotificationDescription[] =
@@ -4051,11 +4063,6 @@ const char kStylusWritingToInputDescription[] =
     "user to input text using a stylus. This is available on Samsung devices "
     "that come with an S Pen, and on Android T+ devices. The stylus writing "
     "feature will have to be enabled in Android settings as well.";
-
-const char kSyncAndroidLimitNTPPromoImpressionsName[] =
-    "Enable limiting NTP promo impressions on Android";
-const char kSyncAndroidLimitNTPPromoImpressionsDescription[] =
-    "Suppress the NTP sync promo after a specific number of impressions.";
 
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
@@ -5524,9 +5531,6 @@ const char kFullRestoreForLacrosName[] = "Full restore lacros support";
 const char kFullRestoreForLacrosDescription[] =
     "ChromeOS full restore lacros support";
 
-const char kFuseBoxName[] = "Enable ChromeOS FuseBox service";
-const char kFuseBoxDescription[] = "ChromeOS FuseBox service.";
-
 const char kFuseBoxDebugName[] = "Debugging UI for ChromeOS FuseBox service";
 const char kFuseBoxDebugDescription[] =
     "Show additional debugging UI for ChromeOS FuseBox service.";
@@ -5687,11 +5691,6 @@ const char kLauncherItemSuggestName[] = "Launcher ItemSuggest";
 const char kLauncherItemSuggestDescription[] =
     "Allows configuration of experiment parameters for ItemSuggest in the "
     "launcher.";
-
-const char kLauncherPlayStoreSearchName[] = "Launcher Play Store search";
-const char kLauncherPlayStoreSearchDescription[] =
-    "Enables Play Store search in the Launcher. Only available in the "
-    "productivity launcher.";
 
 const char kLimitShelfItemsToActiveDeskName[] =
     "Limit Shelf items to active desk";
@@ -6248,11 +6247,6 @@ const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
 const char kDefaultCalculatorWebAppDescription[] =
     "Enable default installing of the calculator PWA instead of the deprecated "
     "chrome app.";
-
-const char kDeprecateLowUsageCodecsName[] = "Deprecates low usage media codecs";
-const char kDeprecateLowUsageCodecsDescription[] =
-    "Deprecates low usage codecs. Disable this feature to allow playback of "
-    "AMR and GSM.";
 
 const char kDisableIdleSocketsCloseOnMemoryPressureName[] =
     "Disable closing idle sockets on memory pressure";

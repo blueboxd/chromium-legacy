@@ -1393,8 +1393,6 @@ transforms/bounding-rect-zoom.html
 transforms/shadows.html
 transforms/svg-vs-css.xhtml
 transforms/transformed-document-element.html
-virtual/background-svg-in-lcp/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html
-virtual/background-svg-in-lcp/external/wpt/largest-contentful-paint/toJSON.html
 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/resize-corner-tracking-touch.html
 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/subpixel-overflow-mouse-drag.html
 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html
@@ -1457,7 +1455,6 @@ virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html
 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/script-focus.https.html
 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/unique-cookie-partition.https.html
-virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/script-focus.https.html
 virtual/fledge/http/tests/inspector-protocol/storage/interest-groups.js
 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-interested-element-indicated.html
 virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-01.html
@@ -1603,7 +1600,6 @@ virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-inactive-pseu
 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-with-incomplete-style.html
 external/wpt/speculation-rules/prerender/local-storage.html
 external/wpt/speculation-rules/prerender/media-autoplay.html
-external/wpt/speculation-rules/prerender/opt-out.html
 external/wpt/speculation-rules/prerender/restriction-encrypted-media.https.html
 external/wpt/speculation-rules/prerender/service-workers.https.html
 wpt_internal/prerender/csp-prefetch-src-allow.html
@@ -1618,7 +1614,6 @@ virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opa
 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-opacity.html
 virtual/scalefactor200/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html
 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html
-virtual/shared-storage-fenced-frame-shadow-dom/wpt_internal/shared_storage/run-url-selection-operation.https.html
 virtual/split-http-cache/external/wpt/signed-exchange/reporting/sxg-reporting-navigation-cert_fetch_error-downgraded.tentative.html
 virtual/split-http-cache/external/wpt/signed-exchange/reporting/sxg-reporting-prefetch-mi_error.tentative.html
 virtual/stable/media/stable/video-object-fit-stable.html

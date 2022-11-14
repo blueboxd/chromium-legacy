@@ -3271,7 +3271,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'lacros_device_or_vm_tests_fyi',
-          'skylab_tests': 'lacros_amd64_generic_rel_skylab',
         },
         'os_type': 'chromeos'
       },
@@ -3397,7 +3396,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
-          'isolated_scripts': 'fieldtrial_isolated_scripts',
         },
       },
       'linux-headless-shell-rel': {
@@ -3597,7 +3595,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
-          'isolated_scripts': 'fieldtrial_isolated_scripts',
         },
       },
       'mac-hermetic-upgrade-rel': {
@@ -3669,7 +3666,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
-          'isolated_scripts': 'fieldtrial_isolated_scripts',
         },
       },
       'win-perfetto-rel': {
@@ -6236,7 +6232,7 @@
         'skip_merge_script': True,
         'mixins': [
           'bullhead',
-          'marshmallow',
+          'nougat',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests_v8',

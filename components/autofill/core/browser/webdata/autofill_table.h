@@ -571,6 +571,11 @@ class AutofillTable : public WebDatabaseTable,
   virtual bool RemoveAutofillProfile(const std::string& guid,
                                      AutofillProfile::Source profile_source);
 
+  // Removes all profiles from the given `profile_source`. Currently this is
+  // only supported for kAccount profiles, since they are cleared when the Sync
+  // data types gets disabled.
+  bool RemoveAllAutofillProfiles(AutofillProfile::Source profile_source);
+
   // Retrieves a profile with guid `guid` from `kAutofillProfilesTable` or
   // `kContactInfoTable`.
   std::unique_ptr<AutofillProfile> GetAutofillProfile(
@@ -738,11 +743,11 @@ class AutofillTable : public WebDatabaseTable,
                           syncer::MetadataBatch* metadata_batch);
 
   // syncer::SyncMetadataStore implementation.
-  bool UpdateSyncMetadata(syncer::ModelType model_type,
-                          const std::string& storage_key,
-                          const sync_pb::EntityMetadata& metadata) override;
-  bool ClearSyncMetadata(syncer::ModelType model_type,
-                         const std::string& storage_key) override;
+  bool UpdateEntityMetadata(syncer::ModelType model_type,
+                            const std::string& storage_key,
+                            const sync_pb::EntityMetadata& metadata) override;
+  bool ClearEntityMetadata(syncer::ModelType model_type,
+                           const std::string& storage_key) override;
   bool UpdateModelTypeState(
       syncer::ModelType model_type,
       const sync_pb::ModelTypeState& model_type_state) override;

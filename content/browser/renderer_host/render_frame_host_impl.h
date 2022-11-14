@@ -729,6 +729,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       const blink::DocumentToken& document_token,
+      base::UnguessableToken devtools_frame_token,
       const blink::FramePolicy& frame_policy,
       std::string frame_name,
       std::string frame_unique_name);
@@ -2669,11 +2670,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindCacheStorageForBucket(
       const storage::BucketInfo& bucket,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
+  void GetSandboxedFileSystemForBucket(
+      const storage::BucketInfo& bucket,
+      blink::mojom::BucketHost::GetDirectoryCallback callback) override;
 
   // Sends out all pending beacons held by this document and all its child
   // documents.
   //
-  // This method must be called when navigating away from the current document.
+  // This method must be called when navigating away from the current
+  // document.
   void SendAllPendingBeaconsOnNavigation();
 
   enum class FencedFrameStatus {
@@ -2685,6 +2690,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SnapshotDocumentForViewTransition(
       blink::mojom::LocalFrame::SnapshotDocumentForViewTransitionCallback
           callback);
+
+  // See comment on the member declaration.
+  const base::UnguessableToken& devtools_frame_token() const {
+    return devtools_frame_token_;
+  }
 
 #if BUILDFLAG(ENABLE_PPAPI)
   RenderFrameHostImplPpapiSupport& GetPpapiSupport();
@@ -2709,6 +2719,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       const blink::DocumentToken& document_token,
+      base::UnguessableToken devtools_frame_token,
       bool renderer_initiated_creation_of_main_frame,
       LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state,
@@ -3649,6 +3660,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   raw_ptr<FrameTree> frame_tree_ = nullptr;
 
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
+  // TODO(crbug.com/1179502): Remove this after clearing directly all references
+  // of FrameTreeNode in RenderFrameHost. Please refer to the description of the
+  // new `owner_` field.
   raw_ptr<FrameTreeNode> frame_tree_node_ = nullptr;
 
   // Interface for RenderFrameHost to communicate with FrameTreeNode owning it,
@@ -3658,12 +3672,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // activations).
   //
   // This points to:
-  // - Parent FrameTreeNode for subframes (which stays the same for the entire
-  //   lifetime of a subframe RenderFrameHostImpl).
-  // - Owning FrameTreeNode main RenderFrameHosts in kActive, kPrerender,
+  // - Owning FrameTreeNode for main RenderFrameHosts in kActive, kPrerender,
   //   kSpeculative or kPendingCommit lifecycle states.
   // - Null for main RenderFrameHosts in kPendingDeletion lifecycle state.
   // - Null for main RenderFrameHosts stored in BFCache.
+  // - Owning FrameTreeNode for subframes (which stays the same for the entire
+  //   lifetime of a subframe RenderFrameHostImpl).
   raw_ptr<RenderFrameHostOwner> owner_ = nullptr;
 
   // Stores all of the state related to each browsing context +
@@ -4564,6 +4578,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // https://crbug.com/1262022
   base::UnguessableToken anonymous_iframes_nonce_ =
       base::UnguessableToken::Create();
+
+  // Used for devtools instrumentation and trace-ability. Do not use for
+  // anything else, especially to look up the RenderFrameHost
+  // or FrameTreeNode instance.
+  // The token is propagated to Blink's LocalFrame/RemoteFrame and the
+  // values should be in sync across processes with its corresponding
+  // LocalFrame. Both Blink and content/ can tag calls and requests with this
+  // token in order to attribute them to the context frame.
+  // |devtools_frame_token_| is only defined by the browser process and is never
+  // sent back from the renderer in the control calls. The token lives in the
+  // RFH because DevTools protocol expects it to be stable for the RFH lifetime,
+  // and it's meant to generally be stable for the FTN lifetime, but is allowed
+  // to change across MPArch activations like prerendering.
+  const base::UnguessableToken devtools_frame_token_;
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

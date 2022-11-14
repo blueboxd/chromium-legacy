@@ -306,7 +306,8 @@ void OnNavigationResponseReceived(const NavigationRequest& nav_request,
 
   FrameTreeNode* ftn = nav_request.frame_tree_node();
   std::string id = nav_request.devtools_navigation_token().ToString();
-  std::string frame_id = ftn->devtools_frame_token().ToString();
+  std::string frame_id =
+      ftn->current_frame_host()->devtools_frame_token().ToString();
   GURL url = nav_request.common_params().url;
 
   network::mojom::URLResponseHeadDevToolsInfoPtr head_info =
@@ -336,9 +337,6 @@ void WillSwapFrameTreeNode(FrameTreeNode& old_node, FrameTreeNode& new_node) {
       static_cast<RenderFrameDevToolsAgentHost*>(
           RenderFrameDevToolsAgentHost::GetFor(&new_node));
   previous_host->SetFrameTreeNode(nullptr);
-  // TODO(dsv, caseq): revise this! We may rather have frame token per RFDTAH,
-  // which will remove the need for this hack.
-  new_node.set_devtools_frame_token(old_node.devtools_frame_token());
   host->SetFrameTreeNode(&new_node);
 }
 
@@ -350,9 +348,10 @@ void OnFrameTreeNodeDestroyed(FrameTreeNode& frame_tree_node) {
     return;
   if (RenderFrameDevToolsAgentHost::GetFor(&frame_tree_node) !=
       RenderFrameDevToolsAgentHost::GetFor(parent)) {
-    DispatchToAgents(RenderFrameDevToolsAgentHost::GetFor(parent),
-                     &protocol::PageHandler::OnFrameDetached,
-                     frame_tree_node.devtools_frame_token());
+    DispatchToAgents(
+        RenderFrameDevToolsAgentHost::GetFor(parent),
+        &protocol::PageHandler::OnFrameDetached,
+        frame_tree_node.current_frame_host()->devtools_frame_token());
   }
 }
 
@@ -379,7 +378,8 @@ void DidCancelPrerender(const GURL& prerendering_url,
                         FrameTreeNode* ftn,
                         PrerenderFinalStatus status,
                         const std::string& disallowed_api_method) {
-  std::string initiating_frame_id = ftn->devtools_frame_token().ToString();
+  std::string initiating_frame_id =
+      ftn->current_frame_host()->devtools_frame_token().ToString();
   DispatchToAgents(ftn, &protocol::PageHandler::DidCancelPrerender,
                    prerendering_url, initiating_frame_id, status,
                    disallowed_api_method);
@@ -431,14 +431,13 @@ void ReportBlockedByResponseIssue(
 
   blockedByResponseDetails->SetBlockedFrame(
       protocol::Audits::AffectedFrame::Create()
-          .SetFrameId(ftn->devtools_frame_token().ToString())
+          .SetFrameId(
+              ftn->current_frame_host()->devtools_frame_token().ToString())
           .Build());
   if (parent_frame) {
     blockedByResponseDetails->SetParentFrame(
         protocol::Audits::AffectedFrame::Create()
-            .SetFrameId(parent_frame->frame_tree_node()
-                            ->devtools_frame_token()
-                            .ToString())
+            .SetFrameId(parent_frame->devtools_frame_token().ToString())
             .Build());
   }
 
@@ -773,14 +772,13 @@ bool ApplyUserAgentMetadataOverrides(
     absl::optional<blink::UserAgentMetadata>* override_out) {
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
-  // Prerendered pages do not have DevTools attached but it's important for
-  // developers that they get the UA override of the visible DevTools for
-  // testing mobile sites. Use the DevTools agent of the primary main frame of
-  // the WebContents.
+  // If DevToolsTabTarget is not enabled, Prerendered pages do not have DevTools
+  // attached but it's important for developers that they get the UA override of
+  // the visible DevTools for testing mobile sites. Use the DevTools agent of
+  // the primary main frame of the WebContents.
   // TODO(https://crbug.com/1221419): The real fix may be to make a separate
   // target for the prerendered page.
-  if (frame_tree_node->frame_tree()->is_prerendering()) {
-    DCHECK(!agent_host);
+  if (frame_tree_node->frame_tree()->is_prerendering() && !agent_host) {
     agent_host = RenderFrameDevToolsAgentHost::GetFor(
         WebContentsImpl::FromFrameTreeNode(frame_tree_node)
             ->GetPrimaryMainFrame()
@@ -1000,7 +998,8 @@ void OnPrefetchRequestWillBeSent(FrameTreeNode* frame_tree_node,
                                  const GURL& initiator,
                                  const network::ResourceRequest& request) {
   auto timestamp = base::TimeTicks::Now();
-  std::string frame_token = frame_tree_node->devtools_frame_token().ToString();
+  std::string frame_token =
+      frame_tree_node->current_frame_host()->devtools_frame_token().ToString();
   DispatchToAgents(frame_tree_node,
                    &protocol::NetworkHandler::PrefetchRequestWillBeSent,
                    request_id, request, initiator, frame_token, timestamp);
@@ -1010,7 +1009,8 @@ void OnPrefetchResponseReceived(FrameTreeNode* frame_tree_node,
                                 const std::string& request_id,
                                 const GURL& url,
                                 const network::mojom::URLResponseHead& head) {
-  std::string frame_token = frame_tree_node->devtools_frame_token().ToString();
+  std::string frame_token =
+      frame_tree_node->current_frame_host()->devtools_frame_token().ToString();
 
   network::mojom::URLResponseHeadDevToolsInfoPtr head_info =
       network::ExtractDevToolsInfo(head);
@@ -1472,7 +1472,7 @@ void OnServiceWorkerMainScriptFetchingFailed(
       network_handler->ResponseReceived(
           worker_token, worker_token, url,
           protocol::Network::ResourceTypeEnum::Other, *head_info,
-          ftn->devtools_frame_token().ToString());
+          requesting_frame->devtools_frame_token().ToString());
       network_handler->frontend()->LoadingFinished(
           worker_token,
           status.completion_time.ToInternalValue() /

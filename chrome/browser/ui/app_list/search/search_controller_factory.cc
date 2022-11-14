@@ -7,10 +7,8 @@
 #include <stddef.h>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -39,7 +37,7 @@
 #include "chrome/browser/ui/app_list/search/os_settings_provider.h"
 #include "chrome/browser/ui/app_list/search/personalization_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/app_list/search/search_controller_impl_new.h"
+#include "chrome/browser/ui/app_list/search/search_controller_impl.h"
 #include "chrome/browser/ui/app_list/search/search_features.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager_factory.h"
@@ -62,7 +60,7 @@ std::unique_ptr<SearchController> CreateSearchController(
     AppListControllerDelegate* list_controller,
     ash::AppListNotifier* notifier) {
   std::unique_ptr<SearchController> controller;
-  controller = std::make_unique<SearchControllerImplNew>(
+  controller = std::make_unique<SearchControllerImpl>(
       model_updater, list_controller, notifier, profile);
 
   // Add search providers.
@@ -98,8 +96,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         kMaxAppShortcutResults, profile, list_controller));
   }
 
-  if (ash::features::IsProductivityLauncherEnabled() &&
-      base::GetFieldTrialParamByFeatureAsBool(
+  if (base::GetFieldTrialParamByFeatureAsBool(
           ash::features::kProductivityLauncher, "enable_continue", false)) {
     controller->AddProvider(std::make_unique<ZeroStateFileProvider>(profile));
 
@@ -119,12 +116,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         os_settings_manager->hierarchy(), app_service_proxy));
   }
 
-  if (ash::features::IsProductivityLauncherEnabled() &&
-      base::GetFieldTrialParamByFeatureAsBool(
-          ash::features::kProductivityLauncher, "enable_shortcuts", true)) {
-    controller->AddProvider(
-        std::make_unique<KeyboardShortcutProvider>(profile));
-  }
+  controller->AddProvider(std::make_unique<KeyboardShortcutProvider>(profile));
 
   controller->AddProvider(std::make_unique<HelpAppProvider>(profile));
 

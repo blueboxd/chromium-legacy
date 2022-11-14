@@ -735,19 +735,6 @@ const FeatureEntry::FeatureVariation kMBIModeVariations[] = {
     {"per site instance", kMBIModeEnabledPerSiteInstance,
      std::size(kMBIModeEnabledPerSiteInstance), nullptr}};
 
-const FeatureEntry::FeatureParam kFencedFramesImplementationTypeShadowDOM[] = {
-    {"implementation_type", "shadow_dom"}};
-const FeatureEntry::FeatureParam kFencedFramesImplementationTypeMPArch[] = {
-    {"implementation_type", "mparch"}};
-
-const FeatureEntry::FeatureVariation
-    kFencedFramesImplementationTypeVariations[] = {
-        {"with ShadowDOM", kFencedFramesImplementationTypeShadowDOM,
-         std::size(kFencedFramesImplementationTypeShadowDOM), nullptr},
-        {"with multiple page architecture",
-         kFencedFramesImplementationTypeMPArch,
-         std::size(kFencedFramesImplementationTypeMPArch), nullptr}};
-
 const FeatureEntry::FeatureParam kSearchSuggestionPrerenderUsingPrefetch[] = {
     {"implementation_type", "use_prefetch"}};
 const FeatureEntry::FeatureParam kSearchSuggestionPrerenderIgnoringPrefetch[] =
@@ -3533,24 +3520,6 @@ const FeatureEntry::FeatureVariation kHighEfficiencyModeAvailableVariations[] =
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax2ImpressionsParam[] = {
-    {"2 Impressions Limit", "2"}};
-const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax10ImpressionsParam[] = {
-    {"10 Impressions Limit", "10"}};
-const FeatureEntry::FeatureParam kSyncAndroidNTPPromoMax20ImpressionsParam[] = {
-    {"20 Impressions Limit", "20"}};
-const FeatureEntry::FeatureVariation
-    kSyncAndroidLimitNTPPromoImpressionsVariations[] = {
-        {"2 Impressions Limit", kSyncAndroidNTPPromoMax2ImpressionsParam,
-         std::size(kSyncAndroidNTPPromoMax2ImpressionsParam), nullptr},
-        {"10 Impressions Limit", kSyncAndroidNTPPromoMax10ImpressionsParam,
-         std::size(kSyncAndroidNTPPromoMax10ImpressionsParam), nullptr},
-        {"20 Impressions Limit", kSyncAndroidNTPPromoMax20ImpressionsParam,
-         std::size(kSyncAndroidNTPPromoMax20ImpressionsParam), nullptr},
-};
-#endif  // BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam
     kBindingManagerConnectionLimit_10_connections[] = {
         {"max_connections", "10"}};
@@ -3837,6 +3806,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWasmLazyCompilationName,
      flag_descriptions::kEnableWasmLazyCompilationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyLazyCompilation)},
+    {"enable-webassembly-relaxed-simd",
+     flag_descriptions::kEnableWasmRelaxedSimdName,
+     flag_descriptions::kEnableWasmRelaxedSimdDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebAssemblyRelaxedSimd)},
     {"enable-webassembly-tiering", flag_descriptions::kEnableWasmTieringName,
      flag_descriptions::kEnableWasmTieringDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyTiering)},
@@ -4187,10 +4160,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
-    {"deprecate-low-usage-codecs",
-     flag_descriptions::kDeprecateLowUsageCodecsName,
-     flag_descriptions::kDeprecateLowUsageCodecsDescription,
-     kOsCrOS | kOsLacros, FEATURE_VALUE_TYPE(media::kDeprecateLowUsageCodecs)},
     {"disable-idle-sockets-close-on-memory-pressure",
      flag_descriptions::kDisableIdleSocketsCloseOnMemoryPressureName,
      flag_descriptions::kDisableIdleSocketsCloseOnMemoryPressureDescription,
@@ -5473,9 +5442,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          sandbox::policy::features::kForceSpectreVariant2Mitigation)},
-    {"fuse-box", flag_descriptions::kFuseBoxName,
-     flag_descriptions::kFuseBoxDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kFuseBox)},
     {"fuse-box-debug", flag_descriptions::kFuseBoxDebugName,
      flag_descriptions::kFuseBoxDebugDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFuseBoxDebug)},
@@ -7211,9 +7177,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-fenced-frames", flag_descriptions::kEnableFencedFramesName,
      flag_descriptions::kEnableFencedFramesDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kFencedFrames,
-                                    kFencedFramesImplementationTypeVariations,
-                                    "FencedFrames")},
+     FEATURE_VALUE_TYPE(blink::features::kFencedFrames)},
 
     {"enable-portals", flag_descriptions::kEnablePortalsName,
      flag_descriptions::kEnablePortalsDescription, kOsAll,
@@ -8155,17 +8119,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPwaUpdateDialogForAppTitleName,
      flag_descriptions::kPwaUpdateDialogForAppTitleDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPwaUpdateDialogForName)},
-
-#if BUILDFLAG(IS_ANDROID)
-    {"sync-android-limit-ntp-promo-impressions",
-     flag_descriptions::kSyncAndroidLimitNTPPromoImpressionsName,
-     flag_descriptions::kSyncAndroidLimitNTPPromoImpressionsDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         syncer::kSyncAndroidLimitNTPPromoImpressions,
-         kSyncAndroidLimitNTPPromoImpressionsVariations,
-         "SyncAndroidLimitNTPPromoImpressions")},
-#endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
@@ -9317,6 +9270,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReduceUserAgentPlatformOsCpuDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kReduceUserAgentPlatformOsCpu)},
 
+#if BUILDFLAG(IS_ANDROID)
+    {"reduce-user-agent-android-version-device-model",
+     flag_descriptions::kReduceUserAgentAndroidVersionDeviceModelName,
+     flag_descriptions::kReduceUserAgentAndroidVersionDeviceModelDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         blink::features::kReduceUserAgentAndroidVersionDeviceModel)},
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-variable-refresh-rate",
      flag_descriptions::kEnableVariableRefreshRateName,
@@ -9456,11 +9418,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-desks-save-and-recall", flag_descriptions::kDesksSaveAndRecallName,
      flag_descriptions::kDesksSaveAndRecallDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableSavedDesks)},
-
-    {"launcher-play-store-search",
-     flag_descriptions::kLauncherPlayStoreSearchName,
-     flag_descriptions::kLauncherPlayStoreSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kLauncherPlayStoreSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)

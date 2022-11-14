@@ -27,7 +27,7 @@
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -342,11 +342,6 @@ void UpdateServiceProxy::RunInstaller(const std::string& app_id,
   impl_->RunInstaller(app_id, installer_path, install_args, install_data,
                       install_settings, OnCurrentSequence(state_update),
                       OnCurrentSequence(std::move(callback)));
-}
-
-// TODO(crbug.com/1363829) - remove the function.
-void UpdateServiceProxy::Uninitialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 UpdateServiceProxy::~UpdateServiceProxy() {

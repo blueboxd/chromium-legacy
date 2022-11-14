@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ref.h"
 #include "base/metrics/histogram_base.h"
@@ -107,6 +108,51 @@ struct RemoteDataHost {
     data_host.reset();
     task_environment->RunUntilIdle();
   }
+};
+
+struct AttributionFilterSizeTestCase {
+  const char* description;
+  bool valid;
+
+  size_t filter_count;
+  size_t filter_size;
+  size_t value_count;
+  size_t value_size;
+
+  using Map = base::flat_map<std::string, std::vector<std::string>>;
+
+  Map AsMap() const {
+    Map map;
+
+    for (size_t i = 0; i < filter_count; i++) {
+      // Give each filter a unique name while respecting the desired size.
+      std::string filter(filter_size, 'A' + i);
+      std::vector<std::string> values(value_count,
+                                      std::string(value_size, '*'));
+      map.emplace(std::move(filter), std::move(values));
+    }
+
+    DCHECK_EQ(map.size(), filter_count);
+    return map;
+  }
+};
+
+constexpr AttributionFilterSizeTestCase kAttributionFilterSizeTestCases[] = {
+    {"empty", true, 0, 0, 0, 0},
+    {"max_filters", true, attribution_reporting::kMaxFiltersPerSource, 1, 0, 0},
+    {"too_many_filters", false, attribution_reporting::kMaxFiltersPerSource + 1,
+     1, 0, 0},
+    {"max_filter_size", true, 1,
+     attribution_reporting::kMaxBytesPerFilterString, 0, 0},
+    {"excessive_filter_size", false, 1,
+     attribution_reporting::kMaxBytesPerFilterString + 1, 0, 0},
+    {"max_values", true, 1, 0, attribution_reporting::kMaxValuesPerFilter, 0},
+    {"too_many_values", false, 1, 0,
+     attribution_reporting::kMaxValuesPerFilter + 1, 0},
+    {"max_value_size", true, 1, 0, 1,
+     attribution_reporting::kMaxBytesPerFilterString},
+    {"excessive_value_size", false, 1, 0, 1,
+     attribution_reporting::kMaxBytesPerFilterString + 1},
 };
 
 class AttributionDataHostManagerImplTest : public testing::Test {
@@ -506,24 +552,26 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
   EXPECT_CALL(
       mock_manager_,
       HandleTrigger(AttributionTriggerMatches(AttributionTriggerMatcherConfig(
-          destination_origin, reporting_origin,
-          *AttributionFilters::Create({
-              {"a", {"b"}},
-          }),
-          Optional(789),
-          ElementsAre(EventTriggerDataMatches(EventTriggerDataMatcherConfig(
-                          1, 2, Optional(3),
-                          *AttributionFilters::Create({
-                              {"c", {"d"}},
-                          }),
-                          *AttributionFilters::Create({
-                              {"e", {"f"}},
-                          }))),
-                      EventTriggerDataMatches(EventTriggerDataMatcherConfig(
-                          4, 5, Eq(absl::nullopt), AttributionFilters(),
-                          AttributionFilters()))),
-          Optional(123), /*is_within_fenced_frame=*/false,
-          /*debug_reporting=*/true))));
+          TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
+              reporting_origin,
+              *AttributionFilters::Create({
+                  {"a", {"b"}},
+              }),
+              Optional(789),
+              ElementsAre(EventTriggerDataMatches(EventTriggerDataMatcherConfig(
+                              1, 2, Optional(3),
+                              *AttributionFilters::Create({
+                                  {"c", {"d"}},
+                              }),
+                              *AttributionFilters::Create({
+                                  {"e", {"f"}},
+                              }))),
+                          EventTriggerDataMatches(EventTriggerDataMatcherConfig(
+                              4, 5, Eq(absl::nullopt), AttributionFilters(),
+                              AttributionFilters()))),
+              Optional(123),
+              /*debug_reporting=*/true)),
+          destination_origin))));
 
   {
     RemoteDataHost data_host_remote{.task_environment =
@@ -1131,7 +1179,7 @@ TEST_F(AttributionDataHostManagerImplTest,
                                         raw_ref(task_environment_)};
     data_host_manager_.RegisterNavigationDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(),
-        attribution_src_token);
+        attribution_src_token, AttributionInputEvent());
 
     task_environment_.FastForwardBy(base::Milliseconds(1));
 
@@ -1274,7 +1322,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token);
+      attribution_src_token, AttributionInputEvent());
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -1315,7 +1363,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
@@ -1333,7 +1382,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
@@ -1351,7 +1401,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
@@ -1371,7 +1422,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
   data_host_manager_.NotifyNavigationFailure(attribution_src_token);
 
   // Wait for parsing to finish.
@@ -1388,12 +1440,14 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
 
   data_host_manager_.NotifyNavigationForDataHost(
       attribution_src_token, source_site,
@@ -1415,12 +1469,14 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, "!!!invalid json", reporter, source_site);
+      attribution_src_token, "!!!invalid json", reporter, source_site,
+      AttributionInputEvent());
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
 
   data_host_manager_.NotifyNavigationForDataHost(
       attribution_src_token, source_site,
@@ -1447,7 +1503,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -1497,9 +1554,11 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
 
   // Wait for parsing.
   task_environment_.FastForwardBy(base::TimeDelta());
@@ -1545,9 +1604,11 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
   data_host_manager_.NotifyNavigationRedirectRegistration(
-      attribution_src_token, kRegisterSourceJson, reporter, source_site);
+      attribution_src_token, kRegisterSourceJson, reporter, source_site,
+      AttributionInputEvent());
 
   // Wait for parsing.
   data_host_manager_.NotifyNavigationForDataHost(
@@ -1659,7 +1720,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token);
+      attribution_src_token, AttributionInputEvent());
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -1705,13 +1766,17 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     EXPECT_CALL(mock_manager_, HandleTrigger).Times(0);
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(mock_manager_,
-                HandleTrigger(AttributionTriggerMatches(
-                    AttributionTriggerMatcherConfig(_, reporting_origin1))));
+    EXPECT_CALL(
+        mock_manager_,
+        HandleTrigger(AttributionTriggerMatches(
+            AttributionTriggerMatcherConfig(TriggerRegistrationMatches(
+                TriggerRegistrationMatcherConfig(reporting_origin1))))));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(mock_manager_,
-                HandleTrigger(AttributionTriggerMatches(
-                    AttributionTriggerMatcherConfig(_, reporting_origin2))));
+    EXPECT_CALL(
+        mock_manager_,
+        HandleTrigger(AttributionTriggerMatches(
+            AttributionTriggerMatcherConfig(TriggerRegistrationMatches(
+                TriggerRegistrationMatcherConfig(reporting_origin2))))));
   }
 
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
@@ -1831,7 +1896,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     EXPECT_CALL(mock_manager_,
                 HandleTrigger(AttributionTriggerMatches(
-                    AttributionTriggerMatcherConfig(_, reporting_origin))))
+                    AttributionTriggerMatcherConfig(TriggerRegistrationMatches(
+                        TriggerRegistrationMatcherConfig(reporting_origin))))))
         .WillOnce([&](AttributionTrigger trigger) { barrier.Run(); });
 
     send_trigger(std::move(reporting_origin));
@@ -1948,7 +2014,7 @@ TEST_F(AttributionDataHostManagerImplTest, InsecureNavigationOrigin_Dropped) {
     mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
     data_host_manager_.RegisterNavigationDataHost(
         source_data_host_remote.BindNewPipeAndPassReceiver(),
-        attribution_src_token);
+        attribution_src_token, AttributionInputEvent());
 
     mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
     data_host_manager_.RegisterDataHost(
@@ -2052,7 +2118,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   const blink::AttributionSrcToken attribution_src_token;
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
-      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token);
+      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
+      AttributionInputEvent());
 
   data_host_manager_.NotifyNavigationForDataHost(
       attribution_src_token, url::Origin::Create(GURL("https://s.test")),
@@ -2089,12 +2156,14 @@ TEST_F(AttributionDataHostManagerImplTest,
     base::HistogramTester histograms;
 
     EXPECT_TRUE(data_host_manager_.RegisterNavigationDataHost(
-        data_host_remote1.BindNewPipeAndPassReceiver(), attribution_src_token));
+        data_host_remote1.BindNewPipeAndPassReceiver(), attribution_src_token,
+        AttributionInputEvent()));
 
     // This one should not be registered, as `attribution_src_token` is already
     // associated with a receiver.
     EXPECT_FALSE(data_host_manager_.RegisterNavigationDataHost(
-        data_host_remote2.BindNewPipeAndPassReceiver(), attribution_src_token));
+        data_host_remote2.BindNewPipeAndPassReceiver(), attribution_src_token,
+        AttributionInputEvent()));
 
     // kRegistered = 0.
     histograms.ExpectUniqueSample("Conversions.NavigationDataHostStatus", 0, 1);
@@ -2163,8 +2232,9 @@ TEST_F(AttributionDataHostManagerImplTest,
   EXPECT_CALL(
       mock_manager_,
       HandleTrigger(AttributionTriggerMatches(AttributionTriggerMatcherConfig(
-          destination_origin, reporting_origin, _, _, _, _,
-          /*is_within_fenced_frame=*/true))));
+          TriggerRegistrationMatches(
+              TriggerRegistrationMatcherConfig(reporting_origin)),
+          destination_origin, /*is_within_fenced_frame=*/true))));
 
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterDataHost(

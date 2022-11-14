@@ -77,14 +77,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFullUserAgent);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPath2DPaintCache);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrivacySandboxAdsAPIs);
 
-enum class FencedFramesImplementationType {
-  kShadowDOM,
-  kMPArch,
-};
-BLINK_COMMON_EXPORT extern const base::FeatureParam<
-    FencedFramesImplementationType>
-    kFencedFramesImplementationTypeParam;
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPI);
 // Maximum number of URLs allowed to be included in the input parameter for
 // runURLSelectionOperation().
@@ -186,17 +178,6 @@ BLINK_COMMON_EXPORT bool OSKResizesVisualViewportByDefault();
 
 // Fenced Frames:
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
-// Note: This performs a string comparison on the feature param which is slow.
-// When possible, prefer to use the equivalent accessors on blink::Page in the
-// renderer and on content::FrameTree in the browser, which cache the value.
-BLINK_COMMON_EXPORT bool IsFencedFramesMPArchBased();
-BLINK_COMMON_EXPORT bool IsFencedFramesShadowDOMBased();
-
-// Whether we will create initial NavigationEntry or not on FrameTree creation,
-// which also impacts the session history replacement decisions made in the
-// renderer.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInitialNavigationEntry);
-BLINK_COMMON_EXPORT bool IsInitialNavigationEntryEnabled();
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kPreviewsResourceLoadingHintsSpecificResourceTypes);
@@ -972,6 +953,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSplitUserMediaQueues);
 // Use TextCodecCJK for encoding/decoding CJK except for Big5.
 // If the flag is disabled TextCodecICU would be used instead.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTextCodecCJKEnabled);
+
+// Make the browser decide when to turn on the capture indicator (red button)
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kStartMediaStreamCaptureIndicatorInBrowser);
 
 }  // namespace features
 }  // namespace blink

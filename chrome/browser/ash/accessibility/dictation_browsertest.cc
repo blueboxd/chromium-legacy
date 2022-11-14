@@ -68,6 +68,7 @@
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
+
 namespace {
 
 constexpr int kPrintErrorMessageDelayMs = 3500;
@@ -339,7 +340,7 @@ class DictationTestBase : public InProcessBrowserTest,
     console_observer_ = std::make_unique<ExtensionConsoleErrorObserver>(
         browser()->profile(), extension_misc::kAccessibilityCommonExtensionId);
     browser()->profile()->GetPrefs()->SetBoolean(
-        ash::prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
+        prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
 
     extensions::ExtensionHostTestHelper host_helper(
         browser()->profile(), extension_misc::kAccessibilityCommonExtensionId);
@@ -1423,6 +1424,25 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, SelectPrevCharMultiLineString) {
   SendFinalResultAndWaitForEditableValue(text, text);
   SendFinalResultAndWait("highlight the previous character");
   std::string expected = "Hello, world.";
+  SendFinalResultAndWaitForEditableValue("delete", expected);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, RepeatSimple) {
+  std::string text = "Hello, world.";
+  SendFinalResultAndWaitForEditableValue(text, text);
+  SendFinalResultAndWaitForEditableValue("delete all","");
+  SendFinalResultAndWaitForEditableValue(text, text);
+  SendFinalResultAndWaitForEditableValue("repeat", "");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, RepeatAdvanced) {
+  std::string text = "Hello, world.";
+  SendFinalResultAndWaitForEditableValue(text, text);
+  SendFinalResultAndWaitForEditableValue("delete","Hello, world");
+  SendFinalResultAndWaitForEditableValue("repeat", "Hello, worl");
+  SendFinalResultAndWaitForCaretBoundsChanged("move to the previous character");
+  SendFinalResultAndWaitForCaretBoundsChanged("repeat");
+  std::string expected = "Hello, wrl";
   SendFinalResultAndWaitForEditableValue("delete", expected);
 }
 

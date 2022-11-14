@@ -55,7 +55,7 @@ ImeService::ImeService(
     ImeDecoder* ime_decoder,
     std::unique_ptr<FieldTrialParamsRetriever> field_trial_params_retriever)
     : receiver_(this, std::move(receiver)),
-      main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      main_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       ime_decoder_(ime_decoder),
       field_trial_params_retriever_(std::move(field_trial_params_retriever)) {}
 
@@ -105,16 +105,6 @@ void ImeService::ConnectToImeEngine(
   bool bound = decoder_engine_->BindRequest(
       ime_spec, std::move(to_engine_request), std::move(from_engine), extra);
   std::move(callback).Run(bound);
-}
-
-void ImeService::ConnectToInputMethod(
-    const std::string& ime_spec,
-    mojo::PendingReceiver<mojom::InputMethod> input_method,
-    mojo::PendingRemote<mojom::InputMethodHost> input_method_host,
-    ConnectToInputMethodCallback callback) {
-  // This method is now deprecated and should not be used to connect to an
-  // input method.
-  std::move(callback).Run(/*bound=*/false);
 }
 
 void ImeService::InitializeConnectionFactory(
@@ -181,6 +171,11 @@ bool ImeService::IsFeatureEnabled(const char* feature_name) {
       0) {
     return base::FeatureList::IsEnabled(
         chromeos::features::kAutocorrectParamsTuning);
+  }
+  if (strcmp(feature_name,
+             chromeos::features::kFirstPartyVietnameseInput.name) == 0) {
+    return base::FeatureList::IsEnabled(
+        chromeos::features::kFirstPartyVietnameseInput);
   }
   if (strcmp(feature_name, chromeos::features::kLacrosSupport.name) == 0) {
     return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);

@@ -20,8 +20,7 @@ namespace ash::full_restore {
 // static
 bool FullRestoreServiceFactory::IsFullRestoreAvailableForProfile(
     const Profile* profile) {
-  if (chrome::IsRunningInForcedAppMode() ||
-      ash::DemoSession::IsDeviceInDemoMode())
+  if (chrome::IsRunningInForcedAppMode() || DemoSession::IsDeviceInDemoMode())
     return false;
 
   // No service for non-regular user profile, or ephemeral user profile, system
@@ -51,6 +50,7 @@ FullRestoreServiceFactory::FullRestoreServiceFactory()
     : ProfileKeyedServiceFactory("FullRestoreService",
                                  ProfileSelections::Builder()
                                      .WithSystem(ProfileSelection::kNone)
+                                     .WithAshInternals(ProfileSelection::kNone)
                                      .Build()) {
   DependsOn(NotificationDisplayServiceFactory::GetInstance());
   DependsOn(apps::AppServiceProxyFactory::GetInstance());
@@ -60,10 +60,11 @@ FullRestoreServiceFactory::~FullRestoreServiceFactory() = default;
 
 KeyedService* FullRestoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!IsFullRestoreAvailableForProfile(Profile::FromBrowserContext(context)))
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (!IsFullRestoreAvailableForProfile(profile))
     return nullptr;
 
-  return new FullRestoreService(Profile::FromBrowserContext(context));
+  return new FullRestoreService(profile);
 }
 
 }  // namespace ash::full_restore

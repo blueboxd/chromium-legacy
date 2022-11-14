@@ -458,14 +458,12 @@ void HTMLCanvasElement::configureHighDynamicRange(
     hdr_metadata = gfx::HDRMetadata();
     auto& color_volume_metadata = hdr_metadata->color_volume_metadata;
     const auto* v8_metadata = options->smpteSt2086Metadata();
-    color_volume_metadata.primary_r.set_x(v8_metadata->redPrimaryX());
-    color_volume_metadata.primary_r.set_y(v8_metadata->redPrimaryY());
-    color_volume_metadata.primary_g.set_x(v8_metadata->greenPrimaryX());
-    color_volume_metadata.primary_g.set_y(v8_metadata->greenPrimaryY());
-    color_volume_metadata.primary_b.set_x(v8_metadata->bluePrimaryX());
-    color_volume_metadata.primary_b.set_y(v8_metadata->bluePrimaryY());
-    color_volume_metadata.white_point.set_x(v8_metadata->whitePointX());
-    color_volume_metadata.white_point.set_y(v8_metadata->whitePointY());
+    color_volume_metadata.primaries = {
+        v8_metadata->redPrimaryX(),   v8_metadata->redPrimaryY(),
+        v8_metadata->greenPrimaryX(), v8_metadata->greenPrimaryY(),
+        v8_metadata->bluePrimaryX(),  v8_metadata->bluePrimaryY(),
+        v8_metadata->whitePointX(),   v8_metadata->whitePointY(),
+    };
     color_volume_metadata.luminance_min = v8_metadata->minimumLuminance();
     color_volume_metadata.luminance_max = v8_metadata->maximumLuminance();
   }
@@ -879,7 +877,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
         gfx::Vector2dF(icon_size.width(), icon_size.height());
     // Make the icon more visually prominent on high-DPI displays.
     icon_size.Scale(dpr);
-    context.DrawImage(broken_canvas, Image::kSyncDecode,
+    context.DrawImage(*broken_canvas, Image::kSyncDecode,
                       ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
                       gfx::RectF(upper_left, icon_size));
     context.Restore();
@@ -902,7 +900,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     DCHECK(GetDocument().Printing());
     scoped_refptr<StaticBitmapImage> image_for_printing =
         OffscreenCanvasFrame()->Bitmap()->MakeUnaccelerated();
-    context.DrawImage(image_for_printing.get(), Image::kSyncDecode,
+    if (!image_for_printing)
+      return;
+    context.DrawImage(*image_for_printing, Image::kSyncDecode,
                       ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
                       gfx::RectF(ToPixelSnappedRect(r)));
     return;
@@ -955,7 +955,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
       // GraphicsContext cannot handle gpu resource serialization.
       snapshot = snapshot->MakeUnaccelerated();
       DCHECK(!snapshot->IsTextureBacked());
-      context.DrawImage(snapshot.get(), Image::kSyncDecode,
+      context.DrawImage(*snapshot, Image::kSyncDecode,
                         ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
                         gfx::RectF(ToPixelSnappedRect(r)), &src_rect,
                         composite_operator);

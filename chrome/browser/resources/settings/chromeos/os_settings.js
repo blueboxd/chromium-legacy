@@ -21,6 +21,7 @@ import './internet_page/apn_subpage.js';
 import './internet_page/cellular_roaming_toggle_button.js';
 import './internet_page/cellular_setup_dialog.js';
 import './internet_page/esim_remove_profile_dialog.js';
+import './internet_page/hotspot_summary_item.js';
 import './internet_page/internet_config.js';
 import './internet_page/internet_detail_page.js';
 import './internet_page/internet_known_networks_page.js';
@@ -169,8 +170,8 @@ export {routes} from './os_route.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
 export {ParentalControlsBrowserProxy, ParentalControlsBrowserProxyImpl} from './parental_controls_page/parental_controls_browser_proxy.js';
 export {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from './personalization_page/personalization_hub_browser_proxy.js';
-export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './personalization_search_handler.js';
-export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './settings_search_handler.js';
+export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './search/personalization_search_handler.js';
+export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './search/settings_search_handler.js';
 export {
   appNotificationHandlerMojomWebui,
   crosAudioConfigMojomWebui,

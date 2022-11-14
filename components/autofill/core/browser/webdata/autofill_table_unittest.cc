@@ -180,7 +180,7 @@ class AutofillTableProfileTest
   // Depending on the `profile_source()`, the AutofillProfiles are stored in a
   // different master table.
   base::StringPiece GetProfileTable() const {
-    return profile_source() == AutofillProfile::Source::kLocal
+    return profile_source() == AutofillProfile::Source::kLocalOrSyncable
                ? "autofill_profiles"
                : "contact_info";
   }
@@ -213,7 +213,7 @@ class AutofillTableProfileTest
 INSTANTIATE_TEST_SUITE_P(
     ,
     AutofillTableProfileTest,
-    testing::ValuesIn({AutofillProfile::Source::kLocal,
+    testing::ValuesIn({AutofillProfile::Source::kLocalOrSyncable,
                        AutofillProfile::Source::kAccount}));
 
 TEST_F(AutofillTableTest, Autofill) {
@@ -959,7 +959,7 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
   home_profile.SetRawInfoAsInt(BIRTHDATE_MONTH, 3);
   home_profile.SetRawInfoAsInt(BIRTHDATE_4_DIGIT_YEAR, 1997);
   // `disallow_settings_visible_updates` is not supported for account profiles.
-  if (profile_source() == AutofillProfile::Source::kLocal)
+  if (profile_source() == AutofillProfile::Source::kLocalOrSyncable)
     home_profile.set_disallow_settings_visible_updates(true);
   home_profile.set_language_code("en");
   Time pre_creation_time = AutofillClock::Now();
@@ -995,19 +995,33 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
 // from parameterization on the `profile_source()`.
 TEST_F(AutofillTableTest, GetAutofillProfiles) {
   AutofillProfile local_profile(base::GenerateGUID(), "",
-                                AutofillProfile::Source::kLocal);
+                                AutofillProfile::Source::kLocalOrSyncable);
   AutofillProfile account_profile(base::GenerateGUID(), "",
                                   AutofillProfile::Source::kAccount);
   EXPECT_TRUE(table_->AddAutofillProfile(local_profile));
   EXPECT_TRUE(table_->AddAutofillProfile(account_profile));
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  EXPECT_TRUE(
-      table_->GetAutofillProfiles(&profiles, AutofillProfile::Source::kLocal));
+  EXPECT_TRUE(table_->GetAutofillProfiles(
+      &profiles, AutofillProfile::Source::kLocalOrSyncable));
   EXPECT_THAT(profiles, ElementsAre(testing::Pointee(local_profile)));
   EXPECT_TRUE(table_->GetAutofillProfiles(&profiles,
                                           AutofillProfile::Source::kAccount));
   EXPECT_THAT(profiles, ElementsAre(testing::Pointee(account_profile)));
+}
+
+// Tests that `RemoveAllAutofillProfiles()` cleares all kAccount profiles.
+TEST_F(AutofillTableTest, RemoveAllAutofillProfiles_kAccount) {
+  EXPECT_TRUE(table_->AddAutofillProfile(AutofillProfile(
+      base::GenerateGUID(), "", AutofillProfile::Source::kAccount)));
+
+  EXPECT_TRUE(
+      table_->RemoveAllAutofillProfiles(AutofillProfile::Source::kAccount));
+
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  EXPECT_TRUE(table_->GetAutofillProfiles(&profiles,
+                                          AutofillProfile::Source::kAccount));
+  EXPECT_TRUE(profiles.empty());
 }
 
 TEST_F(AutofillTableTest, IBAN) {
@@ -1314,7 +1328,7 @@ TEST_P(AutofillTableProfileTest, UpdateProfileOriginOnly) {
   // The origin is not supported for account profiles. This test is kept as part
   // of AutofillTableProfileTest for the simplified modification of the
   // date_modified.
-  if (profile_source() != AutofillProfile::Source::kLocal)
+  if (profile_source() != AutofillProfile::Source::kLocalOrSyncable)
     return;
 
   // Add a profile to the db.
@@ -2813,7 +2827,7 @@ TEST_P(AutofillTableTestPerModelType, AutofillGetAllSyncMetadata) {
   std::string storage_key2 = "storage_key2";
   metadata.set_sequence_number(1);
 
-  EXPECT_TRUE(table_->UpdateSyncMetadata(model_type, storage_key, metadata));
+  EXPECT_TRUE(table_->UpdateEntityMetadata(model_type, storage_key, metadata));
 
   ModelTypeState model_type_state;
   model_type_state.set_initial_sync_done(true);
@@ -2821,7 +2835,7 @@ TEST_P(AutofillTableTestPerModelType, AutofillGetAllSyncMetadata) {
   EXPECT_TRUE(table_->UpdateModelTypeState(model_type, model_type_state));
 
   metadata.set_sequence_number(2);
-  EXPECT_TRUE(table_->UpdateSyncMetadata(model_type, storage_key2, metadata));
+  EXPECT_TRUE(table_->UpdateEntityMetadata(model_type, storage_key2, metadata));
 
   MetadataBatch metadata_batch;
   EXPECT_TRUE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
@@ -2854,10 +2868,10 @@ TEST_P(AutofillTableTestPerModelType, AutofillWriteThenDeleteSyncMetadata) {
   metadata.set_client_tag_hash("client_hash");
 
   // Write the data into the store.
-  EXPECT_TRUE(table_->UpdateSyncMetadata(model_type, storage_key, metadata));
+  EXPECT_TRUE(table_->UpdateEntityMetadata(model_type, storage_key, metadata));
   EXPECT_TRUE(table_->UpdateModelTypeState(model_type, model_type_state));
   // Delete the data we just wrote.
-  EXPECT_TRUE(table_->ClearSyncMetadata(model_type, storage_key));
+  EXPECT_TRUE(table_->ClearEntityMetadata(model_type, storage_key));
   // It shouldn't be there any more.
   EXPECT_TRUE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
 

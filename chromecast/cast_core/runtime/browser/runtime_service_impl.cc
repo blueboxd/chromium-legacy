@@ -8,10 +8,11 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/task/bind_post_task.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_web_service.h"
 #include "chromecast/cast_core/cast_core_switches.h"
+#include "chromecast/cast_core/runtime/browser/core_conversions.h"
 #include "chromecast/cast_core/runtime/browser/runtime_application_base.h"
 #include "chromecast/cast_core/runtime/browser/runtime_application_service_impl.h"
 #include "chromecast/metrics/cast_event_builder_simple.h"
@@ -33,7 +34,7 @@ RuntimeServiceImpl::RuntimeServiceImpl(
     : Base(application_client),
       runtime_id_(std::move(runtime_id)),
       runtime_service_endpoint_(std::move(runtime_service_endpoint)),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       web_service_(web_service),
       metrics_recorder_(this) {
   heartbeat_timer_.SetTaskRunner(task_runner_);
@@ -149,16 +150,18 @@ void RuntimeServiceImpl::HandleLoadApplication(
 
   LOG(INFO) << "Loading application: session_id=" << request.cast_session_id();
   RuntimeApplicationServiceImpl* platform_app = CreateApplication(
-      request.cast_session_id(), request.application_config(),
+      request.cast_session_id(), ToReceiverConfig(request.application_config()),
       base::BindOnce(
           [](scoped_refptr<base::SequencedTaskRunner> task_runner,
+             cast::common::ApplicationConfig config,
              CastWebService& web_service,
              std::unique_ptr<RuntimeApplicationBase> runtime_application) {
             return std::make_unique<RuntimeApplicationServiceImpl>(
-                std::move(runtime_application), std::move(task_runner),
-                web_service);
+                std::move(runtime_application), std::move(config),
+                std::move(task_runner), web_service);
           },
-          task_runner_, std::ref(*web_service_)));
+          task_runner_, std::move(request.application_config()),
+          std::ref(*web_service_)));
   platform_app->Load(
       request,
       base::BindPostTask(

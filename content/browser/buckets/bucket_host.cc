@@ -5,7 +5,7 @@
 #include "content/browser/buckets/bucket_host.h"
 
 #include "base/bind.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "content/browser/buckets/bucket_context.h"
 #include "content/browser/buckets/bucket_manager.h"
@@ -16,6 +16,14 @@
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 
 namespace content {
+
+// `BucketContext` assumes these two mojom methods have the same signature. This
+// assert is here instead of in `bucket_context.h` to avoid pulling in too many
+// includes in a header.
+static_assert(
+    std::is_same_v<
+        blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback,
+        blink::mojom::BucketHost::GetDirectoryCallback>);
 
 BucketHost::BucketHost(BucketManagerHost* bucket_manager_host,
                        const storage::BucketInfo& bucket_info)
@@ -47,7 +55,7 @@ void BucketHost::Persist(PersistCallback callback) {
           blink::mojom::PermissionStatus::GRANTED) {
     GetQuotaManagerProxy()->UpdateBucketPersistence(
         bucket_info_.id, /*persistent=*/true,
-        base::SequencedTaskRunnerHandle::Get(),
+        base::SequencedTaskRunner::GetCurrentDefault(),
         base::BindOnce(
             &BucketHost::DidUpdateBucket, weak_factory_.GetWeakPtr(),
             base::BindOnce(std::move(callback), /*persisted=*/true)));
@@ -62,7 +70,7 @@ void BucketHost::Persisted(PersistedCallback callback) {
 
 void BucketHost::Estimate(EstimateCallback callback) {
   GetQuotaManagerProxy()->GetBucketUsageAndQuota(
-      bucket_info_, base::SequencedTaskRunnerHandle::Get(),
+      bucket_info_, base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&BucketHost::DidGetUsageAndQuota,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -73,7 +81,7 @@ void BucketHost::Durability(DurabilityCallback callback) {
 
 void BucketHost::SetExpires(base::Time expires, SetExpiresCallback callback) {
   GetQuotaManagerProxy()->UpdateBucketExpiration(
-      bucket_info_.id, expires, base::SequencedTaskRunnerHandle::Get(),
+      bucket_info_.id, expires, base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&BucketHost::DidUpdateBucket, weak_factory_.GetWeakPtr(),
                      std::move(callback)));
 }
@@ -100,6 +108,15 @@ void BucketHost::GetCaches(
     return;
 
   bucket_context->BindCacheStorageForBucket(bucket_info_, std::move(caches));
+}
+
+void BucketHost::GetDirectory(GetDirectoryCallback callback) {
+  auto bucket_context = receivers_.current_context();
+  if (!bucket_context)
+    return;
+
+  bucket_context->GetSandboxedFileSystemForBucket(bucket_info_,
+                                                  std::move(callback));
 }
 
 void BucketHost::GetLockManager(

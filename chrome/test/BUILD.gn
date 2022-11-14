@@ -733,6 +733,7 @@ static_library("test_support") {
     deps += [
       "//build:chromeos_buildflags",
       "//chrome/browser/web_applications:web_applications_test_support",
+      "//components/web_package",
       "//components/webapps/browser",
       "//third_party/zlib/google:zip",
     ]
@@ -920,6 +921,7 @@ if (is_android) {
       "../browser/ui/android/autofill/save_update_address_profile_flow_manager_browsertest.cc",
       "../browser/ui/autofill/payments/offer_notification_controller_android_browsertest.cc",
       "../browser/ui/webui/policy/policy_ui_browsertest.cc",
+      "../browser/user_agent/android_user_agent_browsertest.cc",
       "../renderer/autofill/fake_mojo_password_manager_driver.cc",
       "../renderer/autofill/fake_mojo_password_manager_driver.h",
       "../renderer/autofill/fake_password_generation_driver.cc",
@@ -1495,9 +1497,6 @@ if (!is_android) {
       "//components/url_formatter/spoof_checks/top_domains:browsertest_top500_domains",
       "//components/url_formatter/spoof_checks/top_domains:browsertest_top500_domains_header",
       "//components/url_formatter/spoof_checks/top_domains:generate_top_domains_browsertest_trie",
-      "//components/url_param_filter/core",
-      "//components/url_param_filter/core:test_support",
-      "//components/url_param_filter/core:url_param_filter_classification_proto",
       "//components/user_education/common",
       "//components/user_education/test",
       "//components/user_manager",
@@ -3205,6 +3204,7 @@ if (!is_android) {
         sources += [
           "../browser/chromeos/extensions/login_screen/login_state/login_state_apitest.cc",
           "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
+          "../browser/extensions/api/document_scan/document_scan_apitest.cc",
           "../browser/extensions/clipboard_extension_apitest_chromeos.cc",
         ]
 
@@ -4041,6 +4041,7 @@ if (!is_android) {
         "../browser/ui/ash/clipboard_history_browsertest.cc",
         "../browser/ui/ash/desks/desks_client_browsertest.cc",
         "../browser/ui/ash/device_scheduled_reboot/reboot_notification_controller_browsertest.cc",
+        "../browser/ui/ash/event_latency_metrics_browsertest.cc",
         "../browser/ui/ash/feature_discovery_duration_reporter_browsertest.cc",
         "../browser/ui/ash/glanceables/glanceables_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
@@ -5093,9 +5094,9 @@ template("performance_test_suite_template_base") {
     script = "//testing/scripts/run_performance_tests.py"
     if (is_chromeos_device) {
       if (defined(override_board)) {
-        args = [ "bin/cros_update_wrapper --board=${override_board} --flash -- ../../tools/perf/run_benchmark" ]
+        args = [ "bin/cros_update_wrapper --board=${override_board} --flash ../../tools/perf/run_benchmark" ]
       } else {
-        args = [ "bin/cros_update_wrapper -- ../../tools/perf/run_benchmark" ]
+        args = [ "bin/cros_update_wrapper ../../tools/perf/run_benchmark" ]
       }
     } else {
       args = [ "../../tools/perf/run_benchmark" ]
@@ -6053,10 +6054,6 @@ test("unit_tests") {
     "//components/unified_consent",
     "//components/url_formatter/spoof_checks/common_words:common",
     "//components/url_formatter/spoof_checks/common_words:common_words_dafsa",
-    "//components/url_param_filter/content",
-    "//components/url_param_filter/core",
-    "//components/url_param_filter/core:test_support",
-    "//components/url_param_filter/core:url_param_filter_classification_proto",
     "//components/user_education/common",
     "//components/user_education/test",
     "//components/user_manager",
@@ -6569,7 +6566,6 @@ test("unit_tests") {
       "//components/signin/core/browser",
       "//components/signin/public/android:signin_java_test_support",
       "//components/ukm:test_support",
-      "//components/url_param_filter/content",
       "//components/webapk:proto",
       "//components/webapps/browser",
       "//content/public/android:content_java",
@@ -6935,6 +6931,7 @@ test("unit_tests") {
       "../browser/ui/views/file_system_access/file_system_access_permission_dialog_unittest.cc",
       "../browser/ui/views/file_system_access/file_system_access_restricted_directory_dialog_unittest.cc",
       "../browser/ui/views/file_system_access/file_system_access_ui_helpers_unittest.cc",
+      "../browser/ui/views/passwords/manage_passwords_view_unittest.cc",
       "../browser/ui/views/passwords/move_to_account_store_bubble_view_unittest.cc",
       "../browser/ui/views/passwords/password_bubble_view_test_base.cc",
       "../browser/ui/views/passwords/password_bubble_view_test_base.h",
@@ -7404,11 +7401,15 @@ test("unit_tests") {
       "../browser/ui/app_list/md_icon_normalizer_unittest.cc",
       "../browser/ui/app_list/reorder/app_list_reorder_core_unittest.cc",
       "../browser/ui/app_list/reorder/app_list_reorder_util_unittest.cc",
+      "../browser/ui/app_list/search/app_search_provider_test_base.cc",
+      "../browser/ui/app_list/search/app_search_provider_test_base.h",
       "../browser/ui/app_list/search/app_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/app_zero_state_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/recommend_apps_fetcher_impl_unittest.cc",
       "../browser/ui/app_list/search/assistant_text_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/chrome_search_result_unittest.cc",
       "../browser/ui/app_list/search/common/string_util_unittest.cc",
       "../browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker_unittest.cc",
       "../browser/ui/app_list/search/cros_action_history/cros_action_recorder_unittest.cc",
@@ -7441,7 +7442,8 @@ test("unit_tests") {
       "../browser/ui/app_list/search/ranking/removed_results_proto_unittest.cc",
       "../browser/ui/app_list/search/ranking/removed_results_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/score_normalizing_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_controller_impl_new_unittest.cc",
+      "../browser/ui/app_list/search/search_controller_impl_unittest.cc",
+      "../browser/ui/app_list/search/search_metrics_manager_unittest.cc",
       "../browser/ui/app_list/search/test/ranking_test_util.cc",
       "../browser/ui/app_list/search/test/ranking_test_util.h",
       "../browser/ui/app_list/search/test/test_search_controller.cc",

@@ -784,6 +784,9 @@ extern const char kEnableWasmBaselineDescription[];
 extern const char kEnableWasmLazyCompilationName[];
 extern const char kEnableWasmLazyCompilationDescription[];
 
+extern const char kEnableWasmRelaxedSimdName[];
+extern const char kEnableWasmRelaxedSimdDescription[];
+
 extern const char kEnableWasmTieringName[];
 extern const char kEnableWasmTieringDescription[];
 
@@ -2237,6 +2240,9 @@ extern const char kReadLaterReminderNotificationDescription[];
 extern const char kRecoverFromNeverSaveAndroidName[];
 extern const char kRecoverFromNeverSaveAndroidDescription[];
 
+extern const char kReduceUserAgentAndroidVersionDeviceModelName[];
+extern const char kReduceUserAgentAndroidVersionDeviceModelDescription[];
+
 extern const char kReengagementNotificationName[];
 extern const char kReengagementNotificationDescription[];
 
@@ -2321,9 +2327,6 @@ extern const char kStrictSiteIsolationDescription[];
 
 extern const char kStylusWritingToInputName[];
 extern const char kStylusWritingToInputDescription[];
-
-extern const char kSyncAndroidLimitNTPPromoImpressionsName[];
-extern const char kSyncAndroidLimitNTPPromoImpressionsDescription[];
 
 extern const char kTabGroupsForTabletsName[];
 extern const char kTabGroupsForTabletsDescription[];
@@ -3106,7 +3109,8 @@ extern const char kExperimentalAccessibilityDictationMoreCommandsName[];
 extern const char kExperimentalAccessibilityDictationMoreCommandsDescription[];
 
 extern const char kExperimentalAccessibilityDictationContextCheckingName[];
-extern const char kExperimentalAccessibilityDictationContextCheckingDescription[];
+extern const char
+    kExperimentalAccessibilityDictationContextCheckingDescription[];
 
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[];
 extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[];
@@ -3166,9 +3170,6 @@ extern const char kFrameThrottleFps30[];
 
 extern const char kFullRestoreForLacrosName[];
 extern const char kFullRestoreForLacrosDescription[];
-
-extern const char kFuseBoxName[];
-extern const char kFuseBoxDescription[];
 
 extern const char kFuseBoxDebugName[];
 extern const char kFuseBoxDebugDescription[];
@@ -3264,9 +3265,6 @@ extern const char kLacrosWaylandLoggingDescription[];
 
 extern const char kLauncherItemSuggestName[];
 extern const char kLauncherItemSuggestDescription[];
-
-extern const char kLauncherPlayStoreSearchName[];
-extern const char kLauncherPlayStoreSearchDescription[];
 
 extern const char kLimitShelfItemsToActiveDeskName[];
 extern const char kLimitShelfItemsToActiveDeskDescription[];
@@ -3598,9 +3596,6 @@ extern const char kCrOSEnforceSystemAecNsAgcDescription[];
 
 extern const char kDefaultCalculatorWebAppName[];
 extern const char kDefaultCalculatorWebAppDescription[];
-
-extern const char kDeprecateLowUsageCodecsName[];
-extern const char kDeprecateLowUsageCodecsDescription[];
 
 extern const char kDisableIdleSocketsCloseOnMemoryPressureName[];
 extern const char kDisableIdleSocketsCloseOnMemoryPressureDescription[];

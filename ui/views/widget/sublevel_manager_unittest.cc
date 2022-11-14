@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -54,7 +55,40 @@ class SublevelManagerTest : public ViewsTestBase,
       widget->Show();
     else
       widget->ShowInactive();
-    test::WidgetVisibleWaiter(widget.get()).Wait();
+  }
+
+  static std::string PrintTestName(
+      const ::testing::TestParamInfo<SublevelManagerTest::ParamType>& info) {
+    std::string test_name;
+    switch (std::get<ViewsTestBase::NativeWidgetType>(info.param)) {
+      case ViewsTestBase::NativeWidgetType::kDefault:
+        test_name += "DefaultWidget";
+        break;
+      case ViewsTestBase::NativeWidgetType::kDesktop:
+        test_name += "DesktopWidget";
+        break;
+    }
+    test_name += "_";
+    switch (std::get<WidgetShowType>(info.param)) {
+      case WidgetShowType::kShowActive:
+        test_name += "ShowActive";
+        break;
+      case WidgetShowType::kShowInactive:
+        test_name += "ShowInactive";
+        break;
+    }
+    test_name += "_";
+    switch (std::get<Widget::InitParams::Activatable>(info.param)) {
+      case Widget::InitParams::Activatable::kNo:
+        test_name += "Inactivatable";
+        break;
+      case Widget::InitParams::Activatable::kYes:
+        test_name += "Activatable";
+        break;
+      default:
+        NOTREACHED();
+    }
+    return test_name;
   }
 
  protected:
@@ -72,8 +106,6 @@ TEST_P(SublevelManagerTest, EnsureSublevel) {
         root.get(), ui::ZOrderLevel::kNormal, sublevel,
         std::get<Widget::InitParams::Activatable>(GetParam()));
   }
-
-  ShowWidget(root);
 
   int order[] = {0, 1, 2};
   do {
@@ -110,7 +142,6 @@ TEST_P(SublevelManagerTest, DISABLED_LevelSupersedeSublevel) {
       CreateChildWidget(root.get(), ui::ZOrderLevel::kFloatingWindow, 0,
                         std::get<Widget::InitParams::Activatable>(GetParam()));
 
-  ShowWidget(root);
   ShowWidget(high_level_widget);
   ShowWidget(low_level_widget);
 
@@ -161,7 +192,6 @@ TEST_P(SublevelManagerTest, SetSublevel) {
       CreateChildWidget(root.get(), ui::ZOrderLevel::kNormal, 2,
                         std::get<Widget::InitParams::Activatable>(GetParam()));
 
-  ShowWidget(root);
   ShowWidget(child2);
   ShowWidget(child1);
   EXPECT_TRUE(
@@ -245,35 +275,6 @@ TEST_P(SublevelManagerTest, WidgetReparent) {
 #endif
 }
 
-// Invisible widgets should be skipped to work around MacOS where
-// stacking above them is no-op (crbug.com/1369180).
-// When they become invisible, sublevels should be respected.
-TEST_P(SublevelManagerTest, SkipInvisibleWidget) {
-  std::unique_ptr<Widget> root = CreateTestWidget();
-  std::unique_ptr<Widget> children[3];
-
-  ShowWidget(root);
-  for (int i = 0; i < 3; i++) {
-    children[i] = CreateChildWidget(
-        root.get(), ui::ZOrderLevel::kNormal, i,
-        std::get<Widget::InitParams::Activatable>(GetParam()));
-    ShowWidget(children[i]);
-
-    // Hide the second widget.
-    if (i == 1)
-      children[i]->Hide();
-  }
-
-  EXPECT_TRUE(test::WidgetTest::IsWindowStackedAbove(children[2].get(),
-                                                     children[0].get()));
-
-  ShowWidget(children[1]);
-  EXPECT_TRUE(test::WidgetTest::IsWindowStackedAbove(children[1].get(),
-                                                     children[0].get()));
-  EXPECT_TRUE(test::WidgetTest::IsWindowStackedAbove(children[2].get(),
-                                                     children[1].get()));
-}
-
 // TODO(crbug.com/1333445): We should also test NativeWidgetType::kDesktop,
 // but currently IsWindowStackedAbove() does not work for desktop widgets.
 INSTANTIATE_TEST_SUITE_P(
@@ -284,6 +285,7 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Values(WidgetShowType::kShowActive,
                           WidgetShowType::kShowInactive),
         ::testing::Values(Widget::InitParams::Activatable::kNo,
-                          Widget::InitParams::Activatable::kNo)));
+                          Widget::InitParams::Activatable::kYes)),
+    SublevelManagerTest::PrintTestName);
 
 }  // namespace views

@@ -318,7 +318,8 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        "chromium_rts.inverted_rts": 100,
+        # TODO (crbug.com/1382577): Reenable after cq active is reliable
+        "chromium_rts.inverted_rts": 0,
     },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -380,7 +381,7 @@ try_.builder(
     builderless = False,
     check_for_flakiness = True,
     cores = 16,
-    goma_jobs = goma.jobs.J300,
+    goma_backend = None,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -407,7 +408,7 @@ try_.builder(
     name = "android-pie-arm64-coverage-experimental-rel",
     builderless = True,
     cores = 16,
-    goma_jobs = goma.jobs.J300,
+    goma_backend = None,
     ssd = True,
     main_list_view = "try",
     use_clang_coverage = True,
@@ -460,6 +461,7 @@ try_.compilator_builder(
     name = "android-pie-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
+    goma_backend = None,
     main_list_view = "try",
 )
 
@@ -468,14 +470,14 @@ try_.builder(
     mirrors = [
         "ci/android-pie-x86-rel",
     ],
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
 )
 
 # TODO(crbug/1182468) Remove when coverage is enabled on CQ.
 try_.builder(
     name = "android-pie-arm64-coverage-rel",
     cores = 16,
-    goma_jobs = goma.jobs.J300,
+    goma_backend = None,
     ssd = True,
     use_clang_coverage = True,
 )
@@ -509,6 +511,8 @@ try_.builder(
 
 try_.builder(
     name = "android-webview-pie-x86-wpt-fyi-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -517,6 +521,8 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView N (dbg)",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -525,6 +531,8 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView O (dbg)",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -533,10 +541,8 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView P (dbg)",
     ],
-)
-
-try_.builder(
-    name = "android-webview-pie-arm64-fyi-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(

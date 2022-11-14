@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
@@ -25,7 +24,6 @@
 #include "base/time/time.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
-#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "components/attribution_reporting/test_utils.h"
@@ -33,6 +31,7 @@
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
+#include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
@@ -59,6 +58,7 @@
 namespace attribution_reporting {
 class AggregatableTriggerData;
 struct EventTriggerData;
+class TriggerRegistration;
 }  // namespace attribution_reporting
 
 namespace mojo {
@@ -177,7 +177,8 @@ class MockDataHostManager : public AttributionDataHostManager {
       bool,
       RegisterNavigationDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       const blink::AttributionSrcToken& attribution_src_token),
+       const blink::AttributionSrcToken& attribution_src_token,
+       AttributionInputEvent input_event),
       (override));
 
   MOCK_METHOD(void,
@@ -185,7 +186,8 @@ class MockDataHostManager : public AttributionDataHostManager {
               (const blink::AttributionSrcToken& attribution_src_token,
                std::string header_value,
                url::Origin reporting_origin,
-               const url::Origin& source_origin),
+               const url::Origin& source_origin,
+               AttributionInputEvent input_event),
               (override));
 
   MOCK_METHOD(void,
@@ -912,8 +914,7 @@ struct EventTriggerDataMatcherConfig {
 ::testing::Matcher<const attribution_reporting::EventTriggerData&>
 EventTriggerDataMatches(const EventTriggerDataMatcherConfig&);
 
-struct AttributionTriggerMatcherConfig {
-  ::testing::Matcher<const url::Origin&> destination_origin = ::testing::_;
+struct TriggerRegistrationMatcherConfig {
   ::testing::Matcher<const url::Origin&> reporting_origin = ::testing::_;
   ::testing::Matcher<const attribution_reporting::Filters&> filters =
       ::testing::_;
@@ -923,12 +924,10 @@ struct AttributionTriggerMatcherConfig {
       event_triggers = ::testing::_;
   ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key =
       ::testing::_;
-  ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_;
   ::testing::Matcher<bool> debug_reporting = ::testing::_;
 
-  AttributionTriggerMatcherConfig() = delete;
-  AttributionTriggerMatcherConfig(
-      ::testing::Matcher<const url::Origin&> destination_origin = ::testing::_,
+  TriggerRegistrationMatcherConfig() = delete;
+  explicit TriggerRegistrationMatcherConfig(
       ::testing::Matcher<const url::Origin&> reporting_origin = ::testing::_,
       ::testing::Matcher<const attribution_reporting::Filters&> filters =
           ::testing::_,
@@ -938,45 +937,31 @@ struct AttributionTriggerMatcherConfig {
           event_triggers = ::testing::_,
       ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key =
           ::testing::_,
-      ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_,
       ::testing::Matcher<bool> debug_reporting = ::testing::_);
+  ~TriggerRegistrationMatcherConfig();
+};
+
+::testing::Matcher<const attribution_reporting::TriggerRegistration&>
+TriggerRegistrationMatches(const TriggerRegistrationMatcherConfig&);
+
+struct AttributionTriggerMatcherConfig {
+  ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
+      registration = ::testing::_;
+  ::testing::Matcher<const url::Origin&> destination_origin = ::testing::_;
+
+  ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_;
+
+  AttributionTriggerMatcherConfig() = delete;
+  explicit AttributionTriggerMatcherConfig(
+      ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
+          registration = ::testing::_,
+      ::testing::Matcher<const url::Origin&> destination_origin = ::testing::_,
+      ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_);
   ~AttributionTriggerMatcherConfig();
 };
 
 ::testing::Matcher<AttributionTrigger> AttributionTriggerMatches(
     const AttributionTriggerMatcherConfig&);
-
-struct AttributionFilterSizeTestCase {
-  const char* description;
-  bool valid;
-
-  size_t filter_count;
-  size_t filter_size;
-  size_t value_count;
-  size_t value_size;
-
-  using Map = base::flat_map<std::string, std::vector<std::string>>;
-
-  Map AsMap() const;
-};
-
-constexpr AttributionFilterSizeTestCase kAttributionFilterSizeTestCases[] = {
-    {"empty", true, 0, 0, 0, 0},
-    {"max_filters", true, attribution_reporting::kMaxFiltersPerSource, 1, 0, 0},
-    {"too_many_filters", false, attribution_reporting::kMaxFiltersPerSource + 1,
-     1, 0, 0},
-    {"max_filter_size", true, 1,
-     attribution_reporting::kMaxBytesPerFilterString, 0, 0},
-    {"excessive_filter_size", false, 1,
-     attribution_reporting::kMaxBytesPerFilterString + 1, 0, 0},
-    {"max_values", true, 1, 0, attribution_reporting::kMaxValuesPerFilter, 0},
-    {"too_many_values", false, 1, 0,
-     attribution_reporting::kMaxValuesPerFilter + 1, 0},
-    {"max_value_size", true, 1, 0, 1,
-     attribution_reporting::kMaxBytesPerFilterString},
-    {"excessive_value_size", false, 1, 0, 1,
-     attribution_reporting::kMaxBytesPerFilterString + 1},
-};
 
 class TestAggregatableSourceProvider {
  public:

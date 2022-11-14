@@ -8,14 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
-#include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/ash/hierarchy.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_handler.h"
@@ -116,11 +114,10 @@ OsSettingsResult::OsSettingsResult(Profile* profile,
   SetCategory(Category::kSettings);
   set_relevance(relevance_score);
   SetTitle(result->canonical_text);
-  SetTitleTags(CalculateTags(query, result->canonical_text));
   SetResultType(ResultType::kOsSettings);
   SetDisplayType(DisplayType::kList);
   SetMetricsType(ash::OS_SETTINGS);
-  SetIcon(IconInfo(icon, GetAppIconDimension()));
+  SetIcon(IconInfo(icon, kAppIconDimension));
 
   // If the result is not a top-level section, set the display text with
   // information about the result's 'parent' category. This is the last element
@@ -132,7 +129,6 @@ OsSettingsResult::OsSettingsResult(Profile* profile,
     LogError(Error::kHierarchyEmpty);
   } else if (result->type != SettingsResultType::kSection) {
     SetDetails(hierarchy.back());
-    SetDetailsTags(CalculateTags(query, hierarchy.back()));
   }
 
   // Manually build the accessible name for the search result, in a way that
@@ -189,8 +185,7 @@ OsSettingsProvider::OsSettingsProvider(
     app_service_proxy_->LoadIcon(
         app_service_proxy_->AppRegistryCache().GetAppType(
             web_app::kOsSettingsAppId),
-        web_app::kOsSettingsAppId, apps::IconType::kStandard,
-        GetAppIconDimension(),
+        web_app::kOsSettingsAppId, apps::IconType::kStandard, kAppIconDimension,
         /*allow_placeholder_icon=*/false,
         base::BindOnce(&OsSettingsProvider::OnLoadIcon,
                        weak_factory_.GetWeakPtr()));
@@ -270,8 +265,7 @@ void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
   if (app_service_proxy_ &&
       (update.ReadinessChanged() || update.IconKeyChanged())) {
     app_service_proxy_->LoadIcon(update.AppType(), web_app::kOsSettingsAppId,
-                                 apps::IconType::kStandard,
-                                 GetAppIconDimension(),
+                                 apps::IconType::kStandard, kAppIconDimension,
                                  /*allow_placeholder_icon=*/false,
                                  base::BindOnce(&OsSettingsProvider::OnLoadIcon,
                                                 weak_factory_.GetWeakPtr()));

@@ -269,15 +269,6 @@ BASE_FEATURE(kPortalsCrossOrigin,
 // allows the element to be enabled by the runtime enabled feature, for origin
 // trials.
 BASE_FEATURE(kFencedFrames, "FencedFrames", base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<FencedFramesImplementationType>::Option
-    fenced_frame_implementation_types[] = {
-        {FencedFramesImplementationType::kShadowDOM, "shadow_dom"},
-        {FencedFramesImplementationType::kMPArch, "mparch"}};
-const base::FeatureParam<FencedFramesImplementationType>
-    kFencedFramesImplementationTypeParam{
-        &kFencedFrames, "implementation_type",
-        FencedFramesImplementationType::kMPArch,
-        &fenced_frame_implementation_types};
 
 // Enable the shared storage API. Note that enabling this feature does not
 // automatically expose this API to the web, it only allows the element to be
@@ -364,24 +355,6 @@ bool OSKResizesVisualViewportByDefault() {
 
 bool IsFencedFramesEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kFencedFrames);
-}
-
-bool IsFencedFramesMPArchBased() {
-  return blink::features::kFencedFramesImplementationTypeParam.Get() ==
-         blink::features::FencedFramesImplementationType::kMPArch;
-}
-
-bool IsFencedFramesShadowDOMBased() {
-  return blink::features::kFencedFramesImplementationTypeParam.Get() ==
-         blink::features::FencedFramesImplementationType::kShadowDOM;
-}
-
-BASE_FEATURE(kInitialNavigationEntry,
-             "InitialNavigationEntry",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsInitialNavigationEntryEnabled() {
-  return base::FeatureList::IsEnabled(blink::features::kInitialNavigationEntry);
 }
 
 // Enable limiting previews loading hints to specific resource types.
@@ -1753,6 +1726,10 @@ BASE_FEATURE(kSplitUserMediaQueues,
 
 BASE_FEATURE(kTextCodecCJKEnabled,
              "TextCodecCJKEnabled",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kStartMediaStreamCaptureIndicatorInBrowser,
+             "StartMediaStreamCaptureIndicatorInBrowser",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

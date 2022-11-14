@@ -437,19 +437,6 @@ HistorySyncBridge::HistorySyncBridge(
 
 HistorySyncBridge::~HistorySyncBridge() = default;
 
-void HistorySyncBridge::OnSyncStarting(
-    const syncer::DataTypeActivationRequest& request) {
-  // TODO(crbug.com/1366759): Starting to track local changes only here means
-  // that we might miss some visits that happen soon (within a few seconds)
-  // after browser startup. Consider either (a) finding a way to figure out
-  // earlier whether Sync is enabled (not paused), or (b) caching changes in
-  // memory for some time and sending them to the processor here, or (likely the
-  // preferred option) (c) optimistically assuming Sync will become active and
-  // immediately send updates to the processor, but cancel (untrack) them if it
-  // doesn't actually become active after a few seconds.
-  sync_started_ = true;
-}
-
 std::unique_ptr<syncer::MetadataChangeList>
 HistorySyncBridge::CreateMetadataChangeList() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -472,7 +459,6 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(sync_started_);
   DCHECK(!processing_syncer_changes_);
   DCHECK(sync_metadata_database_);
   // Set flag to stop accepting history change notifications from backend.
@@ -670,41 +656,12 @@ syncer::ConflictResolution HistorySyncBridge::ResolveConflict(
   return ModelTypeSyncBridge::ResolveConflict(storage_key, remote_data);
 }
 
-void HistorySyncBridge::ApplyStopSyncChanges(
-    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  ModelTypeSyncBridge::ApplyStopSyncChanges(
-      std::move(delete_metadata_change_list));
-
-  sync_started_ = false;
-}
-
 void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
                                      const URLRow& url_row,
                                      const VisitRow& visit_row) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!ShouldCommitRightNow()) {
-    return;
-  }
-
-  // If this visit is not the end of a redirect chain, ignore it. Note that
-  // visits that are not part of a redirect chain are considered to be both
-  // start and end of a chain, so these are *not* ignored here.
-  if (!(visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END)) {
-    return;
-  }
-
-  std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
-      QueryRedirectChainAndMakeEntityData(visit_row);
-
-  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
-
-  for (auto& entity_data : entity_data_list) {
-    std::string storage_key = GetStorageKey(*entity_data);
-    change_processor()->Put(storage_key, std::move(entity_data),
-                            metadata_change_list.get());
-  }
+  MaybeCommit(visit_row);
 }
 
 void HistorySyncBridge::OnURLsModified(HistoryBackend* history_backend,
@@ -742,35 +699,14 @@ void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
   // No need to send any actual deletions: A HistoryDeleteDirective will take
   // care of that. Just untrack all entities and clear their metadata. (The only
   // case where such metadata actually exists is if there are entities that are
-  // waiting for a commit. Clear their metadata, to cancel those commits.
+  // waiting for a commit. Clear their metadata, to cancel those commits.)
   UntrackAndClearMetadataForAllEntities();
 }
 
 void HistorySyncBridge::OnVisitUpdated(const VisitRow& visit_row) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!ShouldCommitRightNow()) {
-    return;
-  }
-
-  // If this visit is not the end of a redirect chain, ignore it. Note that
-  // visits that are not part of a redirect chain are considered to be both
-  // start and end of a chain, so these are *not* ignored here.
-  if (!(visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END)) {
-    return;
-  }
-
-  std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
-      QueryRedirectChainAndMakeEntityData(visit_row);
-
-  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
-
-  for (auto& entity_data : entity_data_list) {
-    std::string storage_key = GetStorageKey(*entity_data);
-    change_processor()->Put(storage_key, std::move(entity_data),
-                            metadata_change_list.get());
-  }
+  MaybeCommit(visit_row);
 }
 
 void HistorySyncBridge::OnVisitDeleted(const VisitRow& visit_row) {
@@ -786,8 +722,13 @@ void HistorySyncBridge::OnVisitDeleted(const VisitRow& visit_row) {
   // delete its metadata (just in case this entity was waiting to be committed -
   // otherwise no metadata exists anyway).
   std::string storage_key = GetStorageKeyFromVisitRow(visit_row);
-  sync_metadata_database_->ClearSyncMetadata(syncer::HISTORY, storage_key);
+  sync_metadata_database_->ClearEntityMetadata(syncer::HISTORY, storage_key);
   change_processor()->UntrackEntityForStorageKey(storage_key);
+}
+
+void HistorySyncBridge::SetSyncTransportState(
+    syncer::SyncService::TransportState state) {
+  sync_transport_state_ = state;
 }
 
 void HistorySyncBridge::OnDatabaseError() {
@@ -822,15 +763,57 @@ bool HistorySyncBridge::ShouldCommitRightNow() const {
     return false;  // These are changes originating from us, ignore.
   }
 
-  if (!change_processor()->IsTrackingMetadata()) {
-    return false;  // Processor isn't ready (most likely Sync is disabled).
+  switch (sync_transport_state_) {
+    case syncer::SyncService::TransportState::DISABLED:
+    case syncer::SyncService::TransportState::PAUSED:
+      // Sync is disabled or paused, nothing should be committed.
+      return false;
+    case syncer::SyncService::TransportState::START_DEFERRED:
+    case syncer::SyncService::TransportState::INITIALIZING:
+    case syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION:
+    case syncer::SyncService::TransportState::CONFIGURING:
+    case syncer::SyncService::TransportState::ACTIVE:
+      // In all of these states, Sync is enabled in principle and expected to
+      // start up soon, so changes may be committed (subject to further
+      // conditions below).
+      break;
   }
 
-  if (!sync_started_) {
-    return false;  // Sync hasn't started yet or is paused.
+  if (!change_processor()->IsTrackingMetadata()) {
+    // The processor isn't ready - either Sync is disabled for this data type,
+    // or the initial download is still ongoing.
+    return false;
   }
 
   return true;
+}
+
+void HistorySyncBridge::MaybeCommit(const VisitRow& visit_row) {
+  // First check if the overall state allows committing right now.
+  if (!ShouldCommitRightNow()) {
+    return;
+  }
+
+  // If this visit is not the end of a redirect chain, ignore it. Note that
+  // visits that are not part of a redirect chain are considered to be both
+  // start and end of a chain, so these are *not* ignored here.
+  if (!(visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END)) {
+    return;
+  }
+
+  // All conditions are fulfilled - convert the visit into Sync's format and
+  // send it on.
+  std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
+      QueryRedirectChainAndMakeEntityData(visit_row);
+
+  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
+      CreateMetadataChangeList();
+
+  for (auto& entity_data : entity_data_list) {
+    std::string storage_key = GetStorageKey(*entity_data);
+    change_processor()->Put(storage_key, std::move(entity_data),
+                            metadata_change_list.get());
+  }
 }
 
 std::vector<std::unique_ptr<syncer::EntityData>>
@@ -1001,7 +984,7 @@ void HistorySyncBridge::UntrackAndClearMetadataForSyncedEntities() {
       // be committed) have to be tracked, so *don't* clear their metadata.
       continue;
     }
-    sync_metadata_database_->ClearSyncMetadata(syncer::HISTORY, storage_key);
+    sync_metadata_database_->ClearEntityMetadata(syncer::HISTORY, storage_key);
     change_processor()->UntrackEntityForStorageKey(storage_key);
   }
 }

@@ -11,8 +11,6 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
-#include "base/bind.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
@@ -20,7 +18,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
-#include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "components/crx_file/id_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/canvas.h"
@@ -110,7 +107,6 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
       list_controller_(list_controller) {
   const auto title = base::UTF8ToUTF16(label().value());
   SetTitle(title);
-  SetTitleTags(CalculateTags(query, title));
   set_id(kPlayAppPrefix +
          crx_file::id_util::GenerateId(install_intent_uri().value()));
   SetCategory(Category::kPlayStore);
@@ -162,7 +158,7 @@ AppContextMenu* ArcPlayStoreSearchResult::GetAppContextMenu() {
 }
 
 void ArcPlayStoreSearchResult::OnIconDecoded(const gfx::ImageSkia& icon) {
-  SetIcon(IconInfo(icon, GetAppIconDimension()));
+  SetIcon(IconInfo(icon, kAppIconDimension));
 }
 
 }  // namespace app_list

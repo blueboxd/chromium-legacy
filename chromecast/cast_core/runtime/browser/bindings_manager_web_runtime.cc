@@ -19,19 +19,14 @@ BindingsManagerWebRuntime::Client::~Client() = default;
 
 BindingsManagerWebRuntime::BindingsManagerWebRuntime(
     Client& client,
-    std::unique_ptr<MessagePortService> message_port_service)
-    : message_port_service_(std::move(message_port_service)), client_(client) {}
+    MessagePortService& message_port_service)
+    : message_port_service_(message_port_service), client_(client) {}
 
 BindingsManagerWebRuntime::~BindingsManagerWebRuntime() = default;
 
 void BindingsManagerWebRuntime::AddBinding(base::StringPiece binding_script) {
   int id = next_script_id_++;
   bindings_[base::NumberToString(id)] = std::string(binding_script);
-}
-
-cast_receiver::Status BindingsManagerWebRuntime::HandleMessage(
-    cast::web::Message message) {
-  return message_port_service_->HandleMessage(std::move(message));
 }
 
 void BindingsManagerWebRuntime::ConfigureWebContents(

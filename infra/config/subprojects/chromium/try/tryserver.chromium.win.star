@@ -22,9 +22,6 @@ try_.defaults.set(
     os = os.WINDOWS_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -64,6 +61,9 @@ try_.builder(
     main_list_view = "try",
     os = os.WINDOWS_ANY,
     tryjob = try_.job(),
+
+    # TODO(crbug.com/1366994): remove this.
+    omit_python2 = False,
 )
 
 try_.orchestrator_builder(
@@ -85,14 +85,17 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
-    # TODO(crbug.com/1381274): Make this a CQ blocker.
-    #tryjob = try_.job(),
+    tryjob = try_.job(),
     experiments = {
-        "chromium_rts.inverted_rts": 100,
+        # TODO (crbug.com/1382577): Reenable after cq active is reliable
+        "chromium_rts.inverted_rts": 0,
     },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     #use_orchestrator_pool = True,
+
+    # TODO(crbug.com/1366994): remove this.
+    omit_python2 = False,
 )
 
 try_.compilator_builder(
@@ -131,6 +134,9 @@ try_.builder(
     builderless = False,
     cores = 16,
     ssd = True,
+
+    # TODO(crbug.com/1366994): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -229,13 +235,17 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
-    tryjob = try_.job(),
     experiments = {
-        "chromium_rts.inverted_rts": 100,
+        # TODO (crbug.com/1382577): Reenable after cq active is reliable
+        "chromium_rts.inverted_rts": 0,
     },
+    description_html = "<h1>NOTE: This bot is now deprecated. Please use 'win-rel' instead.</h1>",
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     #use_orchestrator_pool = True,
+
+    # TODO(crbug.com/1366994): remove this.
+    omit_python2 = False,
 )
 
 try_.orchestrator_builder(

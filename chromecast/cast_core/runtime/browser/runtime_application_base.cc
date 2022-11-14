@@ -6,42 +6,25 @@
 
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_contents.h"
-#include "chromecast/browser/visibility_types.h"
 #include "chromecast/common/feature_constants.h"
+#include "components/cast_receiver/browser/permissions_manager_impl.h"
 #include "components/media_control/browser/media_blocker.h"
 #include "content/public/browser/web_contents.h"
 
 namespace chromecast {
-namespace {
-
-// Parses renderer features.
-const cast::common::Dictionary::Entry* FindEntry(
-    const std::string& key,
-    const cast::common::Dictionary& dict) {
-  auto iter = base::ranges::find(dict.entries(), key,
-                                 &cast::common::Dictionary::Entry::key);
-  if (iter == dict.entries().end()) {
-    return nullptr;
-  }
-  return &*iter;
-}
-
-}  // namespace
 
 RuntimeApplicationBase::Delegate::~Delegate() = default;
 
 RuntimeApplicationBase::RuntimeApplicationBase(
     std::string cast_session_id,
-    cast::common::ApplicationConfig app_config,
-    mojom::RendererType renderer_type,
+    cast_receiver::ApplicationConfig app_config,
     cast_receiver::ApplicationClient& application_client)
     : cast_session_id_(std::move(cast_session_id)),
       app_config_(std::move(app_config)),
-      renderer_type_(renderer_type),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       application_client_(application_client) {
   DCHECK(task_runner_);
 }
@@ -57,11 +40,11 @@ void RuntimeApplicationBase::SetDelegate(Delegate& delegate) {
 }
 
 const std::string& RuntimeApplicationBase::GetDisplayName() const {
-  return config().display_name();
+  return config().display_name;
 }
 
 const std::string& RuntimeApplicationBase::GetAppId() const {
-  return config().app_id();
+  return config().app_id;
 }
 
 const std::string& RuntimeApplicationBase::GetCastSessionId() const {
@@ -87,7 +70,8 @@ void RuntimeApplicationBase::Load(StatusCallback callback) {
 
 void RuntimeApplicationBase::Stop(StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  StopApplication(cast::common::StopReason::USER_REQUEST, /*net_error_code=*/0);
+  StopApplication(Delegate::ApplicationStopReason::kUserRequest,
+                  /*net_error_code=*/0);
   std::move(callback).Run(cast_receiver::OkStatus());
 }
 
@@ -101,152 +85,32 @@ RuntimeApplicationBase::GetApplicationControls() {
       *delegate().GetWebContents());
 }
 
-base::Value RuntimeApplicationBase::GetRendererFeatures() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto* entry =
-      FindEntry(feature::kCastCoreRendererFeatures, config().extra_features());
-  if (!entry) {
-    return base::Value();
-  }
-  DCHECK(entry->value().has_dictionary());
-
-  base::Value::Dict renderer_features;
-  for (const cast::common::Dictionary::Entry& feature :
-       entry->value().dictionary().entries()) {
-    base::Value::Dict dict;
-    if (feature.has_value()) {
-      DCHECK(feature.value().has_dictionary());
-      for (const cast::common::Dictionary::Entry& feature_arg :
-           feature.value().dictionary().entries()) {
-        DCHECK(feature_arg.has_value());
-        if (feature_arg.value().value_case() == cast::common::Value::kFlag) {
-          dict.Set(feature_arg.key(), feature_arg.value().flag());
-        } else if (feature_arg.value().value_case() ==
-                   cast::common::Value::kText) {
-          dict.Set(feature_arg.key(), feature_arg.value().text());
-        } else {
-          LOG(FATAL) << "No or unsupported value was set for the feature: "
-                     << feature.key();
-        }
-      }
-    }
-    DVLOG(1) << "Renderer feature created: " << feature.key();
-    renderer_features.Set(feature.key(), std::move(dict));
-  }
-
-  return base::Value(std::move(renderer_features));
-}
-
-bool RuntimeApplicationBase::GetIsAudioOnly() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto* entry =
-      FindEntry(feature::kCastCoreIsAudioOnly, config().extra_features());
-  if (!entry) {
-    return false;
-  }
-
-  DCHECK(entry->value().value_case() == cast::common::Value::kFlag);
-  return entry->value().flag();
-}
-
-bool RuntimeApplicationBase::GetIsRemoteControlMode() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto* entry = FindEntry(feature::kCastCoreIsRemoteControlMode,
-                                config().extra_features());
-  if (!entry) {
-    return false;
-  }
-
-  DCHECK(entry->value().value_case() == cast::common::Value::kFlag);
-  return entry->value().flag();
-}
-
-bool RuntimeApplicationBase::GetEnforceFeaturePermissions() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto* entry = FindEntry(feature::kCastCoreEnforceFeaturePermissions,
-                                config().extra_features());
-  if (!entry) {
-    return false;
-  }
-
-  DCHECK(entry->value().value_case() == cast::common::Value::kFlag);
-  return entry->value().flag();
-}
-
-std::vector<int> RuntimeApplicationBase::GetFeaturePermissions() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::vector<int> feature_permissions;
-  const auto* entry = FindEntry(feature::kCastCoreFeaturePermissions,
-                                config().extra_features());
-  if (!entry) {
-    return feature_permissions;
-  }
-
-  DCHECK(entry->value().value_case() == cast::common::Value::kArray);
-  base::ranges::for_each(
-      entry->value().array().values(),
-      [&feature_permissions](const cast::common::Value& value) {
-        DCHECK(value.value_case() == cast::common::Value::kNumber);
-        feature_permissions.push_back(value.number());
-      });
-  return feature_permissions;
-}
-
-std::vector<std::string>
-RuntimeApplicationBase::GetAdditionalFeaturePermissionOrigins() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::vector<std::string> feature_permission_origins;
-  const auto* entry = FindEntry(feature::kCastCoreFeaturePermissionOrigins,
-                                config().extra_features());
-  if (!entry) {
-    return feature_permission_origins;
-  }
-
-  DCHECK(entry->value().value_case() == cast::common::Value::kArray);
-  base::ranges::for_each(
-      entry->value().array().values(),
-      [&feature_permission_origins](const cast::common::Value& value) {
-        DCHECK(value.value_case() == cast::common::Value::kText);
-        feature_permission_origins.push_back(value.text());
-      });
-  return feature_permission_origins;
-}
-
-bool RuntimeApplicationBase::GetEnabledForDev() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto* entry =
-      FindEntry(feature::kCastCoreRendererFeatures, config().extra_features());
-  if (!entry) {
-    return false;
-  }
-  DCHECK(entry->value().has_dictionary());
-
-  return FindEntry(chromecast::feature::kEnableDevMode,
-                   entry->value().dictionary()) != nullptr;
-}
-
 void RuntimeApplicationBase::LoadPage(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(delegate_->GetWebContents());
-  auto* cast_web_contents =
-      CastWebContents::FromWebContents(delegate_->GetWebContents());
-  DCHECK(cast_web_contents);
 
-  cast_web_contents->AddRendererFeatures(GetRendererFeatures());
-  cast_web_contents->SetAppProperties(
-      config().app_id(), GetCastSessionId(), GetIsAudioOnly(), url,
-      GetEnforceFeaturePermissions(), GetFeaturePermissions(),
-      GetAdditionalFeaturePermissionOrigins());
+  delegate().LoadPage(url);
 
-  // Start loading the URL while JS visibility is disabled and no window is
-  // created. This way users won't see the progressive UI updates as the page is
-  // formed and styles are applied. The actual window will be created in
-  // OnApplicationStarted when application is fully launched.
-  cast_web_contents->LoadUrl(url);
-
-  // This needs to be called to get the PageState::LOADED event as it's fully
-  // loaded.
   SetWebVisibilityAndPaint(false);
+}
+
+void RuntimeApplicationBase::SetContentPermissions(
+    content::WebContents& web_contents) {
+  cast_receiver::PermissionsManagerImpl* permissions_manager =
+      cast_receiver::PermissionsManagerImpl::CreateInstance(web_contents,
+                                                            GetAppId());
+  if (config().url.has_value()) {
+    auto app_url_origin = url::Origin::Create(config().url.value());
+    if (!app_url_origin.opaque()) {
+      permissions_manager->AddOrigin(app_url_origin);
+    }
+  }
+  for (blink::PermissionType permission : config().permissions.permissions) {
+    permissions_manager->AddPermission(permission);
+  }
+  for (auto& origin : config().permissions.additional_origins) {
+    DCHECK(!origin.opaque());
+    permissions_manager->AddOrigin(origin);
+  }
 }
 
 void RuntimeApplicationBase::OnPageLoaded() {
@@ -256,14 +120,14 @@ void RuntimeApplicationBase::OnPageLoaded() {
   auto* window_controls = delegate_->GetContentWindowControls();
   DCHECK(window_controls);
   window_controls->AddVisibilityChangeObserver(*this);
-  if (touch_input_ == cast::common::TouchInput::ENABLED) {
+  if (is_touch_input_enabled_) {
     window_controls->EnableTouchInput();
   } else {
     window_controls->DisableTouchInput();
   }
 
   // Create the window and show the web view.
-  if (visibility_ == cast::common::Visibility::FULL_SCREEN) {
+  if (is_visible_) {
     LOG(INFO) << "Loading page in full screen: " << *this;
     window_controls->ShowWindow();
   } else {
@@ -287,17 +151,14 @@ void RuntimeApplicationBase::SetUrlRewriteRules(
   cast_web_contents->SetUrlRewriteRules(std::move(mojom_rules));
 }
 
-void RuntimeApplicationBase::SetMediaState(
-    cast::common::MediaState::Type media_state) {
+void RuntimeApplicationBase::SetMediaBlocking(bool load_blocked,
+                                              bool start_blocked) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (media_state == cast::common::MediaState::UNDEFINED) {
-    return;
-  }
 
-  media_state_ = media_state;
-  LOG(INFO) << "Media state updated: state="
-            << cast::common::MediaState::Type_Name(media_state_) << ", "
-            << *this;
+  is_media_load_blocked_ = load_blocked;
+  is_media_start_blocked_ = start_blocked;
+  LOG(INFO) << "Media state updated: is_load_blocked=" << load_blocked
+            << ", is_start_blocked=" << start_blocked << ", " << *this;
 
   if (!delegate_->GetWebContents()) {
     return;
@@ -307,38 +168,17 @@ void RuntimeApplicationBase::SetMediaState(
   DCHECK(application_controls);
   media_control::MediaBlocker& media_blocker =
       application_controls->GetMediaBlocker();
-  switch (media_state_) {
-    case cast::common::MediaState::LOAD_BLOCKED:
-      media_blocker.BlockMediaLoading(true);
-      // TODO(crbug.com/1359584): Block media starting.
-      break;
 
-    case cast::common::MediaState::START_BLOCKED:
-      media_blocker.BlockMediaLoading(false);
-      // TODO(crbug.com/1359584): Block media starting.
-      break;
+  media_blocker.BlockMediaLoading(is_media_load_blocked_);
 
-    case cast::common::MediaState::UNBLOCKED:
-      media_blocker.BlockMediaLoading(false);
-      // TODO(crbug.com/1359584): Allow media starting.
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  // TODO(crbug.com/1359584): Block media starting.
 }
 
-void RuntimeApplicationBase::SetVisibility(
-    cast::common::Visibility::Type visibility) {
+void RuntimeApplicationBase::SetVisibility(bool is_visible) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (visibility == cast::common::Visibility::UNDEFINED) {
-    // No actual update happened.
-    return;
-  }
 
-  visibility_ = visibility;
-  LOG(INFO) << "Visibility updated: state="
-            << cast::common::Visibility::Type_Name(visibility_) << ", "
+  is_visible_ = is_visible;
+  LOG(INFO) << "Visibility updated: is_visible_=" << is_visible_ << ", "
             << *this;
 
   auto* window_controls = delegate_->GetContentWindowControls();
@@ -346,39 +186,26 @@ void RuntimeApplicationBase::SetVisibility(
     return;
   }
 
-  switch (visibility_) {
-    case cast::common::Visibility::FULL_SCREEN:
-      window_controls->ShowWindow();
-      break;
-
-    case cast::common::Visibility::HIDDEN:
-      window_controls->HideWindow();
-      break;
-
-    default:
-      NOTREACHED();
+  if (is_visible_) {
+    window_controls->ShowWindow();
+  } else {
+    window_controls->HideWindow();
   }
 }
 
-void RuntimeApplicationBase::SetTouchInput(
-    cast::common::TouchInput::Type touch_input) {
+void RuntimeApplicationBase::SetTouchInputEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (touch_input == cast::common::TouchInput::UNDEFINED) {
-    // No actual update happened.
-    return;
-  }
 
-  touch_input_ = touch_input;
-  LOG(INFO) << "Touch input updated: state= "
-            << cast::common::TouchInput::Type_Name(touch_input_) << ", "
-            << *this;
+  is_touch_input_enabled_ = enabled;
+  LOG(INFO) << "Touch input updated: is_touch_input_enabled_= "
+            << is_touch_input_enabled_ << ", " << *this;
 
   auto* window_controls = delegate_->GetContentWindowControls();
   if (!window_controls) {
     return;
   }
 
-  if (touch_input_ == cast::common::TouchInput::ENABLED) {
+  if (is_touch_input_enabled_) {
     window_controls->EnableTouchInput();
   } else {
     window_controls->DisableTouchInput();
@@ -389,12 +216,8 @@ bool RuntimeApplicationBase::IsApplicationRunning() const {
   return is_application_running_;
 }
 
-mojom::RendererType RuntimeApplicationBase::GetRendererType() const {
-  return renderer_type_;
-}
-
 void RuntimeApplicationBase::StopApplication(
-    cast::common::StopReason::Type stop_reason,
+    Delegate::ApplicationStopReason stop_reason,
     int32_t net_error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -418,8 +241,7 @@ void RuntimeApplicationBase::StopApplication(
 
   delegate().NotifyApplicationStopped(stop_reason, net_error_code);
 
-  LOG(INFO) << "Application is stopped: stop_reason="
-            << cast::common::StopReason::Type_Name(stop_reason) << ", "
+  LOG(INFO) << "Application is stopped: stop_reason=" << stop_reason << ", "
             << *this;
 }
 
@@ -448,6 +270,26 @@ void RuntimeApplicationBase::OnWindowShown() {
 
 void RuntimeApplicationBase::OnWindowHidden() {
   SetWebVisibilityAndPaint(false);
+}
+
+std::ostream& operator<<(
+    std::ostream& os,
+    RuntimeApplicationBase::Delegate::ApplicationStopReason reason) {
+  switch (reason) {
+    case RuntimeApplicationBase::Delegate::ApplicationStopReason::kUndefined:
+      return os << "Undefined";
+    case RuntimeApplicationBase::Delegate::ApplicationStopReason::
+        kApplicationRequest:
+      return os << "Application Request";
+    case RuntimeApplicationBase::Delegate::ApplicationStopReason::kIdleTimeout:
+      return os << "Idle Timeout";
+    case RuntimeApplicationBase::Delegate::ApplicationStopReason::kUserRequest:
+      return os << "Use Request";
+    case RuntimeApplicationBase::Delegate::ApplicationStopReason::kHttpError:
+      return os << "HTTP Error";
+    case RuntimeApplicationBase::Delegate::ApplicationStopReason::kRuntimeError:
+      return os << "Runtime Error";
+  }
 }
 
 }  // namespace chromecast

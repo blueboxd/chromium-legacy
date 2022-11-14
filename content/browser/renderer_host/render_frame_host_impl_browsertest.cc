@@ -619,14 +619,15 @@ class RenderFrameHostFactoryForBeforeUnloadInterceptor
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       const blink::DocumentToken& document_token,
+      base::UnguessableToken devtools_frame_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state) override {
     return base::WrapUnique(new RenderFrameHostImplForBeforeUnloadInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
-        document_token, renderer_initiated_creation, lifecycle_state,
-        std::move(browsing_context_state),
+        document_token, devtools_frame_token, renderer_initiated_creation,
+        lifecycle_state, std::move(browsing_context_state),
         frame_tree_node->frame_owner_element_type(), frame_tree_node->parent(),
         frame_tree_node->fenced_frame_status()));
   }
@@ -3045,13 +3046,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // The popup navigation should be cancelled and therefore shouldn't
   // contribute an extra history entry.
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, popup->GetController().GetEntryCount());
-    EXPECT_TRUE(
-        popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, popup->GetController().GetEntryCount());
-  }
+  EXPECT_EQ(1, popup->GetController().GetEntryCount());
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -3084,15 +3080,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(blink::StorageKey(main_origin),
             static_cast<RenderFrameHostImpl*>(popup->GetPrimaryMainFrame())
                 ->storage_key());
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    load_observer.WaitForNavigationFinished();
-  } else {
-    // A round-trip to the renderer process is an indirect way to wait for
-    // DidCommitProvisionalLoad IPC for the initial about:blank page.
-    // WaitForLoadStop cannot be used, because this commit won't raise
-    // NOTIFICATION_LOAD_STOP.
-    EXPECT_EQ(123, EvalJs(popup, "123"));
-  }
+  load_observer.WaitForNavigationFinished();
+
   EXPECT_EQ(main_origin,
             popup->GetPrimaryMainFrame()->GetLastCommittedOrigin());
   EXPECT_EQ(blink::StorageKey(main_origin),
@@ -3101,13 +3090,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // The popup navigation should be cancelled and therefore shouldn't
   // contribute an extra history entry.
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, popup->GetController().GetEntryCount());
-    EXPECT_TRUE(
-        popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, popup->GetController().GetEntryCount());
-  }
+  EXPECT_EQ(1, popup->GetController().GetEntryCount());
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

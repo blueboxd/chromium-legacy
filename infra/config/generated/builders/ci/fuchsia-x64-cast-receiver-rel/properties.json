@@ -41,11 +41,11 @@
       ],
       "mirroring_builder_group_and_names": [
         {
-          "builder": "fuchsia-x64-cast-receiver-rel",
+          "builder": "fuchsia-arm64-rel-orchestrator",
           "group": "tryserver.chromium.fuchsia"
         },
         {
-          "builder": "fuchsia-x64-cast-receiver-rel-orchestrator",
+          "builder": "fuchsia-x64-cast-receiver-rel",
           "group": "tryserver.chromium.fuchsia"
         }
       ]

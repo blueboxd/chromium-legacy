@@ -1615,14 +1615,15 @@ class RenderFrameHostFactoryForLocalMainFrameInterceptor
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       const blink::DocumentToken& document_token,
+      base::UnguessableToken devtools_frame_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state) override {
     return base::WrapUnique(new RenderFrameHostImplForLocalMainFrameInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
-        document_token, renderer_initiated_creation, lifecycle_state,
-        std::move(browsing_context_state),
+        document_token, devtools_frame_token, renderer_initiated_creation,
+        lifecycle_state, std::move(browsing_context_state),
         frame_tree_node->frame_owner_element_type(), frame_tree_node->parent(),
         frame_tree_node->fenced_frame_status()));
   }
@@ -2095,13 +2096,16 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedPortalAccessibilityReset) {
     )");
     activated_observer.WaitForActivate();
     // Forces an AXTree update to be sent while portal is orphaned.
-    AccessibilityNotificationWaiter waiter(web_contents_impl,
-                                           ui::kAXModeComplete,
-                                           ax::mojom::Event::kLayoutComplete);
-    ASSERT_TRUE(waiter.WaitForNotification());
+    AccessibilityNotificationWaiter load_waiter(
+        web_contents_impl, ui::kAXModeComplete,
+        ax::mojom::Event::kLoadComplete);
+    ASSERT_TRUE(load_waiter.WaitForNotification());
     EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
               activated_observer.WaitForActivateResult());
-    ASSERT_TRUE(waiter.WaitForNotification());
+    AccessibilityNotificationWaiter end_of_test_waiter(
+        web_contents_impl, ui::kAXModeComplete, ax::mojom::Event::kEndOfTest);
+    main_frame->browser_accessibility_manager()->SignalEndOfTest();
+    ASSERT_TRUE(end_of_test_waiter.WaitForNotification());
   }
   EXPECT_EQ(0, main_frame->accessibility_fatal_error_count_for_testing());
 }

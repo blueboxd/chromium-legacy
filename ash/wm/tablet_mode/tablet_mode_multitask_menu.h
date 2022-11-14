@@ -29,8 +29,7 @@ class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
                                            public display::DisplayObserver {
  public:
   TabletModeMultitaskMenu(TabletModeMultitaskMenuEventHandler* event_handler,
-                          aura::Window* window,
-                          base::RepeatingClosure hide_menu);
+                          aura::Window* window);
 
   TabletModeMultitaskMenu(const TabletModeMultitaskMenu&) = delete;
   TabletModeMultitaskMenu& operator=(const TabletModeMultitaskMenu&) = delete;
@@ -41,11 +40,13 @@ class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
 
   views::Widget* widget() { return widget_.get(); }
 
-  // Show the menu using a slide down animation.
-  void AnimateShow();
+  // Slides the menu down if `show` is true, otherwise slides up.
+  void Animate(bool show);
 
-  // Close the menu using a slide up animation.
-  void AnimateClose();
+  // Actions called by the event handler.
+  void BeginDrag(float initial_y);
+  void UpdateDrag(float current_y);
+  void EndDrag();
 
   // Calls the event handler to destroy `this`.
   void Reset();

@@ -84,7 +84,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -439,64 +438,14 @@ static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {
 static void MatchHostRules(const Element& element,
                            ElementRuleCollector& collector) {
   ShadowRoot* shadow_root = element.GetShadowRoot();
-  if (!shadow_root)
-    return;
-  if (ScopedStyleResolver* resolver = shadow_root->GetScopedStyleResolver())
-    resolver->CollectMatchingShadowHostRules(collector);
-}
-
-// Matches custom element rules from Custom Element Default Style.
-static void MatchCustomElementRules(const Element& element,
-                                    ElementRuleCollector& collector) {
-  if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled())
-    return;
-  if (CustomElementDefinition* definition =
-          element.GetCustomElementDefinition()) {
-    if (definition->HasDefaultStyleSheets()) {
-      for (CSSStyleSheet* style : definition->DefaultStyleSheets()) {
-        if (!style)
-          continue;
-        RuleSet* rule_set =
-            element.GetDocument().GetStyleEngine().RuleSetForSheet(*style);
-        if (rule_set)
-          collector.CollectMatchingRules(MatchRequest(rule_set));
-      }
-    }
-  }
-}
-
-// Matches :host and :host-context rules
-// and custom element rules from Custom Element Default Style.
-static void MatchHostAndCustomElementRules(const Element& element,
-                                           ElementRuleCollector& collector) {
-  ShadowRoot* shadow_root = element.GetShadowRoot();
   ScopedStyleResolver* resolver =
       shadow_root ? shadow_root->GetScopedStyleResolver() : nullptr;
-  if (!resolver && !RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled())
+  if (!resolver)
     return;
   collector.ClearMatchedRules();
-  MatchCustomElementRules(element, collector);
-  MatchHostRules(element, collector);
+  resolver->CollectMatchingShadowHostRules(collector);
   collector.SortAndTransferMatchedRules();
-  // TODO(futhark): If the resolver is null here, it means we are matching rules
-  // for custom element default styles. Since we don't have a
-  // ScopedStyleResolver if the custom element does not have a shadow root,
-  // there is no way to collect @-rules for @font-face, @keyframes, etc. We
-  // currently pass the element's TreeScope, which might not be what we want. It
-  // means that if you have:
-  //
-  //   <style>@keyframes anim { ... }</style>
-  //   <custom-element></custom-element>
-  //
-  // and the custom-element is defined with:
-  //
-  //   @keyframes anim { ... }
-  //   custom-element { animation-name: anim }
-  //
-  // it means that the custom element will pick up the @keyframes definition
-  // from the element's scope.
-  collector.FinishAddingAuthorRulesForTreeScope(
-      resolver ? resolver->GetTreeScope() : element.GetTreeScope());
+  collector.FinishAddingAuthorRulesForTreeScope(resolver->GetTreeScope());
 }
 
 static void MatchSlottedRules(const Element&, ElementRuleCollector&);
@@ -690,7 +639,7 @@ void StyleResolver::MatchAuthorRules(
     const Element& element,
     ScopedStyleResolver* element_scope_resolver,
     ElementRuleCollector& collector) {
-  MatchHostAndCustomElementRules(element, collector);
+  MatchHostRules(element, collector);
   MatchSlottedRules(element, collector);
   MatchElementScopeRules(element, element_scope_resolver, collector);
   MatchPseudoPartRules(element, collector);
@@ -987,7 +936,7 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
   if (Element* animating_element = state.GetAnimatingElement())
     SetAnimationUpdateIfNeeded(style_recalc_context, state, *animating_element);
 
-  GetDocument().AddViewportUnitFlags(state.StyleRef().ViewportUnitFlags());
+  GetDocument().AddViewportUnitFlags(state.Style()->ViewportUnitFlags());
 
   if (state.Style()->HasRemUnits())
     GetDocument().GetStyleEngine().SetUsesRemUnit(true);
@@ -1026,25 +975,23 @@ void StyleResolver::ApplyInheritance(Element& element,
     // in html.css. This avoids allocation overhead from copy-on-write when these
     // properties are set only via UA styles. The overhead shows up on motionmark
     // which stress tests this code. See crbub.com/1369454 for details.
-    scoped_refptr<ComputedStyle> style;
-    if (IsA<HTMLImageElement>(element))
-      style = ComputedStyle::Clone(*initial_style_for_img_);
-    else
-      style = CreateComputedStyle();
+    ComputedStyleBuilder builder(IsA<HTMLImageElement>(element)
+                                     ? *initial_style_for_img_
+                                     : *initial_style_);
 
-    style->InheritFrom(
+    builder.InheritFrom(
         *state.ParentStyle(),
         (!style_request.IsPseudoStyleRequest() && IsAtShadowBoundary(&element))
-            ? ComputedStyle::kAtShadowBoundary
-            : ComputedStyle::kNotAtShadowBoundary);
-    state.SetStyle(std::move(style));
+            ? ComputedStyleBuilder::kAtShadowBoundary
+            : ComputedStyleBuilder::kNotAtShadowBoundary);
+    state.SetStyle(builder.TakeStyle());
 
     // contenteditable attribute (implemented by -webkit-user-modify) should
     // be propagated from shadow host to distributed node.
     if (!style_request.IsPseudoStyleRequest() && element.AssignedSlot()) {
       if (Element* parent = element.parentElement()) {
         if (const ComputedStyle* shadow_host_style = parent->GetComputedStyle())
-          state.Style()->SetUserModify(shadow_host_style->UserModify());
+          state.StyleBuilder().SetUserModify(shadow_host_style->UserModify());
       }
     }
   }
@@ -1284,7 +1231,7 @@ void StyleResolver::ApplyBaseStyleNoCache(
 
   ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
                                  selector_filter_, cascade.MutableMatchResult(),
-                                 state.Style(), state.Style()->InsideLink());
+                                 state.Style()->InsideLink());
 
   if (style_request.IsPseudoStyleRequest()) {
     collector.SetPseudoElementStyleRequest(style_request);
@@ -1305,8 +1252,10 @@ void StyleResolver::ApplyBaseStyleNoCache(
   if (tracker_)
     AddMatchedRulesToTracker(collector);
 
+  const MatchResult& match_result = collector.MatchedResult();
+
   if (style_request.IsPseudoStyleRequest()) {
-    if (!collector.MatchedResult().HasMatchedProperties()) {
+    if (!match_result.HasMatchedProperties()) {
       StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
       state.SetHadNoMatchedProperties();
       return;
@@ -1319,9 +1268,12 @@ void StyleResolver::ApplyBaseStyleNoCache(
   // computation of font-relative lengths.
   PreserveTextAutosizingMultiplierIfNeeded(state, style_request);
 
-  CascadeAndApplyMatchedProperties(state, cascade);
+  if (match_result.HasNonUniversalHighlightPseudoStyles())
+    state.StyleBuilder().SetHasNonUniversalHighlightPseudoStyles(true);
+  if (match_result.HasNonUaHighlightPseudoStyles())
+    state.StyleBuilder().SetHasNonUaHighlightPseudoStyles(true);
 
-  const MatchResult& match_result = collector.MatchedResult();
+  CascadeAndApplyMatchedProperties(state, cascade);
 
   if (match_result.HasFlag(MatchFlag::kAffectedByDrag))
     state.StyleBuilder().SetAffectedByDrag();
@@ -1345,14 +1297,12 @@ void StyleResolver::ApplyBaseStyleNoCache(
     state.Style()->SetHasRemUnits();
   if (match_result.ConditionallyAffectsAnimations())
     state.SetCanAffectAnimations();
-  if (match_result.HasNonUniversalHighlightPseudoStyles())
-    state.StyleBuilder().SetHasNonUniversalHighlightPseudoStyles(true);
-  if (match_result.HasNonUaHighlightPseudoStyles())
-    state.StyleBuilder().SetHasNonUaHighlightPseudoStyles(true);
   if (!match_result.CustomHighlightNames().empty()) {
     state.StyleBuilder().SetCustomHighlightNames(
         match_result.CustomHighlightNames());
   }
+  state.StyleBuilder().SetPseudoElementStyles(
+      match_result.PseudoElementStyles());
 
   ApplyCallbackSelectors(state);
 
@@ -1438,7 +1388,7 @@ void StyleResolver::ApplyBaseStyle(
     // AdjustComputedStyle() will set these flags if needed,
     // but will (generally) not unset them, so reset them before
     // computation.
-    state.StyleRef().SetIsStackingContextWithoutContainment(false);
+    state.Style()->SetIsStackingContextWithoutContainment(false);
     state.StyleBuilder()
         .SetInsideFragmentationContextWithNondeterministicEngine(
             state.ParentStyle()
@@ -1471,9 +1421,8 @@ void StyleResolver::ApplyBaseStyle(
     // Similarly, if a style went from using viewport units to not,
     // the flags can stick around in the incremental version. This can cause
     // invalidations when none are needed, but is otherwise harmless.
-    state.StyleRef().SetViewportUnitFlags(
-        state.StyleRef().ViewportUnitFlags() |
-        incremental_style->ViewportUnitFlags());
+    state.Style()->SetViewportUnitFlags(state.Style()->ViewportUnitFlags() |
+                                        incremental_style->ViewportUnitFlags());
 
     DCHECK_EQ(g_null_atom, ComputeBaseComputedStyleDiff(incremental_style.get(),
                                                         *state.Style()));
@@ -1531,13 +1480,13 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
                            nullptr /* StyleRecalcContext */,
                            StyleRequest(initial_style.get()));
 
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
   const ComputedStyle* root_element_style =
       state.RootElementStyle() ? state.RootElementStyle()
                                : GetDocument().GetComputedStyle();
   DCHECK(root_element_style);
-  style->InheritFrom(*root_element_style);
-  state.SetStyle(std::move(style));
+  builder.InheritFrom(*root_element_style);
+  state.SetStyle(builder.TakeStyle());
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
@@ -1601,15 +1550,14 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
       LayoutLocale::Get(GetDocument().ContentLanguage()));
 
   builder.SetFontDescription(document_font_description);
-  builder.MutableInternalStyle()->SetUserModify(GetDocument().InDesignMode()
-                                                    ? EUserModify::kReadWrite
-                                                    : EUserModify::kReadOnly);
+  builder.SetUserModify(GetDocument().InDesignMode() ? EUserModify::kReadWrite
+                                                     : EUserModify::kReadOnly);
   FontBuilder(&GetDocument()).CreateInitialFont(builder);
 
   scoped_refptr<StyleInitialData> initial_data =
       engine.MaybeCreateAndGetInitialData();
   if (initial_data)
-    builder.MutableInternalStyle()->SetInitialData(std::move(initial_data));
+    builder.SetInitialData(std::move(initial_data));
 
   return builder;
 }
@@ -1635,10 +1583,9 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
   MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(),
-                                 StyleRecalcContext::FromAncestors(*element),
-                                 selector_filter_, match_result, state.Style(),
-                                 EInsideLink::kNotInsideLink);
+  ElementRuleCollector collector(
+      state.ElementContext(), StyleRecalcContext::FromAncestors(*element),
+      selector_filter_, match_result, EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
   CollectPseudoRulesForElement(*element, collector, kPseudoIdNone, g_null_atom,
                                rules_to_include);
@@ -1654,7 +1601,7 @@ StyleResolver::CascadedValuesForElement(Element* element, PseudoId pseudo_id) {
   ElementRuleCollector collector(state.ElementContext(),
                                  StyleRecalcContext::FromAncestors(*element),
                                  selector_filter_, cascade.MutableMatchResult(),
-                                 state.Style(), EInsideLink::kNotInsideLink);
+                                 EInsideLink::kNotInsideLink);
   collector.SetPseudoElementStyleRequest(StyleRequest(pseudo_id, nullptr));
   MatchAllRules(state, collector, false /* include_smil_properties */);
 
@@ -1681,7 +1628,7 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
   StyleRecalcContext style_recalc_context =
       StyleRecalcContext::FromAncestors(*element);
   ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
-                                 selector_filter_, match_result, state.Style(),
+                                 selector_filter_, match_result,
                                  state.ElementLinkState());
   collector.SetMode(SelectorChecker::kCollectingCSSRules);
   // TODO(obrufau): support collecting rules for nested ::marker
@@ -1756,9 +1703,9 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
              &element);
 
   if (!IsAnimationStyleChange(*animating_element) ||
-      !state.StyleRef().BaseData()) {
+      !state.StyleBuilder().BaseData()) {
     state.StyleBuilder().SetBaseData(StyleBaseData::Create(
-        ComputedStyle::Clone(state.StyleRef()), cascade.GetImportantSet()));
+        ComputedStyle::Clone(*state.Style()), cascade.GetImportantSet()));
   }
 
   CSSAnimations::CalculateAnimationUpdate(
@@ -1799,11 +1746,11 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
 
   CSSAnimations::CalculateCompositorAnimationUpdate(
       state.AnimationUpdate(), *animating_element, element,
-      *state.StyleRef().GetBaseComputedStyle(), state.ParentStyle(),
+      *state.Style()->GetBaseComputedStyle(), state.ParentStyle(),
       WasViewportResized(), state.AffectsCompositorSnapshots());
   CSSAnimations::SnapshotCompositorKeyframes(
       *animating_element, state.AnimationUpdate(),
-      *state.StyleRef().GetBaseComputedStyle(), state.ParentStyle());
+      *state.Style()->GetBaseComputedStyle(), state.ParentStyle());
   CSSAnimations::UpdateAnimationFlags(
       *animating_element, state.AnimationUpdate(), state.StyleBuilder());
 
@@ -1925,7 +1872,8 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
       // If the cache item parent style has identical inherited properties to
       // the current parent style then the resulting style will be identical
       // too. We copy the inherited properties over from the cache and are done.
-      state.Style()->InheritFrom(*cached_matched_properties->computed_style);
+      state.StyleBuilder().InheritFrom(
+          *cached_matched_properties->computed_style);
 
       // Unfortunately the 'link status' is treated like an inherited property.
       // We need to explicitly restore it.
@@ -1938,7 +1886,7 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
           state.Style()->HasNonUniversalHighlightPseudoStyles();
       bool non_ua_highlights = state.Style()->HasNonUaHighlightPseudoStyles();
 
-      state.Style()->CopyNonInheritedFromCached(
+      state.StyleBuilder().CopyNonInheritedFromCached(
           *cached_matched_properties->computed_style);
 
       // Restore the non-universal highlight pseudo flag that was set while
@@ -2149,7 +2097,7 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
   auto apply = [&state, &cascade, &cache_success](CascadeFilter filter) {
     if (cache_success.ShouldApplyInheritedOnly()) {
       cascade.Apply(filter.Add(CSSProperty::kInherited, false));
-      if (!cache_success.IsUsableAfterApplyInheritedOnly(state.StyleRef()))
+      if (!cache_success.IsUsableAfterApplyInheritedOnly(*state.Style()))
         cascade.Apply(filter.Add(CSSProperty::kInherited, true));
     } else {
       cascade.Apply(filter);
@@ -2165,11 +2113,10 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
 
   if (state.RejectedLegacyOverlapping()) {
     scoped_refptr<ComputedStyle> non_legacy_style =
-        ComputedStyle::Clone(state.StyleRef());
+        ComputedStyle::Clone(*state.Style());
     // Re-apply all overlapping properties (both legacy and non-legacy).
     apply(CascadeFilter(CSSProperty::kOverlapping, false));
-    UseCountLegacyOverlapping(GetDocument(), *non_legacy_style,
-                              state.StyleRef());
+    UseCountLegacyOverlapping(GetDocument(), *non_legacy_style, *state.Style());
   }
 
   // NOTE: This flag needs to be set before the entry is added to the
@@ -2189,7 +2136,7 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
 
   MatchResult match_result;
   ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
-                                 selector_filter_, match_result, state.Style(),
+                                 selector_filter_, match_result,
                                  state.Style()->InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
 
@@ -2267,7 +2214,7 @@ ComputedStyleBuilder StyleResolver::CreateAnonymousStyleBuilderWithDisplay(
     const ComputedStyle& parent_style,
     EDisplay display) {
   ComputedStyleBuilder builder(*initial_style_);
-  builder.MutableInternalStyle()->InheritFrom(parent_style);
+  builder.InheritFrom(parent_style);
   builder.SetUnicodeBidi(parent_style.GetUnicodeBidi());
   builder.SetDisplay(display);
   return builder;
@@ -2576,7 +2523,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
   if (default_font)
     builder.SetFontDescription(*default_font);
   else  // parent_style
-    style->InheritFrom(*parent_style);
+    builder.InheritFrom(*parent_style);
   builder.SetDisplay(is_text_run ? EDisplay::kInline : EDisplay::kBlock);
 
   // Apply any properties in the `css_property_value_set`.
@@ -2654,7 +2601,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForInitialLetterText(
   DCHECK(!initial_letter_box_style.InitialLetter().IsNormal());
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
   ComputedStyle* initial_letter_text_style = builder.MutableInternalStyle();
-  initial_letter_text_style->InheritFrom(initial_letter_box_style);
+  builder.InheritFrom(initial_letter_box_style);
   builder.SetFont(
       ComputeInitialLetterFont(initial_letter_box_style, paragraph_style));
   builder.SetLineHeight(

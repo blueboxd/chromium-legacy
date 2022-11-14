@@ -1094,7 +1094,7 @@ const base::FeatureParam<base::TimeDelta>
 // This feature turns on site isolation support in <webview> guests.
 BASE_FEATURE(kSiteIsolationForGuests,
              "SiteIsolationForGuests",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, OOPIFs will not try to reuse compatible processes from
 // unrelated tabs.
@@ -1260,6 +1260,11 @@ BASE_FEATURE(kWebAssemblyDynamicTiering,
 // Enable WebAssembly lazy compilation (JIT on first call).
 BASE_FEATURE(kWebAssemblyLazyCompilation,
              "WebAssemblyLazyCompilation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable the use of WebAssembly Relaxed SIMD operations
+BASE_FEATURE(kWebAssemblyRelaxedSimd,
+             "WebAssemblyRelaxedSimd",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable WebAssembly tiering (Liftoff -> TurboFan).

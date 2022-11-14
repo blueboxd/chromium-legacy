@@ -37,6 +37,7 @@ import androidx.test.espresso.matcher.BoundedMatcher;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.chromium.ui.widget.ChromeImageButton;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -454,6 +455,20 @@ public class ManualFillingTestHelper {
             @Override
             public void perform(UiController uiController, View view) {
                 String descriptionToMatch = view.getContext().getString(descriptionResId);
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+                    KeyboardAccessoryButtonGroupView buttonGroupView =
+                        (KeyboardAccessoryButtonGroupView) view;
+                    for (int buttonIndex = 0; buttonIndex < buttonGroupView.getButtons().size(); buttonIndex++) {
+                        final ChromeImageButton button = buttonGroupView.getButtons().get(buttonIndex);
+                        if (descriptionToMatch.equals(button.getContentDescription())) {
+                            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, button::performClick);
+                            return;
+                        }
+                    }
+                    throw new PerformException.Builder()
+                        .withCause(new Throwable("No button with description: " + descriptionToMatch))
+                        .build();
+                }
                 TabLayout tabLayout = (TabLayout) view;
                 for (int tabIndex = 0; tabIndex < tabLayout.getTabCount(); tabIndex++) {
                     final TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);

@@ -5929,6 +5929,7 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kStopDuckingMedia:
     case ax::mojom::blink::Action::kSuspendMedia:
     case ax::mojom::blink::Action::kLongClick:
+    case ax::mojom::blink::Action::kScrollToPositionAtRowColumn:
       return false;
   }
 }
@@ -6237,11 +6238,8 @@ bool AXObject::IsFrame(const Node* node) {
   switch (frame_owner->OwnerType()) {
     case FrameOwnerElementType::kIframe:
     case FrameOwnerElementType::kFrame:
-      return true;
     case FrameOwnerElementType::kFencedframe:
-      // Shadow DOM <fencedframe>s have an <iframe> child, which will be the
-      // child tree owner.
-      return !blink::features::IsFencedFramesShadowDOMBased();
+      return true;
     case FrameOwnerElementType::kObject:
     case FrameOwnerElementType::kEmbed:
     case FrameOwnerElementType::kPortal:

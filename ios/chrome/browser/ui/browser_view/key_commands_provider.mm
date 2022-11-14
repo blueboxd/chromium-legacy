@@ -317,9 +317,6 @@ using base::UserMetricsAction;
 - (void)keyCommand_showNextTab {
   RecordAction(UserMetricsAction("MobileKeyCommandShowNextTab"));
   WebStateList* webStateList = self.browser->GetWebStateList();
-  if (!webStateList)
-    return;
-
   int activeIndex = webStateList->active_index();
   if (activeIndex == WebStateList::kInvalidIndex)
     return;
@@ -337,9 +334,6 @@ using base::UserMetricsAction;
 - (void)keyCommand_showPreviousTab {
   RecordAction(UserMetricsAction("MobileKeyCommandShowPreviousTab"));
   WebStateList* webStateList = self.browser->GetWebStateList();
-  if (!webStateList)
-    return;
-
   int activeIndex = webStateList->active_index();
   if (activeIndex == WebStateList::kInvalidIndex)
     return;
@@ -365,10 +359,15 @@ using base::UserMetricsAction;
   if (!currentWebState) {
     return;
   }
+  GURL URL = currentWebState->GetLastCommittedURL();
+  if (!URL.is_valid()) {
+    return;
+  }
 
-  BookmarkAddCommand* command =
-      [[BookmarkAddCommand alloc] initWithWebState:currentWebState
-                              presentFolderChooser:NO];
+  NSString* title = tab_util::GetTabTitle(currentWebState);
+  BookmarkAddCommand* command = [[BookmarkAddCommand alloc] initWithURL:URL
+                                                                  title:title
+                                                   presentFolderChooser:NO];
   [_bookmarksCommandsHandler bookmark:command];
 }
 
@@ -579,7 +578,7 @@ using base::UserMetricsAction;
     return NO;
   }
 
-  const GURL& url = currentWebState->GetVisibleURL();
+  const GURL& url = currentWebState->GetLastCommittedURL();
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
 }
 

@@ -49,6 +49,7 @@
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/unified_calendar_view_controller.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/deferred_update_dialog.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -722,6 +723,14 @@ void UnifiedSystemTrayController::CollapseWithoutAnimating() {
   animation_->Reset(0);
 }
 
+bool UnifiedSystemTrayController::IsDetailedViewShown() const {
+  if (quick_settings_view_)
+    return quick_settings_view_->IsDetailedViewShown();
+  if (unified_view_)
+    return unified_view_->IsDetailedViewShown();
+  return false;
+}
+
 void UnifiedSystemTrayController::UpdateDragThreshold() {
   UnifiedSystemTrayView* unified_view = bubble_->unified_view();
   drag_threshold_ = unified_view->GetExpandedSystemTrayHeight() -
@@ -750,7 +759,7 @@ bool UnifiedSystemTrayController::IsMessageCenterCollapseRequired() const {
 
   // Note: This calculaton should be the same as
   // UnifiedMessageCenterBubble::CalculateAvailableHeight().
-  return (bubble_ && bubble_->CalculateMaxHeight() -
+  return (bubble_ && CalculateMaxTrayBubbleHeight() -
                              unified_view_->GetExpandedSystemTrayHeight() -
                              kUnifiedMessageCenterBubbleSpacing <
                          kMessageCenterCollapseThreshold);

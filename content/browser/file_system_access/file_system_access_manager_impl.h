@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
 #include "base/types/pass_key.h"
@@ -115,14 +116,15 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   void BindInternalsReceiver(
       mojo::PendingReceiver<storage::mojom::FileSystemAccessContext> receiver);
 
-  // blink::mojom::FileSystemAccessManager:
-  void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   // Get the FileSystem with a custom bucket override. Must provide a binding
   // context for this request.
   void GetSandboxedFileSystem(
       const BindingContext& binding_context,
       const absl::optional<storage::BucketLocator>& bucket,
       GetSandboxedFileSystemCallback callback);
+
+  // blink::mojom::FileSystemAccessManager:
+  void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   void ChooseEntries(blink::mojom::FilePickerOptionsPtr options,
                      blink::mojom::CommonFilePickerOptionsPtr common_options,
                      ChooseEntriesCallback callback) override;
@@ -340,7 +342,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
     // Wrap the passed in callback in one that posts a task back to the
     // current sequence.
     auto wrapped_callback = base::BindPostTask(
-        base::SequencedTaskRunnerHandle::Get(), std::move(callback));
+        base::SequencedTaskRunner::GetCurrentDefault(), std::move(callback));
 
     // And then post a task to the sequence bound operation runner to run the
     // provided method with the provided arguments (and the wrapped callback).
@@ -375,7 +377,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
               FROM_HERE,
               base::BindOnce(callback, std::forward<CallbackArgs>(args)...));
         },
-        base::SequencedTaskRunnerHandle::Get(), std::move(callback));
+        base::SequencedTaskRunner::GetCurrentDefault(), std::move(callback));
 
     // And then post a task to the sequence bound operation runner to run the
     // provided method with the provided arguments (and the wrapped callback).

@@ -156,7 +156,8 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockValidated(
 void IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead(
     const base::FilePath& web_bundle_path,
     const web_package::SignedWebBundleId& web_bundle_id,
-    absl::optional<SignedWebBundleReader::ReadError> read_error) {
+    absl::optional<SignedWebBundleReader::ReadIntegrityBlockAndMetadataError>
+        read_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto cache_entry_it = reader_cache_.Find(web_bundle_path);
@@ -207,7 +208,8 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead(
       error.has_value()) {
     for (auto& [resource_request, callback] : pending_requests) {
       std::move(callback).Run(
-          base::unexpected(ReadResponseError::ForOtherError(*error)));
+          base::unexpected(ReadResponseError::ForOtherError(base::StringPrintf(
+              "Failed to validate metadata: %s", error->c_str()))));
     }
     reader_cache_.Erase(cache_entry_it);
     return;

@@ -399,6 +399,7 @@
 <translation id="3130863904455712965">سابقه و موارد بیشتر</translation>
 <translation id="3134784203083076891">»</translation>
 <translation id="314939179385989105">‏صفحه اصلی Chrome</translation>
+<translation id="3157931365184549694">بازیابی</translation>
 <translation id="3166827708714933426">میان‌برهای پنجره و برگه</translation>
 <translation id="316694332262407393">‏Chrome ازقبل درحال اجرا شدن است.</translation>
 <translation id="3169472444629675720">کشف کردن</translation>
@@ -551,6 +552,7 @@
 <translation id="4016425174436051808">دنبال کردن ممکن نیست. مشکلی پیش آمد.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ساعت}one{# ساعت}other{# ساعت}}</translation>
 <translation id="4035877632587724847">مجاز نیست</translation>
+<translation id="4036177530563778041">به‌راحتی از جایی که ترک کردید ادامه دهید</translation>
 <translation id="4045764304651014138">داده‌های استفاده</translation>
 <translation id="405399507749852140">اگر قیمت در هر سایتی کاهش پیدا کرد، هشدار دریافت می‌کنید</translation>
 <translation id="4056223980640387499">سپیا</translation>
@@ -1122,6 +1124,7 @@
 <translation id="7029390216614421513">رمزینه پاسخ‌سریع یا بارکد را در این قاب قرار دهید.</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
 <translation id="7030304022046916278">نشانی‌های وب را به «مرور ایمن» ارسال می‌کند تا بررسی شوند</translation>
+<translation id="7030585293819777123">آخرین تکلیف شما ازسر گرفته شود؟</translation>
 <translation id="7037830628447527439">‏با «حساب Google» به سیستم Chrome وارد شوید.</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" />‎</translation>
 <translation id="7054588988317389591">توضیحات تصویر دریافت شود؟</translation>

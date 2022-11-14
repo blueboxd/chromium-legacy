@@ -34,8 +34,8 @@ ImagePaintTimingInfo ComputeImagePaintTimingInfo(
     const gfx::Rect& image_border) {
   return ImagePaintTimingInfo(PaintTimingDetector::NotifyImagePaint(
       layout_image, image.Size(), *image_content,
-      context.GetPaintController().CurrentPaintChunkProperties(),
-      image_border));
+      context.GetPaintController().CurrentPaintChunkProperties(), image_border,
+      image_content->GetImage()->FilenameExtension()));
 }
 }  // namespace
 
@@ -120,7 +120,7 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
       *layout_svg_image_.GetFrame(), layout_svg_image_.StyleRef(), dest_rect,
       src_rect);
   paint_info.context.DrawImage(
-      image.get(), decode_mode, image_auto_dark_mode,
+      *image, decode_mode, image_auto_dark_mode,
       ComputeImagePaintTimingInfo(layout_svg_image_, *image, image_content,
                                   paint_info.context,
                                   gfx::ToEnclosingRect(dest_rect)),

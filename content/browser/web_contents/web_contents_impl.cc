@@ -174,7 +174,6 @@
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
-#include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/color/color_provider_manager.h"
@@ -894,8 +893,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
                           this,
                           this,
                           this,
-                          FrameTree::Type::kPrimary,
-                          base::UnguessableToken::Create()),
+                          FrameTree::Type::kPrimary),
       node_(this),
       primary_main_frame_process_status_(
           base::TERMINATION_STATUS_STILL_RUNNING),
@@ -956,12 +954,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   screen_change_monitor_ =
       std::make_unique<ScreenChangeMonitor>(base::BindRepeating(
           &WebContentsImpl::OnScreensChange, base::Unretained(this)));
-
-  // AttributionHost takes a weak ref on |this|, so it must be created outside
-  // of the initializer list.
-  if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
-    AttributionHost::CreateForWebContents(this);
-  }
 
   if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
     SharedStorageBudgetCharger::CreateForWebContents(this);
@@ -1939,13 +1931,7 @@ const std::u16string& WebContentsImpl::GetTitle() {
     }
   }
 
-  NavigationEntry* entry = GetNavigationEntryForTitle();
-  if (entry)
-    return entry->GetTitleForDisplay();
-  // |page_title_when_no_navigation_entry_| is finally used if no title can be
-  // retrieved.
-  DCHECK(!blink::features::IsInitialNavigationEntryEnabled());
-  return page_title_when_no_navigation_entry_;
+  return GetNavigationEntryForTitle()->GetTitleForDisplay();
 }
 
 SiteInstanceImpl* WebContentsImpl::GetSiteInstance() {
@@ -2247,26 +2233,6 @@ void WebContentsImpl::OnVerticalScrollDirectionChanged(
                         "scroll_direction", static_cast<int>(scroll_direction));
   observers_.NotifyObservers(
       &WebContentsObserver::DidChangeVerticalScrollDirection, scroll_direction);
-}
-
-int WebContentsImpl::GetVirtualKeyboardResizeHeight() {
-  // Only consider a web contents to be insetted by the virtual keyboard if it
-  // is in the currently active tab.
-  if (GetVisibility() != Visibility::VISIBLE)
-    return 0;
-
-  // The only mode where the virtual keyboard causes the web contents to be
-  // resized is kResizesContent.
-  if (GetPrimaryPage().virtual_keyboard_mode() !=
-      ui::mojom::VirtualKeyboardMode::kResizesContent) {
-    return 0;
-  }
-
-  // The virtual keyboard never resizes content when fullscreened.
-  if (IsFullscreen())
-    return 0;
-
-  return GetDelegate() ? GetDelegate()->GetVirtualKeyboardHeight(this) : 0;
 }
 
 void WebContentsImpl::OnAudioStateChanged() {
@@ -3104,7 +3070,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
   // not pass the opener for those cases.
   primary_frame_tree_.Init(
       site_instance.get(), params.renderer_initiated_creation,
-      params.main_frame_name, GetOpener(), primary_main_frame_policy);
+      params.main_frame_name, GetOpener(), primary_main_frame_policy,
+      base::UnguessableToken::Create());
 
   std::unique_ptr<WebContentsViewDelegate> delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
@@ -3127,6 +3094,12 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
 #if BUILDFLAG(IS_ANDROID)
   DateTimeChooserAndroid::CreateForWebContents(this);
 #endif
+
+  // AttributionHost must be created after `view_->CreateView()` is called as it
+  // may invoke `WebContentsAndroid::AddObserver()`.
+  if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+    AttributionHost::CreateForWebContents(this);
+  }
 
   // BrowserPluginGuest::Init needs to be called after this WebContents has
   // a RenderWidgetHostViewChildFrame. That is, |view_->CreateView| above.
@@ -6647,40 +6620,25 @@ void WebContentsImpl::UpdateTitleForEntry(NavigationEntry* entry,
 
 bool WebContentsImpl::UpdateTitleForEntryImpl(NavigationEntryImpl* entry,
                                               const std::u16string& title) {
+  DCHECK(entry);
   std::u16string final_title;
   base::TrimWhitespace(title, base::TRIM_ALL, &final_title);
 
-  // If a page is created via window.open and never navigated,
-  // there will be no navigation entry. In this situation,
-  // |page_title_when_no_navigation_entry_| will be used for page title.
-  // For a title update from a non-primary frame tree, |entry| will always be
-  // non-null.
-  if (entry) {
-    if (final_title == entry->GetTitle())
-      return false;  // Nothing changed, don't bother.
+  if (final_title == entry->GetTitle())
+    return false;  // Nothing changed, don't bother.
 
-    entry->SetTitle(final_title);
-
-    // The title for display may differ from the title just set; grab it.
-    final_title = entry->GetTitleForDisplay();
-  } else {
-    DCHECK(!blink::features::IsInitialNavigationEntryEnabled());
-    if (page_title_when_no_navigation_entry_ == final_title)
-      return false;  // Nothing changed, don't bother.
-
-    page_title_when_no_navigation_entry_ = final_title;
-  }
+  entry->SetTitle(final_title);
+  // The title for display may differ from the title just set; grab it.
+  final_title = entry->GetTitleForDisplay();
 
   return true;
 }
 
 void WebContentsImpl::NotifyTitleUpdateForEntry(NavigationEntryImpl* entry) {
-  // |entry|, if non-null, must belong to the primary frame tree's
-  // NavigationController.
-  DCHECK(!entry || GetController().GetEntryWithUniqueIDIncludingPending(
-                       entry->GetUniqueID()));
-  std::u16string final_title = entry ? entry->GetTitleForDisplay()
-                                     : page_title_when_no_navigation_entry_;
+  // |entry| must belong to the primary frame tree's NavigationController.
+  DCHECK(GetController().GetEntryWithUniqueIDIncludingPending(
+      entry->GetUniqueID()));
+  std::u16string final_title = entry->GetTitleForDisplay();
   bool did_web_contents_title_change = entry == GetNavigationEntryForTitle();
   if (did_web_contents_title_change)
     view_->SetPageTitle(final_title);
@@ -7736,31 +7694,23 @@ void WebContentsImpl::UpdateTitle(RenderFrameHostImpl* render_frame_host,
       render_frame_host->frame_tree()->controller().GetEntryWithUniqueID(
           render_frame_host->nav_entry_id());
 
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    if (!entry) {
-      // When InitialNavigationEntry is enabled, we can handle title updates
-      // with no matching NavigationEntry, but only if the update is for the
-      // initial NavigationEntry. In that case the initial empty document RFH
-      // wouldn't have a `nav_entry_id` set because it hasn't committed any
-      // navigation. Note that if the title update came from the initial empty
-      // document but the WebContents is doing a session restore, we will
-      // ignore the title update (because GetLastCommittedEntry() would return
-      // the non-initial restored entry), which avoids accidental overwriting of
-      // the restored entry's title.
-      if (render_frame_host->GetParent() || !render_frame_host->frame_tree()
-                                                 ->controller()
-                                                 .GetLastCommittedEntry()
-                                                 ->IsInitialEntry()) {
-        return;
-      }
-      entry =
-          render_frame_host->frame_tree()->controller().GetLastCommittedEntry();
-    }
-  } else {
-    // Otherwise, we can handle title updates when we don't have an entry in
-    // UpdateTitleForEntry, but only if the update is from the current RFH.
-    if (!entry && render_frame_host != GetPrimaryMainFrame())
+  if (!entry) {
+    // We can handle title updates with no matching NavigationEntry, but only if
+    // the update is for the initial NavigationEntry. In that case the initial
+    // empty document RFH wouldn't have a `nav_entry_id` set because it hasn't
+    // committed any navigation. Note that if the title update came from the
+    // initial empty document but the WebContents is doing a session restore,
+    // we will ignore the title update (because GetLastCommittedEntry() would
+    // return the non-initial restored entry), which avoids accidental
+    // overwriting of the restored entry's title.
+    if (render_frame_host->GetParent() || !render_frame_host->frame_tree()
+                                               ->controller()
+                                               .GetLastCommittedEntry()
+                                               ->IsInitialEntry()) {
       return;
+    }
+    entry =
+        render_frame_host->frame_tree()->controller().GetLastCommittedEntry();
   }
 
   // TODO(evan): make use of title_direction.
@@ -9264,7 +9214,8 @@ void WebContentsImpl::SetOpenerForNewContents(FrameTreeNode* opener,
     // by spawning from a subframe and deleting the subframe.
     // https://crbug.com/705316
     new_root->SetOriginalOpener(opener->frame_tree()->root());
-    new_root->SetOpenerDevtoolsFrameToken(opener->devtools_frame_token());
+    new_root->SetOpenerDevtoolsFrameToken(
+        opener->current_frame_host()->devtools_frame_token());
     opened_by_another_window_ = true;
 
     if (!opener_suppressed) {
@@ -9400,7 +9351,7 @@ void WebContentsImpl::ForEachRenderViewHost(
     on_render_view_host.Run(render_view_host);
 }
 
-void WebContentsImpl::NotifyPageChanged(PageImpl& page) {
+void WebContentsImpl::NotifyPageBecamePrimary(PageImpl& page) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::PrimaryPageChanged");
 
   DCHECK_EQ(&page, &GetPrimaryPage());

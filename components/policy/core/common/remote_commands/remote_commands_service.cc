@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_is_test.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +22,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
@@ -65,6 +67,8 @@ RemoteCommandsService::MetricReceivedRemoteCommand RemoteCommandMetricFromType(
       return Metric::kDeviceResetEuicc;
     case em::RemoteCommand_Type_BROWSER_ROTATE_ATTESTATION_CREDENTIAL:
       return Metric::kBrowserRotateAttestationCredential;
+    case em::RemoteCommand_Type_FETCH_CRD_AVAILABILITY_INFO:
+      return Metric::kFetchCrdAvailabilityInfo;
   }
 
   // None of possible types matched. May indicate that there is new unhandled
@@ -107,6 +111,8 @@ const char* RemoteCommandTypeToString(em::RemoteCommand_Type type) {
       return "DeviceResetEuicc";
     case em::RemoteCommand_Type_BROWSER_ROTATE_ATTESTATION_CREDENTIAL:
       return "BrowserRotateAttestationCredential";
+    case em::RemoteCommand_Type_FETCH_CRD_AVAILABILITY_INFO:
+      return "FetchCrdAvailabilityInfo";
   }
 
   NOTREACHED() << "Unknown command type: " << type;
@@ -246,7 +252,7 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   }
 
   client_->FetchRemoteCommands(
-      std::move(id_to_acknowledge), previous_results,
+      std::move(id_to_acknowledge), previous_results, signature_type_,
       base::BindOnce(&RemoteCommandsService::OnRemoteCommandsFetched,
                      weak_factory_.GetWeakPtr()));
 
@@ -259,6 +265,12 @@ void RemoteCommandsService::SetClocksForTesting(
   queue_.SetClocksForTesting(clock, tick_clock);
 }
 
+void RemoteCommandsService::SetSignatureTypeForTesting(
+    enterprise_management::PolicyFetchRequest::SignatureType signature_type) {
+  CHECK_IS_TEST();
+  signature_type_ = signature_type;
+}
+
 void RemoteCommandsService::SetOnCommandAckedCallback(
     base::OnceClosure callback) {
   on_command_acked_callback_ = std::move(callback);
@@ -268,8 +280,7 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
     const em::SignedData& signed_command) {
   const bool valid_signature = CloudPolicyValidatorBase::VerifySignature(
       signed_command.data(), store_->policy_signature_public_key(),
-      signed_command.signature(),
-      CloudPolicyValidatorBase::SignatureType::SHA1);
+      signed_command.signature(), signature_type_);
 
   auto ignore_result = base::BindOnce(
       [](RemoteCommandsService* self, const char* error_msg,

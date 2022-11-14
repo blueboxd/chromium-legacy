@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_bitset.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/resolver/matched_properties_cache.h"
 #include "third_party/blink/renderer/core/css/style_auto_color.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
@@ -217,6 +218,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
   friend class ComputedStyleBase;
+  friend class ComputedStyleBuilder;
   // Used by CSS animations. We can't allow them to animate based off visited
   // colors.
   friend class CSSPropertyEquality;
@@ -287,7 +289,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Access to GetCurrentColor(). (drop-shadow() does not resolve 'currentcolor'
   // at use-time.)
   friend class FilterOperationResolver;
-  // Access to SetInitialData() and GetCurrentColor().
+  // Access to GetCurrentColor().
   friend class StyleResolver;
   // Access to UserModify().
   friend class MatchedPropertiesCache;
@@ -303,7 +305,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   Vector<AtomicString>* GetVariableNamesCache() const;
   Vector<AtomicString>& EnsureVariableNamesCache() const;
-  void ClearVariableNamesCache() const;
 
   PositionFallbackStyleCache& EnsurePositionFallbackStyleCache(
       unsigned ensure_size) const;
@@ -315,6 +316,25 @@ class ComputedStyle : public ComputedStyleBase,
 
  public:
   using PassKey = base::PassKey<ComputedStyle>;
+
+  // See comment on freelist_.
+  void* operator new(size_t size) {
+    DCHECK(IsMainThread());
+    if (freelist_ != nullptr) {
+      ComputedStyle* ret = freelist_;
+      freelist_ = nullptr;
+      return ret;
+    }
+    return ::WTF::Partitions::FastMalloc(size, "ComputedStyle");
+  }
+  void operator delete(void* p) {
+    DCHECK(IsMainThread());
+    if (freelist_ == nullptr) {
+      freelist_ = static_cast<ComputedStyle*>(p);
+    } else {
+      ::WTF::Partitions::FastFree(p);
+    }
+  }
 
   ALWAYS_INLINE ComputedStyle(PassKey, const ComputedStyle&);
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
@@ -389,11 +409,6 @@ class ComputedStyle : public ComputedStyleBase,
                                       const ComputedStyle* old_style,
                                       const ComputedStyle* new_style);
 
-  // Copies the values of any independent inherited properties from the parent
-  // that are not explicitly set in this style.
-  void PropagateIndependentInheritedProperties(
-      const ComputedStyle& parent_style);
-
   ContentPosition ResolvedJustifyContentPosition(
       const StyleContentAlignmentData& normal_value_behavior) const;
   ContentDistributionType ResolvedJustifyContentDistribution(
@@ -419,10 +434,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   CORE_EXPORT StyleDifference
   VisualInvalidationDiff(const Document&, const ComputedStyle&) const;
-
-  CORE_EXPORT void InheritFrom(const ComputedStyle& inherit_parent,
-                               IsAtShadowBoundary = kNotAtShadowBoundary);
-  void CopyNonInheritedFromCached(const ComputedStyle&);
 
   CORE_EXPORT const ComputedStyle* GetCachedPseudoElementStyle(
       PseudoId,
@@ -950,13 +961,6 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT const Vector<AtomicString>& GetVariableNames() const;
   CORE_EXPORT const StyleInheritedVariables* InheritedVariables() const;
   CORE_EXPORT const StyleNonInheritedVariables* NonInheritedVariables() const;
-
-  CORE_EXPORT void SetVariableData(const AtomicString&,
-                                   scoped_refptr<CSSVariableData>,
-                                   bool is_inherited_property);
-  CORE_EXPORT void SetVariableValue(const AtomicString&,
-                                    const CSSValue*,
-                                    bool is_inherited_property);
 
   // Handles both inherited and non-inherited variables
   CORE_EXPORT CSSVariableData* GetVariableData(const AtomicString&) const;
@@ -2105,7 +2109,6 @@ class ComputedStyle : public ComputedStyleBase,
   // Pseudo element styles.
   bool HasAnyPseudoElementStyles() const;
   bool HasPseudoElementStyle(PseudoId) const;
-  void SetHasPseudoElementStyle(PseudoId);
 
   // Note: CanContainAbsolutePositionObjects should return true if
   // CanContainFixedPositionObjects.  We currently never use this value
@@ -2559,11 +2562,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   static bool ShadowListHasCurrentColor(const ShadowList*);
 
-  StyleInheritedVariables& MutableInheritedVariables();
-  StyleNonInheritedVariables& MutableNonInheritedVariables();
-
-  CORE_EXPORT void SetInitialData(scoped_refptr<StyleInitialData>);
-
   PhysicalToLogical<const Length&> PhysicalMarginToLogical(
       const ComputedStyle& other) const {
     return PhysicalToLogical<const Length&>(other.GetWritingDirection(),
@@ -2606,6 +2604,16 @@ class ComputedStyle : public ComputedStyleBase,
       const ComputedStyle& new_style);
 
   bool ShouldForceColor(const StyleColor& unforced_color) const;
+
+  // A one-element freelist that we can use to get fewer calls to new/delete
+  // when recalculating style; the new and delete calls usually come in
+  // exact pairs, so barring DCHECK verification, a single-element list
+  // is usually sufficient to get rid of nearly all such calls, and we don't
+  // need anything longer or more complex. (We still run the constructors and
+  // destructors, though; it's only the memory that is reused, not the object.)
+  //
+  // Subobjects in generated code use exactly the same pattern (see group.tmpl).
+  CORE_EXPORT static ComputedStyle* freelist_;
 
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,
@@ -2668,21 +2676,13 @@ class ComputedStyle : public ComputedStyleBase,
 };
 
 inline bool ComputedStyle::HasAnyPseudoElementStyles() const {
-  return !!PseudoBitsInternal();
+  return !!PseudoElementStylesInternal();
 }
 
 inline bool ComputedStyle::HasPseudoElementStyle(PseudoId pseudo) const {
   DCHECK(pseudo >= kFirstPublicPseudoId);
   DCHECK(pseudo <= kLastTrackedPublicPseudoId);
-  return (1 << (pseudo - kFirstPublicPseudoId)) & PseudoBitsInternal();
-}
-
-inline void ComputedStyle::SetHasPseudoElementStyle(PseudoId pseudo) {
-  DCHECK(pseudo >= kFirstPublicPseudoId);
-  DCHECK(pseudo <= kLastTrackedPublicPseudoId);
-  // TODO: Fix up this code. It is hard to understand.
-  SetPseudoBitsInternal(PseudoBitsInternal() |
-                        1 << (pseudo - kFirstPublicPseudoId));
+  return (1 << (pseudo - kFirstPublicPseudoId)) & PseudoElementStylesInternal();
 }
 
 class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
@@ -2709,6 +2709,29 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     return ComputedStyle::Clone(*style_);
   }
 #endif  // DCHECK_IS_ON()
+
+  CORE_EXPORT void InheritFrom(
+      const ComputedStyle& inherit_parent,
+      IsAtShadowBoundary is_at_shadow_boundary = kNotAtShadowBoundary) {
+    EUserModify current_user_modify = UserModifyInternal();
+    ComputedStyleBuilderBase::InheritFrom(inherit_parent,
+                                          is_at_shadow_boundary);
+
+    // Even if surrounding content is user-editable, shadow DOM should act as a
+    // single unit, and not necessarily be editable
+    if (is_at_shadow_boundary == kAtShadowBoundary)
+      SetUserModify(current_user_modify);
+  }
+
+  void CopyNonInheritedFromCached(const ComputedStyle& other) {
+    DCHECK(MatchedPropertiesCache::IsStyleCacheable(other));
+    ComputedStyleBuilderBase::CopyNonInheritedFromCached(other);
+  }
+
+  // Copies the values of any independent inherited properties from the parent
+  // that are not explicitly set in this style.
+  void PropagateIndependentInheritedProperties(
+      const ComputedStyle& parent_style);
 
   // animations
   const CSSAnimationData* Animations() const {
@@ -3123,12 +3146,38 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       mojom::blink::PreferredColorScheme preferred_color_scheme,
       bool force_dark);
 
+  // Variables
+  CORE_EXPORT StyleInheritedVariables& MutableInheritedVariables();
+  CORE_EXPORT StyleNonInheritedVariables& MutableNonInheritedVariables();
+  CORE_EXPORT void SetVariableData(const AtomicString& name,
+                                   scoped_refptr<CSSVariableData> value,
+                                   bool is_inherited_property) {
+    if (is_inherited_property)
+      MutableInheritedVariables().SetData(name, std::move(value));
+    else
+      MutableNonInheritedVariables().SetData(name, std::move(value));
+  }
+  CORE_EXPORT void SetVariableValue(const AtomicString& name,
+                                    const CSSValue* value,
+                                    bool is_inherited_property) {
+    if (is_inherited_property)
+      MutableInheritedVariables().SetValue(name, value);
+    else
+      MutableNonInheritedVariables().SetValue(name, value);
+  }
+  CORE_EXPORT void SetInitialData(scoped_refptr<StyleInitialData> data) {
+    ClearVariableNamesCache();
+    MutableInitialDataInternal() = std::move(data);
+  }
+
  private:
   friend class ColorPropertyFunctions;
   friend class StyleAdjuster;
   friend class StyleResolverState;
 
   ComputedStyleBuilder() = default;
+
+  CORE_EXPORT void ClearVariableNamesCache();
 
   // TODO(andruud): This should be part of the constructor, but
   // StyleResolverState does not work that way.

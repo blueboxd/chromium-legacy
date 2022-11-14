@@ -26,29 +26,6 @@ source_set("bulk_api_implementation") {
   sources = [
     "async_api_function.cc",
     "async_api_function.h",
-
-    # TODO(crbug.com/1206265): anything under storage/ should be moved out of
-    # this target.
-    "storage/backend_task_runner.cc",
-    "storage/backend_task_runner.h",
-    "storage/local_value_store_cache.cc",
-    "storage/local_value_store_cache.h",
-    "storage/session_storage_manager.cc",
-    "storage/session_storage_manager.h",
-    "storage/settings_storage_quota_enforcer.cc",
-    "storage/settings_storage_quota_enforcer.h",
-    "storage/storage_api.cc",
-    "storage/storage_api.h",
-    "storage/storage_area_namespace.cc",
-    "storage/storage_area_namespace.h",
-    "storage/storage_frontend.cc",
-    "storage/storage_frontend.h",
-    "storage/value_store_cache.cc",
-    "storage/value_store_cache.h",
-    "storage/value_store_util.cc",
-    "storage/value_store_util.h",
-    "storage/weak_unlimited_settings_storage.cc",
-    "storage/weak_unlimited_settings_storage.h",
   ]
 
   public_deps = [
@@ -89,16 +66,6 @@ source_set("bulk_api_implementation") {
 
   if (is_chromeos_ash) {
     sources += [
-      "lock_screen_data/data_item.cc",
-      "lock_screen_data/data_item.h",
-      "lock_screen_data/lock_screen_data_api.cc",
-      "lock_screen_data/lock_screen_data_api.h",
-      "lock_screen_data/lock_screen_item_storage.cc",
-      "lock_screen_data/lock_screen_item_storage.h",
-      "lock_screen_data/lock_screen_value_store_migrator.h",
-      "lock_screen_data/lock_screen_value_store_migrator_impl.cc",
-      "lock_screen_data/lock_screen_value_store_migrator_impl.h",
-      "lock_screen_data/operation_result.h",
       "media_perception_private/conversion_utils.cc",
       "media_perception_private/conversion_utils.h",
       "media_perception_private/media_perception_api_delegate.h",
@@ -117,6 +84,7 @@ source_set("bulk_api_implementation") {
       "//chromeos/login/login_state",
       "//chromeos/services/media_perception/public/mojom",
       "//chromeos/services/media_perception/public/mojom:mojom_js_data_deps",
+      "//extensions/browser/api/storage",
     ]
   }
 }
@@ -155,6 +123,7 @@ group("api_implementations") {
     "//extensions/browser/api/sockets_tcp",
     "//extensions/browser/api/sockets_tcp_server",
     "//extensions/browser/api/sockets_udp",
+    "//extensions/browser/api/storage",
     "//extensions/browser/api/system_cpu",
     "//extensions/browser/api/system_info",
     "//extensions/browser/api/system_memory",
@@ -172,6 +141,7 @@ group("api_implementations") {
     public_deps += [
       "//extensions/browser/api/cec_private",
       "//extensions/browser/api/diagnostics",
+      "//extensions/browser/api/lock_screen_data",
       "//extensions/browser/api/webcam_private",
     ]
   }

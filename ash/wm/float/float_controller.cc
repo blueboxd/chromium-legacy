@@ -24,6 +24,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
+#include "base/check.h"
 #include "base/check_op.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/wm/constants.h"
@@ -345,37 +346,58 @@ void FloatController::OnDragCompletedForTablet(
 }
 
 void FloatController::OnFlingOrSwipeForTablet(aura::Window* floated_window,
-                                              bool left,
+                                              absl::optional<bool> left,
                                               bool up) {
   auto* floated_window_info = MaybeGetFloatedWindowInfo(floated_window);
   DCHECK(floated_window_info);
-  MagnetismCorner magnetism_corner;
-  if (left && up) {
-    magnetism_corner = MagnetismCorner::kTopLeft;
-  } else if (left && !up) {
-    magnetism_corner = MagnetismCorner::kBottomLeft;
-  } else if (!left && up) {
-    magnetism_corner = MagnetismCorner::kTopRight;
-  } else {
-    DCHECK(!left && !up);
-    magnetism_corner = MagnetismCorner::kBottomRight;
+  MagnetismCorner original_corner = floated_window_info->magnetism_corner();
+
+  // If this was a vertical fling, simply update magnetism.
+  if (!left) {
+    switch (original_corner) {
+      case MagnetismCorner::kTopLeft:
+      case MagnetismCorner::kBottomLeft:
+        floated_window_info->set_magnetism_corner(
+            up ? MagnetismCorner::kTopLeft : MagnetismCorner::kBottomLeft);
+        break;
+      case MagnetismCorner::kTopRight:
+      case MagnetismCorner::kBottomRight:
+        floated_window_info->set_magnetism_corner(
+            up ? MagnetismCorner::kTopRight : MagnetismCorner::kBottomRight);
+        break;
+    }
+    UpdateWindowBoundsForTablet(
+        floated_window, WindowState::BoundsChangeAnimationType::kAnimate);
+    return;
   }
 
-  MagnetismCorner original_corner = floated_window_info->magnetism_corner();
+  bool left_value = *left;
+  MagnetismCorner magnetism_corner;
+  if (left_value && up) {
+    magnetism_corner = MagnetismCorner::kTopLeft;
+  } else if (left_value && !up) {
+    magnetism_corner = MagnetismCorner::kBottomLeft;
+  } else if (!left_value && up) {
+    magnetism_corner = MagnetismCorner::kTopRight;
+  } else {
+    DCHECK(!left_value && !up);
+    magnetism_corner = MagnetismCorner::kBottomRight;
+  }
   floated_window_info->set_magnetism_corner(magnetism_corner);
+
   // If the window was flung to the closest edge from `original_corner` then
   // tuck the window, otherwise magnetize it.
   switch (original_corner) {
     case MagnetismCorner::kTopLeft:
     case MagnetismCorner::kBottomLeft:
-      if (left) {
+      if (left_value) {
         floated_window_info->MaybeTuckWindow(true);
         return;
       }
       break;
     case MagnetismCorner::kTopRight:
     case MagnetismCorner::kBottomRight:
-      if (!left) {
+      if (!left_value) {
         floated_window_info->MaybeTuckWindow(false);
         return;
       }
@@ -592,11 +614,11 @@ void FloatController::FloatImpl(aura::Window* window) {
   // If a floated window already exists at current desk, unfloat it before
   // floating `window`.
   auto* desk_controller = DesksController::Get();
-  // Get the active desk where the window belongs to before moving it to float
+  // Get the desk where the window belongs to before moving it to float
   // container.
-  DCHECK(desks_util::IsActiveDeskContainer(
-      desks_util::GetDeskContainerForContext(window)));
-  const Desk* desk = desk_controller->GetTargetActiveDesk();
+  const Desk* desk = desks_util::GetDeskForContext(window);
+  DCHECK(desk);
+
   auto* previously_floated_window = FindFloatedWindowOfDesk(desk);
   // Add floated window to `floated_window_info_map_`.
   // Note: this has to be called before `ResetFloatedWindow`. Because in the
@@ -612,6 +634,9 @@ void FloatController::FloatImpl(aura::Window* window) {
       window->GetRootWindow()->GetChildById(kShellWindowId_FloatContainer);
   DCHECK_NE(window->parent(), floated_container);
   floated_container->AddChild(window);
+
+  if (!desk->is_active())
+    HideFloatedWindow(window);
 
   if (!tablet_mode_observation_.IsObserving())
     tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());

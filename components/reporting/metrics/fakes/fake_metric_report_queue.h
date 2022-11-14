@@ -5,15 +5,18 @@
 #ifndef COMPONENTS_REPORTING_METRICS_FAKES_FAKE_METRIC_REPORT_QUEUE_H_
 #define COMPONENTS_REPORTING_METRICS_FAKES_FAKE_METRIC_REPORT_QUEUE_H_
 
-#include <memory>
+#include <string>
 #include <vector>
 
-#include "components/reporting/client/report_queue.h"
+#include "base/functional/callback_helpers.h"
+#include "base/test/repeating_test_future.h"
+#include "base/time/time.h"
 #include "components/reporting/metrics/metric_report_queue.h"
+#include "components/reporting/metrics/reporting_settings.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 
-namespace reporting {
-namespace test {
+namespace reporting::test {
 
 class FakeMetricReportQueue : public MetricReportQueue {
  public:
@@ -30,22 +33,23 @@ class FakeMetricReportQueue : public MetricReportQueue {
 
   ~FakeMetricReportQueue() override;
 
-  void Enqueue(std::unique_ptr<const MetricData> metric_data,
-               ReportQueue::EnqueueCallback callback) override;
+  void Enqueue(
+      MetricData metric_data,
+      ReportQueue::EnqueueCallback callback = base::DoNothing()) override;
 
-  const std::vector<std::unique_ptr<const MetricData>>& GetMetricDataReported()
-      const;
+  MetricData GetMetricDataReported();
 
   int GetNumFlush() const;
+
+  bool IsEmpty() const;
 
  private:
   void Flush() override;
 
-  std::vector<std::unique_ptr<const MetricData>> reported_data_;
+  base::test::RepeatingTestFuture<MetricData> reported_data_;
 
   int num_flush_ = 0;
 };
-}  // namespace test
-}  // namespace reporting
+}  // namespace reporting::test
 
 #endif  // COMPONENTS_REPORTING_METRICS_FAKES_FAKE_METRIC_REPORT_QUEUE_H_

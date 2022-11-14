@@ -29,7 +29,7 @@
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "chrome/updater/win/proxy_impl_base.h"
 #include "chrome/updater/win/win_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -758,11 +758,6 @@ void UpdateServiceProxy::RunInstaller(const std::string& app_id,
   impl_->RunInstaller(app_id, installer_path, install_args, install_data,
                       install_settings, OnCurrentSequence(state_update),
                       OnCurrentSequence(std::move(callback)));
-}
-
-// TODO(crbug.com/1363829) - remove the function.
-void UpdateServiceProxy::Uninitialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 scoped_refptr<UpdateService> CreateUpdateServiceProxy(

@@ -5,22 +5,25 @@
 #include "components/reporting/metrics/fakes/fake_metric_report_queue.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
+#include "components/reporting/client/report_queue.h"
+#include "components/reporting/metrics/reporting_settings.h"
+#include "components/reporting/proto/synced/metric_data.pb.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
-#include "components/reporting/util/status.h"
 
-namespace reporting {
-namespace test {
+namespace reporting::test {
 
 FakeMetricReportQueue::FakeMetricReportQueue(Priority priority)
-    : MetricReportQueue(std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>(
-                            nullptr,
-                            base::OnTaskRunnerDeleter(
-                                base::SequencedTaskRunnerHandle::Get())),
-                        priority) {}
+    : MetricReportQueue(
+          std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>(
+              nullptr,
+              base::OnTaskRunnerDeleter(
+                  base::SequencedTaskRunner::GetCurrentDefault())),
+          priority) {}
 
 FakeMetricReportQueue::FakeMetricReportQueue(
     Priority priority,
@@ -28,20 +31,20 @@ FakeMetricReportQueue::FakeMetricReportQueue(
     const std::string& rate_setting_path,
     base::TimeDelta default_rate,
     int rate_unit_to_ms)
-    : MetricReportQueue(std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>(
-                            nullptr,
-                            base::OnTaskRunnerDeleter(
-                                base::SequencedTaskRunnerHandle::Get())),
-                        priority,
-                        reporting_settings,
-                        rate_setting_path,
-                        default_rate,
-                        rate_unit_to_ms) {}
+    : MetricReportQueue(
+          std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>(
+              nullptr,
+              base::OnTaskRunnerDeleter(
+                  base::SequencedTaskRunner::GetCurrentDefault())),
+          priority,
+          reporting_settings,
+          rate_setting_path,
+          default_rate,
+          rate_unit_to_ms) {}
 
-void FakeMetricReportQueue::Enqueue(
-    std::unique_ptr<const MetricData> metric_data,
-    ReportQueue::EnqueueCallback callback) {
-  reported_data_.emplace_back(std::move(metric_data));
+void FakeMetricReportQueue::Enqueue(MetricData metric_data,
+                                    ReportQueue::EnqueueCallback callback) {
+  reported_data_.AddValue(std::move(metric_data));
   std::move(callback).Run(Status());
 }
 
@@ -51,13 +54,15 @@ void FakeMetricReportQueue::Flush() {
   num_flush_++;
 }
 
-const std::vector<std::unique_ptr<const MetricData>>&
-FakeMetricReportQueue::GetMetricDataReported() const {
-  return reported_data_;
+MetricData FakeMetricReportQueue::GetMetricDataReported() {
+  return reported_data_.Take();
 }
 
 int FakeMetricReportQueue::GetNumFlush() const {
   return num_flush_;
 }
-}  // namespace test
-}  // namespace reporting
+
+bool FakeMetricReportQueue::IsEmpty() const {
+  return reported_data_.IsEmpty();
+}
+}  // namespace reporting::test

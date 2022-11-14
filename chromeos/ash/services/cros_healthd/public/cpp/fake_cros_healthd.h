@@ -319,6 +319,11 @@ class FakeCrosHealthd final : public mojom::CrosHealthdServiceFactory,
   void RunArcPingRoutine(RunArcPingRoutineCallback callback) override;
   void RunArcDnsResolutionRoutine(
       RunArcDnsResolutionRoutineCallback callback) override;
+  void RunSensitiveSensorRoutine(
+      RunSensitiveSensorRoutineCallback callback) override;
+  void RunFingerprintRoutine(RunFingerprintRoutineCallback callback) override;
+  void RunFingerprintAliveRoutine(
+      RunFingerprintAliveRoutineCallback callback) override;
 
   // CrosHealthdEventService overrides:
   void AddBluetoothObserver(

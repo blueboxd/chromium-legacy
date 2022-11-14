@@ -118,11 +118,13 @@ void PageInfoSecurityContentView::SetIdentityInfo(
                       view->certificate_.get());
                 },
                 this),
-            icon, title_id, std::u16string(),
-            PageInfoViewFactory::
-                VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
+            icon, l10n_util::GetStringUTF16(title_id), std::u16string(),
+
             tooltip, subtitle_text, PageInfoViewFactory::GetLaunchIcon())
             .release());
+    certificate_button_->SetID(
+        PageInfoViewFactory::
+            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER);
   }
 
   if (identity_info.show_change_password_buttons) {

@@ -69,12 +69,6 @@ export class OutputInterface {
   /**
    * @param {!OutputFormattingData} data
    * @param {string} token
-   */
-  formatChecked_(data, token) {}
-
-  /**
-   * @param {!OutputFormattingData} data
-   * @param {string} token
    * @param {!OutputFormatTree} tree
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
    */
@@ -92,14 +86,6 @@ export class OutputInterface {
    * @param {!OutputFormatTree} tree
    */
   formatFind_(data, token, tree) {}
-
-  /**
-   * @param {!OutputFormattingData} data
-   * @param {string} token
-   * @param {!OutputFormatTree} tree
-   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
-   */
-  formatIndexInParent_(data, token, tree, options) {}
 
   /**
    * @param {!OutputFormattingData} data
@@ -151,12 +137,6 @@ export class OutputInterface {
    * @param {string} token
    */
   formatPressed_(data, token) {}
-
-  /**
-   * @param {!OutputFormattingData} data
-   * @param {string} token
-   */
-  formatRestriction_(data, token) {}
 
   /**
    * @param {!OutputFormattingData} data

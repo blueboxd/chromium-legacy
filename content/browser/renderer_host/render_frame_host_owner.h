@@ -8,6 +8,7 @@
 namespace content {
 
 class NavigationRequest;
+class Navigator;
 
 // An interface for RenderFrameHostImpl to communicate with FrameTreeNode owning
 // it (e.g. to initiate or cancel a navigation in the frame).
@@ -15,7 +16,7 @@ class NavigationRequest;
 // As main RenderFrameHostImpl can be moved between different FrameTreeNodes
 // (i.e.during prerender activations), RenderFrameHostImpl should not reference
 // FrameTreeNode directly to prevent accident violation of implicit "associated
-// FTN says the same" assumptions. Instead, a targeted interface is exposed
+// FTN stays the same" assumptions. Instead, a targeted interface is exposed
 // instead.
 //
 // If you need to store information which should persist during prerender
@@ -28,6 +29,8 @@ class RenderFrameHostOwner {
 
   virtual void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) = 0;
+
+  virtual Navigator& GetCurrentNavigator() = 0;
 };
 
 }  // namespace content

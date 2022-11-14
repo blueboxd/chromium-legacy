@@ -62,7 +62,7 @@ class FastPairRepositoryImpl : public FastPairRepository,
   FastPairRepositoryImpl& operator=(const FastPairRepositoryImpl&) = delete;
   ~FastPairRepositoryImpl() override;
 
-  // FastPairRepository::
+  // FastPairRepository:
   void GetDeviceMetadata(const std::string& hex_model_id,
                          DeviceMetadataCallback callback) override;
   void CheckAccountKeys(const AccountKeyFilter& account_key_filter,
@@ -78,6 +78,8 @@ class FastPairRepositoryImpl : public FastPairRepository,
       const std::vector<uint8_t>& account_key,
       DeleteAssociatedDeviceByAccountKeyCallback callback) override;
   void FetchDeviceImages(scoped_refptr<Device> device) override;
+  absl::optional<std::string> GetDeviceDisplayNameFromCache(
+      std::vector<uint8_t> account_key) override;
   bool PersistDeviceImages(scoped_refptr<Device> device) override;
   bool EvictDeviceImages(const device::BluetoothDevice* device) override;
   absl::optional<bluetooth_config::DeviceImageInfo> GetImagesForDevice(
@@ -120,13 +122,15 @@ class FastPairRepositoryImpl : public FastPairRepository,
                                 DeviceMetadata* device_metadata,
                                 bool has_retryable_error);
   void WriteDeviceToFootprints(const std::string& hex_model_id,
-                             const std::string& mac_address,
-                             const std::vector<uint8_t>& account_key,
-                             DeviceMetadata* metadata,
-                             bool has_retryable_error);
-  void OnWriteDeviceToFootprintsComplete(const std::string& mac_address,
-                                       const std::vector<uint8_t>& account_key,
-                                       bool success);
+                               const std::string& mac_address,
+                               const std::vector<uint8_t>& account_key,
+                               DeviceMetadata* metadata,
+                               bool has_retryable_error);
+  void OnWriteDeviceToFootprintsComplete(
+      const std::string& mac_address,
+      const std::vector<uint8_t>& account_key,
+      bool success);
+
   void OnCheckOptInStatus(
       CheckOptInStatusCallback callback,
       absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
@@ -147,6 +151,11 @@ class FastPairRepositoryImpl : public FastPairRepository,
   void RetryPendingDeletes(
       nearby::fastpair::OptInStatus status,
       std::vector<nearby::fastpair::FastPairDevice> devices);
+
+  // Retries adding device fast pair information to the Footprints server in the
+  // case that network connection isn't established when the Fast Pair
+  // Repository attempts to write to Footprints.
+  void RetryPendingWrites();
   void OnGetSavedDevices(
       GetSavedDevicesCallback callback,
       absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
@@ -176,7 +185,7 @@ class FastPairRepositoryImpl : public FastPairRepository,
   base::flat_map<std::string, std::unique_ptr<DeviceMetadata>> metadata_cache_;
   nearby::fastpair::UserReadDevicesResponse user_devices_cache_;
   base::Time footprints_last_updated_;
-  base::Time retry_write_last_attempted_;
+  base::Time retry_write_or_delete_last_attempted_;
 
   base::WeakPtrFactory<FastPairRepositoryImpl> weak_ptr_factory_{this};
 };

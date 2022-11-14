@@ -6,6 +6,7 @@
 
 #include <fuchsia/component/cpp/fidl.h>
 #include <fuchsia/component/decl/cpp/fidl.h>
+#include <fuchsia/logger/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/app/cpp/fidl.h>
 #include <lib/fdio/directory.h>
@@ -67,9 +68,12 @@ class CastComponentV1 : public fuchsia::sys::ComponentController {
         SvcForCfv2Dir()->AddEntry(child_id_, std::move(child_svc));
     ZX_CHECK(status == ZX_OK, status);
 
-    // TODO(crbug.com/1332972): Migrate the CFv2 code not to need these routed
+    // TODO(crbug.com/1332972): Migrate the CFv2 code not to need this routed
     // via the Cast activity's incoming services.
     OfferFromStartupContext<chromium::cast::ApplicationConfigManager>();
+
+    // Offer the Cast component its own LogSink.
+    OfferFromStartupContext<fuchsia::logger::LogSink>();
 
     // Offer services from the associated Agent to the CFv2 component.
     OfferFromAgent<chromium::cast::ApiBindings>();
@@ -80,9 +84,6 @@ class CastComponentV1 : public fuchsia::sys::ComponentController {
     // outgoing directory.
     ExposeFromCfv2Component<fuchsia::ui::app::ViewProvider>();
     ExposeFromCfv2Component<fuchsia::modular::Lifecycle>();
-
-    // TODO(crbug.com/1120914): Remove this with the FrameHost component.
-    ExposeFromCfv2Component<fuchsia::web::FrameHost>();
 
     // Offer the sub-directory of the "cvs_for_cfv2" capability created above,
     // for use as the component's "/svc".
@@ -349,16 +350,6 @@ void CastRunnerV1::StartComponent(
 
   if (!startup_context->has_outgoing_directory_request()) {
     LOG(ERROR) << "Missing outgoing directory request";
-    return;
-  }
-
-  // TODO(crbug.com/1120914): Remove this once Component Framework v2 can be
-  // used to route fuchsia.web.FrameHost capabilities cleanly.
-  static constexpr char kFrameHostComponentName[] =
-      "cast:fuchsia.web.FrameHost";
-  if (cast_url.spec() == kFrameHostComponentName) {
-    new CastComponentV1(std::move(cast_url), std::move(startup_context),
-                        std::move(controller_request), std::string());
     return;
   }
 

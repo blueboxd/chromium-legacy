@@ -597,8 +597,7 @@ WebViewImpl::WebViewImpl(
   // page.
   SetInsidePortal(is_inside_portal);
 
-  if (fenced_frame_mode && features::IsFencedFramesEnabled() &&
-      features::IsFencedFramesMPArchBased()) {
+  if (fenced_frame_mode && features::IsFencedFramesEnabled()) {
     page_->SetIsMainFrameFencedFrameRoot();
     page_->SetFencedFrameMode(*fenced_frame_mode);
   } else {
@@ -1701,8 +1700,12 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       prefs.scroll_top_left_interop_enabled);
   RuntimeEnabledFeatures::SetAcceleratedSmallCanvasesEnabled(
       !prefs.disable_accelerated_small_canvases);
-  RuntimeEnabledFeatures::SetWebAuthEnabled(!prefs.disable_webauthn);
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+  RuntimeEnabledFeatures::SetWebAuthEnabled(!prefs.disable_webauthn);
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+
   settings->SetForceDarkModeEnabled(prefs.force_dark_mode_enabled);
 
   settings->SetAccessibilityAlwaysShowFocus(prefs.always_show_focus);

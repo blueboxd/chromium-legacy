@@ -314,14 +314,6 @@ js_type_check("closure_compile_local") {
   deps = [
     ":chai_assert",
     ":test_browser_proxy",
-    ":test_util",
-  ]
-}
-
-js_library("test_util") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
@@ -386,21 +378,24 @@ checked_in_dts_files = [
 # Copies checked-in .d.ts files to the preprocess folder so that they are
 # discovered by TSC the same way generated .d.ts files are.
 copy("copy_checked_in_dts_files") {
+  visibility = [
+    ":build_ts",
+    ":generate_definitions",
+  ]
   sources = checked_in_dts_files
   outputs = [ "$target_gen_dir/tsc/{{source_target_relative}}" ]
+}
+
+generate_definitions_js_files = [ "mojo_webui_test_support.js" ]
+if (is_chromeos_ash) {
+  generate_definitions_js_files += [ "chromeos/test_store.js" ]
 }
 
 ts_definitions("generate_definitions") {
   root_dir = "./"
   out_dir = "$target_gen_dir/tsc"
-  js_files = [
-    "mojo_webui_test_support.js",
-    "test_util.js",
-  ]
-  if (is_chromeos_ash) {
-    js_files += [ "chromeos/test_store.js" ]
-  }
-
+  js_files = generate_definitions_js_files
+  visibility = [ ":build_ts" ]
   extra_deps = [
     ":copy_checked_in_dts_files",
     "//ui/webui/resources:generate_definitions",
@@ -433,6 +428,7 @@ ts_library("build_ts") {
     "text_defaults_test.ts",
     "test_plural_string_proxy.ts",
     "test_store_ts.ts",
+    "test_util.ts",
   ]
 
   if (is_chromeos_ash) {
@@ -440,7 +436,10 @@ ts_library("build_ts") {
   }
 
   deps = [ "//ui/webui/resources:library" ]
-  extra_deps = [ ":generate_definitions" ]
+  extra_deps = [
+    ":copy_checked_in_dts_files",
+    ":generate_definitions",
+  ]
   if (is_chromeos_ash) {
     extra_deps += [ "//ash/webui/common/resources:generate_definitions" ]
   }
@@ -449,6 +448,17 @@ ts_library("build_ts") {
     "//tools/typescript/definitions/chrome_timeticks.d.ts",
     "//tools/typescript/definitions/metrics_private.d.ts",
   ]
+
+  # Checked-in .d.ts files.
+  foreach(_file, checked_in_dts_files) {
+    definitions += [ "$target_gen_dir/tsc/$_file" ]
+  }
+
+  # Auto-generated .d.ts files.
+  foreach(_file, generate_definitions_js_files) {
+    definitions +=
+        [ "$target_gen_dir/tsc/" + string_replace(_file, ".js", ".d.ts") ]
+  }
 }
 
 generate_grd("build_grd") {
@@ -463,7 +473,6 @@ generate_grd("build_grd") {
     "mocha_adapter.js",
     "mojo_webui_test_support.js",
     "test_browser_proxy.js",
-    "test_util.js",
     "usb_internals_test.js",
 
     "invalidations/invalidations_test.js",

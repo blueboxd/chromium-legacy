@@ -30,6 +30,9 @@ constexpr double kPartialMatchPenaltyRate = 0.9;
 constexpr double kMinScore = 0.0;
 constexpr double kMaxScore = 1.0;
 
+// The maximum supported size for a prefix matching scoring boost.
+constexpr size_t kMaxBoostSize = 2;
+
 // Returns sorted tokens from a TokenizedString.
 std::vector<std::u16string> ProcessAndSort(const TokenizedString& text) {
   std::vector<std::u16string> result;
@@ -243,6 +246,10 @@ double FuzzyTokenizedStringMatch::Relevance(const TokenizedString& query_input,
     return 1.0;
   }
 
+  // TODO(crbug.com/1336160): Consider calculating |hits_| based on best
+  // matching result. Currently, both SequenceMatcher and PrefixMatcher have
+  // their own |hits_|.
+  //
   // Find |hits_| using SequenceMatcher on original query and text.
   for (const auto& match :
        SequenceMatcher(query_text, text_text).GetMatchingBlocks()) {
@@ -253,31 +260,30 @@ double FuzzyTokenizedStringMatch::Relevance(const TokenizedString& query_input,
   }
 
   // If the query is much longer than the text then it's often not a match.
-  double relevance = 0.0;
   if (query_size >= text_size * 2) {
-    return relevance;
+    return 0.0;
   }
 
-  const double prefix_score = PrefixMatcher(query, text);
+  std::vector<double> relevances;
 
-  if (use_weighted_ratio) {
-    // If WeightedRatio is used, |relevance_| is the average of WeightedRatio
-    // and PrefixMatcher scores.
-    relevance = (WeightedRatio(query, text) + prefix_score) / 2;
-  } else {
-    // Use simple algorithm to calculate match ratio.
-    relevance = (SequenceMatcher(base::i18n::ToLower(query_text),
-                                 base::i18n::ToLower(text_text))
-                     .Ratio() +
-                 prefix_score) /
-                2;
+  double prefix_score = PrefixMatcher(query, text);
+  // A scoring boost for short prefix matching queries.
+  if (query_size <= kMaxBoostSize && prefix_score > kMinScore) {
+    prefix_score = std::min(
+        1.0, prefix_score + 2.0 / (query_size * (query_size + text_size)));
   }
 
-  // If AcronymMatcher is used, return the maximum of the acronym match score
-  // and the calculated relevance score. Directly return the calculated
-  // relevance score instead.
-  return use_acronym_matcher ? std::max(AcronymMatcher(query, text), relevance)
-                             : relevance;
+  relevances.emplace_back(prefix_score);
+  relevances.emplace_back(use_weighted_ratio
+                              ? WeightedRatio(query, text)
+                              : SequenceMatcher(base::i18n::ToLower(query_text),
+                                                base::i18n::ToLower(text_text))
+                                    .Ratio());
+  if (use_acronym_matcher) {
+    relevances.emplace_back(AcronymMatcher(query, text));
+  }
+
+  return *std::max_element(relevances.begin(), relevances.end());
 }
 
 }  // namespace ash::string_matching

@@ -69,6 +69,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       const blink::DocumentToken& document_token,
+      base::UnguessableToken devtools_frame_token,
       LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state);
 
@@ -135,7 +136,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       bool was_within_same_document);
   void SendDidCommitSameDocumentNavigation(
       mojom::DidCommitProvisionalLoadParamsPtr params,
-      blink::mojom::SameDocumentNavigationType same_document_navigation_type);
+      blink::mojom::SameDocumentNavigationType same_document_navigation_type,
+      bool should_replace_current_entry);
 
   // With the current navigation logic this method is a no-op.
   // Simulates a renderer-initiated navigation to |url| starting in the

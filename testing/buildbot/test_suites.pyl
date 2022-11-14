@@ -313,7 +313,7 @@
     'bfcache_android_specific_gtests': {
       'bf_cache_android_browsertests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
         ],
         'swarming': {
           'shards': 2,
@@ -322,7 +322,7 @@
       },
       'bf_cache_chrome_public_test_apk': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
         ],
         'swarming': {
@@ -335,7 +335,7 @@
       },
       'bf_cache_chrome_public_unit_test_apk': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
         ],
         'mixins': [
           'skia_gold_test',
@@ -344,7 +344,7 @@
       },
       'bf_cache_content_shell_test_apk': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter',
         ],
         'test': 'content_shell_test_apk',
@@ -354,7 +354,7 @@
     'bfcache_generic_gtests': {
       'bf_cache_content_browsertests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
         ],
         'swarming': {
           'shards': 20,
@@ -363,7 +363,7 @@
       },
       'bf_cache_content_unittests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
         ],
         'swarming': {
           'shards': 10,
@@ -372,7 +372,7 @@
       },
       'bf_cache_unit_tests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
           '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter'
         ],
         'swarming': {
@@ -385,7 +385,7 @@
     'bfcache_linux_specific_gtests': {
       'bf_cache_browser_tests': {
         'args': [
-          '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
+          '--disable-features=BackForwardCache',
         ],
         'swarming': {
           'shards': 10,
@@ -2090,40 +2090,6 @@
           '--disable-field-trial-config',
         ],
         'test': 'xr_browser_tests',
-      },
-    },
-
-    'fieldtrial_isolated_scripts': {
-      'telemetry_perf_unittests_no_field_trial': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-          '--extra-browser-args=\'--enable-crashpad --disable-field-trial-config\'',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/549140
-          'shards': 12,
-        },
-        'resultdb': {
-          'enable': True,
-        },
-        'isolate_name': 'telemetry_perf_unittests',
-      },
-      'telemetry_unittests_no_field_trial': {
-        'args': [
-          '--jobs=1',
-          # Disable GPU compositing, telemetry_unittests runs on VMs.
-          # https://crbug.com/871955
-          '--extra-browser-args=\'--disable-gpu --disable-field-trial-config\'',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/549140
-          'shards': 8,
-        },
-        'resultdb': {
-          'enable': True,
-        },
-        'isolate_name': 'telemetry_unittests',
       },
     },
 
@@ -6535,12 +6501,12 @@
     'gpu_angle_ios_gtests': {
       'gpu_angle_ios_end2end_gtests': {
         'variants': [
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_X_16_1',
         ],
       },
       'gpu_angle_ios_white_box_gtests': {
         'variants': [
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_X_16_1',
         ],
       },
     },
@@ -6774,7 +6740,7 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_8_16_0',
+          'SIM_IPHONE_8_16_1',
         ],
       },
       'ios_eg2_cq_tests': {
@@ -6783,11 +6749,11 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPHONE_X_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_X_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ],
       },
       'ios_eg2_tests': {
@@ -6796,11 +6762,11 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
-          'SIM_IPHONE_X_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_X_16_1',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ],
       },
       'ios_screen_size_dependent_tests': {
@@ -6809,12 +6775,12 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_SE_1ST_GEN_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_PLUS_16_0',
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPHONE_SE_3RD_GEN_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
+          'SIM_IPHONE_8_PLUS_16_1',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_SE_3RD_GEN_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ],
       },
     },
@@ -6876,11 +6842,11 @@
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
           'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPHONE_X_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_X_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       },
       'ios_eg2_cq_tests': {
@@ -6889,10 +6855,10 @@
           'SIM_IPHONE_6S_15_5',
           'SIM_IPHONE_7_15_5',
           'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
           'SIM_IPAD_PRO_3RD_GEN_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       },
       'ios_screen_size_dependent_tests': {
@@ -6977,22 +6943,22 @@
     'ios_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_0',
+          'SIM_IPHONE_8_16_1',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_8_16_0',
+          'SIM_IPHONE_8_16_1',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_8_16_0',
-          'SIM_IPHONE_X_16_0',
-          'SIM_IPAD_AIR_3RD_GEN_16_0',
-          'SIM_IPHONE_SE_3RD_GEN_16_0',
-          'SIM_IPAD_PRO_3RD_GEN_16_0',
+          'SIM_IPHONE_8_16_1',
+          'SIM_IPHONE_X_16_1',
+          'SIM_IPAD_AIR_3RD_GEN_16_1',
+          'SIM_IPHONE_SE_3RD_GEN_16_1',
+          'SIM_IPAD_PRO_3RD_GEN_16_1',
         ]
       }
     },
@@ -7031,14 +6997,6 @@
         'variants': [
           'SIM_IPHONE_X_14_5',
           'SIM_IPAD_AIR_3RD_GEN_14_5',
-        ]
-      },
-    },
-
-    'lacros_amd64_generic_rel_skylab': {
-      'lacros_skylab_poc': {
-        'variants': [
-          'CROS_EVE_PUBLIC_LKGM',
         ]
       },
     },

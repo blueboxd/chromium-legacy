@@ -72,6 +72,7 @@ TestRenderFrameHost::TestRenderFrameHost(
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
     const blink::LocalFrameToken& frame_token,
     const blink::DocumentToken& document_token,
+    base::UnguessableToken devtools_frame_token,
     RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
     scoped_refptr<BrowsingContextState> browsing_context_state)
     : RenderFrameHostImpl(site_instance,
@@ -83,6 +84,7 @@ TestRenderFrameHost::TestRenderFrameHost(
                           std::move(frame_remote),
                           frame_token,
                           document_token,
+                          devtools_frame_token,
                           /*renderer_initiated_creation_of_main_frame=*/false,
                           lifecycle_state,
                           browsing_context_state,
@@ -288,8 +290,8 @@ void TestRenderFrameHost::SimulateManifestURLUpdate(const GURL& manifest_url) {
 
 TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame(
     blink::mojom::FencedFrameMode mode) {
-  fenced_frames_.push_back(std::make_unique<FencedFrame>(
-      weak_ptr_factory_.GetSafeRef(), mode, base::UnguessableToken::Create()));
+  fenced_frames_.push_back(
+      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
   // Create stub RemoteFrameInterfaces.
   auto remote_frame_interfaces =
@@ -301,7 +303,8 @@ TestRenderFrameHost* TestRenderFrameHost::AppendFencedFrame(
   std::ignore = frame.BindNewEndpointAndPassDedicatedReceiver();
   remote_frame_interfaces->frame = frame.Unbind();
   fenced_frame->InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
-      std::move(remote_frame_interfaces), blink::RemoteFrameToken());
+      std::move(remote_frame_interfaces), blink::RemoteFrameToken(),
+      base::UnguessableToken::Create());
   return static_cast<TestRenderFrameHost*>(fenced_frame->GetInnerRoot());
 }
 
@@ -363,7 +366,8 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
   last_commit_was_error_page_ = params->url_is_unreachable;
   if (was_within_same_document) {
     SendDidCommitSameDocumentNavigation(
-        std::move(params), blink::mojom::SameDocumentNavigationType::kFragment);
+        std::move(params), blink::mojom::SameDocumentNavigationType::kFragment,
+        /*should_replace_current_entry=*/false);
   } else {
     DidCommitProvisionalLoad(std::move(params), std::move(interface_params));
   }
@@ -371,10 +375,12 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
 
 void TestRenderFrameHost::SendDidCommitSameDocumentNavigation(
     mojom::DidCommitProvisionalLoadParamsPtr params,
-    blink::mojom::SameDocumentNavigationType same_document_navigation_type) {
+    blink::mojom::SameDocumentNavigationType same_document_navigation_type,
+    bool should_replace_current_entry) {
   auto same_doc_params = mojom::DidCommitSameDocumentNavigationParams::New();
   same_doc_params->same_document_navigation_type =
       same_document_navigation_type;
+  same_doc_params->should_replace_current_entry = should_replace_current_entry;
   params->http_status_code = last_http_status_code();
   DidCommitSameDocumentNavigation(std::move(params),
                                   std::move(same_doc_params));
@@ -633,27 +639,6 @@ TestRenderFrameHost::BuildDidCommitParams(bool did_create_new_entry,
   params->transition = transition;
   params->should_update_history = true;
   params->did_create_new_entry = did_create_new_entry;
-  // See CalculateShouldReplaceCurrentEntry() in RenderFrameHostImpl on why we
-  // calculate "should_replace_current_entry" in this way. It's also important
-  // to note that CalculateShouldReplaceCurrentEntry relies on params set
-  // elsewhere, however.  ShouldMaintainTrivialSessionHistory reflects how the
-  // renderer would set the should_replace_current_entry param. Specifically,
-  // some features (eg fenced frames or prerendering) only maintain a single
-  // history entry and we want to ensure that should_replace_current_entry is
-  // true in these cases.
-  params->should_replace_current_entry = false;
-  if (frame_tree_node()
-          ->navigator()
-          .controller()
-          .ShouldMaintainTrivialSessionHistory(frame_tree_node())) {
-    params->should_replace_current_entry = true;
-  } else if (is_same_document) {
-    params->should_replace_current_entry |= (GetLastCommittedURL() == url);
-  } else {
-    params->should_replace_current_entry |=
-        (!IsOutermostMainFrame() &&
-         frame_tree_node()->is_on_initial_empty_document());
-  }
   params->contents_mime_type = "text/html";
   params->method = "GET";
   params->http_status_code = response_code;

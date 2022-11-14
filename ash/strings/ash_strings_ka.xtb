@@ -175,6 +175,7 @@
 <translation id="1862380676329487333">განახლება და გასვლა</translation>
 <translation id="1864454756846565995">USB-C მოწყობილობა (უკანა პორტი)</translation>
 <translation id="1869497990620230175">სწრაფი ფაილები</translation>
+<translation id="1871703283152909317">ორივე ტიპის წვდომის ჩართვა</translation>
 <translation id="1879018240766558464">ინკოგნიტო ფანჯრები ამჟამად მხარდაუჭერელია. სხვა აპები შეინახება.</translation>
 <translation id="1882814835921407042">მობილური ქსელი არ არის</translation>
 <translation id="1882897271359938046">გამოსახვა <ph name="DISPLAY_NAME" /></translation>
@@ -352,6 +353,7 @@
 <translation id="2960314608273155470">აღბეჭდვის რეჟიმი, ნაგულისხმევია <ph name="SOURCE" /> <ph name="TYPE" />. კლავიატურით ნავიგაციისთვის დააჭირეთ კლავიშს Tab.</translation>
 <translation id="2961963223658824723">წარმოიქმნა შეფერხება. ცადეთ ხელახლა რამდენიმე წამში.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2965227184985674128">გსურთ, ჩართოთ მიკროფონზე წვდომა?</translation>
 <translation id="296762781903199866"><ph name="LANGUAGE" /> მეტყველების ფაილები ვერ ჩამოიტვირთა</translation>
 <translation id="2970920913501714344">აპების, გაფართოებებისა და თემების ინსტალაცია</translation>
 <translation id="2977598380246111477">შემდეგი ციფრი</translation>
@@ -430,6 +432,7 @@
 <translation id="3386978599540877378">სრულეკრანიანი ლუპა</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3400357268283240774">დამატებითი პარამეტრები</translation>
+<translation id="3405101454990027959">მიკროფონზე წვდომის ჩართვა</translation>
 <translation id="3410336247007142655">მუქი თემის პარამეტრების ჩვენება</translation>
 <translation id="3413817803639110246">ჯერჯერობით სანახავი არაფერია</translation>
 <translation id="3428447136709161042"><ph name="NETWORK_NAME" />-თან კავშირის გაწყვეტა</translation>
@@ -516,6 +519,7 @@
 <translation id="385051799172605136">უკან</translation>
 <translation id="385300504083504382">დასაწყისი</translation>
 <translation id="3861651314799684201">ეკრანის სრულად ჩასაწერად დააჭირეთ Enter-ს</translation>
+<translation id="3885531177412808398">მიანიჭებს მიკროფონზე წვდომას ყველა აპსა და ვებსაიტს, რომელსაც მიკროფონის გამოყენების ნებართვა აქვს</translation>
 <translation id="3886872229787704059">დღეს გახსნილი</translation>
 <translation id="3891340733213178823">დააჭირეთ Ctrl+Shift+Q ორჯერ, რათა გამოხვიდეთ.</translation>
 <translation id="3893630138897523026">ChromeVox (ხმოვანი შეფასება)</translation>
@@ -920,6 +924,7 @@
 <translation id="6095008505822982596">მეტყველების ტემპი</translation>
 <translation id="6099678161144790572">თვის განმავლობაში რედაქტირებული</translation>
 <translation id="6103838137565245112">სისტემა</translation>
+<translation id="6107292179555508368">მიკროფონსა და კამერაზე წვდომა გამორთულია ამ მოწყობილობაზე</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> მეტყველების ფაილები ჩამოიტვირთა</translation>
 <translation id="6116825164611323644">კამერაზე წვდომა გამორთულია ამ მოწყობილობაზე</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
@@ -948,6 +953,7 @@
 <translation id="6259254695169772643">ასარჩევად ისარგებლეთ სტილუსით</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: გააქტიურება…</translation>
 <translation id="6274202259872570803">სკრინკასტი</translation>
+<translation id="6282694724099204652">ჩართეთ წვდომა, რათა აპებსა და ვებსაიტებს, რომლებსაც შესაბამისი ნებართვა აქვს, შეეძლოს ამ მოწყობილობასთან დაკავშირებული მიკროფონ(ებ)ისა და კამერ(ებ)ის გამოყენება.</translation>
 <translation id="6283712521836204486">„არ შემაწუხოთ“ გამორთულია.</translation>
 <translation id="6284232397434400372">გარჩევადობა შეიცვალა</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> მოგვიანებით მშობლის ნებართვით შეგიძლიათ დაამატოთ.</translation>
@@ -1375,6 +1381,7 @@
 <translation id="8666856788528804727">თქვენი მოწყობილობის დასაყენებლად გახსენით <ph name="NAME" /></translation>
 <translation id="8676770494376880701">დაბალი სიმძლავრის დამტენი დაკავშირებულია</translation>
 <translation id="8683506306463609433">ეფექტურობის ტრასირება გააქტიურებულია</translation>
+<translation id="8684405646663021166">მიანიჭებს მიკროფონზე წვდომას <ph name="APP_NAME" />-ს, ასევე, ყველა აპსა და ვებსაიტს, რომელსაც მიკროფონის გამოყენების ნებართვა აქვს</translation>
 <translation id="8685326675965865247">წამოიწყეთ ძიება თქვენს მოწყობილობაში, აპებში, პარამეტრებსა და ვებში. აპებში ნავიგაციისთვის გამოიყენეთ ისრიანი კლავიშები.</translation>
 <translation id="8703634754197148428">ჩაწერის დაწყება. ჩაწერის დაწყების შემდეგ თაროზე გადასასვლელად და ჩაწერის შეწყვეტის ღილაკის საპოვნელად გამოიყენეთ კლავიშთა კომბინაცია Alt + Shift + L</translation>
 <translation id="8721053961083920564">ხმის გადართვა. <ph name="STATE_TEXT" /></translation>

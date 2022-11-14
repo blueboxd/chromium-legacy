@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
-#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -324,6 +323,9 @@ void ViewTransitionStyleTracker::AddSharedElementsFromCSSRecursive(
     AddSharedElement(DynamicTo<Element>(root_object.GetNode()),
                      root_style.ViewTransitionName());
   }
+
+  if (root_object.ChildPaintBlockedByDisplayLock())
+    return;
 
   PaintLayerPaintOrderIterator child_iterator(root, kAllChildren);
   while (auto* child = child_iterator.Next()) {
@@ -1062,11 +1064,9 @@ gfx::Outsets GetFixedToSnapshotViewportOutsets(Document& document) {
       top += controls.TopHeight() - controls.TopMinHeight();
     if (controls.BottomShownRatio())
       bottom += controls.BottomHeight() - controls.BottomMinHeight();
-
-    bottom += document.GetFrame()
-                  ->GetWidgetForLocalRoot()
-                  ->GetVirtualKeyboardResizeHeight();
   }
+
+  // TODO(bokan): Account for virtual-keyboard
 
   // A left-side scrollbar (i.e. in an RTL writing-mode) should overlay the
   // snapshot viewport as well. This cannot currently happen in Chrome but it

@@ -201,6 +201,7 @@
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2874939134665556319">Predchádzajúca skladba</translation>
 <translation id="2878387241690264070">Za <ph name="NUM_SECONDS" /> s sa batéria vybila o <ph name="RATE" /></translation>
+<translation id="2902312830803030883">Ďalšie akcie</translation>
 <translation id="2926057806159140518">Zadajte používateľské meno a heslo alebo naskenujte QR kód</translation>
 <translation id="3008341117444806826">OBNOVIŤ</translation>
 <translation id="3009958530611748826">Vyberte priečinok na uloženie</translation>
@@ -305,6 +306,7 @@
 <translation id="4044093238444069296">Brána sa nedá kontaktovať</translation>
 <translation id="4046123991198612571">Ďalšia skladba</translation>
 <translation id="404928562651467259">UPOZORNENIE</translation>
+<translation id="4060260348856573701">Nový názov prístupového bodu (APN)</translation>
 <translation id="4093865285251893588">Profilový obrázok</translation>
 <translation id="409427325554347132">Uložiť podrobnosti o teste</translation>
 <translation id="4110686435123617899">Vyberte album <ph name="TITLE" /> <ph name="DESC" /></translation>
@@ -337,6 +339,7 @@
 <translation id="4378373042927530923">Nebolo spustené</translation>
 <translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4382484599443659549">PDF</translation>
+<translation id="4394049700291259645">Zakázať</translation>
 <translation id="439429847087949098"><ph name="DEVICE_NAME" /> sa reštartuje</translation>
 <translation id="4415951057168511744">Aktuálna avatar</translation>
 <translation id="4425149324548788773">Môj disk</translation>
@@ -351,6 +354,7 @@
 <translation id="4503223151711056411">Šípka doľava</translation>
 <translation id="4511264077854731334">Portál</translation>
 <translation id="4521826082652183069">Zhoda alternatívneho názvu subjektu</translation>
+<translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4536864596629708641">Konfigurácia adresy IP</translation>
 <translation id="4546131424594385779">Vytvoriť videoslučku</translation>
 <translation id="4548483925627140043">Signál sa nenašiel</translation>
@@ -606,6 +610,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6766275201586212568">Neúspešné preklady DNS</translation>
 <translation id="6768237774506518020">Vysoká miera neúspešných prekladov DNS</translation>
 <translation id="6791471867139427246">farba osvetlenia klávesnice</translation>
+<translation id="6793680441750437230">Stlačte ľubovoľný kláves na klávesnici. Môžete stlačiť až štyri klávesy naraz. Zatvorte dialógové okno stlačením kombinácie klávesov Alt a Esc.</translation>
 <translation id="680983167891198932">Kľúč</translation>
 <translation id="6816797338148849397">K dispozícii sú informácie súvisiace s vaším výberom. Prístup získate pomocou šípky nahor.</translation>
 <translation id="6853312040151791195">Rýchlosť vybíjania</translation>

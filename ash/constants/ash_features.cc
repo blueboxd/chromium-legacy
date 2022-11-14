@@ -790,6 +790,11 @@ BASE_FEATURE(kEnableAllSystemWebApps,
              "EnableAllSystemWebApps",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables per-desk Z order for all-desk windows.
+BASE_FEATURE(kEnablePerDeskZOrder,
+             "EnablePerDeskZOrder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, touchpad cards will be shown in the diagnostics app's input
 // section.
 BASE_FEATURE(kEnableTouchpadsInDiagnosticsApp,
@@ -998,9 +1003,6 @@ BASE_FEATURE(kFullscreenAlertBubble,
              "EnableFullscreenBubble",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable ChromeOS FuseBox service.
-BASE_FEATURE(kFuseBox, "FuseBox", base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Debugging UI for ChromeOS FuseBox service.
 BASE_FEATURE(kFuseBoxDebug, "FuseBoxDebug", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -1193,7 +1195,7 @@ BASE_FEATURE(kImeSystemEmojiPickerClipboard,
 // Enable or disable system emoji picker extension
 BASE_FEATURE(kImeSystemEmojiPickerExtension,
              "SystemEmojiPickerExtension",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable system emoji picker search extension
 BASE_FEATURE(kImeSystemEmojiPickerSearchExtension,
@@ -1479,6 +1481,9 @@ BASE_FEATURE(kOnDeviceGrammarCheck,
 BASE_FEATURE(kOnDeviceSpeechRecognition,
              "OnDeviceSpeechRecognition",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, CHOBOE Screen will be shown during the new user onboarding flow.
+BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, EULA and ARC Terms of Service screens are skipped and merged
 // into Consolidated Consent Screen.
@@ -2028,7 +2033,7 @@ BASE_FEATURE(kUseAuthFactors,
 // instead of legacy CheckKey.
 BASE_FEATURE(kUseAuthsessionForWebAuthN,
              "UseAuthsessionForWebAuthN",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the login shelf view is placed in its own widget instead of
 // sharing the shelf widget with other components.
@@ -2298,8 +2303,7 @@ bool IsAppNotificationsPageEnabled() {
 }
 
 bool IsArcFuseBoxFileSharingEnabled() {
-  return IsFileManagerFuseBoxEnabled() &&
-         base::FeatureList::IsEnabled(kArcFuseBoxFileSharing);
+  return base::FeatureList::IsEnabled(kArcFuseBoxFileSharing);
 }
 
 bool IsArcInputOverlayEnabled() {
@@ -2547,10 +2551,6 @@ bool IsFederatedServiceEnabled() {
 bool IsFederatedServiceScheduleTasksEnabled() {
   return IsFederatedServiceEnabled() &&
          base::FeatureList::IsEnabled(kFederatedServiceScheduleTasks);
-}
-
-bool IsFileManagerFuseBoxEnabled() {
-  return base::FeatureList::IsEnabled(kFuseBox);
 }
 
 bool IsFileManagerFuseBoxDebugEnabled() {
@@ -2845,6 +2845,10 @@ bool IsOobeNetworkScreenSkipEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeNetworkScreenSkip);
 }
 
+bool IsOobeChoobeEnabled() {
+  return base::FeatureList::IsEnabled(kOobeChoobe);
+}
+
 bool IsOobeConsolidatedConsentEnabled() {
   return base::FeatureList::IsEnabled(kOobeConsolidatedConsent);
 }
@@ -3010,6 +3014,10 @@ bool IsQuickDimEnabled() {
 
 bool IsQuickSettingsNetworkRevampEnabled() {
   return base::FeatureList::IsEnabled(kQuickSettingsNetworkRevamp);
+}
+
+bool IsPerDeskZOrderEnabled() {
+  return base::FeatureList::IsEnabled(kEnablePerDeskZOrder);
 }
 
 bool IsReleaseTrackUiEnabled() {

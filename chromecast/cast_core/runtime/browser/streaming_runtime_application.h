@@ -7,6 +7,7 @@
 
 #include "chromecast/cast_core/runtime/browser/runtime_application_base.h"
 #include "chromecast/cast_core/runtime/browser/streaming_receiver_session_client.h"
+#include "components/cast_receiver/browser/public/application_config.h"
 #include "components/cast_streaming/browser/public/network_context_getter.h"
 
 namespace cast_receiver {
@@ -25,23 +26,21 @@ class StreamingRuntimeApplication final
   // lifetime of this instance.
   StreamingRuntimeApplication(
       std::string cast_session_id,
-      cast::common::ApplicationConfig app_config,
+      cast_receiver::ApplicationConfig app_config,
       cast_receiver::ApplicationClient& application_client);
   ~StreamingRuntimeApplication() override;
 
  private:
   // RuntimeApplicationBase implementation:
   void Launch(StatusCallback callback) override;
-  bool OnMessagePortMessage(cast::web::Message message) override;
-  void StopApplication(cast::common::StopReason::Type stop_reason,
-                       int32_t net_error_code) override;
+  void StopApplication(
+      RuntimeApplicationBase::Delegate::ApplicationStopReason stop_reason,
+      int32_t net_error_code) override;
   bool IsStreamingApplication() const override;
 
   // StreamingReceiverSessionClient::Handler implementation:
   void OnStreamingSessionStarted() override;
   void OnError() override;
-  void StartAvSettingsQuery(
-      std::unique_ptr<cast_api_bindings::MessagePort> message_port) override;
   void OnResolutionChanged(
       const gfx::Rect& size,
       const ::media::VideoTransformation& transformation) override;

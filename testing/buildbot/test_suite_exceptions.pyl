@@ -1370,7 +1370,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter',
         ],
         'swarming': {
-          'shards': 50,
+          'shards': 75,
           'dimension_sets': [
             {
               'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
@@ -1760,7 +1760,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_browsertests.filter',
         ],
         'swarming': {
-          'shards': 50,
+          'shards': 75,
           'dimension_sets': [
             {
               'machine_type': 'e2-standard-8', # use 8-core to shorten runtime
@@ -2228,6 +2228,11 @@
       'Android FYI Release (Nexus 5X)',
     ],
     'modifications': {
+      'Android FYI Release (Samsung A13)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.samsung_a13.gl_tests.filter',
+        ],
+      },
       'Android FYI Release (Samsung A23)': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.samsung_a23.gl_tests.filter',
@@ -2485,7 +2490,7 @@
       },
       'Mac12 Tests': {
         'swarming': {
-          'quickrun_shards': 6,
+          'shards': 6,
         },
       },
       'Mac12 Tests (dbg)': { # https://crbug.com/1265051
@@ -3462,14 +3467,6 @@
     ],
   },
   'trace_test': {
-    'remove_from': [
-      # Trace tests currently don't work on non-rooted devices due to a private
-      # directory being used for storing the trace config file.
-      # TODO(crbug.com/1358240): Enable this test on these bots once tracing is
-      # updated to work properly without root.
-      'Android FYI Release (Samsung A13)',
-      'Android FYI Release (Samsung A23)',
-    ],
     'modifications': {
       'fuchsia-x64-chrome-rel': { # https://crbug.com/1269976
         'experiment_percentage': 100,
@@ -4036,6 +4033,9 @@
         ],
       },
       'android-nougat-x86-rel': {
+        'args': [
+          '--use-persistent-shell',
+        ],
         'swarming': {
           'shards': 27,
         },

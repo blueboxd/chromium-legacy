@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/browser/realtime/policy_engine.h"
@@ -251,7 +251,7 @@ UnsafeResource SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(
   resource.callback =
       base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
                           weak_factory_.GetWeakPtr());
-  resource.callback_sequence = base::SequencedTaskRunnerHandle::Get();
+  resource.callback_sequence = base::SequencedTaskRunner::GetCurrentDefault();
   resource.render_process_id = render_process_id_;
   resource.render_frame_id = render_frame_id_;
   resource.frame_tree_node_id = frame_tree_node_id_;
@@ -430,7 +430,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
           "safe_browsing", "CheckUrl", TRACE_ID_LOCAL(this), "url", url.spec());
 
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
                          weak_factory_.GetWeakPtr(), url, threat_type,
@@ -474,7 +474,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           // Full-hash matched locally so queue a call to
           // |OnCheckUrlForHighConfidenceAllowlist| to trigger the hash-based
           // checking.
-          base::SequencedTaskRunnerHandle::Get()->PostTask(
+          base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
               FROM_HERE,
               base::BindOnce(&SafeBrowsingUrlCheckerImpl::
                                  OnCheckUrlForHighConfidenceAllowlist,
@@ -485,7 +485,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           // No match found locally or |can_check_db_| is false. Queue the call
           // to |OnCheckUrlForHighConfidenceAllowlist| to perform the full URL
           // lookup.
-          base::SequencedTaskRunnerHandle::Get()->PostTask(
+          base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
               FROM_HERE,
               base::BindOnce(&SafeBrowsingUrlCheckerImpl::
                                  OnCheckUrlForHighConfidenceAllowlist,
@@ -605,8 +605,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
                        weak_factory_.GetWeakPtr(), url, last_committed_url_,
                        /*is_mainframe=*/request_destination_ ==
                            network::mojom::RequestDestination::kDocument,
-                       url_lookup_service_on_ui_, database_manager_,
-                       base::SequencedTaskRunnerHandle::Get()));
+                       url_lookup_service_on_ui_,
+                       base::SequencedTaskRunner::GetCurrentDefault()));
     // If the URL matches the high-confidence allowlist, still do the hash based
     // checks.
     PerformHashBasedCheck(url);
@@ -619,8 +619,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
                      weak_factory_.GetWeakPtr(), url, last_committed_url_,
                      /*is_mainframe=*/request_destination_ ==
                          network::mojom::RequestDestination::kDocument,
-                     url_lookup_service_on_ui_, database_manager_,
-                     base::SequencedTaskRunnerHandle::Get()));
+                     url_lookup_service_on_ui_,
+                     base::SequencedTaskRunner::GetCurrentDefault()));
 }
 
 void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
@@ -633,7 +633,6 @@ void SafeBrowsingUrlCheckerImpl::MaybeSendSampleRequest(
     const GURL& last_committed_url,
     bool is_mainframe,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   bool can_send_protego_sampled_ping =
       url_lookup_service_on_ui &&
@@ -660,7 +659,6 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
     const GURL& last_committed_url,
     bool is_mainframe,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   bool is_lookup_service_available =
       url_lookup_service_on_ui && !url_lookup_service_on_ui->IsInBackoffMode();

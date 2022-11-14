@@ -33,7 +33,7 @@
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_internal.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -100,14 +100,6 @@ AppInstall::AppInstall(SplashScreen::Maker splash_screen_maker,
 }
 
 AppInstall::~AppInstall() = default;
-
-void AppInstall::Initialize() {}
-
-void AppInstall::Uninitialize() {
-  if (update_service_) {
-    update_service_->Uninitialize();
-  }
-}
 
 void AppInstall::FirstTaskRun() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -200,13 +192,13 @@ void AppInstall::InstallCandidateDone(bool valid_version, int result) {
 void AppInstall::WakeCandidate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Invoke UpdateServiceInternal::InitializeUpdateService to wake this version
-  // of the updater, qualify, and possibly promote this version as a result. The
+  // Invoke UpdateServiceInternal::Hello to wake this version of the updater,
+  // qualify, and possibly promote this version as a result. The
   // |UpdateServiceInternal| instance has sequence affinity. Bind it in the
   // closure to ensure it is released in this sequence.
   scoped_refptr<UpdateServiceInternal> update_service_internal =
       CreateUpdateServiceInternalProxy(updater_scope());
-  update_service_internal->InitializeUpdateService(base::BindOnce(
+  update_service_internal->Hello(base::BindOnce(
       [](scoped_refptr<UpdateServiceInternal> /*update_service_internal*/,
          scoped_refptr<AppInstall> app_install) {
         app_install->WakeCandidateDone();

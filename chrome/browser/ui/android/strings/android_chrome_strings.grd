@@ -811,6 +811,12 @@ CHAR_LIMIT guidelines:
       <message name="IDS_PREFS_PRIVACY_SECURITY" desc="Title for the Privacy and Security preferences. [CHAR_LIMIT=32]">
         Privacy and security
       </message>
+      <message name="IDS_PRIVACY_SECTION_TITLE" desc="Title for the Privacy settings section.">
+        Privacy
+      </message>
+      <message name="IDS_SECURITY_SECTION_TITLE" desc="Title for the Security settings section.">
+        Security
+      </message>
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
         Touch to Search
       </message>
@@ -1768,6 +1774,9 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_RENAME_EXTENSION_MESSAGE" desc="Message to warn users the danger of changing file extension.">
         If you change the file extension, the file may open in a different application and potentially be a hazard to your device.
+      </message>
+      <message name="IDS_RENAME_FILE_ACCESSIBILITY_HINT" desc="Hint displayed on screen and available to assistive tech for the edit text field for new file name.">
+        New file name
       </message>
 
        <!-- Duplicate download -->
@@ -5677,6 +5686,17 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <!-- Price tracking strings -->
       <message name="IDS_PRICE_DROP_SPOTTED_IPH" desc="This text appears in the IPH when a user opens a new tab page and an item in any of their open tabs has a price drop.">
         Price drop spotted
+      </message>
+
+      <!-- Restore Custom Tab strings -->
+      <message name="IDS_RESTORE_CUSTOM_TAB_TITLE" desc="Appears in pop-up message title when the previous Custom Tab session a user engaged with can be restored.">
+        Resume your last task?
+      </message>
+      <message name="IDS_RESTORE_CUSTOM_TAB_DESCRIPTION" desc="Appears in pop-up message description when the previous Custom Tab session a user engaged with can be restored.">
+        Easily continue where you left off
+      </message>
+      <message name="IDS_RESTORE_CUSTOM_TAB_BUTTON_TEXT" desc="Appears as pop-up message button text to direct the user to restore a previously engaged with Custom Tab session.">
+        Restore
       </message>
     </messages>
   </release>

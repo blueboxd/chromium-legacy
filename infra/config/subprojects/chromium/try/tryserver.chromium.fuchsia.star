@@ -71,6 +71,31 @@ try_.builder(
     },
 )
 
+try_.orchestrator_builder(
+    name = "fuchsia-arm64-rel-orchestrator",
+    compilator = "fuchsia-arm64-rel-compilator",
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    main_list_view = "try",
+    mirrors = [
+        "ci/fuchsia-x64-cast-receiver-rel",
+    ],
+    experiments = {
+        "enable_weetbix_queries": 100,
+        "weetbix.retry_weak_exonerations": 100,
+        "weetbix.enable_weetbix_exonerations": 100,
+    },
+)
+
+try_.compilator_builder(
+    name = "fuchsia-arm64-rel-compilator",
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    # TODO(crbug.com/1298110): Set to 16 once compilator bots are moved
+    cores = "8|16",
+    # TODO(crbug.com/1298110): Set to True once compilator bots are moved
+    ssd = None,
+    main_list_view = "try",
+)
+
 try_.builder(
     name = "fuchsia-binary-size",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
@@ -124,28 +149,12 @@ try_.builder(
     mirrors = ["ci/fuchsia-fyi-x64-dbg"],
 )
 
-try_.builder(
-    name = "fuchsia-x64-cast-receiver-rel",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
-    builderless = not settings.is_main,
-    main_list_view = "try",
-    tryjob = try_.job(),
-    mirrors = [
-        "ci/fuchsia-x64-cast-receiver-rel",
-    ],
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
-)
-
-# TODO(crbug.com/1298111): Replace real builder above once verified
 try_.orchestrator_builder(
-    name = "fuchsia-x64-cast-receiver-rel-orchestrator",
+    name = "fuchsia-x64-cast-receiver-rel",
     compilator = "fuchsia-x64-cast-receiver-rel-compilator",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     main_list_view = "try",
+    tryjob = try_.job(),
     mirrors = [
         "ci/fuchsia-x64-cast-receiver-rel",
     ],
@@ -159,8 +168,10 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "fuchsia-x64-cast-receiver-rel-compilator",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
-    # TODO(crbug.com/1298111): Change to 16
-    cores = 8,
+    # TODO(crbug.com/1298111): Set to 16 once compilator bots are moved
+    cores = "8|16",
+    # TODO(crbug.com/1298111): Set to True once compilator bots are moved
+    ssd = None,
     main_list_view = "try",
 )
 

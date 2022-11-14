@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
+import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -1088,10 +1089,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
             // Only transition theme colors if in static tab mode that is not the NTP. In practice
             // this only runs when you focus the omnibox on a web page.
-            // But for the mShouldShowModernizeVisualUpdate, toolbar and locationbar will have
-            // different color when they are focused than in NTP, so the color need to be updated in
-            // this case.
-            if ((mShouldShowModernizeVisualUpdate || !isLocationBarShownInNTP)
+            // In NTP, toolbar and locationbar need to transite color only when the omnibox is
+            // focused. When the fake omnibox is scrolled, the color should not change.
+            if (((mShouldShowModernizeVisualUpdate && mLocationBar.getPhoneCoordinator().hasFocus())
+                        || !isLocationBarShownInNTP)
                     && mTabSwitcherState == STATIC_TAB) {
                 int defaultColor = getToolbarDefaultColor();
                 int defaultLocationBarColor =
@@ -1620,9 +1621,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     private ToolbarSnapshotState generateToolbarSnapshotState() {
+        UrlBarData urlBarData = getToolbarDataProvider().getUrlBarData();
         return new ToolbarSnapshotState(getTint().getDefaultColor(),
                 mTabCountProvider.getTabCount(), mButtonData, mVisualState,
-                getToolbarDataProvider().getCurrentUrl(),
+                urlBarData.displayText.toString(),
                 mLocationBar.getOmniboxVisibleTextPrefixHint(),
                 getToolbarDataProvider().getSecurityIconResource(false),
                 ImageViewCompat.getImageTintList(mHomeButton),

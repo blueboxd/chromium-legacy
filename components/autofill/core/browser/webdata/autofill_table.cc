@@ -1564,7 +1564,7 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
            transaction.Commit();
   }
 
-  DCHECK(profile.source() == AutofillProfile::Source::kLocal);
+  DCHECK(profile.source() == AutofillProfile::Source::kLocalOrSyncable);
   sql::Statement s;
   InsertBuilder(
       db_, s, kAutofillProfilesTable,
@@ -1606,7 +1606,7 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
            transaction.Commit();
   }
 
-  DCHECK(profile.source() == AutofillProfile::Source::kLocal);
+  DCHECK(profile.source() == AutofillProfile::Source::kLocalOrSyncable);
   sql::Statement s;
   UpdateBuilder(
       db_, s, kAutofillProfilesTable,
@@ -1639,9 +1639,17 @@ bool AutofillTable::RemoveAutofillProfile(
            DeleteWhereColumnEq(db_, kContactInfoTypeTokensTable, kGuid, guid) &&
            transaction.Commit();
   }
-  DCHECK(profile_source == AutofillProfile::Source::kLocal);
+  DCHECK(profile_source == AutofillProfile::Source::kLocalOrSyncable);
   return DeleteWhereColumnEq(db_, kAutofillProfilesTable, kGuid, guid) &&
          RemoveAutofillProfilePieces(guid, db_);
+}
+
+bool AutofillTable::RemoveAllAutofillProfiles(
+    AutofillProfile::Source profile_source) {
+  DCHECK(profile_source == AutofillProfile::Source::kAccount);
+  sql::Transaction transaction(db_);
+  return transaction.Begin() && Delete(db_, kContactInfoTable) &&
+         Delete(db_, kContactInfoTypeTokensTable) && transaction.Commit();
 }
 
 std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
@@ -1651,7 +1659,7 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   if (profile_source == AutofillProfile::Source::kAccount)
     return GetAutofillProfileFromContactInfoTable(db_, guid);
 
-  DCHECK(profile_source == AutofillProfile::Source::kLocal);
+  DCHECK(profile_source == AutofillProfile::Source::kLocalOrSyncable);
   sql::Statement s;
   if (!SelectByGuid(db_, s, kAutofillProfilesTable,
                     {kOrigin, kCompanyName, kStreetAddress, kDependentLocality,
@@ -1663,7 +1671,8 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   }
 
   auto profile = std::make_unique<AutofillProfile>(
-      guid, /*origin=*/s.ColumnString(0), AutofillProfile::Source::kLocal);
+      guid, /*origin=*/s.ColumnString(0),
+      AutofillProfile::Source::kLocalOrSyncable);
   DCHECK(base::IsValidGUID(profile->guid()));
 
   // Get associated name info using guid.
@@ -2642,7 +2651,7 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   while (s_profiles_get.Step()) {
     std::string guid = s_profiles_get.ColumnString(0);
     std::unique_ptr<AutofillProfile> profile =
-        GetAutofillProfile(guid, AutofillProfile::Source::kLocal);
+        GetAutofillProfile(guid, AutofillProfile::Source::kLocalOrSyncable);
     if (!profile)
       return false;
     profiles->push_back(std::move(profile));
@@ -2734,7 +2743,7 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
       return false;
 
     std::unique_ptr<AutofillProfile> profile =
-        GetAutofillProfile(guid, AutofillProfile::Source::kLocal);
+        GetAutofillProfile(guid, AutofillProfile::Source::kLocalOrSyncable);
     if (!profile)
       return false;
 
@@ -2799,7 +2808,7 @@ bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
   return true;
 }
 
-bool AutofillTable::UpdateSyncMetadata(
+bool AutofillTable::UpdateEntityMetadata(
     syncer::ModelType model_type,
     const std::string& storage_key,
     const sync_pb::EntityMetadata& metadata) {
@@ -2817,8 +2826,8 @@ bool AutofillTable::UpdateSyncMetadata(
   return s.Run();
 }
 
-bool AutofillTable::ClearSyncMetadata(syncer::ModelType model_type,
-                                      const std::string& storage_key) {
+bool AutofillTable::ClearEntityMetadata(syncer::ModelType model_type,
+                                        const std::string& storage_key) {
   DCHECK(SupportsMetadataForModelType(model_type))
       << "Model type " << model_type << " not supported for metadata";
 
@@ -3321,7 +3330,8 @@ bool AutofillTable::SupportsMetadataForModelType(
           model_type == syncer::AUTOFILL_WALLET_DATA ||
           model_type == syncer::AUTOFILL_WALLET_METADATA ||
           model_type == syncer::AUTOFILL_WALLET_OFFER ||
-          model_type == syncer::AUTOFILL_WALLET_USAGE);
+          model_type == syncer::AUTOFILL_WALLET_USAGE ||
+          model_type == syncer::CONTACT_INFO);
 }
 
 int AutofillTable::GetKeyValueForModelType(syncer::ModelType model_type) const {

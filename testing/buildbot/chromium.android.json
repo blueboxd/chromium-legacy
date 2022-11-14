@@ -23264,7 +23264,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance",
+          "--disable-features=BackForwardCache",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
@@ -23326,7 +23326,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance",
+          "--disable-features=BackForwardCache",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -23395,7 +23395,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance",
+          "--disable-features=BackForwardCache",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
@@ -23462,7 +23462,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance",
+          "--disable-features=BackForwardCache",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
@@ -23525,7 +23525,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance",
+          "--disable-features=BackForwardCache",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.content_shell_test_apk.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -23587,7 +23587,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance",
+          "--disable-features=BackForwardCache",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
@@ -23649,7 +23649,7 @@
       },
       {
         "args": [
-          "--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance",
+          "--disable-features=BackForwardCache",
           "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -28327,7 +28327,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 50
+          "shards": 75
         },
         "test": "chrome_public_test_apk",
         "test_id_prefix": "ninja://chrome/android:chrome_public_test_apk/"
@@ -28789,7 +28789,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 50
+          "shards": 75
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -31345,7 +31345,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
+          "--use-persistent-shell"
         ],
         "isolate_profile_data": true,
         "merge": {

@@ -41,9 +41,8 @@ std::unique_ptr<views::View> CreateIconView(const ui::ImageModel& icon_image) {
 RichHoverButton::RichHoverButton(
     views::Button::PressedCallback callback,
     const ui::ImageModel& main_image_icon,
-    int title_resource_id,
+    const std::u16string& title_text,
     const std::u16string& secondary_text,
-    int click_target_id,
     const std::u16string& tooltip_text,
     const std::u16string& subtitle_text,
     absl::optional<ui::ImageModel> action_image_icon,
@@ -128,8 +127,8 @@ RichHoverButton::RichHoverButton(
     AddChildView(std::make_unique<views::View>());
   }
 
-  if (title_resource_id)
-    SetTitleText(title_resource_id, secondary_text);
+  if (!title_text.empty())
+    SetTitleText(title_text, secondary_text);
 
   if (!subtitle_text.empty()) {
     table_layout->AddRows(1, views::TableLayout::kFixedSize);
@@ -148,17 +147,16 @@ RichHoverButton::RichHoverButton(
   SetBorder(views::CreateEmptyBorder(layout_provider->GetInsetsMetric(
       ChromeInsetsMetric::INSETS_PAGE_INFO_HOVER_BUTTON)));
 
-  SetID(click_target_id);
   SetTooltipText(tooltip_text);
   UpdateAccessibleName();
 
   Layout();
 }
 
-void RichHoverButton::SetTitleText(int title_resource_id,
+void RichHoverButton::SetTitleText(const std::u16string& title_text,
                                    const std::u16string& secondary_text) {
   DCHECK(title_);
-  title_->SetText(l10n_util::GetStringUTF16(title_resource_id));
+  title_->SetText(title_text);
   if (!secondary_text.empty()) {
     secondary_label_->SetText(secondary_text);
   }

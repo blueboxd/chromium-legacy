@@ -173,11 +173,6 @@ Vector<AtomicString>& ComputedStyle::EnsureVariableNamesCache() const {
   return *cached_data_->variable_names_;
 }
 
-void ComputedStyle::ClearVariableNamesCache() const {
-  if (cached_data_)
-    cached_data_->variable_names_.reset();
-}
-
 const ComputedStyle* ComputedStyle::AddCachedPositionFallbackStyle(
     scoped_refptr<const ComputedStyle> style,
     unsigned index) const {
@@ -437,16 +432,6 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
   return Difference::kNonInherited;
 }
 
-void ComputedStyle::PropagateIndependentInheritedProperties(
-    const ComputedStyle& parent_style) {
-  ComputedStyleBase::PropagateIndependentInheritedProperties(parent_style);
-  if (!HasVariableReference() && !HasVariableDeclaration() &&
-      (InheritedVariables() != parent_style.InheritedVariables())) {
-    MutableInheritedVariablesInternal() =
-        parent_style.InheritedVariablesInternal();
-  }
-}
-
 StyleSelfAlignmentData ResolvedSelfAlignment(
     const StyleSelfAlignmentData& value,
     ItemPosition normal_value_behavior) {
@@ -558,55 +543,6 @@ ContentDistributionType ComputedStyle::ResolvedAlignContentDistribution(
     const StyleContentAlignmentData& normal_value_behavior) const {
   return ResolvedContentAlignmentDistribution(AlignContent(),
                                               normal_value_behavior);
-}
-
-void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
-                                IsAtShadowBoundary is_at_shadow_boundary) {
-  EUserModify current_user_modify = UserModify();
-
-  ComputedStyleBase::InheritFrom(inherit_parent, is_at_shadow_boundary);
-
-  if (is_at_shadow_boundary == kAtShadowBoundary) {
-    // Even if surrounding content is user-editable, shadow DOM should act as a
-    // single unit, and not necessarily be editable
-    SetUserModify(current_user_modify);
-  }
-}
-
-void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
-  DCHECK(MatchedPropertiesCache::IsStyleCacheable(other));
-
-  ComputedStyleBase::CopyNonInheritedFromCached(other);
-
-  // The flags are copied one-by-one because they contain
-  // bunch of stuff other than real style data.
-  // See comments for each skipped flag below.
-
-  // Correctly set during selector matching:
-  // m_styleType
-  // m_pseudoBits
-
-  // Set correctly while computing style for children:
-  // m_explicitInheritance
-
-  // The following flags are set during matching before we decide that we get a
-  // match in the MatchedPropertiesCache which in turn calls this method. The
-  // reason why we don't copy these flags is that they're already correctly set
-  // and that they may differ between elements which have the same set of
-  // matched properties. For instance, given the rule:
-  //
-  // :-webkit-any(:hover, :focus) { background-color: green }"
-  //
-  // A hovered element, and a focused element may use the same cached matched
-  // properties here, but the affectedBy flags will be set differently based on
-  // the matching order of the :-webkit-any components.
-  //
-  // m_emptyState
-  // m_affectedByFocus
-  // m_affectedByHover
-  // m_affectedByActive
-  // m_affectedByDrag
-  // m_isLink
 }
 
 bool ComputedStyle::operator==(const ComputedStyle& o) const {
@@ -1949,52 +1885,6 @@ const StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {
   return NonInheritedVariablesInternal().get();
 }
 
-StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
-  ClearVariableNamesCache();
-
-  scoped_refptr<StyleInheritedVariables>& variables =
-      MutableInheritedVariablesInternal();
-  if (!variables)
-    variables = StyleInheritedVariables::Create();
-  else if (!variables->HasOneRef())
-    variables = variables->Copy();
-  return *variables;
-}
-
-StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
-  ClearVariableNamesCache();
-
-  std::unique_ptr<StyleNonInheritedVariables>& variables =
-      MutableNonInheritedVariablesInternal();
-  if (!variables)
-    variables = std::make_unique<StyleNonInheritedVariables>();
-  return *variables;
-}
-
-void ComputedStyle::SetInitialData(scoped_refptr<StyleInitialData> data) {
-  ClearVariableNamesCache();
-
-  MutableInitialDataInternal() = std::move(data);
-}
-
-void ComputedStyle::SetVariableData(const AtomicString& name,
-                                    scoped_refptr<CSSVariableData> value,
-                                    bool is_inherited_property) {
-  if (is_inherited_property)
-    MutableInheritedVariables().SetData(name, std::move(value));
-  else
-    MutableNonInheritedVariables().SetData(name, std::move(value));
-}
-
-void ComputedStyle::SetVariableValue(const AtomicString& name,
-                                     const CSSValue* value,
-                                     bool is_inherited_property) {
-  if (is_inherited_property)
-    MutableInheritedVariables().SetValue(name, value);
-  else
-    MutableNonInheritedVariables().SetValue(name, value);
-}
-
 static CSSVariableData* GetInitialVariableData(
     const AtomicString& name,
     const StyleInitialData* initial_data) {
@@ -2532,6 +2422,18 @@ bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
   return unensured && unensured->IsContainerForSizeContainerQueries();
 }
 
+void ComputedStyleBuilder::PropagateIndependentInheritedProperties(
+    const ComputedStyle& parent_style) {
+  ComputedStyleBuilderBase::PropagateIndependentInheritedProperties(
+      parent_style);
+  if (!HasVariableReference() && !HasVariableDeclaration() &&
+      (InheritedVariablesInternal().get() !=
+       parent_style.InheritedVariables())) {
+    MutableInheritedVariablesInternal() =
+        parent_style.InheritedVariablesInternal();
+  }
+}
+
 void ComputedStyleBuilder::ClearBackgroundImage() {
   FillLayer* curr_child = &AccessBackgroundLayers();
   curr_child->SetImage(
@@ -2656,11 +2558,41 @@ void ComputedStyleBuilder::SetUsedColorScheme(
   SetColorSchemeForced(forced_scheme);
 }
 
+StyleInheritedVariables& ComputedStyleBuilder::MutableInheritedVariables() {
+  ClearVariableNamesCache();
+
+  scoped_refptr<StyleInheritedVariables>& variables =
+      MutableInheritedVariablesInternal();
+  if (!variables)
+    variables = StyleInheritedVariables::Create();
+  else if (!variables->HasOneRef())
+    variables = variables->Copy();
+  return *variables;
+}
+
+StyleNonInheritedVariables&
+ComputedStyleBuilder::MutableNonInheritedVariables() {
+  ClearVariableNamesCache();
+
+  std::unique_ptr<StyleNonInheritedVariables>& variables =
+      MutableNonInheritedVariablesInternal();
+  if (!variables)
+    variables = std::make_unique<StyleNonInheritedVariables>();
+  return *variables;
+}
+
+void ComputedStyleBuilder::ClearVariableNamesCache() {
+  if (style_->cached_data_)
+    style_->cached_data_->variable_names_.reset();
+}
+
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,
                    EOverscrollBehavior::kAuto);
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kContain,
                    EOverscrollBehavior::kContain);
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kNone,
                    EOverscrollBehavior::kNone);
+
+CORE_EXPORT ComputedStyle* ComputedStyle::freelist_ = nullptr;
 
 }  // namespace blink

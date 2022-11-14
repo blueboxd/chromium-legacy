@@ -97,7 +97,7 @@ class TestCascade {
 
   void InheritFrom(scoped_refptr<ComputedStyle> parent) {
     state_.SetParentStyle(parent);
-    state_.StyleRef().InheritFrom(*parent);
+    state_.StyleBuilder().InheritFrom(*parent);
   }
 
   //  Note that because of how MatchResult works, declarations must be added
@@ -439,7 +439,7 @@ TEST_F(StyleCascadeTest, ApplyGenerations) {
   EXPECT_EQ("20px", cascade.ComputedValue("width"));
 
   cascade.State().StyleBuilder().SetWidth(Length::Auto());
-  cascade.State().StyleRef().SetVariableData("--x", nullptr, true);
+  cascade.State().StyleBuilder().SetVariableData("--x", nullptr, true);
   EXPECT_EQ(g_null_atom, cascade.ComputedValue("--x"));
   EXPECT_EQ("auto", cascade.ComputedValue("width"));
 
@@ -3347,7 +3347,7 @@ TEST_F(StyleCascadeTest, MarkHasReferenceLonghand) {
   cascade.Apply();
 
   EXPECT_TRUE(cascade.State()
-                  .StyleRef()
+                  .StyleBuilder()
                   .HasVariableReferenceFromNonInheritedProperty());
 }
 
@@ -3359,7 +3359,7 @@ TEST_F(StyleCascadeTest, MarkHasReferenceShorthand) {
   cascade.Apply();
 
   EXPECT_TRUE(cascade.State()
-                  .StyleRef()
+                  .StyleBuilder()
                   .HasVariableReferenceFromNonInheritedProperty());
 }
 
@@ -3373,7 +3373,7 @@ TEST_F(StyleCascadeTest, NoMarkHasReferenceForInherited) {
   cascade.Apply();
 
   EXPECT_FALSE(cascade.State()
-                   .StyleRef()
+                   .StyleBuilder()
                    .HasVariableReferenceFromNonInheritedProperty());
 }
 

@@ -2375,20 +2375,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
         unthrottled_frame_views.push_back(&frame_view);
       });
 
-  // TODO(vmpstr): Figure out what to do with frames.
-  // This may change due to https://github.com/w3c/csswg-drafts/issues/7874
-  absl::optional<DisplayLockDocumentState::ScopedForceActivatableDisplayLocks>
-      forced_activatable_locks_scope;
-  if (auto* transition =
-          ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument())) {
-    if (transition->NeedsUpToDateTags()) {
-      forced_activatable_locks_scope.emplace(
-          frame_->GetDocument()
-              ->GetDisplayLockDocumentState()
-              .GetScopedForceActivatableLocks());
-    }
-  }
-
   while (true) {
     for (LocalFrameView* frame_view : unthrottled_frame_views) {
       // RunResizeObserverSteps may run arbitrary script, which can cause a
@@ -2497,19 +2483,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     // shared elements to UA created elements. This may dirty style/layout
     // requiring another lifecycle update.
     needs_to_repeat_lifecycle = RunViewTransitionSteps(target_state);
-
-#if DCHECK_IS_ON()
-    // We shouldn't need up to date tags after running view transition
-    // steps. The only way we should run into a situation where we need up to
-    // date tags is outside of the lifecycle, and the value should be cleared in
-    // view transition steps.
-    if (auto* transition =
-            ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument())) {
-      DCHECK(!transition->NeedsUpToDateTags());
-    }
-#endif
-
-    forced_activatable_locks_scope.reset();
     if (!needs_to_repeat_lifecycle)
       break;
   }
@@ -2565,17 +2538,28 @@ bool LocalFrameView::RunCSSToggleSteps() {
 bool LocalFrameView::RunViewTransitionSteps(
     DocumentLifecycle::LifecycleState target_state) {
   DCHECK(frame_ && frame_->GetDocument());
+  DCHECK(frame_->IsLocalRoot());
 
   if (target_state != DocumentLifecycle::kPaintClean)
     return false;
 
-  auto* transition =
-      ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument());
-  if (!transition)
-    return false;
+  bool re_run_lifecycle = false;
+  ForAllNonThrottledLocalFrameViews(
+      [&re_run_lifecycle](LocalFrameView& frame_view) {
+        const auto* document = frame_view.GetFrame().GetDocument();
+        if (!document)
+          return;
 
-  transition->RunViewTransitionStepsDuringMainFrame();
-  return Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean;
+        auto* transition = ViewTransitionUtils::GetActiveTransition(*document);
+        if (!transition)
+          return;
+
+        transition->RunViewTransitionStepsDuringMainFrame();
+        re_run_lifecycle |= document->Lifecycle().GetState() <
+                            DocumentLifecycle::kPrePaintClean;
+      });
+
+  return re_run_lifecycle;
 }
 
 bool LocalFrameView::RunResizeObserverSteps(
@@ -3119,7 +3103,6 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   }
 
   WTF::Vector<std::unique_ptr<ViewTransitionRequest>> view_transition_requests;
-  // TODO(vmpstr): We should make this work for subframes as well.
   AppendViewTransitionRequests(view_transition_requests);
 
   paint_artifact_compositor_->Update(
@@ -3132,20 +3115,26 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
 void LocalFrameView::AppendViewTransitionRequests(
     WTF::Vector<std::unique_ptr<ViewTransitionRequest>>& requests) {
   DCHECK(frame_ && frame_->GetDocument());
-  auto pending_requests =
-      ViewTransitionUtils::GetPendingRequests(*frame_->GetDocument());
-  for (auto& pending_request : pending_requests)
-    requests.push_back(std::move(pending_request));
+  DCHECK(frame_->IsLocalRoot());
+
+  ForAllNonThrottledLocalFrameViews([&requests](LocalFrameView& frame_view) {
+    if (!frame_view.GetFrame().GetDocument())
+      return;
+
+    auto pending_requests = ViewTransitionUtils::GetPendingRequests(
+        *frame_view.GetFrame().GetDocument());
+    for (auto& pending_request : pending_requests)
+      requests.push_back(std::move(pending_request));
+  });
 }
 
 void LocalFrameView::VerifySharedElementsForViewTransition() {
   DCHECK(frame_ && frame_->GetDocument());
-  auto* transition =
-      ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument());
-  if (!transition)
-    return;
 
-  transition->VerifySharedElements();
+  if (auto* transition =
+          ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument())) {
+    transition->VerifySharedElements();
+  }
 }
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(
@@ -4557,7 +4546,7 @@ bool LocalFrameView::ShouldThrottleRenderingForTest() const {
 
 bool LocalFrameView::CanThrottleRendering() const {
   if (lifecycle_updates_throttled_ || IsSubtreeThrottled() ||
-      IsDisplayLocked()) {
+      IsDisplayLocked() || HasViewTransitionThrottlingRendering()) {
     return true;
   }
   // We only throttle hidden cross-origin frames. This is to avoid a situation
@@ -4567,6 +4556,21 @@ bool LocalFrameView::CanThrottleRendering() const {
   // so they should be able to tolerate some delay in receiving replies from a
   // throttled peer.
   return IsHiddenForThrottling() && frame_->IsCrossOriginToNearestMainFrame();
+}
+
+bool LocalFrameView::HasViewTransitionThrottlingRendering() const {
+  if (!frame_->GetDocument())
+    return false;
+
+  // Only nested local frames should be throttled. Pausing rendering for root
+  // local frames is done by pausing frames in the compositor.
+  // See ViewTransition::ScopedPauseRendering for details.
+  auto* transition =
+      ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument());
+  const bool should_throttle =
+      transition && transition->ShouldThrottleRendering();
+  DCHECK(!should_throttle || !frame_->IsLocalRoot());
+  return should_throttle;
 }
 
 void LocalFrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,

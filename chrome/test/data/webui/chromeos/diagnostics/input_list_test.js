@@ -19,7 +19,7 @@ import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {isVisible} from '../../test_util.js';
+import {isVisible} from '../test_util.js';
 
 import {TestDiagnosticsBrowserProxy} from './test_diagnostics_browser_proxy.js';
 
@@ -267,6 +267,9 @@ suite('inputListTestSuite', function() {
       resolver.resolve();
     };
 
+    // A11y touch passthrough state is false by default.
+    assertFalse(provider.getA11yTouchPassthroughState());
+
     const testButton = getCardByDeviceType('touchscreen')
                            .shadowRoot.querySelector('cr-button');
     assertTrue(!!testButton);
@@ -278,17 +281,28 @@ suite('inputListTestSuite', function() {
         /*expectedMoveAppToTestingScreenCalled=*/ 1,
         provider.getMoveAppToTestingScreenCalled());
 
+    // Click get stated button to open canvas dialog.
+    const getStartedButton = introDialog.querySelector('cr-button');
+    getStartedButton.click();
+    await flushTasks();
+    assertFalse(introDialog.open);
+    assertTrue(provider.getA11yTouchPassthroughState());
+
+    const canvasDialog = touchscreenTester.getDialog('canvas-dialog');
+    assertTrue(canvasDialog.open);
+
     const fullscreenChangeEvent = eventToPromise('fullscreenchange', document);
     document.dispatchEvent(new Event('fullscreenchange'));
     await fullscreenChangeEvent;
 
-    assertFalse(introDialog.open);
+    assertFalse(canvasDialog.open);
     assertEquals(
         /*expectedMoveAppBackToPreviousScreenCalled=*/ 1,
         provider.getMoveAppBackToPreviousScreenCalled());
     assertEquals(
         /*expectedEventTrackerRemoveAllCalled=*/ 1,
         eventTrackerRemoveAllCalled);
+    assertFalse(provider.getA11yTouchPassthroughState());
   });
 
   test('TouchscreenTesterShowAndCloseInTabletMode', async () => {

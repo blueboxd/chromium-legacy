@@ -175,14 +175,15 @@ class RenderFrameHostFactoryForHistoryBackInterceptor
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       const blink::DocumentToken& document_token,
+      base::UnguessableToken devtools_frame_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
       scoped_refptr<BrowsingContextState> browsing_context_state) override {
     return base::WrapUnique(new RenderFrameHostImplForHistoryBackInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
-        document_token, renderer_initiated_creation, lifecycle_state,
-        std::move(browsing_context_state),
+        document_token, devtools_frame_token, renderer_initiated_creation,
+        lifecycle_state, std::move(browsing_context_state),
         frame_tree_node->frame_owner_element_type(), frame_tree_node->parent(),
         frame_tree_node->fenced_frame_status()));
   }
@@ -5231,13 +5232,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
   WaitForLoadStop(popup);
 
   // Verify that we are at the initial empty document.
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, popup->GetController().GetEntryCount());
-    EXPECT_TRUE(
-        popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, popup->GetController().GetEntryCount());
-  }
+  EXPECT_EQ(1, popup->GetController().GetEntryCount());
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
   EXPECT_TRUE(
       popup->GetPrimaryFrameTree().root()->is_on_initial_empty_document());
 
@@ -5265,10 +5261,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
 
   // Verify that we are at the synchronously committed about:blank document.
   EXPECT_EQ(1, popup->GetController().GetEntryCount());
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_TRUE(
-        popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
-  }
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
   EXPECT_TRUE(
       popup->GetPrimaryFrameTree().root()->is_on_initial_empty_document());
 
@@ -5510,15 +5503,11 @@ IN_PROC_BROWSER_TEST_F(
 
   // Double-check that the new shell didn't commit any navigation and that it
   // has an opaque origin.
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
-    EXPECT_TRUE(new_shell->web_contents()
-                    ->GetController()
-                    .GetLastCommittedEntry()
-                    ->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, new_shell->web_contents()->GetController().GetEntryCount());
-  }
+  EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
+  EXPECT_TRUE(new_shell->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsInitialEntry());
   EXPECT_EQ(GURL(), main_frame->GetLastCommittedURL());
   EXPECT_EQ("null", EvalJs(main_frame, "window.origin"));
 

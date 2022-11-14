@@ -561,7 +561,8 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
   // DESK_TEMPLATES_MODE_ENTERED alert triggered in
   // OverviewSession::ShowDesksTemplatesGrids should be shown instead.
   if (source != DesksCreationRemovalSource::kLaunchTemplate &&
-      source != DesksCreationRemovalSource::kSaveAndRecall) {
+      source != DesksCreationRemovalSource::kSaveAndRecall &&
+      source != DesksCreationRemovalSource::kFloatingWorkspace) {
     auto* shell = Shell::Get();
     shell->accessibility_controller()->TriggerAccessibilityAlertWithMessage(
         l10n_util::GetStringFUTF8(IDS_ASH_VIRTUAL_DESKS_ALERT_NEW_DESK_CREATED,
@@ -906,6 +907,12 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
   // added.
   if (!visible_on_all_desks_windows_.emplace(window).second)
     return;
+
+  if (features::IsPerDeskZOrderEnabled()) {
+    for (auto& desk : desks_)
+      desk->AddAllDeskWindow(window);
+  }
+
   wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
   NotifyAllDesksForContentChanged();
   Shell::Get()
@@ -916,6 +923,11 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
 
 void DesksController::MaybeRemoveVisibleOnAllDesksWindow(aura::Window* window) {
   if (visible_on_all_desks_windows_.erase(window)) {
+    if (features::IsPerDeskZOrderEnabled()) {
+      for (auto& desk : desks_)
+        desk->RemoveAllDeskWindow(window);
+    }
+
     wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     NotifyAllDesksForContentChanged();
     Shell::Get()
@@ -933,7 +945,13 @@ void DesksController::NotifyAllDesksForContentChanged() {
 
 void DesksController::NotifyDeskNameChanged(const Desk* desk,
                                             const std::u16string& new_name) {
-  MaybeReportCustomDeskNames();
+  // We only want metrics for users with two or more desks.
+  if (desks_.size() > 1) {
+    ReportCustomDeskNames();
+    base::UmaHistogramBoolean(kCustomNameCreatedHistogramName,
+                              desk->is_name_set_by_user());
+  }
+
   for (auto& observer : observers_)
     observer.OnDeskNameChanged(desk, new_name);
 }
@@ -1111,6 +1129,9 @@ const Desk* DesksController::CreateNewDeskForTemplate(
     case DeskTemplateType::kSaveAndRecall:
       NewDesk(DesksCreationRemovalSource::kSaveAndRecall);
       break;
+    case DeskTemplateType::kFloatingWorkspace:
+      NewDesk(DesksCreationRemovalSource::kFloatingWorkspace);
+      break;
     case DeskTemplateType::kUnknown:
       return nullptr;
   }
@@ -1127,7 +1148,8 @@ const Desk* DesksController::CreateNewDeskForTemplate(
   // Force update user prefs because `SetName()` does not trigger it.
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
 
-  if (template_type == DeskTemplateType::kTemplate) {
+  if (template_type == DeskTemplateType::kTemplate ||
+      template_type == DeskTemplateType::kFloatingWorkspace) {
     // We're staying in overview mode, so move desks bar window and the save
     // template button to the new desk. They would otherwise disappear when the
     // new desk is activated.
@@ -1480,6 +1502,10 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
   // `old_active` desk do not activate other windows on the same desk. See
   // `ash::AshFocusRules::GetNextActivatableWindow()`.
   Desk* old_active = active_desk_;
+
+  if (features::IsPerDeskZOrderEnabled())
+    old_active->BuildAllDeskStackingData();
+
   MoveVisibleOnAllDesksWindowsFromActiveDeskTo(const_cast<Desk*>(desk));
   active_desk_ = const_cast<Desk*>(desk);
   RestackVisibleOnAllDesksWindowsOnActiveDesk();
@@ -1686,7 +1712,6 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
 
   UMA_HISTOGRAM_ENUMERATION(kRemoveDeskHistogramName, source);
   UMA_HISTOGRAM_ENUMERATION(kRemoveDeskTypeHistogramName, close_type);
-  MaybeReportCustomDeskNames();
 
   // We should only announce desks are being merged if we are combining desks.
   if (close_type == DeskCloseType::kCombineDesks) {
@@ -1770,6 +1795,9 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
       removed_desk_data->desk_removal_source(), removed_desk->windows().size());
   ReportDesksCountHistogram();
   ReportNumberOfWindowsPerDeskHistogram();
+
+  // Record the number and percentage of desks with custom names.
+  ReportCustomDeskNames();
 
   // We need to ensure there are no app windows in the desk before destruction.
   // During a combine desks operation, the windows would have already been
@@ -1915,6 +1943,11 @@ void DesksController::NotifyFullScreenStateChangedAcrossDesksIfNeeded(
 }
 
 void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
+  if (features::IsPerDeskZOrderEnabled()) {
+    active_desk_->RestackAllDeskWindows();
+    return;
+  }
+
   auto mru_windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* visible_on_all_desks_window : visible_on_all_desks_windows_) {
@@ -2018,6 +2051,7 @@ void DesksController::ReportClosedWindowsCountPerSourceHistogram(
     case DesksCreationRemovalSource::kDragToNewDeskButton:
     case DesksCreationRemovalSource::kLaunchTemplate:
     case DesksCreationRemovalSource::kDesksRestore:
+    case DesksCreationRemovalSource::kFloatingWorkspace:
     case DesksCreationRemovalSource::kEnsureDefaultDesk:
       break;
   }
@@ -2025,11 +2059,7 @@ void DesksController::ReportClosedWindowsCountPerSourceHistogram(
     base::UmaHistogramCounts100(desk_removal_source_histogram, windows_closed);
 }
 
-void DesksController::MaybeReportCustomDeskNames() const {
-  // We only want metrics for users with two or more desks.
-  if (desks_.size() < 2)
-    return;
-
+void DesksController::ReportCustomDeskNames() const {
   int custom_names_count =
       base::ranges::count(desks_, true, &Desk::is_name_set_by_user);
 

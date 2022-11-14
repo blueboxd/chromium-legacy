@@ -37,6 +37,11 @@ class SearchProvider;
 enum class RankingItemType;
 
 // Common types used throughout result ranking.
+//
+// TODO(crbug.com/1383002): Ideally these would be grouped with other common
+// type aliases in types.h, but this creates a circular dependency issue with
+// ChromeSearchResult. Try to iron this out, and group these type aliases with
+// the others.
 
 using Results = std::vector<std::unique_ptr<ChromeSearchResult>>;
 using ResultsMap = base::flat_map<ProviderType, Results>;
@@ -44,10 +49,6 @@ using ResultsMap = base::flat_map<ProviderType, Results>;
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
 // results to the given SearchResults UI model.
-//
-// TODO(crbug.com/1199206): The SearchController is being reimplemented with
-// a different ranking system. Once this reimplementation is finished, this pure
-// virtual class can be removed and replaced with SearchControllerImplNew.
 class SearchController {
  public:
   using ResultsChangedCallback =

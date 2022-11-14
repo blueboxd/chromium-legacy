@@ -77,6 +77,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
         type: Boolean,
         value: false,
         reflectToAttribute: true,
+        observer: 'isInputInvalidObserver_',
       },
 
       retailer_id_input_: {
@@ -87,7 +88,7 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
 
       retailer_id_input_pattern_: {
         type: String,
-        value: '[a-zA-Z]{3}-[0-9]{4}$',
+        value: '^[A-Z]{3}-[0-9]{4}$',
       },
 
     };
@@ -201,6 +202,14 @@ class DemoPreferencesScreen extends DemoPreferencesScreenBase {
     } else {
       this.is_input_invalid_ = !RegExp(this.retailer_id_input_pattern_)
                                     .test(this.retailer_id_input_);
+    }
+  }
+
+  isInputInvalidObserver_() {
+    if (this.is_input_invalid_) {
+      this.$.nextButton.disabled = true;
+    } else {
+      this.$.nextButton.disabled = false;
     }
   }
 

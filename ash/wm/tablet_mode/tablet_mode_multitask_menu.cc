@@ -23,13 +23,9 @@ namespace ash {
 
 namespace {
 
-// The vertical position of the multitask menu on the window.
+// The vertical position of the multitask menu, in the window (and widget)
+// coordinates.
 constexpr int kVerticalPosition = 8;
-
-// Outset around the multitask menu widget to show shadows and extend touch hit
-// bounds. Vertical outset should be at least as big as `kVerticalPosition`
-// to show animations starting from the top of the window.
-constexpr gfx::Outsets kWidgetOutsets = gfx::Outsets::VH(kVerticalPosition, 5);
 
 constexpr int kBetweenButtonSpacing = 12;
 constexpr int kCornerRadius = 8;
@@ -47,7 +43,7 @@ class TabletModeMultitaskMenuView : public views::View {
   METADATA_HEADER(TabletModeMultitaskMenuView);
 
   TabletModeMultitaskMenuView(aura::Window* window,
-                              base::RepeatingClosure hide_menu) {
+                              base::RepeatingClosure callback) {
     SetBackground(views::CreateThemedRoundedRectBackground(
         kColorAshShieldAndBase80, kCornerRadius));
     SetBorder(std::make_unique<views::HighlightBorder>(
@@ -73,7 +69,7 @@ class TabletModeMultitaskMenuView : public views::View {
 
     menu_view_for_testing_ =
         AddChildView(std::make_unique<chromeos::MultitaskMenuView>(
-            window, hide_menu, buttons));
+            window, std::move(callback), buttons));
 
     auto* layout = menu_view_for_testing_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
@@ -106,8 +102,7 @@ END_METADATA
 
 TabletModeMultitaskMenu::TabletModeMultitaskMenu(
     TabletModeMultitaskMenuEventHandler* event_handler,
-    aura::Window* window,
-    base::RepeatingClosure callback)
+    aura::Window* window)
     : event_handler_(event_handler), window_(window) {
   // Start observing the window.
   DCHECK(window);
@@ -121,6 +116,10 @@ TabletModeMultitaskMenu::TabletModeMultitaskMenu(
 
   widget_->Init(std::move(params));
   widget_->SetVisibilityChangedAnimationsEnabled(false);
+  auto* multitask_menu_window = widget_->GetNativeWindow();
+  // TODO(sophiewen): Consider adding transient child instead.
+  multitask_menu_window->parent()->StackChildAbove(multitask_menu_window,
+                                                   window_);
 
   // Clip the widget's root view so that the menu appears to be sliding out from
   // the top, even if the window above it is stacked below it, which is the case
@@ -132,71 +131,81 @@ TabletModeMultitaskMenu::TabletModeMultitaskMenu(
   root_view->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   root_view->layer()->SetMasksToBounds(true);
 
-  menu_view_ = widget_->SetContentsView(
-      std::make_unique<TabletModeMultitaskMenuView>(window_, callback));
-  menu_view_->SizeToPreferredSize();
+  menu_view_ =
+      widget_->SetContentsView(std::make_unique<TabletModeMultitaskMenuView>(
+          window_, base::BindRepeating(&TabletModeMultitaskMenu::Reset,
+                                       weak_factory_.GetWeakPtr())));
+
+  const gfx::Size menu_size = menu_view_->GetPreferredSize();
+  const gfx::Size widget_size(menu_size.width(),
+                              menu_size.height() + kVerticalPosition);
+  const gfx::Point widget_origin(
+      window_->bounds().CenterPoint().x() - widget_size.width() / 2,
+      window_->bounds().y());
+  widget_->SetBounds(gfx::Rect(widget_origin, widget_size));
+  widget_->Show();
+
+  // Set the menu bounds and apply a transform offscreen.
+  const gfx::Point menu_origin(0, kVerticalPosition);
+  menu_view_->SetBoundsRect(gfx::Rect(menu_origin, menu_size));
+  menu_view_->layer()->SetTransform(gfx::Transform::MakeTranslation(
+      0, -menu_view_->GetPreferredSize().height() - kVerticalPosition));
 
   // TODO(sophiewen): Add shadows on `menu_view_`.
-
-  AnimateShow();
 
   widget_observation_.Observe(widget_.get());
 }
 
 TabletModeMultitaskMenu::~TabletModeMultitaskMenu() = default;
 
-void TabletModeMultitaskMenu::AnimateShow() {
-  DCHECK(widget_);
-  auto* multitask_menu_window = widget_->GetNativeWindow();
-  // TODO(sophiewen): Consider adding transient child instead.
-  multitask_menu_window->parent()->StackChildAbove(multitask_menu_window,
-                                                   window_);
-  widget_->Show();
-
-  // Position the widget on the top center of the window.
-  const gfx::Size widget_size = widget_->GetContentsView()->GetPreferredSize();
-  const gfx::Point widget_origin(
-      window_->bounds().CenterPoint().x() - widget_size.width() / 2,
-      window_->bounds().y() + kVerticalPosition);
-  widget_->SetBounds(gfx::Rect(widget_origin, widget_size));
-
-  const gfx::Transform transform = gfx::Transform::MakeTranslation(
-      0, -widget_size.height() - kVerticalPosition);
-
+void TabletModeMultitaskMenu::Animate(bool show) {
   ui::Layer* view_layer = menu_view_->layer();
+  auto* animator = view_layer->GetAnimator();
+  if (animator->is_animating())
+    return;
   views::AnimationBuilder()
+      .OnEnded(show ? base::DoNothing()
+                    : base::BindOnce(&TabletModeMultitaskMenu::Reset,
+                                     weak_factory_.GetWeakPtr()))
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
       .Once()
-      .SetDuration(base::TimeDelta())
-      .SetTransform(view_layer, transform)
-      .SetOpacity(view_layer, 0.f)
-      .Then()
       .SetDuration(kPositionAnimationDurationMs)
-      .SetTransform(view_layer, gfx::Transform(),
+      .SetTransform(view_layer,
+                    show ? gfx::Transform()
+                         : gfx::Transform::MakeTranslation(
+                               0, -menu_view_->GetPreferredSize().height() -
+                                      kVerticalPosition),
                     gfx::Tween::ACCEL_20_DECEL_100)
-      .SetOpacity(view_layer, 1.f, gfx::Tween::LINEAR);
+      .SetOpacity(view_layer, show ? 1.f : 0.f, gfx::Tween::LINEAR);
 }
 
-void TabletModeMultitaskMenu::AnimateClose() {
-  DCHECK(widget_);
+void TabletModeMultitaskMenu::BeginDrag(float initial_y) {
+  // Try to match the bottom of the menu with the drag location.
+  // TODO(sophiewen): The drag location may not always be at the bottom of the
+  // menu.
+  float delta_y = initial_y - menu_view_->bounds().bottom();
+  menu_view_->layer()->SetTransform(
+      gfx::Transform::MakeTranslation(0, delta_y));
+}
 
-  // Since the widget gets destroyed after the animation, its bounds don't need
-  // to be set.
-  const gfx::Size pref_size = menu_view_->GetPreferredSize();
-  const gfx::Transform transform = gfx::Transform::MakeTranslation(
-      0, -pref_size.height() - kVerticalPosition - kWidgetOutsets.height());
+void TabletModeMultitaskMenu::UpdateDrag(float current_y) {
+  float transform_y = current_y - menu_view_->bounds().bottom();
+  menu_view_->layer()->SetTransform(
+      gfx::Transform::MakeTranslation(0, transform_y));
+}
 
-  ui::Layer* view_layer = menu_view_->layer();
-  views::AnimationBuilder()
-      .OnEnded(base::BindOnce(&TabletModeMultitaskMenu::Reset,
-                              weak_factory_.GetWeakPtr()))
-      .SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
-      .Once()
-      .SetDuration(kPositionAnimationDurationMs)
-      .SetTransform(view_layer, transform, gfx::Tween::ACCEL_20_DECEL_100)
-      .SetOpacity(view_layer, 0.f, gfx::Tween::LINEAR);
+void TabletModeMultitaskMenu::EndDrag() {
+  // Calculate the `current_translation_y` relative to `max_translation_y`. Both
+  // negative values and relative to the menu position.
+  float current_translation_y =
+      menu_view_->layer()->transform().To2dTranslation().y();
+  float max_translation_y =
+      -menu_view_->GetPreferredSize().height() - kVerticalPosition;
+  const float translated_ratio =
+      base::clamp(current_translation_y / max_translation_y, 0.f, 1.f);
+
+  Animate(/*show=*/translated_ratio < 0.5f);
 }
 
 void TabletModeMultitaskMenu::Reset() {

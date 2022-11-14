@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox/omnibox_result.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "base/strings/strcat.h"
@@ -51,18 +50,6 @@ const gfx::VectorIcon& TypeToVectorIcon(CrosApiSearchResult::OmniboxType type) {
       NOTREACHED();
       return ash::kOmniboxGenericIcon;
   }
-}
-
-// Returns tags for the given text, with match tags manually included for
-// compatibility with the classic launcher.
-ash::SearchResultTags TagsForTextWithMatchTags(
-    const std::u16string& query,
-    const std::u16string& text,
-    CrosApiSearchResult::TextType type) {
-  ash::SearchResultTags tags = CalculateTags(query, text);
-  for (const ash::SearchResultTag tag : TagsForText(text, type))
-    tags.push_back(tag);
-  return tags;
 }
 
 }  // namespace
@@ -209,8 +196,7 @@ void OmniboxResult::SetGenericIcon() {
 void OmniboxResult::UpdateTitleAndDetails() {
   if (!IsUrlResultWithDescription()) {
     SetTitle(contents_);
-    SetTitleTags(TagsForTextWithMatchTags(query_, contents_,
-                                          search_result_->contents_type));
+    SetTitleTags(TagsForText(contents_, search_result_->contents_type));
 
     if (IsRichEntity()) {
       // Append the search engine to the description.
@@ -220,8 +206,8 @@ void OmniboxResult::UpdateTitleAndDetails() {
               GetDefaultSearchEngineName(
                   TemplateURLServiceFactory::GetForProfile(profile_)));
       SetDetails(description_with_search_context);
-      SetDetailsTags(TagsForTextWithMatchTags(
-          query_, description_, search_result_->description_type));
+      SetDetailsTags(
+          TagsForText(description_, search_result_->description_type));
 
       // Append the search engine to the accessible name.
       const std::u16string accessible_name =
@@ -244,12 +230,10 @@ void OmniboxResult::UpdateTitleAndDetails() {
     // the url description is presented as title, and url itself is presented as
     // details.
     SetTitle(description_);
-    SetTitleTags(TagsForTextWithMatchTags(query_, description_,
-                                          search_result_->description_type));
+    SetTitleTags(TagsForText(description_, search_result_->description_type));
 
     SetDetails(contents_);
-    SetDetailsTags(TagsForTextWithMatchTags(query_, contents_,
-                                            search_result_->contents_type));
+    SetDetailsTags(TagsForText(contents_, search_result_->contents_type));
   }
 }
 
@@ -277,7 +261,7 @@ void OmniboxResult::OnFetchComplete(const GURL& url, const SkBitmap* bitmap) {
     return;
 
   IconInfo icon_info(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap),
-                     GetImageIconDimension(), IconShape::kRoundedRectangle);
+                     kImageIconDimension, IconShape::kRoundedRectangle);
   SetIcon(icon_info);
 }
 

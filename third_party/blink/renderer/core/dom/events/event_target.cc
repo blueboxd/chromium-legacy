@@ -426,16 +426,6 @@ bool EventTarget::AddEventListenerInternal(
   if (!execution_context)
     return false;
 
-  // Consider `Permissions-Policy: unload`.
-  if (event_type == event_type_names::kUnload &&
-      RuntimeEnabledFeatures::PermissionsPolicyUnloadEnabled(
-          execution_context) &&
-      !execution_context->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kUnload,
-          ReportOptions::kReportOnFailure)) {
-    return false;
-  }
-
   // Unload/Beforeunload handlers are not allowed in fenced frames.
   if (event_type == event_type_names::kUnload ||
       event_type == event_type_names::kBeforeunload) {
@@ -448,6 +438,18 @@ bool EventTarget::AddEventListenerInternal(
         }
       }
     }
+  }
+
+  // Consider `Permissions-Policy: unload`.
+  if (event_type == event_type_names::kUnload &&
+      !execution_context->IsFeatureEnabled(
+          mojom::blink::PermissionsPolicyFeature::kUnload,
+          ReportOptions::kReportOnFailure)) {
+    // If the Permissions-Policy unload feature is not enabled, then unload
+    // should never be disabled.
+    DCHECK(RuntimeEnabledFeatures::PermissionsPolicyUnloadEnabled(
+        execution_context));
+    return false;
   }
 
   if (event_type == event_type_names::kTouchcancel ||
@@ -527,10 +529,10 @@ void EventTarget::AddedEventListener(
       } else if (event_type == event_type_names::kBeforematch) {
         UseCounter::Count(*document, WebFeature::kBeforematchHandlerRegistered);
       } else if (event_type ==
-                 event_type_names::kContentvisibilityautostatechanged) {
+                 event_type_names::kContentvisibilityautostatechange) {
         UseCounter::Count(
             *document,
-            WebFeature::kContentVisibilityAutoStateChangedHandlerRegistered);
+            WebFeature::kContentVisibilityAutoStateChangeHandlerRegistered);
       }
     }
   }

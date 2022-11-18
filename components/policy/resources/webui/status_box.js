@@ -85,6 +85,8 @@ export class StatusBoxElement extends CustomElement {
       // Populate the user gaia id.
       this.setLabelAndShow_('.gaia-id', status.gaiaId || notSpecifiedString);
       this.setLabelAndShow_('.client-id', status.clientId);
+      this.setLabelAndShow_('.profile-id', status.profileId);
+
       if (status.isAffiliated != null) {
         this.setLabelAndShow_(
             '.is-affiliated',
@@ -124,6 +126,11 @@ export class StatusBoxElement extends CustomElement {
           '.last-cloud-report-sent-timestamp',
           status.lastCloudReportSentTimestamp + ' (' +
               status.timeSinceLastCloudReportSent + ')');
+    }
+
+    if (status.error) {
+      this.setLabelAndShow_(
+          '.error', loadTimeData.getString('statusErrorManagedNoPolicy'));
     }
   }
 }

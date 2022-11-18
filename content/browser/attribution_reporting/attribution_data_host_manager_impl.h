@@ -19,6 +19,10 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 
+namespace attribution_reporting {
+class SuitableOrigin;
+}  // namespace attribution_reporting
+
 namespace base {
 class TimeDelta;
 class TimeTicks;
@@ -50,7 +54,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   // AttributionDataHostManager:
   void RegisterDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-      url::Origin context_origin,
+      attribution_reporting::SuitableOrigin context_origin,
       bool is_within_fenced_frame) override;
   bool RegisterNavigationDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
@@ -59,13 +63,12 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   void NotifyNavigationRedirectRegistration(
       const blink::AttributionSrcToken& attribution_src_token,
       std::string header_value,
-      url::Origin reporting_origin,
-      const url::Origin& source_origin,
+      attribution_reporting::SuitableOrigin reporting_origin,
+      const attribution_reporting::SuitableOrigin& source_origin,
       AttributionInputEvent input_event) override;
   void NotifyNavigationForDataHost(
       const blink::AttributionSrcToken& attribution_src_token,
-      const url::Origin& source_origin,
-      const url::Origin& destination_origin) override;
+      const attribution_reporting::SuitableOrigin& source_origin) override;
   void NotifyNavigationFailure(
       const blink::AttributionSrcToken& attribution_src_token) override;
 
@@ -91,7 +94,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
 
   void OnRedirectSourceParsed(
       const blink::AttributionSrcToken& attribution_src_token,
-      url::Origin reporting_origin,
+      attribution_reporting::SuitableOrigin reporting_origin,
       std::string header_value,
       data_decoder::DataDecoder::ValueOrError result);
 

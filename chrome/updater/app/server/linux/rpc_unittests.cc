@@ -18,9 +18,9 @@
 #include "base/version.h"
 #include "chrome/updater/app/server/linux/mojom/updater_service.mojom.h"
 #include "chrome/updater/app/server/linux/update_service_stub.h"
+#include "chrome/updater/ipc/update_service_internal_proxy_linux.h"
 #include "chrome/updater/ipc/update_service_proxy_linux.h"
 #include "chrome/updater/linux/ipc_support.h"
-#include "chrome/updater/linux/update_service_internal_proxy.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/update_service.h"
@@ -297,12 +297,7 @@ TEST_F(UpdaterIPCTestCase, RunInstaller) {
 class UpdaterIPCErrorTestCase : public UpdaterIPCTestCase {
  public:
   void SetUp() override {
-    // Create a Mojo Remote with a bound message pipe but without a receiver.
-    // This will cause RPC calls to eventually be dropped.
-    mojo::Remote<mojom::UpdateService> remote;
-    std::ignore = remote.BindNewPipeAndPassReceiver();
-    client_proxy_ = CreateUpdateServiceProxy(UpdaterScope::kUser, nullptr,
-                                             std::move(remote));
+    client_proxy_ = CreateUpdateServiceProxy(UpdaterScope::kUser);
   }
 };
 
@@ -369,12 +364,7 @@ TEST_F(UpdaterIPCInternalTestCase, Hello) {
 class UpdaterIPCInternalErrorTestCase : public UpdaterIPCInternalTestCase {
  public:
   void SetUp() override {
-    // Create a Mojo Remote with a bound message pipe but without a receiver.
-    // This will cause RPC calls to eventually be dropped.
-    mojo::Remote<mojom::UpdateServiceInternal> remote;
-    std::ignore = remote.BindNewPipeAndPassReceiver();
-    client_proxy_ = CreateUpdateServiceInternalProxy(
-        UpdaterScope::kUser, nullptr, std::move(remote));
+    client_proxy_ = CreateUpdateServiceInternalProxy(UpdaterScope::kUser);
   }
 };
 

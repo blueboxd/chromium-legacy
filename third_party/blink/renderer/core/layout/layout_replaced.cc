@@ -125,8 +125,6 @@ void LayoutReplaced::UpdateLayout() {
 
   PhysicalRect old_content_rect = ReplacedContentRect();
 
-  SetHeight(MinimumReplacedHeight());
-
   UpdateLogicalWidth();
   UpdateLogicalHeight();
 
@@ -134,7 +132,8 @@ void LayoutReplaced::UpdateLayout() {
   ClearSelfNeedsLayoutOverflowRecalc();
   ClearChildNeedsLayoutOverflowRecalc();
 
-  UpdateAfterLayout();
+  if (!RuntimeEnabledFeatures::LayoutNGUnifyUpdateAfterLayoutEnabled())
+    UpdateAfterLayout();
 
   ClearNeedsLayout();
 

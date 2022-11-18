@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_values.h"
 #include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -41,17 +42,15 @@ double ComputeOffset(LayoutBox* subject,
     return point.y() - source_element->ClientTopNoLayout();
 }
 
-bool IsBlockDirection(ScrollTimeline::ScrollDirection direction,
-                      WritingMode writing_mode) {
-  using ScrollDirection = ScrollTimeline::ScrollDirection;
-  switch (direction) {
-    case ScrollDirection::kBlock:
+bool IsBlockDirection(ViewTimeline::ScrollAxis axis, WritingMode writing_mode) {
+  switch (axis) {
+    case ViewTimeline::ScrollAxis::kBlock:
       return true;
-    case ScrollDirection::kInline:
+    case ViewTimeline::ScrollAxis::kInline:
       return false;
-    case ScrollDirection::kHorizontal:
+    case ViewTimeline::ScrollAxis::kHorizontal:
       return !blink::IsHorizontalWritingMode(writing_mode);
-    case ScrollDirection::kVertical:
+    case ViewTimeline::ScrollAxis::kVertical:
       return blink::IsHorizontalWritingMode(writing_mode);
   }
 }
@@ -65,7 +64,7 @@ bool IsBlockDirection(ScrollTimeline::ScrollDirection direction,
 // https://drafts.csswg.org/scroll-animations-1/#valdef-view-timeline-inset-auto
 ViewTimeline::Inset ResolveAuto(const ViewTimeline::Inset& inset,
                                 Element& source,
-                                ScrollTimeline::ScrollDirection direction) {
+                                ViewTimeline::ScrollAxis axis) {
   const ComputedStyle* style = source.GetComputedStyle();
   if (!style)
     return inset;
@@ -73,7 +72,7 @@ ViewTimeline::Inset ResolveAuto(const ViewTimeline::Inset& inset,
   const Length& start = inset.start_side;
   const Length& end = inset.end_side;
 
-  if (IsBlockDirection(direction, style->GetWritingMode())) {
+  if (IsBlockDirection(axis, style->GetWritingMode())) {
     return ViewTimeline::Inset(
         start.IsAuto() ? style->ScrollPaddingBlockStart() : start,
         end.IsAuto() ? style->ScrollPaddingBlockEnd() : end);
@@ -161,12 +160,9 @@ ViewTimeline* ViewTimeline::Create(Document& document,
                                    ExceptionState& exception_state) {
   Element* subject = options->subject();
 
-  ScrollDirection orientation;
-  if (!StringToScrollDirection(options->axis(), orientation)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Invalid axis");
-    return nullptr;
-  }
+  ScrollAxis axis =
+      options->hasAxis() ? options->axis().AsEnum() : ScrollAxis::kBlock;
+
   if (subject) {
     // This ensures that Client[Left,Top]NoLayout (reached via SnapshotState)
     // returns up-to-date information.
@@ -192,8 +188,8 @@ ViewTimeline* ViewTimeline::Create(Document& document,
   inset.end_side =
       InsetValueToLength(end_inset_value, subject, inset.start_side);
 
-  ViewTimeline* view_timeline = MakeGarbageCollected<ViewTimeline>(
-      &document, subject, orientation, inset);
+  ViewTimeline* view_timeline =
+      MakeGarbageCollected<ViewTimeline>(&document, subject, axis, inset);
 
   if (IsStyleDependant(start_inset_value))
     view_timeline->style_dependant_start_inset_ = start_inset_value;
@@ -206,12 +202,9 @@ ViewTimeline* ViewTimeline::Create(Document& document,
 
 ViewTimeline::ViewTimeline(Document* document,
                            Element* subject,
-                           ScrollDirection orientation,
+                           ScrollAxis axis,
                            Inset inset)
-    : ScrollTimeline(document,
-                     ReferenceType::kNearestAncestor,
-                     subject,
-                     orientation),
+    : ScrollTimeline(document, ReferenceType::kNearestAncestor, subject, axis),
       inset_(inset) {
   // Ensure that the timeline stays alive as long as the subject.
   if (subject)
@@ -261,7 +254,7 @@ absl::optional<ScrollTimeline::ScrollOffsets> ViewTimeline::CalculateOffsets(
 
   viewport_size_ = viewport_size.ToDouble();
 
-  Inset inset = ResolveAuto(inset_, *source, GetOrientation());
+  Inset inset = ResolveAuto(inset_, *source, GetAxis());
 
   // Update inset lengths if style dependent.
   if (style_dependant_start_inset_) {
@@ -393,6 +386,22 @@ AnimationTimeline::TimeDelayPair ViewTimeline::TimelineOffsetsToTimeDelays(
   absl::optional<double> end_fraction = ToFractionalOffset(timing.end_delay);
   return std::make_pair(start_fraction.value_or(0) * duration.value(),
                         (1 - end_fraction.value_or(1)) * duration.value());
+}
+
+CSSNumericValue* ViewTimeline::startOffset() const {
+  absl::optional<ScrollOffsets> scroll_offsets = GetResolvedScrollOffsets();
+  if (!scroll_offsets)
+    return nullptr;
+
+  return CSSUnitValues::px(scroll_offsets->start);
+}
+
+CSSNumericValue* ViewTimeline::endOffset() const {
+  absl::optional<ScrollOffsets> scroll_offsets = GetResolvedScrollOffsets();
+  if (!scroll_offsets)
+    return nullptr;
+
+  return CSSUnitValues::px(scroll_offsets->end);
 }
 
 void ViewTimeline::Trace(Visitor* visitor) const {

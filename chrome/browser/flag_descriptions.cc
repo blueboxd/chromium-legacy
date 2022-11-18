@@ -417,23 +417,11 @@ const char kAutofillEnableRemadeDownstreamMetricsDescription[] =
     "When enabled, some extra metrics logging for Autofill Downstream will "
     "start.";
 
-const char kAutofillEnableSendingBcnInGetUploadDetailsName[] =
-    "Enable sending billing customer number in GetUploadDetails";
-const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[] =
-    "When enabled the billing customer number will be sent in the "
-    "GetUploadDetails preflight calls.";
-
 const char kAutofillEnableStickyManualFallbackForCardsName[] =
     "Make manual fallback sticky for credit cards";
 const char kAutofillEnableStickyManualFallbackForCardsDescription[] =
     "When enabled, if the user interacts with the manual fallback bottom "
     "sheet, it'll remain sticky until the user dismisses it.";
-
-const char kAutofillEnableUnmaskCardRequestSetInstrumentIdName[] =
-    "When enabled, sets non-legacy instrument ID in UnmaskCardRequest";
-const char kAutofillEnableUnmaskCardRequestSetInstrumentIdDescription[] =
-    "When enabled, UnmaskCardRequest will set the card's non-legacy ID when "
-    "available.";
 
 const char kAutofillEnableUpdateVirtualCardEnrollmentName[] =
     "Enable Update Virtual Card Enrollment";
@@ -503,12 +491,6 @@ const char kAutofillParseIBANFieldsName[] = "Parse IBAN fields in forms";
 const char kAutofillParseIBANFieldsDescription[] =
     "When enabled, Autofill will attempt to find International Bank Account "
     "Number (IBAN) fields when parsing forms.";
-
-const char kAutofillParseMerchantPromoCodeFieldsName[] =
-    "Parse promo code fields in forms";
-const char kAutofillParseMerchantPromoCodeFieldsDescription[] =
-    "When enabled, Autofill will attempt to find merchant promo/coupon/gift "
-    "code fields when parsing forms.";
 
 const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsName[] =
     "Parse standalone CVC fields for VCN card on file in forms";
@@ -784,6 +766,7 @@ const char kFontAccessAPIDescription[] =
 
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
+const char kForceColorProfileRec2020[] = "ITU-R BT.2020";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
 const char kForceColorProfileSCRGBLinear[] =
     "scRGB linear (HDR where available)";
@@ -914,10 +897,6 @@ const char kDesktopPWAsAppHomePageDescription[] =
     "Use new chrome://apps page which has different UX on desktop";
 
 #endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
-
-const char kDesktopPWAsRemoveStatusBarName[] = "Desktop PWAs remove status bar";
-const char kDesktopPWAsRemoveStatusBarDescription[] =
-    "Hides the status bar popup in Desktop PWA app windows.";
 
 const char kDesktopPWAsElidedExtensionsMenuName[] =
     "Desktop PWAs elided extensions menu";
@@ -1088,6 +1067,11 @@ const char kEnableIsolatedWebAppsName[] = "Enable Isolated Web Apps";
 const char kEnableIsolatedWebAppsDescription[] =
     "Enables experimental support for isolated web apps. "
     "See https://github.com/reillyeon/isolated-web-apps for more information.";
+
+const char kEnableIsolatedWebAppDevModeName[] =
+    "Enable Isolated Web App Developer Mode";
+const char kEnableIsolatedWebAppDevModeDescription[] =
+    "Enables the installation of unverified Isolated Web Apps";
 
 const char kEnableRgbKeyboardName[] = "Enable RGB Keyboard Support";
 const char kEnableRgbKeyboardDescription[] =
@@ -1440,11 +1424,6 @@ const char kExtensionsMenuAccessControlName[] =
 const char kExtensionsMenuAccessControlDescription[] =
     "Enables a redesigned extensions menu that allows the user to control "
     "extensions site access.";
-
-const char kExtensionsFSPInServiceWorkersName[] =
-    "fileSystemProvider API in Service Workers";
-const char kExtensionsFSPInServiceWorkersDescription[] =
-    "Enables fileSystemProvider extension API in service workers.";
 #endif
 
 const char kExtensionsOnChromeUrlsName[] = "Extensions on chrome:// URLs";
@@ -1464,6 +1443,11 @@ const char kFractionalScrollOffsetsDescription[] =
 const char kFedCmName[] = "FedCM";
 const char kFedCmDescription[] =
     "Enables JavaScript API to intermediate federated identity requests.";
+
+const char kFedCmWithoutThirdPartyCookiesName[] =
+    "FedCmWithoutThirdPartyCookies";
+const char kFedCmWithoutThirdPartyCookiesDescription[] =
+    "Allows the FedCM API to be enabled when third party cookies are disabled.";
 
 const char kFedCmMetricsEndpointName[] = "FedCmMetricsEndpoint";
 const char kFedCmMetricsEndpointDescription[] =
@@ -1534,16 +1518,32 @@ const char kOpenscreenCastStreamingSessionDescription[] =
     "be used for negotiating and executing mirroring and remoting sessions.";
 
 const char kCastStreamingAv1Name[] =
-    "Enable AV1 codec video encoding in Cast mirroring sessions";
+    "Enable AV1 video encoding for Cast Streaming";
 const char kCastStreamingAv1Description[] =
-    "Enables the inclusion of AV1 codec video encoding in Cast mirroring "
-    "session negotiations.";
+    "Offers the AV1 video codec when negotiating Cast Streaming, and uses AV1 "
+    "if selected for the session.";
+
+const char kCastStreamingHardwareH264Name[] =
+    "Toggle hardware accelerated H.264 video encoding for Cast Streaming";
+const char kCastStreamingHardwareH264Description[] =
+    "The default is to allow hardware H.264 encoding when recommended for the "
+    "platform. If enabled, hardware H.264 encoding will always be allowed when "
+    "supported by the platform. If disabled, hardware H.264 encoding will "
+    "never be used.";
+
+const char kCastStreamingHardwareVp8Name[] =
+    "Toggle hardware accelerated VP8 video encoding for Cast Streaming";
+const char kCastStreamingHardwareVp8Description[] =
+    "The default is to allow hardware VP8 encoding when recommended for the "
+    "platform. If enabled, hardware VP8 encoding will always be allowed when "
+    "supported by the platform (regardless of recommendation). If disabled, "
+    "hardware VP8 encoding will never be used.";
 
 const char kCastStreamingVp9Name[] =
-    "Enable VP9 codec video encoding in Cast mirroring sessions";
+    "Enable VP9 video encoding for Cast Streaming";
 const char kCastStreamingVp9Description[] =
-    "Enables the inclusion of VP9 codec video encoding in Cast mirroring "
-    "session negotiations.";
+    "Offers the VP9 video codec when negotiating Cast Streaming, and uses VP9 "
+    "if selected for the session.";
 
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
@@ -1772,17 +1772,6 @@ const char kJourneysOmniboxHistoryClusterProviderDescription[] =
     "Enables the History Journeys Omnibox History Cluster Provider to surface "
     "Journeys as a suggestion row instead of an action chip.";
 
-const char kJourneysOnDeviceClusteringBackendName[] =
-    "History Journeys On-Device Clustering Backend";
-const char kJourneysOnDeviceClusteringBackendDescription[] =
-    "Enables variations for the on-device clustering backend";
-
-const char kJourneysOnDeviceClusteringKeywordFilteringName[] =
-    "History Journeys On-Device Clustering Keyword Filtering";
-const char kJourneysOnDeviceClusteringKeywordFilteringDescription[] =
-    "Enables variations for the keywords output by the on-device clustering "
-    "for Journeys";
-
 const char kJourneysShowAllClustersName[] =
     "History Journeys Show All Clusters";
 const char kJourneysShowAllClustersDescription[] =
@@ -1942,6 +1931,10 @@ const char kOmniboxClosePopupWithEscapeDescription[] =
     "default suggestion is selected will close the omnibox without removing "
     "its focus or clearing user input.";
 
+const char kOmniboxDefaultBrowserPedalName[] = "Omnibox Default Browser Pedal";
+const char kOmniboxDefaultBrowserPedalDescription[] =
+    "Enables a pedal that helps the user 'set default browser'.";
+
 const char kOmniboxDisableCGIParamMatchingName[] =
     "Disable CGI Param Name Matching";
 const char kOmniboxDisableCGIParamMatchingDescription[] =
@@ -1993,6 +1986,12 @@ const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frequently visited pages from history as a single row "
     "with a carousel instead of one URL per line.";
+
+const char kOmniboxMostVisitedTilesAddRecycledViewPoolName[] =
+    "Omnibox Most Visited Tiles Add Recycled View Pool";
+const char kOmniboxMostVisitedTilesAddRecycledViewPoolDescription[] =
+    "Add a recycled view pool to omnibox most visited tiles carousel to "
+    "increase tile view reuse and reduce jackiness.";
 
 const char kOmniboxMostVisitedTilesDynamicSpacingName[] =
     "Omnibox Most Visited Tiles Dynamic Spacing";
@@ -2316,10 +2315,6 @@ const char kPasswordDomainCapabilitiesFetchingName[] =
 const char kPasswordDomainCapabilitiesFetchingDescription[] =
     "Fetches credentials' password change capabilities from the server.";
 
-const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
-const char kPasswordScriptsFetchingDescription[] =
-    "Fetches scripts for password change flows.";
-
 const char kPasswordChangeAccountStoreUsersName[] =
     "Password change for account store users";
 const char kPasswordChangeAccountStoreUsersDescription[] =
@@ -2613,6 +2608,13 @@ const char kScrollableTabStripWithDraggingDescription[] =
     "Scrolls the tabstrip while dragging tabs towards the end of the visible "
     "view.";
 
+const char kScrollableTabStripOverflowFlagId[] = "scrollable-tabstrip-overflow";
+const char kScrollableTabStripOverflowName[] =
+    "Tab Scrolling Overflow Indicator";
+const char kScrollableTabStripOverflowDescription[] =
+    "Choices for overflow indicators shown when the tabstrip is in scrolling "
+    "mode.";
+
 const char kSplitTabStripName[] = "Split TabStrip";
 const char kSplitTabStripDescription[] =
     "Splits pinned and unpinned tabs into separate TabStrips under the hood. "
@@ -2847,13 +2849,6 @@ const char kStylusBatteryStatusName[] =
 const char kStylusBatteryStatusDescription[] =
     "Enables viewing the current stylus battery level in the stylus tools "
     "menu.";
-
-const char kSubframeShutdownDelayName[] =
-    "Add delay to subframe renderer process shutdown";
-const char kSubframeShutdownDelayDescription[] =
-    "Delays shutdown of subframe renderer processes by a few seconds to allow "
-    "them to be potentially reused. This aims to reduce process churn in "
-    "navigations where the source and destination share subframes.";
 
 const char kTabEngagementReportingName[] = "Tab Engagement Metrics";
 const char kTabEngagementReportingDescription[] =
@@ -3360,6 +3355,12 @@ const char kWebSQLAccessName[] = "Allows access to WebSQL APIs";
 const char kWebSQLAccessDescription[] =
     "The WebSQL API is enabled by default, but can be disabled here.";
 
+const char kUseIDNA2008NonTransitionalName[] =
+    "Enable IDNA 2008 Non-Transitional Mode";
+const char kUseIDNA2008NonTransitionalDescription[] =
+    "Enables IDNA 2008 in Non-Transitional Mode in URL processing, allowing "
+    "deviation characters in domain names.";
+
 #if !BUILDFLAG(IS_CHROMEOS)
 const char kDmTokenDeletionName[] = "DMToken deletion";
 const char kDmTokenDeletionDescription[] =
@@ -3588,11 +3589,6 @@ const char kEnableCommandLineOnNonRootedName[] =
     "Enable command line on non-rooted devices";
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
-
-const char kEnableFamilyInfoFeedbackName[] =
-    "Enable feedback from FamilyLink (Android)";
-const char kEnableFamilyInfoFeedbackDescription[] =
-    "Enable FamilyLink feedback source in Chrome Settings feedback";
 
 const char kEnablePasswordsAccountStorageName[] =
     "Enable the account data storage for passwords";
@@ -4216,12 +4212,6 @@ extern const char kBatterySaverModeAvailableName[] =
 extern const char kBatterySaverModeAvailableDescription[] =
     "When enabled, shows the battery section in the performance settings page";
 
-const char kBlockMigratedDefaultChromeAppSyncName[] =
-    "Block migrated default Chrome app sync";
-const char kBlockMigratedDefaultChromeAppSyncDescription[] =
-    "Prevents Chrome apps that have been migrated to default web apps from "
-    "getting sync installed and creating duplicate entries for the same app.";
-
 const char kCopyLinkToTextName[] = "Copy Link To Text";
 const char kCopyLinkToTextDescription[] =
     "Adds an item to the context menu to allow a user to copy a link to the "
@@ -4382,6 +4372,11 @@ const char kHappinessTrackingSurveysForDesktopDemoName[] =
 const char kHappinessTrackingSurveysForDesktopDemoDescription[] =
     "Enable showing Happiness Tracking Surveys Demo to users on Desktop";
 
+const char kLayoutExtractionName[] = "Layout Extraction";
+const char kLayoutExtractionDescription[] =
+    "Enables Layout Extraction local machine intelligence library to use "
+    "screen snapshots to add metadata for accessibility tools.";
+
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
 const char kOmniboxDriveSuggestionsDescription[] =
@@ -4394,14 +4389,14 @@ const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
     "suggestions and layout.";
 
+const char kPasswordsGroupingName[] = "Passwords grouping";
+const char kPasswordsGroupingDescription[] =
+    "Enables displaying passwords grouped together using information from "
+    "the affiliation service.";
+
 const char kPasswordManagerRedesignName[] = "Password Manager new UI";
 const char kPasswordManagerRedesignDescription[] =
     "Enables new Password Manager UI on Desktop";
-
-const char kScreenAIName[] = "Screen AI";
-const char kScreenAIDescription[] =
-    "Enables Screen AI local machine intelligence library to use the screen "
-    "snapshots to add metadata for accessibility tools.";
 
 const char kSCTAuditingName[] = "SCT auditing";
 const char kSCTAuditingDescription[] =
@@ -4477,12 +4472,6 @@ const char kMediaFoundationClearName[] = "MediaFoundation for Clear";
 const char kMediaFoundationClearDescription[] =
     "Enable/Disable the use of MediaFoundation for non-protected content "
     "playback on supported systems.";
-
-const char kPervasiveSystemAccentColorName[] = "Pervasive system accent color";
-const char kPervasiveSystemAccentColorDescription[] =
-    "Use the Windows system accent color as the Chrome accent color, if \"Show "
-    "accent color on title bars and windows borders\" is toggled on in the "
-    "Windows system settings.";
 
 const char kRawAudioCaptureName[] = "Raw audio capture";
 const char kRawAudioCaptureDescription[] =
@@ -4923,12 +4912,6 @@ const char kDesksTemplatesDescription[] =
     "Streamline workflows by saving a group of applications and windows as a "
     "launchable template in a new desk";
 
-const char kDesksTrackpadSwipeImprovementsName[] =
-    "Experiment: Trackpad swiping to switch desks.";
-const char kDesksTrackpadSwipeImprovementsDescription[] =
-    "Adds some modifications to the four finger trackpad gesture which "
-    "switches desks.";
-
 const char kPreferConstantFrameRateName[] = "Prefer Constant Frame Rate";
 const char kPreferConstantFrameRateDescription[] =
     "Enables this flag to prefer using constant frame rate for camera when "
@@ -4978,11 +4961,6 @@ const char kContextualNudgesDescription[] =
     "Enables contextual nudges, periodically showing the user a label "
     "explaining how to interact with a particular UI element using gestures.";
 
-const char kCroshSWAName[] = "Crosh System Web App";
-const char kCroshSWADescription[] =
-    "When enabled, crosh (ChromeOS Shell) will run as a tabbed System Web App "
-    "rather than a normal browser tab.";
-
 const char kCrosOnDeviceGrammarCheckName[] = "On-device Grammar Check";
 const char kCrosOnDeviceGrammarCheckDescription[] =
     "Enable new on-device grammar check component.";
@@ -4996,15 +4974,6 @@ const char kEnableServiceWorkersForChromeUntrustedName[] =
 const char kEnableServiceWorkersForChromeUntrustedDescription[] =
     "When enabled, allows chrome-untrusted:// WebUIs to use service workers.";
 
-const char kCrostiniBullseyeUpgradeName[] = "Upgrade Crostini to Bullseye";
-const char kCrostiniBullseyeUpgradeDescription[] =
-    "Offer to upgrade Crostini containers on older versions to bullseye.";
-
-const char kCrostiniDiskResizingName[] = "Allow resizing Crostini disks";
-const char kCrostiniDiskResizingDescription[] =
-    "Use preallocated user-resizeable disks for Crostini instead of sparse "
-    "automatically sized disks.";
-
 const char kCrostiniContainerInstallName[] =
     "Debian version for new Crostini containers";
 const char kCrostiniContainerInstallDescription[] =
@@ -5016,12 +4985,6 @@ const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
 const char kCrostiniResetLxdDbName[] = "Crostini Reset LXD DB on launch";
 const char kCrostiniResetLxdDbDescription[] =
     "Recreates the LXD database every time we launch it";
-
-const char kCrostiniUseLxd4Name[] =
-    "Use LXD 4 instead of the default - Dangerous & Irreversible";
-const char kCrostiniUseLxd4Description[] =
-    "Uses LXD version 4 instead of the default version. WARNING: Once this is "
-    "set you can't unset it without deleting your entire container";
 
 const char kCrostiniMultiContainerName[] = "Allow multiple Crostini containers";
 const char kCrostiniMultiContainerDescription[] =
@@ -5319,6 +5282,13 @@ const char kEnablePalmSuppressionName[] =
 const char kEnablePalmSuppressionDescription[] =
     "If enabled, suppresses touch when a stylus is on a touchscreen.";
 
+const char kEnablePerDeskZOrderName[] =
+    "Enable per-desk Z-order for all-desk windows.";
+const char kEnablePerDeskZOrderDescription[] =
+    "The Z-order of all-desk windows is maintained on a per-desk basis. This "
+    "means that all-desk windows will not keep popping to the front when "
+    "switching desks.";
+
 const char kEnableSeamlessRefreshRateSwitchingName[] =
     "Seamless Refresh Rate Switching";
 const char kEnableSeamlessRefreshRateSwitchingDescription[] =
@@ -5534,12 +5504,6 @@ const char kFullRestoreForLacrosDescription[] =
 const char kFuseBoxDebugName[] = "Debugging UI for ChromeOS FuseBox service";
 const char kFuseBoxDebugDescription[] =
     "Show additional debugging UI for ChromeOS FuseBox service.";
-
-const char kGuestOsFilesName[] =
-    "Enabled Guest OS Service + file manager integration";
-const char kGuestOsFilesDescription[] =
-    "The files app sources information about guests from the Guest OS service, "
-    "instead of querying each type individually";
 
 const char kHelpAppBackgroundPageName[] = "Help App Background Page";
 const char kHelpAppBackgroundPageDescription[] =
@@ -5883,21 +5847,10 @@ const char kArcWindowPredictorName[] = "Enable ARC window predictor";
 const char kArcWindowPredictorDescription[] =
     "Enables the window state and bounds predictor for ARC task windows";
 
-const char kArcInputOverlayName[] = "Enable ARC Input Overlay";
-const char kArcInputOverlayDescription[] =
-    "Enables the input overlay feature for some Android game apps, "
-    "so it can play with a keyboard and a mouse instead of touch screen";
-
 const char kArcInputOverlayNameBeta[] = "Enable ARC Input Overlay Beta";
 const char kArcInputOverlayDescriptionBeta[] =
     "Enable more features based on ARC Input Overlay Alpha, "
     "so it can change the touch point position.";
-
-const char kSecondaryGoogleAccountUsageName[] =
-    "Enable Secondary Google account usage policy.";
-const char kSecondaryGoogleAccountUsageDescription[] =
-    "Add restrictions on a managed account's usage as a secondary account on "
-    "ChromeOS.";
 
 const char kShelfAutoHideSeparationName[] =
     "Enable separate shelf auto-hide preferences.";
@@ -6193,14 +6146,6 @@ const char kLacrosScreenCoordinatesEnabledDescription[] =
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS)
-const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[] =
-    "Allow default web app migration for ChromeOS managed users";
-const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[] =
-    "The web app migration flags "
-    "(chrome://flags/#enable-migrate-default-chrome-app-to-web-apps-gsuite and "
-    "chrome://flags/#enable-migrate-default-chrome-app-to-web-apps-non-gsuite) "
-    "are ignored for managed ChromeOS users unless this feature is enabled.";
-
 const char kCrOSDspBasedAecAllowedName[] =
     "Allow CRAS to use a DSP-based AEC if available";
 const char kCrOSDspBasedAecAllowedDescription[] =
@@ -6242,11 +6187,6 @@ const char kCrosPrivacyHubV0Name[] =
     "Enable ChromeOS Privacy Hub without the location switch.";
 const char kCrosPrivacyHubV0Description[] =
     "Enables ChromeOS Privacy Hub without the location switch.";
-
-const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
-const char kDefaultCalculatorWebAppDescription[] =
-    "Enable default installing of the calculator PWA instead of the deprecated "
-    "chrome app.";
 
 const char kDisableIdleSocketsCloseOnMemoryPressureName[] =
     "Disable closing idle sockets on memory pressure";

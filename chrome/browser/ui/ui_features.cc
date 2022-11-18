@@ -180,11 +180,24 @@ BASE_FEATURE(kScrollableTabStripWithDragging,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const char kTabScrollingWithDraggingModeName[] = "tabScrollWithDragMode";
 
+// Enables different methods of overflow when scrolling tabs in tabstrip
+// https://crbug.com/951078
+BASE_FEATURE(kScrollableTabStripOverflow,
+             "kScrollableTabStripOverflow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const char kScrollableTabStripOverflowModeName[] = "tabScrollOverflow";
+
 // Splits pinned and unpinned tabs into separate TabStrips.
 // https://crbug.com/1346019
 BASE_FEATURE(kSplitTabStrip,
              "SplitTabStrip",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables tabs to be frozen when collapsed.
+// https://crbug.com/1110108
+BASE_FEATURE(kTabGroupsCollapseFreezing,
+             "TabGroupsCollapseFreezing",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Directly controls the "new" badge (as opposed to old "master switch"; see
 // https://crbug.com/1169907 for master switch deprecation and
@@ -199,6 +212,8 @@ BASE_FEATURE(kTabGroupsNewBadgePromo,
 BASE_FEATURE(kTabGroupsSave,
              "TabGroupsSave",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<bool> kTabGroupsSaveSyncIntegration{
+    &kTabGroupsSave, "TabGroupsSaveSyncIntegration", false};
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954

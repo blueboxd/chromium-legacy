@@ -468,7 +468,6 @@ void UkmPageLoadMetricsObserver::OnComplete(
   RecordResponsivenessMetrics();
   RecordPageEndMetrics(&timing, current_time,
                        /* app_entered_background */ false);
-  RecordMobileFriendlinessMetrics();
 }
 
 void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -657,11 +656,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
 
   // FCP is reported in OnFirstContentfulPaintInPage.
 
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
-    builder.SetExperimental_PaintTiming_NavigationToFirstMeaningfulPaint(
-        timing.paint_timing->first_meaningful_paint.value().InMilliseconds());
-  }
   const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =
           GetDelegate()
@@ -1309,28 +1303,6 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
   base::UmaHistogramPercentage(
       "Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow",
       smoothness_data.worst_smoothness);
-}
-
-void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
-  ukm::builders::MobileFriendliness builder(GetDelegate().GetPageUkmSourceId());
-  const absl::optional<blink::MobileFriendliness>& mf =
-      GetDelegate().GetMobileFriendliness();
-  if (!mf.has_value())
-    return;
-
-  builder.SetViewportDeviceWidth(mf->viewport_device_width);
-  builder.SetAllowUserZoom(mf->allow_user_zoom);
-
-  builder.SetSmallTextRatio(mf->small_text_ratio);
-  builder.SetViewportInitialScaleX10(
-      page_load_metrics::GetBucketedViewportInitialScale(*mf));
-  builder.SetViewportHardcodedWidth(
-      page_load_metrics::GetBucketedViewportHardcodedWidth(*mf));
-  builder.SetTextContentOutsideViewportPercentage(
-      mf->text_content_outside_viewport_percentage);
-
-  // Make sure at least one MF evaluation happen.
-  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::RecordPageEndMetrics(

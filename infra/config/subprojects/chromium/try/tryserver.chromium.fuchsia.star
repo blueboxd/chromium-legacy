@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "reclient")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
 load("//project.star", "settings")
@@ -21,6 +21,9 @@ try_.defaults.set(
     compilator_goma_jobs = goma.jobs.J150,
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 
     # TODO(crbug.com/1362440): remove this.
@@ -55,29 +58,14 @@ try_.builder(
     ],
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "fuchsia-arm64-rel",
+    compilator = "fuchsia-arm64-rel-compilator",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
-    builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
     mirrors = [
         "ci/fuchsia-arm64-rel",
-    ],
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
-)
-
-try_.orchestrator_builder(
-    name = "fuchsia-arm64-rel-orchestrator",
-    compilator = "fuchsia-arm64-rel-compilator",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
-    main_list_view = "try",
-    mirrors = [
-        "ci/fuchsia-x64-cast-receiver-rel",
     ],
     experiments = {
         "enable_weetbix_queries": 100,

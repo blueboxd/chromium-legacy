@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ENTRIES, RootPath, sendTestMessage} from '../test_util.js';
+import {addEntries, ENTRIES, RootPath, sendTestMessage} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
-import {navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
-import {BASIC_LOCAL_ENTRY_SET} from './test_data.js';
+import {navigateWithDirectoryTree, openAndWaitForClosingDialog, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {BASIC_ANDROID_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
 
 
 /**
@@ -109,4 +109,116 @@ testcase.dlpContextMenuRestrictionDetails = async () => {
       '#file-context-menu:not([hidden])' +
           ' [command="#dlp-restriction-details"]' +
           ':not([hidden]):not([disabled])');
+};
+
+/**
+ * Tests the save dialogs properly show DLP blocked volumes/directories. If a
+ * volume is blocked by DLP, it should be marked as disabled both in the
+ * navigation list and in the details list. If such a volume is selected, the
+ * "Open" dialog button should be disabled, i.e. changing the directory is
+ * prevented.
+ */
+testcase.saveAsDlpRestrictedDirectory = async () => {
+  // Setup the restrictions.
+  await sendTestMessage({name: 'setBlockedComponents'});
+
+  const okButton = '.button-panel button.ok:enabled';
+  const disabledOkButton = '.button-panel button.ok:disabled';
+  const cancelButton = '.button-panel button.cancel';
+
+  // Add entries to Downloads.
+  await addEntries(['local'], [ENTRIES.hello]);
+
+  const closer = async (dialog) => {
+    // Verify that the button is enabled when a file is selected.
+    await remoteCall.waitUntilSelected(dialog, ENTRIES.hello.targetPath);
+    await remoteCall.waitForElement(dialog, okButton);
+
+    // Select My Files folder and wait for file list to display Downloads, Play
+    // files, and Linux files.
+    await navigateWithDirectoryTree(dialog, '/My files');
+    const downloadsRow = ['Downloads', '--', 'Folder'];
+    const playFilesRow = ['Play files', '--', 'Folder'];
+    const linuxFilesRow = ['Linux files', '--', 'Folder'];
+    await remoteCall.waitForFiles(
+        dialog, [downloadsRow, playFilesRow, linuxFilesRow],
+        {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+    // Only one directory, Android files, should be disabled, both as the tree
+    // item and the directory in the main list.
+    const playFilesInFileList = '.directory[disabled][file-name="Play files"]';
+    const playFilesInDirectoryTree = '#directory-tree .tree-item[disabled] ' +
+        '.icon[volume-type-icon="android_files"]';
+    await remoteCall.waitForElementsCount(dialog, [playFilesInFileList], 1);
+    await remoteCall.waitForElementsCount(
+        dialog, [playFilesInDirectoryTree], 1);
+
+    // Verify that the button is enabled when a non-blocked volume is selected.
+    await remoteCall.waitUntilSelected(dialog, 'Downloads');
+    await remoteCall.waitForElement(dialog, okButton);
+
+    // Verify that the button is disabled when a blocked volume is selected.
+    await remoteCall.waitUntilSelected(dialog, 'Play files');
+    await remoteCall.waitForElement(dialog, disabledOkButton);
+
+    // Click the close button to dismiss the dialog.
+    await remoteCall.waitForElement(dialog, cancelButton);
+    const event = [cancelButton, 'click'];
+    await remoteCall.callRemoteTestUtil('fakeEvent', dialog, event);
+  };
+
+  chrome.test.assertEq(
+      undefined,
+      await openAndWaitForClosingDialog(
+          {type: 'saveFile'}, 'downloads', [ENTRIES.hello], closer));
+};
+
+/**
+ * Tests that save dialogs are never opened in a DLP blocked volume/directory,
+ * but rather in the default display root.
+ */
+testcase.saveAsDlpRestrictedRedirectsToMyFiles = async () => {
+  const cancelButton = '.button-panel button.cancel';
+
+  // Add entries to Downloads and Play files.
+  await addEntries(['local'], [ENTRIES.hello]);
+  await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET);
+
+  const allowedCloser = async (dialog) => {
+    // Double check: current directory should be Play files.
+    await remoteCall.waitUntilCurrentDirectoryIsChanged(
+        dialog, '/My files/Play files');
+
+    // Click the close button to dismiss the dialog.
+    const event = [cancelButton, 'click'];
+    await remoteCall.callRemoteTestUtil('fakeEvent', dialog, event);
+  };
+
+  // Open a save dialog in Play Files.
+  chrome.test.assertEq(
+      undefined,
+      await openAndWaitForClosingDialog(
+          {type: 'saveFile'}, 'android_files', BASIC_ANDROID_ENTRY_SET,
+          allowedCloser));
+
+  // Setup the restrictions.
+  await sendTestMessage({name: 'setBlockedComponents'});
+
+  const blockedCloser = async (dialog) => {
+    // Double check: current directory should be the default root, not Play
+    // files.
+    await remoteCall.waitUntilCurrentDirectoryIsChanged(
+        dialog, '/My files/Downloads');
+
+    // Click the close button to dismiss the dialog.
+    const event = [cancelButton, 'click'];
+    await remoteCall.callRemoteTestUtil('fakeEvent', dialog, event);
+  };
+
+  // Try to open a save dialog in Play Files. Since ARC is blocked by DLP, the
+  // dialog should open in the default root instead.
+  chrome.test.assertEq(
+      undefined,
+      await openAndWaitForClosingDialog(
+          {type: 'saveFile'}, 'android_files', [ENTRIES.hello], blockedCloser));
 };

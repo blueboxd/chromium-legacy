@@ -481,8 +481,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     service_->Init();
 
     OnBeforeArcTestSetup();
+    arc_test_.set_initialize_real_intent_helper_bridge(true);
     arc_test_.SetUp(profile_.get());
-    arc_test_.SetUpIntentHelper();
 
     web_app::FakeWebAppProvider::Get(profile_.get())->Start();
     CreateBuilder();
@@ -2182,6 +2182,36 @@ TEST_P(ArcAppModelBuilderTest, AppLifeCycleEventsOnPackageListRefresh) {
   packages.push_back(fake_packages()[0].Clone());
   app_instance()->SendRefreshPackageList(std::move(packages));
   prefs->RemoveObserver(&observer);
+}
+
+TEST_P(ArcAppModelBuilderTest, ArcPacakgesIsUpToDate) {
+  const std::string package_name = "com.fakepackage.name";
+  const arc::mojom::ArcPackageInfoPtr package = CreatePackage(package_name);
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  // kArcPackagesIsUpToDate is set to true when the package list is refreshed.
+  std::vector<arc::mojom::ArcPackageInfoPtr> packages;
+  packages.push_back(package->Clone());
+  app_instance()->SendRefreshPackageList(std::move(packages));
+  EXPECT_TRUE(profile_.get()->GetTestingPrefService()->GetBoolean(
+      arc::prefs::kArcPackagesIsUpToDate));
+
+  // kArcPackagesIsUpToDate is set to false when installation starts.
+  app_instance()->SendInstallationStarted(package_name);
+  EXPECT_FALSE(profile_.get()->GetTestingPrefService()->GetBoolean(
+      arc::prefs::kArcPackagesIsUpToDate));
+
+  // kArcPackagesIsUpToDate is still false after installation finishes.
+  app_instance()->SendInstallationFinished(package_name, true /* success */);
+  EXPECT_FALSE(profile_.get()->GetTestingPrefService()->GetBoolean(
+      arc::prefs::kArcPackagesIsUpToDate));
+
+  // kArcPackagesIsUpToDate is set to true after the installed package is added.
+  AddPackage(CreatePackage(package_name));
+  EXPECT_TRUE(profile_.get()->GetTestingPrefService()->GetBoolean(
+      arc::prefs::kArcPackagesIsUpToDate));
 }
 
 // Validate that arc model contains expected elements on restart.

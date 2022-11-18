@@ -44,7 +44,9 @@ MULTINODE_TEST_NODE(QueueingTestNode, RemoteQueueFeedbackClient) {
   Close(b);
 }
 
-MULTINODE_TEST(QueueingTest, RemoteQueueFeedback) {
+// Disabled because remote queue state monitoring has been temporarily dropped
+// from ipcz to improve performance. See https://crbug.com/1383754.
+MULTINODE_TEST(QueueingTest, DISABLED_RemoteQueueFeedback) {
   // Exercises operations which rely on feedback from the remote peer regarding
   // its inbound parcel queue state.
   IpczHandle c = SpawnTestNode<RemoteQueueFeedbackClient>();
@@ -123,13 +125,15 @@ MULTINODE_TEST_NODE(QueueingTestNode, TwoPhaseQueueingClient) {
   // The producer should only have been able to put 3 out of its 4 bytes.
   EXPECT_EQ("ipc",
             std::string_view(reinterpret_cast<const char*>(data), num_bytes));
-  EXPECT_EQ(IPCZ_RESULT_OK, ipcz().EndGet(b, num_bytes, 0, IPCZ_NO_FLAGS,
-                                          nullptr, nullptr, nullptr));
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().EndGet(b, num_bytes, 0, IPCZ_NO_FLAGS, nullptr, nullptr));
 
   Close(b);
 }
 
-MULTINODE_TEST(QueueingTest, TwoPhaseQueueing) {
+// Disabled because remote queue state monitoring has been temporarily dropped
+// from ipcz to improve performance. See https://crbug.com/1383754.
+MULTINODE_TEST(QueueingTest, DISABLED_TwoPhaseQueueing) {
   IpczHandle c = SpawnTestNode<TwoPhaseQueueingClient>();
   WaitForDirectRemoteLink(c);
 
@@ -174,8 +178,8 @@ MULTINODE_TEST_NODE(QueueingTestNode, TwoPhaseFeedbackClient) {
 
   EXPECT_EQ("hello?",
             std::string_view(reinterpret_cast<const char*>(data), num_bytes));
-  EXPECT_EQ(IPCZ_RESULT_OK, ipcz().EndGet(b, num_bytes, 0, IPCZ_NO_FLAGS,
-                                          nullptr, nullptr, nullptr));
+  EXPECT_EQ(IPCZ_RESULT_OK,
+            ipcz().EndGet(b, num_bytes, 0, IPCZ_NO_FLAGS, nullptr, nullptr));
   Close(b);
 }
 
@@ -215,7 +219,7 @@ MULTINODE_TEST_NODE(QueueingTestNode, RemoteQueueFeedbackStressTestClient) {
       EXPECT_EQ(std::string_view(static_cast<const char*>(data), num_bytes),
                 std::string(num_bytes, '!'));
       EXPECT_EQ(IPCZ_RESULT_OK, ipcz().EndGet(b, num_bytes, 0, IPCZ_NO_FLAGS,
-                                              nullptr, nullptr, nullptr));
+                                              nullptr, nullptr));
       continue;
     }
 
@@ -227,7 +231,9 @@ MULTINODE_TEST_NODE(QueueingTestNode, RemoteQueueFeedbackStressTestClient) {
   Close(b);
 }
 
-MULTINODE_TEST(QueueingTest, RemoteQueueFeedbackStressTest) {
+// Disabled because remote queue state monitoring has been temporarily dropped
+// from ipcz to improve performance. See https://crbug.com/1383754.
+MULTINODE_TEST(QueueingTest, DISABLED_RemoteQueueFeedbackStressTest) {
   IpczHandle c = SpawnTestNode<RemoteQueueFeedbackStressTestClient>();
 
   size_t bytes_remaining = kStressTestPayloadSize;

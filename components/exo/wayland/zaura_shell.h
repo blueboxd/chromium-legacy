@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "ash/shell_observer.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
@@ -26,7 +27,7 @@ class ShellSurfaceBase;
 namespace wayland {
 class SerialTracker;
 
-constexpr uint32_t kZAuraShellVersion = 43;
+constexpr uint32_t kZAuraShellVersion = 45;
 
 // Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
 // builds. On non-ChromeOS builds the protocol provides access to Aura windowing
@@ -136,6 +137,7 @@ class AuraToplevel {
   void SetZOrder(ui::ZOrderLevel z_order);
   void Activate();
   void Deactivate();
+  void SetFullscreenMode(uint32_t mode);
 
   ShellSurface* shell_surface_;
   SerialTracker* const serial_tracker_;
@@ -173,6 +175,7 @@ class AuraOutput : public WaylandDisplayObserver {
   // Overridden from WaylandDisplayObserver:
   bool SendDisplayMetrics(const display::Display& display,
                           uint32_t changed_metrics) override;
+  void SendActiveDisplay() override;
   void OnOutputDestroyed() override;
 
   bool HasDisplayHandlerForTesting() const;

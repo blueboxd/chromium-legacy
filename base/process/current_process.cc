@@ -24,11 +24,11 @@ const char* GetNameForProcessType(CurrentProcessType process_type) {
     case CurrentProcessType::PROCESS_SANDBOX_HELPER:
       return "SandboxHelper";
     case CurrentProcessType::PROCESS_GPU:
-      return "Gpu";
+      return "GPU Process";
     case CurrentProcessType::PROCESS_PPAPI_PLUGIN:
-      return "PpapiPlugin";
+      return "PPAPI Process";
     case CurrentProcessType::PROCESS_PPAPI_BROKER:
-      return "PpapiBroker";
+      return "PPAPI Broker Process";
     case CurrentProcessType::PROCESS_SERVICE_NETWORK:
       return "Service: network.mojom.NetworkService";
     case CurrentProcessType::PROCESS_SERVICE_TRACING:
@@ -122,7 +122,7 @@ void CurrentProcess::SetProcessNameAndType(const std::string& process_name,
                         std::memory_order_relaxed);
   }
 #if BUILDFLAG(ENABLE_BASE_TRACING)
-  trace_event::TraceLog::GetInstance()->set_process_name(process_name);
+  trace_event::TraceLog::GetInstance()->OnSetProcessName(process_name);
 #endif
 }
 

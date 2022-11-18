@@ -6,21 +6,20 @@
 #define CHROMECAST_CAST_CORE_RUNTIME_BROWSER_STREAMING_RUNTIME_APPLICATION_H_
 
 #include "chromecast/cast_core/runtime/browser/runtime_application_base.h"
-#include "chromecast/cast_core/runtime/browser/streaming_receiver_session_client.h"
 #include "components/cast_receiver/browser/public/application_config.h"
+#include "components/cast_receiver/browser/streaming_receiver_session_client.h"
 #include "components/cast_streaming/browser/public/network_context_getter.h"
 
 namespace cast_receiver {
 class ApplicationClient;
+class MessagePortService;
 }
 
 namespace chromecast {
 
-class MessagePortService;
-
 class StreamingRuntimeApplication final
     : public RuntimeApplicationBase,
-      public StreamingReceiverSessionClient::Handler {
+      public cast_receiver::StreamingReceiverSessionClient::Handler {
  public:
   // |web_service| and |application_client| are expected to exist for the
   // lifetime of this instance.
@@ -34,7 +33,7 @@ class StreamingRuntimeApplication final
   // RuntimeApplicationBase implementation:
   void Launch(StatusCallback callback) override;
   void StopApplication(
-      RuntimeApplicationBase::Delegate::ApplicationStopReason stop_reason,
+      cast_receiver::EmbedderApplication::ApplicationStopReason stop_reason,
       int32_t net_error_code) override;
   bool IsStreamingApplication() const override;
 
@@ -51,10 +50,11 @@ class StreamingRuntimeApplication final
   const cast_streaming::NetworkContextGetter network_context_getter_;
 
   // Handles communication with cast core over gRPC.
-  std::unique_ptr<MessagePortService> message_port_service_;
+  std::unique_ptr<cast_receiver::MessagePortService> message_port_service_;
 
   // Object responsible for maintaining the lifetime of the streaming session.
-  std::unique_ptr<StreamingReceiverSessionClient> receiver_session_client_;
+  std::unique_ptr<cast_receiver::StreamingReceiverSessionClient>
+      receiver_session_client_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<StreamingRuntimeApplication> weak_factory_{this};

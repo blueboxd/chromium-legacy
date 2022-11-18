@@ -43,13 +43,14 @@ void ManualTestHeartbeatEvent::StartHeartbeatEvent() const {
   }
 
   Start<ReportQueueManualTestContext>(
-      /*frequency=*/base::Seconds(1),
+      /*period=*/base::Seconds(1),
       /*number_of_messages_to_enqueue=*/10,
       /*destination=*/HEARTBEAT_EVENTS,
       /*priority=*/FAST_BATCH, base::BindOnce([](Status status) {
         LOG(WARNING) << "Heartbeat Event completed with status: " << status;
       }),
-      base::ThreadPool::CreateSequencedTaskRunner(base::TaskTraits()));
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock()}));
 }
 
 }  // namespace reporting

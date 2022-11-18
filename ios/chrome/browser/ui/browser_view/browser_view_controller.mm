@@ -113,6 +113,7 @@
 #import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
+#import "ios/chrome/browser/url_loading/new_tab_animation_tab_helper.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
@@ -1038,6 +1039,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - UIResponder
 
+// To always be able to register key commands, the VC must be able to become
+// first responder.
 - (BOOL)canBecomeFirstResponder {
   return YES;
 }
@@ -1842,15 +1845,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NSArray<GuideName*>* guideNames = @[
       kContentAreaGuide,
       kPrimaryToolbarGuide,
-      kBadgeOverflowMenuGuide,
       kOmniboxGuide,
       kOmniboxLeadingImageGuide,
       kOmniboxTextFieldGuide,
-      kBackButtonGuide,
-      kForwardButtonGuide,
       kToolsMenuGuide,
       kTabSwitcherGuide,
-      kNewTabButtonGuide,
       kSecondaryToolbarGuide,
       kDiscoverFeedHeaderMenuGuide,
       kPrimaryToolbarLocationViewGuide,
@@ -3104,12 +3103,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:YES];
-
-  _keyCommandsProvider.canDismissModals = YES;
 }
 
 - (void)locationBarDidResignFirstResponder {
-  _keyCommandsProvider.canDismissModals = NO;
   [_sideSwipeController setEnabled:YES];
 
   [self.ntpCoordinator locationBarDidResignFirstResponder];
@@ -3269,9 +3265,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
   }
 
+  auto* animationTabHelper = NewTabAnimationTabHelper::FromWebState(webState);
+  BOOL animated =
+      !animationTabHelper || animationTabHelper->ShouldAnimateNewTab();
+  if (animationTabHelper) {
+    // Remove the helper because it isn't needed anymore.
+    NewTabAnimationTabHelper::RemoveFromWebState(webState);
+  }
+
   BOOL inBackground =
       !activating ||
-      NewTabPageTabHelper::FromWebState(webState)->ShouldShowStartSurface();
+      NewTabPageTabHelper::FromWebState(webState)->ShouldShowStartSurface() ||
+      !animated;
   [self initiateNewTabAnimationForWebState:webState
                       willOpenInBackground:inBackground];
 }
@@ -3285,14 +3290,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The rest of this function initiates the new tab animation, which is
   // phone-specific.  Call the foreground tab added completion block; for
   // iPhones, this will get executed after the animation has finished.
-  if ([self canShowTabStrip]) {
+  if ([self canShowTabStrip] || background) {
     if (self.foregroundTabWasAddedCompletionBlock) {
       // This callback is called before webState is activated. Dispatch the
       // callback asynchronously to be sure the activation is complete.
       __weak BrowserViewController* weakSelf = self;
       base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(^{
-            [weakSelf executeAndClearForegroundTabWasAddedCompletionBlock];
+            [weakSelf
+                executeAndClearForegroundTabWasAddedCompletionBlock:!
+                                                                    background];
           }));
     }
     return;
@@ -3317,7 +3324,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Helper which execute and then clears `foregroundTabWasAddedCompletionBlock`
 // if it is still set, or does nothing.
-- (void)executeAndClearForegroundTabWasAddedCompletionBlock {
+- (void)executeAndClearForegroundTabWasAddedCompletionBlock:(BOOL)animated {
   // Test existence again as the block may have been deleted.
   ProceduralBlock completion = self.foregroundTabWasAddedCompletionBlock;
   if (!completion)
@@ -3330,7 +3337,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // getting run. An example where this would happen is when opening
   // multiple tabs via the "Open URLs in Chrome" Siri Shortcut.
   self.foregroundTabWasAddedCompletionBlock = nil;
-  completion();
+  if (animated) {
+    completion();
+  } else {
+    [UIView performWithoutAnimation:^{
+      completion();
+    }];
+  }
 }
 
 // Helper which starts voice search at the end of new Tab animation if
@@ -3346,7 +3359,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       inForegroundWithCompletion:(ProceduralBlock)completion {
   // Create the new page image, and load with the new tab snapshot except if
   // it is the NTP.
-  UIView* newPage = nil;
+  UIView* newPage = [self viewForWebState:webState];
   GURL tabURL = webState->GetVisibleURL();
   // Toolbar snapshot is only used for the UIRefresh animation.
   UIView* toolbarSnapshot;
@@ -3365,33 +3378,33 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     toolbarSnapshot.frame = [self.contentArea convertRect:toolbarSnapshot.frame
                                                  fromView:self.view];
     [self.contentArea addSubview:toolbarSnapshot];
-    newPage = [self viewForWebState:webState];
-    newPage.userInteractionEnabled = NO;
     newPage.frame = self.view.bounds;
-    [newPage layoutIfNeeded];
   } else {
     if (self.isNTPActiveForCurrentWebState && self.webUsageEnabled) {
-      [self viewForWebState:webState].frame =
-          [self ntpFrameForWebState:self.currentWebState];
+      newPage.frame = [self ntpFrameForWebState:self.currentWebState];
     } else {
-      [self viewForWebState:webState].frame = self.contentArea.bounds;
+      newPage.frame = self.contentArea.bounds;
     }
-    // Setting the frame here doesn't trigger a layout pass. Trigger it manually
-    // if needed. Not triggering it can create problem if the previous frame
-    // wasn't the right one, for example in https://crbug.com/852106.
-    [[self viewForWebState:webState] layoutIfNeeded];
-    newPage = [self viewForWebState:webState];
-    newPage.userInteractionEnabled = NO;
   }
-
+  [newPage layoutIfNeeded];
+  newPage.userInteractionEnabled = NO;
   NSInteger currentAnimationIdentifier = ++_NTPAnimationIdentifier;
 
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
   UIView* webStateView = [self viewForWebState:webState];
+  __weak __typeof(self) weakSelf = self;
   auto commonCompletion = ^{
-    webStateView.frame = self.contentArea.bounds;
+    __strong __typeof(self) strongSelf = weakSelf;
     newPage.userInteractionEnabled = YES;
-    if (currentAnimationIdentifier != self->_NTPAnimationIdentifier) {
+
+    // Check for nil because we need to access an ivar below.
+    if (!strongSelf) {
+      return;
+    }
+
+    webStateView.frame = strongSelf.contentArea.bounds;
+
+    if (currentAnimationIdentifier != strongSelf->_NTPAnimationIdentifier) {
       // Prevent the completion block from being executed if a new animation has
       // started in between. `self.foregroundTabWasAddedCompletionBlock` isn't
       // called because it is overridden when a new animation is started.
@@ -3400,24 +3413,21 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       return;
     }
 
-    self.inNewTabAnimation = NO;
+    strongSelf.inNewTabAnimation = NO;
     // Use the model's currentWebState here because it is possible that it can
     // be reset to a new value before the new Tab animation finished (e.g.
     // if another Tab shows a dialog via `dialogPresenter`). However, that
     // webState's view hasn't been displayed yet because it was in a new tab
     // animation.
-    web::WebState* currentWebState = self.currentWebState;
+    web::WebState* currentWebState = strongSelf.currentWebState;
 
     if (currentWebState) {
-      [self webStateSelected:currentWebState notifyToolbar:NO];
+      [strongSelf webStateSelected:currentWebState notifyToolbar:NO];
     }
     if (completion)
       completion();
 
-    if (self.foregroundTabWasAddedCompletionBlock) {
-      self.foregroundTabWasAddedCompletionBlock();
-      self.foregroundTabWasAddedCompletionBlock = nil;
-    }
+    [strongSelf executeAndClearForegroundTabWasAddedCompletionBlock:YES];
   };
 
   CGPoint origin = [self lastTapPoint];

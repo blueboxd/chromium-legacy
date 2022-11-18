@@ -455,6 +455,7 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
 
   const TemplateURL* defaultURL =
       templateURLService->GetDefaultSearchProvider();
+  DCHECK(defaultURL);
   DCHECK(!defaultURL->url().empty());
   DCHECK(
       defaultURL->url_ref().IsValid(templateURLService->search_terms_data()));
@@ -546,6 +547,8 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
                                              browserState:browserState];
     params.web_params.url = result;
   }
+
+  params.from_external = true;
 
   if ([[connectionInformation startupParameters] applicationMode] !=
           ApplicationModeForTabOpening::INCOGNITO &&

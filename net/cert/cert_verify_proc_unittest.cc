@@ -502,10 +502,30 @@ class CertVerifyProcInternalTest
     return false;
   }
 
+  bool VerifyProcTypeIsMacAtMostOS12() const {
+#if BUILDFLAG(IS_MAC)
+    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
+        base::mac::IsAtMostOS12()) {
+      return true;
+    }
+#endif
+    return false;
+  }
+
   bool VerifyProcTypeIsIOSAtMostOS14() const {
 #if BUILDFLAG(IS_IOS)
     if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
         !base::ios::IsRunningOnIOS15OrLater()) {
+      return true;
+    }
+#endif
+    return false;
+  }
+
+  bool VerifyProcTypeIsIOSAtMostOS15() const {
+#if BUILDFLAG(IS_IOS)
+    if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
+        !base::ios::IsRunningOnIOS16OrLater()) {
       return true;
     }
 #endif
@@ -532,9 +552,7 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
     return;
   }
 
-  std::unique_ptr<CertBuilder> leaf, root;
-  CertBuilder::CreateSimpleChain(&leaf, &root);
-  ASSERT_TRUE(leaf && root);
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
 
   // The policies that target certificate asserts.
   static const char kOtherTestCertPolicy[] = "2.23.140.1.1";
@@ -577,9 +595,7 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
 // length 1 because the target cert was directly trusted in the trust store.
 // Should verify OK but not with STATUS_IS_EV.
 TEST_P(CertVerifyProcInternalTest, TrustedTargetCertWithEVPolicy) {
-  std::unique_ptr<CertBuilder> leaf, root;
-  CertBuilder::CreateSimpleChain(&leaf, &root);
-  ASSERT_TRUE(leaf && root);
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
 
   static const char kEVTestCertPolicy[] = "1.2.3.4";
   leaf->SetCertificatePolicies({kEVTestCertPolicy});
@@ -610,9 +626,7 @@ TEST_P(CertVerifyProcInternalTest, TrustedTargetCertWithEVPolicy) {
 // explode if it does.
 TEST_P(CertVerifyProcInternalTest,
        TrustedTargetCertWithEVPolicyAndEVFingerprint) {
-  std::unique_ptr<CertBuilder> leaf, root;
-  CertBuilder::CreateSimpleChain(&leaf, &root);
-  ASSERT_TRUE(leaf && root);
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
 
   static const char kEVTestCertPolicy[] = "1.2.3.4";
   leaf->SetCertificatePolicies({kEVTestCertPolicy});
@@ -658,9 +672,7 @@ TEST_P(CertVerifyProcInternalTest, TrustedIntermediateCertWithEVPolicy) {
 
     // Need to build unique certs for each try otherwise caching can break
     // things.
-    std::unique_ptr<CertBuilder> leaf, intermediate, root;
-    CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-    ASSERT_TRUE(leaf && intermediate && root);
+    auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
     static const char kEVTestCertPolicy[] = "1.2.3.4";
     leaf->SetCertificatePolicies({kEVTestCertPolicy});
@@ -716,9 +728,7 @@ TEST_P(CertVerifyProcInternalTest, TrustedIntermediateCertWithEVPolicy) {
 }
 
 TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndNoSAN) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   leaf->EraseExtension(der::Input(kSubjectAltNameOid));
 
@@ -745,9 +755,7 @@ TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndNoSAN) {
 }
 
 TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndValidSAN) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   leaf->SetSubjectAltName("www.fake.com");
 
@@ -773,9 +781,7 @@ TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndValidSAN) {
 }
 
 TEST_P(CertVerifyProcInternalTest, CertWithNullInSAN) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   std::string hostname;
   hostname += "www.fake.com";
@@ -1065,9 +1071,7 @@ TEST_P(CertVerifyProcInternalTest, GoogleDigiNotarTest) {
 }
 
 TEST_P(CertVerifyProcInternalTest, NameConstraintsOk) {
-  std::unique_ptr<CertBuilder> leaf, root;
-  CertBuilder::CreateSimpleChain(&leaf, &root);
-  ASSERT_TRUE(leaf && root);
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
 
   // Use the private key matching the public_key_hash of the kDomainsTest
   // constraint in CertVerifyProc::HasNameConstraintsViolation.
@@ -1099,9 +1103,7 @@ TEST_P(CertVerifyProcInternalTest, NameConstraintsOk) {
 }
 
 TEST_P(CertVerifyProcInternalTest, NameConstraintsFailure) {
-  std::unique_ptr<CertBuilder> leaf, root;
-  CertBuilder::CreateSimpleChain(&leaf, &root);
-  ASSERT_TRUE(leaf && root);
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
 
   // Use the private key matching the public_key_hash of the kDomainsTest
   // constraint in CertVerifyProc::HasNameConstraintsViolation.
@@ -1725,9 +1727,7 @@ TEST_P(CertVerifyProcInternalTest, MAYBE_WrongKeyPurpose) {
 // serverAuth EKU.
 // TODO(crbug.com/843735): Deprecate support for this.
 TEST_P(CertVerifyProcInternalTest, Sha1IntermediateUsesServerGatedCrypto) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   root->GenerateRSAKey();
   root->SetSignatureAlgorithm(SignatureAlgorithm::kRsaPkcs1Sha1);
@@ -1815,8 +1815,7 @@ TEST_P(CertVerifyProcInternalTest, VerifyReturnChainBasic) {
 TEST(CertVerifyProcTest, IntranetHostsRejected) {
   const std::string kIntranetHostname = "webmail";
 
-  std::unique_ptr<CertBuilder> leaf, root;
-  CertBuilder::CreateSimpleChain(&leaf, &root);
+  auto [leaf, root] = CertBuilder::CreateSimpleChain2();
   leaf->SetSubjectAltName(kIntranetHostname);
 
   scoped_refptr<X509Certificate> cert(leaf->GetX509Certificate());
@@ -2623,9 +2622,7 @@ TEST_P(CertVerifyProcInternalTest, CRLSetDuringPathBuilding) {
 }
 
 TEST_P(CertVerifyProcInternalTest, ValidityDayPlus5MinutesBeforeNotBefore) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
   base::Time not_before = base::Time::Now() + base::Days(1) + base::Minutes(5);
   base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
@@ -2646,9 +2643,7 @@ TEST_P(CertVerifyProcInternalTest, ValidityDayPlus5MinutesBeforeNotBefore) {
 }
 
 TEST_P(CertVerifyProcInternalTest, ValidityDayBeforeNotBefore) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
   base::Time not_before = base::Time::Now() + base::Days(1);
   base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
@@ -2669,9 +2664,7 @@ TEST_P(CertVerifyProcInternalTest, ValidityDayBeforeNotBefore) {
 }
 
 TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotBefore) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
   base::Time not_before = base::Time::Now() + base::Minutes(5);
   base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
@@ -2692,9 +2685,7 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotBefore) {
 }
 
 TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotBefore) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
   base::Time not_before = base::Time::Now() - base::Seconds(1);
   base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
@@ -2715,9 +2706,7 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotBefore) {
 }
 
 TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotAfter) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
   base::Time not_before = base::Time::Now() - base::Days(30);
   base::Time not_after = base::Time::Now() + base::Minutes(5);
   leaf->SetValidity(not_before, not_after);
@@ -2738,9 +2727,7 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotAfter) {
 }
 
 TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotAfter) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
   base::Time not_before = base::Time::Now() - base::Days(30);
   base::Time not_after = base::Time::Now() - base::Seconds(1);
   leaf->SetValidity(not_before, not_after);
@@ -2761,9 +2748,7 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotAfter) {
 }
 
 TEST_P(CertVerifyProcInternalTest, FailedIntermediateSignatureValidation) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Intermediate has no authorityKeyIdentifier. Also remove
   // subjectKeyIdentifier from root for good measure.
@@ -2795,9 +2780,7 @@ TEST_P(CertVerifyProcInternalTest, FailedIntermediateSignatureValidation) {
 }
 
 TEST_P(CertVerifyProcInternalTest, FailedTargetSignatureValidation) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Leaf has no authorityKeyIdentifier. Also remove subjectKeyIdentifier from
   // intermediate for good measure.
@@ -2884,9 +2867,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 // the intermediate's subject CN is UTF8String, and verifies the proper
 // histogram is logged.
 TEST_P(CertVerifyProcNameNormalizationTest, StringType) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   std::string issuer_cn = CertBuilder::MakeRandomHexString(12);
   leaf->SetIssuerTLV(CertBuilder::BuildNameWithCommonNameOfType(
@@ -2922,9 +2903,7 @@ TEST_P(CertVerifyProcNameNormalizationTest, StringType) {
 // subject CN are both PrintableString but have differing case on the first
 // character, and verifies the proper histogram is logged.
 TEST_P(CertVerifyProcNameNormalizationTest, CaseFolding) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   std::string issuer_hex = CertBuilder::MakeRandomHexString(12);
   leaf->SetIssuerTLV(CertBuilder::BuildNameWithCommonNameOfType(
@@ -2948,9 +2927,7 @@ TEST_P(CertVerifyProcNameNormalizationTest, CaseFolding) {
 // NameNormalizationTest cases which does not require normalization validates
 // ok, and that the ByteEqual histogram is logged.
 TEST_P(CertVerifyProcNameNormalizationTest, ByteEqual) {
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   std::string issuer_hex = CertBuilder::MakeRandomHexString(12);
   leaf->SetIssuerTLV(CertBuilder::BuildNameWithCommonNameOfType(
@@ -3075,9 +3052,7 @@ class CertVerifyProcInternalWithNetFetchingTest
       std::string* ca_issuers_path,
       bssl::UniquePtr<CRYPTO_BUFFER>* out_intermediate,
       scoped_refptr<X509Certificate>* out_root) {
-    std::unique_ptr<CertBuilder> leaf, intermediate, root;
-    CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-    ASSERT_TRUE(leaf && intermediate && root);
+    auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
     // Make the leaf certificate have an AIA (CA Issuers) that points to the
     // embedded test server. This uses a random URL for predictable behavior in
@@ -3414,9 +3389,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
        Sha1IntermediateButAIAHasSha256) {
   const char kHostname[] = "www.example.com";
 
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Make the leaf certificate have an AIA (CA Issuers) that points to the
   // embedded test server. This uses a random URL for predictable behavior in
@@ -3513,9 +3486,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationHardFailNoCrls) {
 
   // Create certs which have no AIA or CRL distribution points.
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
@@ -3545,9 +3516,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Serve a root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -3585,9 +3554,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Root-issued CRL revokes leaf's serial number. This is irrelevant.
   intermediate->SetCrlDistributionPointUrl(
@@ -3625,9 +3592,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -3662,9 +3627,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Intermediate is revoked by root issued CRL.
   intermediate->SetCrlDistributionPointUrl(
@@ -3702,9 +3665,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Serve a root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -3742,9 +3703,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Serve a 404 for the root-issued CRL distribution point url.
   intermediate->SetCrlDistributionPointUrl(RegisterSimpleTestServerHandler(
@@ -3780,9 +3739,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationSoftFailNoCrls) {
 
   // Create certs which have no AIA or CRL distribution points.
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Trust the root and build a chain to verify that includes the intermediate.
   ScopedTestRoot scoped_root(root->GetX509Certificate().get());
@@ -3815,9 +3772,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Serve a root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -3853,9 +3808,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Root-issued CRL revokes leaf's serial number. This is irrelevant.
   intermediate->SetCrlDistributionPointUrl(
@@ -3891,9 +3844,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -3934,9 +3885,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Intermediate is revoked by root issued CRL.
   intermediate->SetCrlDistributionPointUrl(
@@ -3977,9 +3926,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -4022,9 +3969,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -4077,9 +4022,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Serve a root-issued CRL which does not revoke intermediate.
   intermediate->SetCrlDistributionPointUrl(CreateAndServeCrl(root.get(), {}));
@@ -4117,9 +4060,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   }
 
   const char kHostname[] = "www.example.com";
-  std::unique_ptr<CertBuilder> leaf, intermediate, root;
-  CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
-  ASSERT_TRUE(leaf && intermediate && root);
+  auto [leaf, intermediate, root] = CertBuilder::CreateSimpleChain3();
 
   // Serve a 404 for the root-issued CRL distribution point url.
   intermediate->SetCrlDistributionPointUrl(RegisterSimpleTestServerHandler(
@@ -4384,6 +4325,24 @@ TEST_P(CertVerifyProcConstraintsTest,
   EXPECT_THAT(Verify(), IsOk());
 }
 
+TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotPresentRoot) {
+  chain_[3]->EraseExtension(der::Input(kBasicConstraintsOid));
+
+  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID ||
+      verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotPresentIntermediate) {
+  chain_[2]->EraseExtension(der::Input(kBasicConstraintsOid));
+
+  EXPECT_THAT(Verify(), IsError(ExpectedIntermediateConstraintError()));
+}
+
 TEST_P(CertVerifyProcConstraintsTest, NameConstraintsNotMatchingRoot) {
   chain_[3]->SetNameConstraintsDnsNames(/*permitted_dns_names=*/{"example.org"},
                                         /*excluded_dns_names=*/{});
@@ -4546,6 +4505,160 @@ TEST_P(CertVerifyProcConstraintsTest, PolicyConstraints3Intermediate) {
   chain_[2]->SetPolicyConstraints(
       /*require_explicit_policy=*/3,
       /*inhibit_policy_mapping=*/absl::nullopt);
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy0Root) {
+  static const char kAnyPolicy[] = "2.5.29.32.0";
+  static const char kPolicy1[] = "1.2.3.4";
+
+  // Since inhibitAnyPolicy is 0, anyPolicy should not be allow for any certs
+  // after the root.
+  chain_[3]->SetInhibitAnyPolicy(0);
+  chain_[3]->SetCertificatePolicies({kAnyPolicy});
+
+  // Policy constraints are specified on an intermediate so that an explicit
+  // policy will be required regardless if root constraints are applied.
+  chain_[2]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+
+  // This intermediate only asserts anyPolicy, so this chain should
+  // be invalid if policyConstraints from the root cert are enforced.
+  chain_[2]->SetCertificatePolicies({kAnyPolicy});
+
+  chain_[1]->SetCertificatePolicies({kPolicy1});
+  chain_[0]->SetCertificatePolicies({kPolicy1});
+
+  if (VerifyProcTypeIsBuiltin() || verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+      verify_proc_type() == CERT_VERIFY_PROC_IOS ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy1Root) {
+  static const char kAnyPolicy[] = "2.5.29.32.0";
+  static const char kPolicy1[] = "1.2.3.4";
+
+  // Since inhibitAnyPolicy is 1, anyPolicy should be allowed for the root's
+  // immediate child.
+  chain_[3]->SetInhibitAnyPolicy(1);
+  chain_[3]->SetCertificatePolicies({kAnyPolicy});
+
+  // Policy constraints are specified on an intermediate so that an explicit
+  // policy will be required regardless if root constraints are applied.
+  chain_[2]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+
+  chain_[2]->SetCertificatePolicies({kAnyPolicy});
+
+  chain_[1]->SetCertificatePolicies({kPolicy1});
+  chain_[0]->SetCertificatePolicies({kPolicy1});
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy0Intermediate) {
+  static const char kAnyPolicy[] = "2.5.29.32.0";
+  static const char kPolicy1[] = "1.2.3.4";
+
+  chain_[2]->SetInhibitAnyPolicy(0);
+  chain_[2]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+
+  chain_[2]->SetCertificatePolicies({kAnyPolicy});
+  // This shouldn't be allowed as the parent cert set inhibitAnyPolicy=0.
+  chain_[1]->SetCertificatePolicies({kAnyPolicy});
+  chain_[0]->SetCertificatePolicies({kPolicy1});
+
+  EXPECT_THAT(Verify(), IsError(ExpectedIntermediateConstraintError()));
+}
+
+TEST_P(CertVerifyProcConstraintsTest, InhibitAnyPolicy1Intermediate) {
+  static const char kAnyPolicy[] = "2.5.29.32.0";
+  static const char kPolicy1[] = "1.2.3.4";
+
+  chain_[2]->SetInhibitAnyPolicy(1);
+  chain_[2]->SetPolicyConstraints(
+      /*require_explicit_policy=*/0,
+      /*inhibit_policy_mapping=*/absl::nullopt);
+
+  chain_[2]->SetCertificatePolicies({kAnyPolicy});
+  // This is okay as the parent cert set inhibitAnyPolicy=1.
+  chain_[1]->SetCertificatePolicies({kAnyPolicy});
+  chain_[0]->SetCertificatePolicies({kPolicy1});
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTest, KeyUsageNoCertSignRoot) {
+  chain_[3]->SetKeyUsages({KEY_USAGE_BIT_CRL_SIGN});
+
+  if (VerifyProcTypeIsBuiltin() || VerifyProcTypeIsMacAtMostOS10_14() ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTest, KeyUsageNotPresentRoot) {
+  chain_[3]->EraseExtension(der::Input(kKeyUsageOid));
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTest, KeyUsageNoCertSignIntermediate) {
+  chain_[2]->SetKeyUsages({KEY_USAGE_BIT_CRL_SIGN});
+
+  EXPECT_THAT(Verify(), IsError(ExpectedIntermediateConstraintError()));
+}
+
+TEST_P(CertVerifyProcConstraintsTest, KeyUsageNotPresentIntermediate) {
+  chain_[2]->EraseExtension(der::Input(kKeyUsageOid));
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTest, ExtendedKeyUsageNoServerAuthRoot) {
+  chain_[3]->SetExtendedKeyUsages({der::Input(kCodeSigning)});
+
+  if (VerifyProcTypeIsBuiltin() ||
+      verify_proc_type() == CERT_VERIFY_PROC_ANDROID ||
+      verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+      verify_proc_type() == CERT_VERIFY_PROC_IOS) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTest, ExtendedKeyUsageServerAuthRoot) {
+  chain_[3]->SetExtendedKeyUsages({der::Input(kServerAuth)});
+
+  EXPECT_THAT(Verify(), IsOk());
+}
+
+TEST_P(CertVerifyProcConstraintsTest,
+       ExtendedKeyUsageNoServerAuthIntermediate) {
+  chain_[2]->SetExtendedKeyUsages({der::Input(kCodeSigning)});
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID ||
+      VerifyProcTypeIsMacAtMostOS12() || VerifyProcTypeIsIOSAtMostOS15()) {
+    EXPECT_THAT(Verify(), IsOk());
+  } else {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  }
+}
+
+TEST_P(CertVerifyProcConstraintsTest, ExtendedKeyUsageServerAuthIntermediate) {
+  chain_[2]->SetExtendedKeyUsages({der::Input(kServerAuth)});
 
   EXPECT_THAT(Verify(), IsOk());
 }

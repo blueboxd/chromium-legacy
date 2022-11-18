@@ -210,6 +210,9 @@
   <message name="IDS_POLICY_INVALID_NUMBER_OF_URLS_ERROR" desc="The text displayed in the status column for the policy WebUsbAllowDevicesForUrls when an entry has either 0 or more than 2 URLs">
     Each urls string entry must contain between 1 to 2 URLs.
   </message>
+  <message name="IDS_POLICY_BRUSCHETTA_UNINSTALLABLE_ERROR" desc="The text displayed in the status column when a VM config is marked as installable, but no image is available to install for this archetecture">
+    This configuration is marked as installable, but no image is provided for this archetecture, so it cannot be installed.
+  </message>
   <message name="IDS_POLICY_CLOUD_SOURCE_ONLY_ERROR" desc="The text displayed in the status column when a policy that should only be set in the cloud is set from another source.">
     Ignored because the policy is not set by a cloud source.
   </message>
@@ -398,6 +401,9 @@ Additional details:
     Google Update
   </message>
  </if>
+  <message name="IDS_POLICY_STATUS_ERROR_MANAGED_NO_POLICY" desc="Message to display when a managed device does not have a policy loaded.">
+    Managed user or device has no policy loaded.
+  </message>
   <message name="IDS_POLICY_LABEL_MACHINE_ENROLLMENT_DOMAIN" desc="Label for the enrollment domain in the machine policy status box.">
     Enrollment domain:
   </message>
@@ -418,6 +424,9 @@ Additional details:
   </message>
   <message name="IDS_POLICY_LABEL_CLIENT_ID" desc="Label for the client IDs in the policy status boxes.">
     Client ID:
+  </message>
+  <message name="IDS_POLICY_LABEL_PROFILE_ID" desc="Label for the user profile ID in the user policy status box.">
+    Profile ID:
   </message>
   <message name="IDS_POLICY_LABEL_ASSET_ID" desc="Label for the asset ID in the device policy status box.">
     Asset ID:

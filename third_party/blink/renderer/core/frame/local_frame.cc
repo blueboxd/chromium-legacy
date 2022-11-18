@@ -2518,7 +2518,41 @@ void LocalFrame::SetContextPaused(bool is_paused) {
 bool LocalFrame::SwapIn() {
   DCHECK(IsProvisional());
   WebLocalFrameClient* client = Client()->GetWebFrame()->Client();
-  return client->SwapIn(WebFrame::FromCoreFrame(GetProvisionalOwnerFrame()));
+  // Swap in `this`, which is a provisional frame to an existing frame.
+  Frame* provisional_owner_frame = GetProvisionalOwnerFrame();
+
+  // First, check if there's a previous main frame to be used for a main frame
+  // LocalFrame <-> LocalFrame swap.
+  if (Frame* previous_local_main_frame =
+          GetPage()->TakePreviousMainFrameForLocalSwap()) {
+    // We're about to do a LocalFrame <-> LocalFrame swap for a provisional
+    // main frame, where the previous main frame and the provisional main frame
+    // are in different Pages. The provisional frame's owner is set to the
+    // placeholder main RemoteFrame for the new Page, but we should trigger the
+    // swapping out of the previous Page's main frame instead here.
+    // This is because we want to preserve the behavior before RenderDocument,
+    // where we would unload the previous document before the next document on
+    // same-LocalFrame cross-document navigation, and also transfer some state
+    // from the previous document to the new one.
+    // The placeholder main RemoteFrame for the new Page will also get detached
+    // so that the new main LocalFrame can be swapped in, but that will be done
+    // a bit later on in `Frame::SwapImpl()`, as we don't need to transfer any
+    // data from the placeholder RemoteFrame.
+    CHECK(IsMainFrame());
+    CHECK(previous_local_main_frame->IsLocalFrame());
+    CHECK_NE(previous_local_main_frame->GetPage(), GetPage());
+    CHECK(provisional_owner_frame->IsRemoteFrame());
+    CHECK(!DynamicTo<RemoteFrame>(provisional_owner_frame)
+               ->IsRemoteFrameHostRemoteBound());
+    return client->SwapIn(WebFrame::FromCoreFrame(previous_local_main_frame));
+  }
+
+  // In all other cases, the LocalFrame would be swapped in with the provisional
+  // owner frame which belongs to the same Page as `this`. The provisional owner
+  // frame can be a RemoteFrame or a LocalFrame (for non-main frame
+  // LocalFrame <-> LocalFrame swap cases).
+  CHECK_EQ(provisional_owner_frame->GetPage(), GetPage());
+  return client->SwapIn(WebFrame::FromCoreFrame(provisional_owner_frame));
 }
 
 void LocalFrame::LoadJavaScriptURL(const KURL& url) {
@@ -3307,27 +3341,6 @@ LocalFrame::GetNotRestoredReasons() {
   // web exposed API returns non-null values only for the outermost main frames.
   DCHECK(IsOutermostMainFrame());
   return not_restored_reasons_;
-}
-
-bool LocalFrame::HasBlockingReasons() {
-  DCHECK(IsOutermostMainFrame());
-  if (!not_restored_reasons_)
-    return false;
-  return HasBlockingReasonsHelper(not_restored_reasons_);
-}
-
-bool LocalFrame::HasBlockingReasonsHelper(
-    const mojom::blink::BackForwardCacheNotRestoredReasonsPtr& not_restored) {
-  if (not_restored->blocked)
-    return true;
-  if (not_restored->same_origin_details) {
-    for (const auto& child : not_restored->same_origin_details->children) {
-      if (HasBlockingReasonsHelper(child))
-        return true;
-    }
-    return false;
-  }
-  return false;
 }
 
 void LocalFrame::AddScrollSnapshotClient(ScrollSnapshotClient& client) {

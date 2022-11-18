@@ -382,7 +382,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.CustomOSSync" enum="SyncModelTypes"
-    expires_after="2023-03-13">
+    expires_after="2023-05-14">
   <owner>mmoskvitin@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -405,8 +405,7 @@ chromium-metrics-reviews@google.com.
     taken every time the Sync data types are (re)configured, which typically
     happens during startup and when the user changes any Sync settings.
 
-    NOTE: this doesn't include OS datatypes once the SplitSettingsSync feature
-    is enabled. Use Sync.CustomOSSync for those.
+    NOTE: this does NOT include OS datatypes. Use Sync.CustomOSSync for those.
   </summary>
 </histogram>
 

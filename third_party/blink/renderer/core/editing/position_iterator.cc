@@ -55,19 +55,22 @@ ContainerNode* SelectableParentOf(const Node& node) {
 
 }  // namespace
 
-static const int kInvalidOffset = -1;
+static constexpr int kInvalidOffset = -1;
 
 template <typename Strategy>
 PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(
-    Node* anchor_node,
-    int offset_in_anchor)
-    : anchor_node_(anchor_node),
-      node_after_position_in_anchor_(
-          Strategy::ChildAt(*anchor_node, offset_in_anchor)),
-      offset_in_anchor_(node_after_position_in_anchor_ ? 0 : offset_in_anchor),
-      depth_to_anchor_node_(0),
-      dom_tree_version_(anchor_node->GetDocument().DomTreeVersion()) {
-  for (Node* node = SelectableParentOf<Strategy>(*anchor_node); node;
+    const PositionTemplate<Strategy>& pos) {
+  if (pos.IsNull())
+    return;
+  anchor_node_ = pos.AnchorNode();
+  const int offset_in_anchor = pos.ComputeEditingOffset();
+
+  node_after_position_in_anchor_ =
+      Strategy::ChildAt(*anchor_node_, offset_in_anchor);
+  offset_in_anchor_ = node_after_position_in_anchor_ ? 0 : offset_in_anchor;
+  dom_tree_version_ = anchor_node_->GetDocument().DomTreeVersion();
+
+  for (Node* node = SelectableParentOf<Strategy>(*anchor_node_); node;
        node = SelectableParentOf<Strategy>(*node)) {
     // Each offsets_in_anchor_node_[offset] should be an index of node in
     // parent, but delay to calculate the index until it is needed for
@@ -78,22 +81,6 @@ PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(
   if (node_after_position_in_anchor_)
     offsets_in_anchor_node_.push_back(offset_in_anchor);
 }
-template <typename Strategy>
-PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(
-    const PositionTemplate<Strategy>& pos)
-    : PositionIteratorAlgorithm(
-          pos.IsNull()
-              ? PositionIteratorAlgorithm()
-              : PositionIteratorAlgorithm(pos.AnchorNode(),
-                                          pos.ComputeEditingOffset())) {}
-
-template <typename Strategy>
-PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm()
-    : anchor_node_(nullptr),
-      node_after_position_in_anchor_(nullptr),
-      offset_in_anchor_(0),
-      depth_to_anchor_node_(0),
-      dom_tree_version_(0) {}
 
 template <typename Strategy>
 PositionTemplate<Strategy>
@@ -351,11 +338,6 @@ void PositionIteratorAlgorithm<Strategy>::Decrement() {
 }
 
 template <typename Strategy>
-bool PositionIteratorAlgorithm<Strategy>::IsBeforeNode(const Node& node) const {
-  return anchor_node_ == &node && !offset_in_anchor_;
-}
-
-template <typename Strategy>
 bool PositionIteratorAlgorithm<Strategy>::AtStart() const {
   DCHECK(IsValid());
   if (!anchor_node_)
@@ -384,8 +366,10 @@ bool PositionIteratorAlgorithm<Strategy>::AtStartOfNode() const {
   DCHECK(IsValid());
   if (!anchor_node_)
     return true;
-  if (!node_after_position_in_anchor_)
-    return !Strategy::HasChildren(*anchor_node_) && !offset_in_anchor_;
+  if (!node_after_position_in_anchor_) {
+    return !ShouldTraverseChildren<Strategy>(*anchor_node_) &&
+           !offset_in_anchor_;
+  }
   return !Strategy::PreviousSibling(*node_after_position_in_anchor_);
 }
 

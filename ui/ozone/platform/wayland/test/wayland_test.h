@@ -11,6 +11,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
@@ -39,7 +40,7 @@ class WaylandScreen;
 
 // WaylandTest is a base class that sets up a display, window, and test server,
 // and allows easy synchronization between them.
-class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
+class WaylandTestBase {
  public:
   // Specifies how the server should run.
   // TODO(crbug.com/1365887): this must be removed once all tests switch to
@@ -53,15 +54,13 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
     kSync
   };
 
-  explicit WaylandTest(TestServerMode server_mode = TestServerMode::kSync);
+  WaylandTestBase(wl::ServerConfig config, TestServerMode server_mode);
+  WaylandTestBase(const WaylandTestBase&) = delete;
+  WaylandTestBase& operator=(const WaylandTestBase&) = delete;
+  ~WaylandTestBase();
 
-  WaylandTest(const WaylandTest&) = delete;
-  WaylandTest& operator=(const WaylandTest&) = delete;
-
-  ~WaylandTest() override;
-
-  void SetUp() override;
-  void TearDown() override;
+  void SetUp();
+  void TearDown();
 
   void Sync();
 
@@ -83,6 +82,10 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
   }
 
  protected:
+  // Disables client-server sync during the teardown.  Used by tests that
+  // intentionally spoil the client-server communication.
+  void DisableSyncOnTearDown();
+
   void SetPointerFocusedWindow(WaylandWindow* window);
   void SetKeyboardFocusedWindow(WaylandWindow* window);
 
@@ -102,6 +105,9 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
   // height set to 0, which results in asking the client to set the width and
   // height of the surface.
   void ActivateSurface(wl::MockXdgSurface* xdg_surface);
+  // Same as above, but uses surface_id. Requires the tests to use async test
+  // server.
+  void ActivateSurface(uint32_t surface_id);
 
   // Initializes SurfaceAugmenter in |server_|.
   void InitializeSurfaceAugmenter();
@@ -117,12 +123,19 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
   // Does nothing if XkbCommon is not used.
   void MaybeSetUpXkb();
 
+  // Creates a Wayland window with the specified delegate, type, and bounds.
+  std::unique_ptr<WaylandWindow> CreateWaylandWindowWithParams(
+      PlatformWindowType type,
+      const gfx::Rect bounds,
+      MockWaylandPlatformWindowDelegate* delegate,
+      gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget);
+
   base::test::TaskEnvironment task_environment_;
 
   wl::TestWaylandServerThread server_;
   raw_ptr<wl::MockSurface> surface_;
 
-  MockWaylandPlatformWindowDelegate delegate_;
+  ::testing::NiceMock<MockWaylandPlatformWindowDelegate> delegate_;
   std::unique_ptr<ScopedKeyboardLayoutEngine> scoped_keyboard_layout_engine_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
   std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_gpu_;
@@ -146,6 +159,33 @@ class WaylandTest : public ::testing::TestWithParam<wl::ServerConfig> {
 
   // The server will be set to asynchronous mode once started.
   const TestServerMode server_mode_;
+  const wl::ServerConfig config_;
+};
+
+// Version of WaylandTestBase that uses parametrised tests (TEST_P).
+class WaylandTest : public WaylandTestBase,
+                    public ::testing::TestWithParam<wl::ServerConfig> {
+ public:
+  explicit WaylandTest(TestServerMode server_mode = TestServerMode::kSync);
+  WaylandTest(const WaylandTest&) = delete;
+  WaylandTest& operator=(const WaylandTest&) = delete;
+  ~WaylandTest() override;
+
+  void SetUp() override;
+  void TearDown() override;
+};
+
+// Version of WaylandTest that uses simple test fixtures (TEST_F).
+class WaylandTestSimple : public WaylandTestBase, public ::testing::Test {
+ public:
+  explicit WaylandTestSimple(WaylandTestBase::TestServerMode server_mode =
+                                 WaylandTestBase::TestServerMode::kAsync);
+  WaylandTestSimple(const WaylandTestSimple&) = delete;
+  WaylandTestSimple& operator=(const WaylandTestSimple&) = delete;
+  ~WaylandTestSimple() override;
+
+  void SetUp() override;
+  void TearDown() override;
 };
 
 }  // namespace ui

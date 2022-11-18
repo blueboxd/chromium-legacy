@@ -138,6 +138,33 @@ TEST_F(PriceTrackingUtilsTest,
   EXPECT_TRUE(IsBookmarkPriceTracked(bookmark_model_.get(), product2));
 }
 
+TEST_F(PriceTrackingUtilsTest, SetPriceTrackingForClusterId) {
+  const uint64_t cluster_id = 12345L;
+
+  const bookmarks::BookmarkNode* product =
+      AddProductBookmark(bookmark_model_.get(), u"product 1",
+                         GURL("http://example.com/1"), cluster_id, true);
+
+  // Simulate successful calls in the subscriptions manager.
+  shopping_service_->SetSubscribeCallbackValue(true);
+  shopping_service_->SetUnsubscribeCallbackValue(true);
+
+  base::RunLoop run_loop;
+  SetPriceTrackingStateForClusterId(
+      shopping_service_.get(), bookmark_model_.get(), cluster_id, true,
+      base::BindOnce(
+          [](base::RunLoop* run_loop, bool success) {
+            EXPECT_TRUE(success);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+
+  EXPECT_TRUE(IsBookmarkPriceTracked(bookmark_model_.get(), product));
+  EXPECT_EQ(GetBookmarksWithClusterId(bookmark_model_.get(), cluster_id)[0],
+            product);
+}
+
 TEST_F(PriceTrackingUtilsTest, GetBookmarksWithClusterId) {
   const uint64_t cluster_id = 12345L;
   AddProductBookmark(bookmark_model_.get(), u"product 1",
@@ -150,6 +177,21 @@ TEST_F(PriceTrackingUtilsTest, GetBookmarksWithClusterId) {
   ASSERT_EQ(3U, bookmark_model_->other_node()->children().size());
   ASSERT_EQ(
       2U, GetBookmarksWithClusterId(bookmark_model_.get(), cluster_id).size());
+}
+
+TEST_F(PriceTrackingUtilsTest, GetBookmarksWithClusterId_CountRestricted) {
+  const uint64_t cluster_id = 12345L;
+  AddProductBookmark(bookmark_model_.get(), u"product 1",
+                     GURL("http://example.com/1"), cluster_id, true);
+  AddProductBookmark(bookmark_model_.get(), u"product 2",
+                     GURL("http://example.com/2"), cluster_id, true);
+  bookmark_model_->AddURL(bookmark_model_->other_node(), 0, u"non-product",
+                          GURL("http://www.example.com"));
+
+  ASSERT_EQ(3U, bookmark_model_->other_node()->children().size());
+  ASSERT_EQ(
+      1U,
+      GetBookmarksWithClusterId(bookmark_model_.get(), cluster_id, 1).size());
 }
 
 TEST_F(PriceTrackingUtilsTest, GetAllPriceTrackedBookmarks) {
@@ -208,6 +250,7 @@ TEST_F(PriceTrackingUtilsTest, PopulateOrUpdateBookmark) {
   const std::string new_image_url = "https://example.com/product_image.png";
   const std::string new_country_code = "us";
   const long new_price = 500000L;
+  const long old_price = 700000L;
   const std::string new_currency_code = "USD";
   const uint64_t new_offer_id = 10000L;
   const uint64_t cluster_id = 12345L;
@@ -235,6 +278,7 @@ TEST_F(PriceTrackingUtilsTest, PopulateOrUpdateBookmark) {
   new_info.country_code = new_country_code;
   new_info.offer_id = new_offer_id;
   new_info.product_cluster_id = cluster_id;  // This shouldn't change.
+  new_info.previous_amount_micros.emplace(old_price);
 
   EXPECT_TRUE(PopulateOrUpdateBookmarkMetaIfNeeded(&meta, new_info));
 
@@ -248,6 +292,7 @@ TEST_F(PriceTrackingUtilsTest, PopulateOrUpdateBookmark) {
   EXPECT_EQ(new_currency_code, specifics->current_price().currency_code());
   EXPECT_EQ(new_offer_id, specifics->offer_id());
   EXPECT_EQ(cluster_id, specifics->product_cluster_id());
+  EXPECT_EQ(old_price, specifics->previous_price().amount_micros());
 }
 
 TEST_F(PriceTrackingUtilsTest, PopulateOrUpdateBookmark_NoNewData) {
@@ -294,6 +339,7 @@ TEST_F(PriceTrackingUtilsTest, PopulateOrUpdateBookmark_NoNewData) {
   EXPECT_EQ(currency_code, specifics->current_price().currency_code());
   EXPECT_EQ(offer_id, specifics->offer_id());
   EXPECT_EQ(cluster_id, specifics->product_cluster_id());
+  EXPECT_FALSE(specifics->has_previous_price());
 }
 
 TEST_F(PriceTrackingUtilsTest,

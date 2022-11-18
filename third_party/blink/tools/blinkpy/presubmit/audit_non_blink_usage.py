@@ -319,6 +319,8 @@ _CONFIG = [
             'base::TickClock',
 
             # cc painting types.
+            'cc::InspectablePaintRecorder',
+            'cc::InspectableRecordPaintCanvas',
             'cc::PaintCanvas',
             'cc::PaintFlags',
             'cc::PaintImage',
@@ -521,6 +523,9 @@ _CONFIG = [
             # Common display structs across display <-> Blink.
             'display::ScreenInfo',
             'display::ScreenInfos',
+
+            # Terminal value for display id's used across display <-> Blink.
+            'display::kInvalidDisplayId',
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',

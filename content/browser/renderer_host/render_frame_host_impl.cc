@@ -35,7 +35,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/syslog_logging.h"
-#include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
@@ -114,7 +113,6 @@
 #include "content/browser/renderer_host/pending_beacon_host.h"
 #include "content/browser/renderer_host/pending_beacon_service.h"
 #include "content/browser/renderer_host/private_network_access_util.h"
-#include "content/browser/renderer_host/recently_destroyed_hosts.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_owner.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
@@ -374,8 +372,8 @@ class RenderFrameHostOrProxy {
 
 namespace {
 
-constexpr int kSubframeProcessShutdownLongDelayInMSec = 8 * 1000;
-static_assert(kSubframeProcessShutdownLongDelayInMSec +
+constexpr int kSubframeProcessShutdownDelayInMSec = 2 * 1000;
+static_assert(kSubframeProcessShutdownDelayInMSec +
                       RenderViewHostImpl::kUnloadTimeoutInMSec <
                   RenderProcessHostImpl::kKeepAliveHandleFactoryTimeoutInMSec,
               "The maximum process shutdown delay should not exceed the "
@@ -809,6 +807,19 @@ enum class RendererLoadType {
   kReplaceCurrentItem,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Used to log whether the call to SSLManager::DidStartResourceResponse()
+// resulted in a no-op or if the exceptions were cleared out when a good
+// certificate was seen. Matches histogram enum (SSLSubresourceResponseType).
+enum class SSLSubresourceResponseType {
+  // Includes cases when call resulted in a no-op.
+  kIgnored = 0,
+  // Includes cases when exceptions were cleared after seeing a good cert.
+  kProcessed = 1,
+  kMaxValue = kProcessed,
+};
+
 bool ValidateCSPAttribute(const std::string& value) {
   static const size_t kMaxLengthCSPAttribute = 4096;
   if (!base::IsStringASCII(value))
@@ -853,8 +864,8 @@ void WriteRenderFrameImplDeletion(perfetto::EventContext& ctx,
 }
 
 // Returns an experimental process shutdown delay if the SubframeShutdownDelay
-// experiment is enabled, 0 if not or if under memory pressure. This experiment
-// keeps subframe processes alive for a few seconds in case they can be reused.
+// experiment is enabled, 0 if not or if under memory pressure. This is used to
+// keep subframe processes alive for a few seconds in case they can be reused.
 base::TimeDelta GetSubframeProcessShutdownDelay(
     BrowserContext* browser_context) {
   static constexpr base::TimeDelta kZeroDelay;
@@ -870,88 +881,33 @@ base::TimeDelta GetSubframeProcessShutdownDelay(
     return kZeroDelay;
   }
 
-  static constexpr base::TimeDelta kShortDelay = base::Seconds(2);
-  static constexpr base::TimeDelta kLongDelay =
-      base::Milliseconds(kSubframeProcessShutdownLongDelayInMSec);
-  // Added to delay if based on recent performance (i.e., |kHistoryBased| and
-  // |kHistoryBasedLong|) to account for small variations in timing.
-  static constexpr base::TimeDelta kDelayBuffer = base::Seconds(1);
-
-  switch (features::kSubframeShutdownDelayTypeParam.Get()) {
-    case features::SubframeShutdownDelayType::kConstant: {
-      return kShortDelay;
-    }
-    case features::SubframeShutdownDelayType::kConstantLong: {
-      return kLongDelay;
-    }
-    case features::SubframeShutdownDelayType::kHistoryBased: {
-      const base::TimeDelta reuse_interval =
-          RecentlyDestroyedHosts::GetPercentileReuseInterval(50,
-                                                             browser_context);
-      // If no subframe reuse has happened recently, don't delay process
-      // shutdown at all.
-      if (reuse_interval.is_zero())
-        return kZeroDelay;
-      return std::min(reuse_interval + kDelayBuffer, kLongDelay);
-    }
-    case features::SubframeShutdownDelayType::kHistoryBasedLong: {
-      const base::TimeDelta reuse_interval =
-          RecentlyDestroyedHosts::GetPercentileReuseInterval(75,
-                                                             browser_context);
-      // If no subframe reuse has happened recently, don't delay process
-      // shutdown at all.
-      if (reuse_interval.is_zero())
-        return kZeroDelay;
-      return std::min(reuse_interval + kDelayBuffer, kLongDelay);
-    }
-    case features::SubframeShutdownDelayType::kMemoryBased: {
-      // See subframe-reuse design doc for more detail on these values.
-      // docs.google.com/document/d/1x_h4Gg4ForILEj8A4rMBX6d84uHWyQ9RSXmGVqMlBTk
-      static constexpr uint64_t kHighMemoryThreshold = 8'000'000'000;
-      static constexpr uint64_t kMaxMemoryThreshold = 16'000'000'000;
-
-      const uint64_t available_memory =
-          base::SysInfo::AmountOfAvailablePhysicalMemory();
-      if (available_memory <= kHighMemoryThreshold)
-        return kShortDelay;
-      if (available_memory >= kMaxMemoryThreshold)
-        return kLongDelay;
-
-      // Scale delay linearly based on where |available_memory| lies between
-      // |kHighMemoryThreshold| and |kMaxMemoryThreshold|.
-      const uint64_t available_memory_factor =
-          (available_memory - kHighMemoryThreshold) /
-          (kMaxMemoryThreshold - kHighMemoryThreshold);
-      return kShortDelay + (kLongDelay - kShortDelay) * available_memory_factor;
-    }
-  }
-  NOTREACHED();
+  return base::Milliseconds(kSubframeProcessShutdownDelayInMSec);
 }
 
 // Returns the "document" URL used for a navigation, which might be different
 // than the commit URL (CommonNavigationParam's URL) for certain cases such as
-// error page and loadDataWithBaseURL() commits.
+// error document and loadDataWithBaseURL() commits.
 GURL GetLastDocumentURL(
     NavigationRequest* request,
     const mojom::DidCommitProvisionalLoadParams& params,
-    bool last_document_is_error_page,
+    bool last_document_is_error_document,
     const RenderFrameHostImpl::RendererURLInfo& renderer_url_info) {
   if (request->DidEncounterError() ||
-      (request->IsSameDocument() && last_document_is_error_page)) {
-    // If the navigation happens on an error page, the document URL is set to
-    // kUnreachableWebDataURL. Note that if a same-document navigation happens
-    // in an error page it's possible for the document URL to have changed, but
-    // the browser has no way of knowing that URL since it isn't exposed in any
-    // way. Additionally, all current known ways to do a same-document
-    // navigation on an error page (history.pushState/replaceState without
-    // changing the URL) won't change the URL, so it's probably OK to keep using
-    // kUnreachableWebDataURL here.
+      (request->IsSameDocument() && last_document_is_error_document)) {
+    // If the navigation happens on an error document, the document URL is set
+    // to kUnreachableWebDataURL. Note that if a same-document navigation
+    // happens in an error document it's possible for the document URL to have
+    // changed, but the browser has no way of knowing that URL since it isn't
+    // exposed in any way. Additionally, all current known ways to do a
+    // same-document navigation on an error document
+    // (history.pushState/replaceState without changing the URL) won't change
+    // the URL, so it's probably OK to keep using kUnreachableWebDataURL here.
     return GURL(kUnreachableWebDataURL);
   }
   if (request->IsLoadDataWithBaseURL()) {
     // loadDataWithBaseURL() navigation can set its own "base URL", which is
     // also used by the renderer as the document URL unless the navigation
-    // failed (which is already accounted for in the error page case above).
+    // failed (which is already accounted for in the error document case above).
     return request->common_params().base_url_for_data_url;
   }
   if (renderer_url_info.was_loaded_from_load_data_with_base_url &&
@@ -985,9 +941,7 @@ bool IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled() {
 
 bool IsAvoidUnnecessaryBeforeUnloadCheckPostTaskEnabled() {
   // Only one of sync or posttask should be used. If both are set, use sync.
-  return base::FeatureList::IsEnabled(
-             features::kAvoidUnnecessaryBeforeUnloadCheckPostTask) &&
-         !IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled();
+  return !IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled();
 }
 
 // Returns true if `host` has the Window Management permission granted.
@@ -2338,7 +2292,7 @@ bool RenderFrameHostImpl::IsErrorDocument() {
   // commit.
   DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kSpeculative);
   DCHECK_NE(lifecycle_state(), LifecycleStateImpl::kPendingCommit);
-  return is_error_page_;
+  return is_error_document_;
 }
 
 DocumentRef RenderFrameHostImpl::GetDocumentRef() {
@@ -3722,16 +3676,6 @@ void RenderFrameHostImpl::CreateChildFrame(
     return;
   }
 
-  // Cannot create a fenced frame in a sandbox iframe which doesn't allow
-  // features that need to be allowed in the fenced frame. This is for Shadow
-  // DOM Fenced Frame.
-  if (IsSandboxed(blink::kFencedFrameMandatoryUnsandboxedFlags) &&
-      frame_policy.is_fenced) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFH_CREATE_FENCED_FRAME_IN_SANDBOXED_FRAME);
-    return;
-  }
-
   // TODO(crbug.com/1145708). The interface exposed to tests should
   // match the mojo interface.
   OnCreateChildFrame(new_routing_id, std::move(frame_remote),
@@ -3789,7 +3733,7 @@ void RenderFrameHostImpl::DidNavigate(
     last_successful_url_ = params.url;
 
   renderer_url_info_.last_document_url = GetLastDocumentURL(
-      navigation_request, params, is_error_page_, renderer_url_info_);
+      navigation_request, params, is_error_document_, renderer_url_info_);
 
   // Set the last committed HTTP method and POST ID. Note that we're setting
   // this here instead of in DidCommitNewDocument because same-document
@@ -4300,8 +4244,7 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
   GURL validated_url(url);
   GetProcess()->FilterURL(false, &validated_url);
 
-  frame_tree_node_->navigator().DidFailLoadWithError(this, validated_url,
-                                                     error_code);
+  delegate_->DidFailLoadWithError(this, validated_url, error_code);
 }
 
 void RenderFrameHostImpl::DidFocusFrame() {
@@ -4908,18 +4851,13 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
           browser_to_renderer_ipc_time_delta);
     }
 
-    if (!base::FeatureList::IsEnabled(
-            features::kIncludeIpcOverheadInNavigationStart)) {
-      browser_to_renderer_ipc_time_delta = base::TimeDelta();
-    }
-
     base::TimeDelta on_before_unload_overhead_time =
         (before_unload_completed_time - send_before_unload_start_time_) -
         (renderer_before_unload_end_time - renderer_before_unload_start_time);
     base::UmaHistogramTimes("Navigation.OnBeforeUnloadOverheadTime",
                             on_before_unload_overhead_time);
 
-    frame_tree_node_->navigator().LogBeforeUnloadTime(
+    owner_->GetCurrentNavigator().LogBeforeUnloadTime(
         renderer_before_unload_start_time, renderer_before_unload_end_time,
         send_before_unload_start_time_, for_legacy);
   }
@@ -6138,8 +6076,11 @@ void RenderFrameHostImpl::DispatchLoad() {
     proxy->GetAssociatedRemoteFrame()->DispatchLoadEventForFrameOwner();
 }
 
-void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
-                                            bool has_user_gesture) {
+void RenderFrameHostImpl::GoToEntryAtOffset(
+    int32_t offset,
+    bool has_user_gesture,
+    absl::optional<blink::scheduler::TaskAttributionId>
+        soft_navigation_heuristic_task_id) {
   OPTIONAL_TRACE_EVENT2("content", "RenderFrameHostImpl::GoToEntryAtOffset",
                         "render_frame_host", this, "offset", offset);
 
@@ -6156,7 +6097,8 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
 
   // All frames are allowed to navigate the global history.
   if (delegate_->IsAllowedToGoToEntryAtOffset(offset)) {
-    frame_tree_->controller().GoToOffsetFromRenderer(offset, this);
+    frame_tree_->controller().GoToOffsetFromRenderer(
+        offset, this, soft_navigation_heuristic_task_id);
   }
 }
 
@@ -6800,9 +6742,7 @@ void RenderFrameHostImpl::ShowPopupMenu(
     return;
   }
 
-  if (delegate()->ShowPopupMenu(this, &popup_client, bounds, item_height,
-                                font_size, selected_item, &menu_items,
-                                right_aligned, allow_multiple_selection)) {
+  if (delegate()->ShowPopupMenu(this, bounds)) {
     return;
   }
 
@@ -7884,10 +7824,14 @@ void RenderFrameHostImpl::SubresourceResponseStarted(
   OPTIONAL_TRACE_EVENT1("content",
                         "RenderFrameHostImpl::SubresourceResponseStarted",
                         "url", final_response_url.GetURL());
-  frame_tree_->controller().ssl_manager()->DidStartResourceResponse(
-      final_response_url, cert_status);
+  bool was_processed =
+      frame_tree_->controller().ssl_manager()->DidStartResourceResponse(
+          final_response_url, cert_status);
+  UMA_HISTOGRAM_ENUMERATION("SSL.Experimental.SubresourceResponse",
+                            was_processed
+                                ? SSLSubresourceResponseType::kProcessed
+                                : SSLSubresourceResponseType::kIgnored);
 }
-
 void RenderFrameHostImpl::ResourceLoadComplete(
     blink::mojom::ResourceLoadInfoPtr resource_load_info) {
   GlobalRequestID global_request_id;
@@ -11815,7 +11759,7 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
     NavigationRequest* navigation_request) {
   // It should be kept in sync with the check in
   // NavigationRequest::DidCommitNavigation.
-  is_error_page_ = navigation_request->DidEncounterError();
+  is_error_document_ = navigation_request->DidEncounterError();
   // Overwrite reporter's reporting source with rfh's reporting source.
   std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter =
       navigation_request->coop_status().TakeCoopReporter();
@@ -12039,57 +11983,52 @@ void RenderFrameHostImpl::SendCommitNavigation(
   mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host;
   mojom::CookieManagerInfoPtr cookie_manager_info;
   mojom::StorageInfoPtr storage_info;
-  if (base::FeatureList::IsEnabled(
-          features::kNavigationThreadingOptimizations)) {
-    CreateCodeCacheHostWithIsolationKey(
-        code_cache_host.InitWithNewPipeAndPassReceiver(),
-        navigation_request->isolation_info_for_subresources()
-            .network_isolation_key());
+  CreateCodeCacheHostWithIsolationKey(
+      code_cache_host.InitWithNewPipeAndPassReceiver(),
+      navigation_request->isolation_info_for_subresources()
+          .network_isolation_key());
 
-    url::Origin origin_to_commit =
-        navigation_request->GetOriginToCommit().value();
-    // Make sure the origin of the isolation info and origin to commit match,
-    // otherwise the cookie manager will crash. Sending the cookie manager here
-    // is just an optimization, so it is fine for it to be null in the case
-    // where these don't match.
+  url::Origin origin_to_commit =
+      navigation_request->GetOriginToCommit().value();
+  // Make sure the origin of the isolation info and origin to commit match,
+  // otherwise the cookie manager will crash. Sending the cookie manager here
+  // is just an optimization, so it is fine for it to be null in the case
+  // where these don't match.
 
-    if (net::IsolationInfo::IsFrameSiteEnabled() &&
-        common_params->url.SchemeIsHTTPOrHTTPS() &&
-        !origin_to_commit.opaque() &&
-        navigation_request->isolation_info_for_subresources()
-                .frame_origin()
-                .value() == origin_to_commit) {
-      cookie_manager_info = mojom::CookieManagerInfo::New();
-      cookie_manager_info->origin = origin_to_commit;
-      BindRestrictedCookieManagerWithOrigin(
-          cookie_manager_info->cookie_manager.InitWithNewPipeAndPassReceiver(),
-          navigation_request->isolation_info_for_subresources(),
-          origin_to_commit);
+  if (net::IsolationInfo::IsFrameSiteEnabled() &&
+      common_params->url.SchemeIsHTTPOrHTTPS() && !origin_to_commit.opaque() &&
+      navigation_request->isolation_info_for_subresources()
+              .frame_origin()
+              .value() == origin_to_commit) {
+    cookie_manager_info = mojom::CookieManagerInfo::New();
+    cookie_manager_info->origin = origin_to_commit;
+    BindRestrictedCookieManagerWithOrigin(
+        cookie_manager_info->cookie_manager.InitWithNewPipeAndPassReceiver(),
+        navigation_request->isolation_info_for_subresources(),
+        origin_to_commit);
 
-      // Some tests need the StorageArea interfaces to come through DomStorage,
-      // so ignore the optimizations in those cases.
-      if (!RenderProcessHostImpl::HasDomStorageBinderForTesting()) {
-        storage_info = mojom::StorageInfo::New();
-        // Bind local storage and session storage areas.
-        auto* partition = GetStoragePartition();
-        int process_id = GetProcess()->GetID();
-        partition->OpenLocalStorageForProcess(
-            process_id, commit_params->storage_key,
-            storage_info->local_storage_area.InitWithNewPipeAndPassReceiver());
+    // Some tests need the StorageArea interfaces to come through DomStorage,
+    // so ignore the optimizations in those cases.
+    if (!RenderProcessHostImpl::HasDomStorageBinderForTesting()) {
+      storage_info = mojom::StorageInfo::New();
+      // Bind local storage and session storage areas.
+      auto* partition = GetStoragePartition();
+      int process_id = GetProcess()->GetID();
+      partition->OpenLocalStorageForProcess(
+          process_id, commit_params->storage_key,
+          storage_info->local_storage_area.InitWithNewPipeAndPassReceiver());
 
-        // Session storage must match the default namespace.
-        const std::string& namespace_id =
-            navigation_request->frame_tree_node()
-                ->frame_tree()
-                ->controller()
-                .GetSessionStorageNamespace(
-                    GetSiteInstance()->GetStoragePartitionConfig())
-                ->id();
-        partition->BindSessionStorageAreaForProcess(
-            process_id, commit_params->storage_key, namespace_id,
-            storage_info->session_storage_area
-                .InitWithNewPipeAndPassReceiver());
-      }
+      // Session storage must match the default namespace.
+      const std::string& namespace_id =
+          navigation_request->frame_tree_node()
+              ->frame_tree()
+              ->controller()
+              .GetSessionStorageNamespace(
+                  GetSiteInstance()->GetStoragePartitionConfig())
+              ->id();
+      partition->BindSessionStorageAreaForProcess(
+          process_id, commit_params->storage_key, namespace_id,
+          storage_info->session_storage_area.InitWithNewPipeAndPassReceiver());
     }
   }
 
@@ -12729,14 +12668,14 @@ RendererLoadType CalculateRendererLoadType(NavigationRequest* request,
   const bool has_valid_page_state = blink::PageState::CreateFromEncodedData(
                                         request->commit_params().page_state)
                                         .IsValid();
-  const bool is_error_page = request->DidEncounterError();
+  const bool is_error_document = request->DidEncounterError();
 
   // Predict if the renderer classified the navigation as a "back/forward"
   // navigation (WebFrameLoadType::kBackForward).
   bool will_be_classified_as_back_forward_navigation = false;
-  if (is_error_page) {
-    // For error pages, whenever the navigation has a valid PageState, it will
-    // be considered as a back/forward navigation. This includes history
+  if (is_error_document) {
+    // For error documents, whenever the navigation has a valid PageState, it
+    // will be considered as a back/forward navigation. This includes history
     // navigations and restores. See RenderFrameImpl's CommitFailedNavigation().
     will_be_classified_as_back_forward_navigation = has_valid_page_state;
   } else {
@@ -12753,8 +12692,8 @@ RendererLoadType CalculateRendererLoadType(NavigationRequest* request,
     return RendererLoadType::kBackForward;
   }
 
-  if (!is_error_page && is_reload) {
-    // For non-error pages, if the NavigationType given by the browser is
+  if (!is_error_document && is_reload) {
+    // For non-error documents, if the NavigationType given by the browser is
     // a reload, then the navigation will be classified as a reload.
     return RendererLoadType::kReload;
   }
@@ -12830,7 +12769,7 @@ GURL CalculateLoadingURL(
     NavigationRequest* request,
     const mojom::DidCommitProvisionalLoadParams& params,
     const RenderFrameHostImpl::RendererURLInfo& last_renderer_url_info,
-    bool last_document_is_error_page,
+    bool last_document_is_error_document,
     const GURL& last_committed_url) {
   if (params.url.IsAboutBlank() && params.url.ref_piece() == "blocked") {
     // Some navigations can still be blocked by the renderer during the commit,
@@ -12850,10 +12789,10 @@ GURL CalculateLoadingURL(
   }
 
   if (request->IsSameDocument() &&
-      (last_document_is_error_page ||
+      (last_document_is_error_document ||
        last_renderer_url_info.was_loaded_from_load_data_with_base_url)) {
     // Documents that have an "override" URL (loadDataWithBaseURL navigations,
-    // error pages) will continue using that URL even after same-document
+    // error documents) will continue using that URL even after same-document
     // navigations.
     return last_committed_url;
   }
@@ -12944,14 +12883,15 @@ void RenderFrameHostImpl::
   // - history_list_was_cleared
   // - origin
   // TODO(crbug.com/1131832): Verify more params.
-  // We can know if we're going to be in an error page after this navigation
+  // We can know if we're going to be in an error document after this navigation
   // if the net error code is not net::OK, or if we're doing a same-document
-  // navigation on an error page (only possible for renderer-initiated
+  // navigation on an error document (only possible for renderer-initiated
   // navigations).
-  const bool is_error_page = (request->DidEncounterError() ||
-                              (is_error_page_ && request->IsSameDocument()));
+  const bool is_error_document =
+      (request->DidEncounterError() ||
+       (is_error_document_ && request->IsSameDocument()));
 
-  const bool browser_url_is_unreachable = is_error_page;
+  const bool browser_url_is_unreachable = is_error_document;
 
   const bool is_same_document_navigation = !!same_document_params;
   const bool is_same_document_history_api_navigation =
@@ -12987,8 +12927,9 @@ void RenderFrameHostImpl::
   const bool should_replace_current_entry =
       request->common_params().should_replace_current_entry;
 
-  const GURL browser_url = CalculateLoadingURL(
-      request, params, renderer_url_info_, is_error_page_, last_committed_url_);
+  const GURL browser_url =
+      CalculateLoadingURL(request, params, renderer_url_info_,
+                          is_error_document_, last_committed_url_);
 
   const RendererLoadType renderer_load_type =
       CalculateRendererLoadType(request, should_replace_current_entry,
@@ -13143,7 +13084,8 @@ void RenderFrameHostImpl::
                         !request->frame_tree_node()->IsMainFrame());
   SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_form_submission",
                         request->IsFormSubmission());
-  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_error_page", is_error_page);
+  SCOPED_CRASH_KEY_BOOL("VerifyDidCommit", "is_error_document",
+                        is_error_document);
   SCOPED_CRASH_KEY_NUMBER("VerifyDidCommit", "net_error",
                           request->GetNetErrorCode());
 

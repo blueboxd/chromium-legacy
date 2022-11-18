@@ -67,6 +67,7 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
   void OnRemoveRecord(const std::string& callback_id, bool success);
   void OnSetRecordLabel(const std::string& callback_id, bool success);
   void OnEndCurrentAuthSession(bool success);
+  bool CheckAuthTokenValidity(const std::string& auth_token);
 
   Profile* profile_;  // unowned
 
@@ -84,10 +85,5 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
 };
 
 }  // namespace ash::settings
-
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos::settings {
-using ::ash::settings::FingerprintHandler;
-}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_ASH_FINGERPRINT_HANDLER_H_

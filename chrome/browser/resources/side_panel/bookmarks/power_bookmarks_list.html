@@ -2,6 +2,7 @@
   :host {
     --back-button-size: 14px;
     --border-color: var(--google-grey-300);
+    --empty-state-image: url(../images/bookmarks_empty.svg);
     --label-selected-color: var(--google-blue-50);
     --price-tracking-chip-background: var(--google-green-50);
     --price-tracking-discount-color: var(--google-green-800);
@@ -11,6 +12,7 @@
   @media (prefers-color-scheme: dark) {
     :host {
       --border-color: var(--google-grey-700);
+      --empty-state-image: url(../images/bookmarks_empty_dark.svg);
       --price-tracking-chip-background: var(--google-green-900);
       --price-tracking-discount-color: white;
       --price-tracking-original-color: var(--google-green-200);
@@ -18,8 +20,9 @@
   }
 
   cr-icon-button {
+    --cr-icon-button-icon-size: 16px;
     --cr-icon-button-size: 20px;
-    margin-inline-start: 0;
+    margin: 0;
   }
 
   iron-icon {
@@ -65,22 +68,53 @@
     gap: 4px;
   }
 
-  .folder-sort-row {
+  .empty {
     align-items: center;
     display: flex;
-    flex-direction: row;
-    gap: 4px;
-    margin: 14px;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 48px;
+    text-align: center;
   }
 
-  .footer {
+  .empty-body {
+    color: var(--cr-secondary-text-color);
+    font-size: 13px;
+  }
+
+  .empty-image {
+    content: var(--empty-state-image);
+    margin-bottom: 8px;
+  }
+
+  .empty-title {
+    color: var(--cr-primary-text-color);
+    font-size: 15px;
+  }
+
+  .footer-or-empty-state {
     border-top: 1px solid var(--border-color);
+  }
+
+  .footer-or-empty-state[empty] {
+    align-items: center;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
   }
 
   .footer-button {
     gap: 8px;
     margin: 8px;
     padding: 6px;
+  }
+
+  .heading-row {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin: 14px;
   }
 
   .icon-arrow-back {
@@ -91,6 +125,14 @@
     background-color: var(--cr-primary-text-color);
     height: var(--back-button-size);
     width: var(--back-button-size);
+  }
+
+  .icon-button-row {
+    align-items: center;
+    color: var(--cr-secondary-text-color);
+    display: flex;
+    font-size: var(--mwb-secondary-text-font-size);
+    gap: 8px;
   }
 
   .icon-discounted {
@@ -139,6 +181,21 @@
     color: var(--price-tracking-original-color);
     text-decoration: line-through;
   }
+
+  .sort-menu-button {
+    --hover-bg-color: var(--cr-hover-background-color);
+    --ripple-opacity: 0;
+    border: none;
+    color: var(--cr-secondary-text-color);
+    gap: 4px;
+    height: fit-content;
+    padding: 0;
+  }
+
+  .sort-menu-button:active {
+    background-color: var(--cr-active-background-color);
+    box-shadow: none;
+  }
 </style>
 
 <div class="column" id="powerBookmarksContainer">
@@ -152,21 +209,32 @@
       </button>
     </template>
   </div>
-  <div class="folder-sort-row">
+  <div class="heading-row">
     <button class="back-button" on-click="onBackClicked_"
         disabled="[[!activeFolderPath_.length]]">
       <div class="icon-arrow-back" hidden="[[!activeFolderPath_.length]]">
       </div>
-      [[getFolderSortLabel_(activeFolderPath_.*, activeSortIndex_)]]
+      [[getFolderLabel_(activeFolderPath_.*)]]
     </button>
-    <cr-icon-button iron-icon="cr:expand-more"
-        aria-label="$i18n{sortMenuA11yLabel}"
-        on-click="onShowSortMenuClicked_"></cr-icon-button>
+    <div class="icon-button-row">
+      <cr-button class="sort-menu-button" aria-label="$i18n{sortMenuA11yLabel}"
+          on-click="onShowSortMenuClicked_">
+        [[getSortLabel_(activeSortIndex_)]]
+        <iron-icon icon="bookmarks:filter-list"></iron-icon>
+      </cr-button>
+      <cr-icon-button iron-icon="bookmarks:create-new-folder"
+          aria-label="$i18n{createNewFolderA11yLabel}"
+          on-click="onAddNewFolderClicked_"></cr-icon-button>
+      <cr-icon-button class="icon-edit"
+          aria-label="$i18n{editBookmarkListA11yLabel}"
+          on-click="onBulkEditClicked_"></cr-icon-button>
+    </div>
   </div>
-  <div class="bookmarks">
+  <div class="bookmarks" hidden="[[!shownBookmarks_.length]]">
     <template is="dom-repeat" items="[[shownBookmarks_]]">
       <power-bookmark-row id="bookmark-[[item.id]]" bookmark="[[item]]"
-          description="[[getBookmarkDescription_(item, descriptions_.*)]]"
+          description=
+              "[[getBookmarkDescription_(item, descriptions_.*, compact_)]]"
           compact="[[compact_]]"
           on-row-clicked="onRowClicked_">
         <div slot="extra-content-container">
@@ -191,7 +259,12 @@
       </power-bookmark-row>
     </template>
   </div>
-  <div class="footer">
+  <div class="footer-or-empty-state" empty$="[[!shownBookmarks_.length]]">
+    <div class="empty" hidden="[[shownBookmarks_.length]]">
+      <div class="empty-image"></div>
+      <div class="empty-title">$i18n{emptyTitle}</div>
+      <div class="empty-body">$i18n{emptyBody}</div>
+    </div>
     <cr-button class="footer-button" on-click="onAddTabClicked_">
       <iron-icon icon="bookmarks:add-tab" class="label-icon"></iron-icon>
       $i18n{addCurrentTab}
@@ -208,4 +281,13 @@
       [[getSortMenuItemLabel_(item)]]
     </button>
   </template>
+  <hr>
+  <button class="dropdown-item" on-click="onVisualViewClicked_">
+    <iron-icon icon="cr:check" invisible$="[[compact_]]"></iron-icon>
+    $i18n{visualView}
+  </button>
+  <button class="dropdown-item" on-click="onCompactViewClicked_">
+    <iron-icon icon="cr:check" invisible$="[[!compact_]]"></iron-icon>
+    $i18n{compactView}
+  </button>
 </cr-action-menu>

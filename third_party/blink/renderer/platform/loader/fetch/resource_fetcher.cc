@@ -109,6 +109,9 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout = base::Seconds(30);
 // Timeout for link preloads to be used after window.onload
 static constexpr base::TimeDelta kUnusedPreloadTimeout = base::Seconds(3);
 
+static constexpr char kCrossDocumentCachedResource[] =
+    "Blink.MemoryCache.CrossDocumentCachedResource";
+
 #define RESOURCE_HISTOGRAM_PREFIX "Blink.MemoryCache.RevalidationPolicy."
 
 #define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                         \
@@ -1156,6 +1159,13 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   DCHECK(resource);
   DCHECK_EQ(resource->GetType(), resource_type);
 
+  // in_cached_resources_map is checked to detect Resources shared across
+  // Documents, in the same way as features::kScopeMemoryCachePerContext.
+  if (policy == RevalidationPolicy::kUse && !in_cached_resources_map) {
+    base::UmaHistogramEnumeration(kCrossDocumentCachedResource,
+                                  resource->GetType());
+  }
+
   if (policy != RevalidationPolicy::kUse)
     resource->VirtualTimePauser() = std::move(pauser);
 
@@ -1955,6 +1965,17 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
                                          uint32_t inflight_keepalive_bytes,
                                          bool should_report_corb_blocking) {
   DCHECK(resource);
+
+  // kRaw might not be subresource, and we do not need them.
+  if (resource->GetType() != ResourceType::kRaw) {
+    ++number_of_subresources_loaded_;
+    if (resource->GetResponse().WasFetchedViaServiceWorker()) {
+      ++number_of_subresource_loads_handled_by_service_worker_;
+    }
+  }
+  context_->UpdateSubresourceLoadMetrics(
+      number_of_subresources_loaded_,
+      number_of_subresource_loads_handled_by_service_worker_);
 
   DCHECK_LE(inflight_keepalive_bytes, inflight_keepalive_bytes_);
   inflight_keepalive_bytes_ -= inflight_keepalive_bytes;

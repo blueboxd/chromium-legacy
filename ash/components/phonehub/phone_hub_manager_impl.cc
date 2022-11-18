@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/components/phonehub/phone_hub_manager_impl.h"
+#include <memory>
 
+#include "ash/components/phonehub/app_stream_launcher_data_model.h"
+#include "ash/components/phonehub/app_stream_manager.h"
 #include "ash/components/phonehub/browser_tabs_metadata_fetcher.h"
 #include "ash/components/phonehub/browser_tabs_model_controller.h"
 #include "ash/components/phonehub/browser_tabs_model_provider.h"
@@ -52,7 +55,8 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
     std::unique_ptr<BrowserTabsModelProvider> browser_tabs_model_provider,
     std::unique_ptr<CameraRollDownloadManager> camera_roll_download_manager,
     const base::RepeatingClosure& show_multidevice_setup_dialog_callback)
-    : connection_manager_(
+    : icon_decoder_(std::make_unique<IconDecoderImpl>()),
+      connection_manager_(
           std::make_unique<secure_channel::ConnectionManagerImpl>(
               multidevice_setup_client,
               device_sync_client,
@@ -110,6 +114,8 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
           feature_status_provider_.get(),
           multidevice_setup_client,
           show_multidevice_setup_dialog_callback)),
+      app_stream_launcher_data_model_(
+          std::make_unique<AppStreamLauncherDataModel>()),
       notification_processor_(
           std::make_unique<NotificationProcessor>(notification_manager_.get())),
       recent_apps_interaction_handler_(
@@ -118,8 +124,9 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
                     pref_service,
                     multidevice_setup_client,
                     multidevice_feature_access_manager_.get(),
-                    std::make_unique<IconDecoderImpl>())
+                    icon_decoder_.get())
               : nullptr),
+      app_stream_manager_(std::make_unique<AppStreamManager>()),
       phone_status_processor_(std::make_unique<PhoneStatusProcessor>(
           do_not_disturb_controller_.get(),
           feature_status_provider_.get(),
@@ -131,7 +138,8 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
           multidevice_setup_client,
           phone_model_.get(),
           recent_apps_interaction_handler_.get(),
-          pref_service)),
+          pref_service,
+          app_stream_manager_.get())),
       tether_controller_(
           std::make_unique<TetherControllerImpl>(phone_model_.get(),
                                                  user_action_recorder_.get(),
@@ -210,6 +218,11 @@ OnboardingUiTracker* PhoneHubManagerImpl::GetOnboardingUiTracker() {
   return onboarding_ui_tracker_.get();
 }
 
+AppStreamLauncherDataModel*
+PhoneHubManagerImpl::GetAppStreamLauncherDataModel() {
+  return app_stream_launcher_data_model_.get();
+}
+
 PhoneModel* PhoneHubManagerImpl::GetPhoneModel() {
   return phone_model_.get();
 }
@@ -229,6 +242,14 @@ TetherController* PhoneHubManagerImpl::GetTetherController() {
 
 UserActionRecorder* PhoneHubManagerImpl::GetUserActionRecorder() {
   return user_action_recorder_.get();
+}
+
+IconDecoder* PhoneHubManagerImpl::GetIconDecoder() {
+  return icon_decoder_.get();
+}
+
+AppStreamManager* PhoneHubManagerImpl::GetAppStreamManager() {
+  return app_stream_manager_.get();
 }
 
 void PhoneHubManagerImpl::GetHostLastSeenTimestamp(

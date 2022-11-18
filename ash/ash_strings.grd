@@ -1532,6 +1532,9 @@ Style notes:
       <message name="IDS_ASH_PHONE_HUB_RECENT_APPS_TITLE" desc="Title of the recently used apps section (where users relaunch it directly after an app is launched from a notification) in phone hub bubble.">
         Recent apps
       </message>
+      <message name="IDS_ASH_PHONE_HUB_FULL_APPS_LIST_BUTTON_TITLE" desc="Text indicates that the button is to display full apps list.">
+        More apps
+      </message> 
       <message name="IDS_ASH_PHONE_HUB_RECENT_APPS_PLACEHOLDER" desc="The placeholder of the recently used apps section (where users relaunch it directly after an app is launched from a notification) in phone hub bubble.">
         When you stream your phone’s apps, they will appear here
       </message>
@@ -4194,6 +4197,10 @@ Connect your device to power.
 
       <message name="IDS_ASH_CALENDAR_NO_EVENTS" desc="Text that appears on the event list when there are no events.">
         Open in Google Calendar
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_UP_NEXT" desc="Header label for the Calendar Up next view.">
+        Up next
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_PROGRESS_BAR_ACCESSIBLE_NAME" desc="The accessible name for the progress bar shown in the status tray.">

@@ -359,8 +359,6 @@ namespace autotestPrivate {
     double renderQuality;
   };
 
-  callback LaunchArcAppCallback = void (boolean appLaunched);
-
   callback TakeScreenshotCallback = void (DOMString base64Png);
 
   callback GetPrimaryDisplayScaleFactorCallback = void (double scaleFactor);
@@ -617,11 +615,19 @@ namespace autotestPrivate {
     DOMString[] deskContainers;
   };
 
+  // Information about launcher's search box.
+  dictionary LauncherSearchBoxState {
+    DOMString ghostText;
+  };
+
   callback GetShelfItemsCallback = void (ShelfItem[] items);
 
   callback GetDefaultPinnedAppIdsCallback = void (DOMString[] items);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
+
+  callback GetLauncherSearchBoxStateCallback = void (
+      LauncherSearchBoxState state);
 
   callback GetShelfAlignmentCallback = void (ShelfAlignmentType alignment);
 
@@ -645,6 +651,19 @@ namespace autotestPrivate {
       ScrollableShelfInfo info);
 
   callback GetShelfUIInfoForStateCallback = void (ShelfUIInfo info);
+
+  // Frame counting record for one frame sink/compositor.
+  dictionary FrameCountingPerSinkData {
+    // Type of the frame sink. This corresponds to CompositorFrameSinkType.
+    DOMString sinkType;
+    // Whether the frame sink is the root.
+    boolean isRoot;
+
+    // Number of presented frames grouped by seconds, i.e. fps.
+    long[] presentedFrames;
+  };
+
+  callback StopFrameCountingCallback = void (FrameCountingPerSinkData[] data);
 
   // Result of calling setWindowBounds, which returns the actual bounds and
   // display the window was set to. This may be different than the requested
@@ -917,13 +936,6 @@ namespace autotestPrivate {
         DOMString appId,
         IsSystemWebAppOpenCallback callback);
 
-    // Launches ARC app with optional intent. Returns true if ARC is active,
-    // app exists and launch request is passed to Android.
-    [supportsPromises] static void launchArcApp(
-        DOMString appId,
-        DOMString intent,
-        LaunchArcAppCallback callback);
-
     // Launches an application from the launcher with the given appId.
     [supportsPromises] static void launchApp(DOMString appId,
                                              VoidCallback callback);
@@ -1148,6 +1160,10 @@ namespace autotestPrivate {
     // Get the list of all shelf items
     [supportsPromises] static void getShelfItems(
         GetShelfItemsCallback callback);
+
+    // Get the launcher search box search state.
+    [supportsPromises] static void getLauncherSearchBoxState(
+        GetLauncherSearchBoxStateCallback callback);
 
     // Get the shelf auto hide behavior.
     // |displayId|: display that contains the shelf.
@@ -1506,6 +1522,16 @@ namespace autotestPrivate {
     // Remove the specified component extension.
     [supportsPromises] static void removeComponentExtension(
         DOMString extensionId, VoidCallback callback);
+
+    // Starts frame counting in viz. `bucketSizeInSeconds` decides the bucket
+    // size of the frame count records. If it is X seconds, each record is
+    // the number of presented frames in X seconds.
+    [supportsPromises] static void startFrameCounting(long bucketSizeInSeconds,
+        VoidCallback callback);
+
+    // Ends frame counting in viz and return the collected data.
+    [supportsPromises] static void stopFrameCounting(
+        StopFrameCountingCallback  callback);
   };
 
   interface Events {

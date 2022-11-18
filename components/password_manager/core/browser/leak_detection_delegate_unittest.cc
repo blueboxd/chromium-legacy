@@ -268,10 +268,6 @@ TEST_F(LeakDetectionDelegateTest, StartCheckWithStandardProtection) {
 }
 
 TEST_F(LeakDetectionDelegateTest, StartCheckWithEnhancedProtection) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /* enabled_features */ {safe_browsing::kEnhancedProtection},
-      /* disabled_features */ {});
   SetSBState(safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION);
   SetLeakDetectionEnabled(false);
   const PasswordForm form = CreateTestForm();
@@ -581,7 +577,6 @@ class LeakDetectionDelegateWithPasswordChangeTest
   LeakDetectionDelegateWithPasswordChangeTest()
       : LeakDetectionDelegateTest(
             {password_manager::features::kPasswordChange,
-             password_manager::features::kPasswordScriptsFetching,
              password_manager::features::kPasswordDomainCapabilitiesFetching}) {
   }
 };

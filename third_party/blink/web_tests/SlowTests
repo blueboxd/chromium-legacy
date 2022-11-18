@@ -193,7 +193,6 @@ crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-vid
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-clipping.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-color-over-image.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-global-alpha.html [ Slow ]
-crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-gradient-over-color.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-gradient-over-image.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-gradient-over-pattern.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-image-over-color.html [ Slow ]
@@ -215,7 +214,6 @@ crbug.com/1205133 virtual/gpu/fast/canvas/canvas-blending-gradient-over-color.ht
 crbug.com/1243943 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-blending-gradient-over-gradient.html [ Slow ]
 crbug.com/1243943 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-transforms.html [ Slow ]
 crbug.com/1243943 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-canvas.html [ Slow ]
-crbug.com/1243943 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-fill-style.html [ Slow ]
 crbug.com/1312081 [ Mac ] virtual/gpu/fast/canvas/canvas-blend-solid.html [ Slow ]
 crbug.com/1312081 [ Linux ] virtual/gpu/fast/canvas/canvas-blend-solid.html [ Slow ]
 
@@ -755,11 +753,9 @@ crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/idb-explicit-commit.any.html 
 crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/idb-explicit-commit.any.worker.html [ Slow ]
 crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/idbindex_getAll.html [ Slow ]
 crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/idbindex_getAllKeys.html [ Slow ]
-crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/idbindex-query-exception-order.html [ Slow ]
 crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/idbtransaction_objectStoreNames.html [ Slow ]
 crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/keygenerator-explicit.html [ Slow ]
 crbug.com/1195814 [ Mac11 ] external/wpt/IndexedDB/keypath-special-identifiers.htm [ Slow ]
-crbug.com/1195814 [ Mac11 ] storage/indexeddb/key-generator.html [ Slow ]
 
 crbug.com/1263580 editing/deleting/delete-many-lines-of-text.html [ Slow ]
 

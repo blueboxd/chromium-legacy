@@ -4,14 +4,22 @@
 
 package org.chromium.chrome.browser.site_settings;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.PreferenceMatchers.withKey;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
 
@@ -31,6 +39,7 @@ import android.view.View;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -78,6 +87,7 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
+import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
 import org.chromium.components.browser_ui.settings.SettingsFeatureList;
@@ -90,6 +100,7 @@ import org.chromium.components.browser_ui.site_settings.R;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettingsConstants;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
 import org.chromium.components.browser_ui.site_settings.TriStateSiteSettingsPreference;
@@ -1111,6 +1122,39 @@ public class SiteSettingsTest {
     }
 
     /**
+     * Test that showing the Site Settings menu contains only the "Cookies" row.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testSiteSettingsMenuWithPSS4Disabled() {
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
+        SiteSettings websitePreferences = (SiteSettings) settingsActivity.getMainFragment();
+        assertNotNull(websitePreferences.findPreference("cookies"));
+        assertNull(websitePreferences.findPreference("third_party_cookies"));
+        assertNull(websitePreferences.findPreference("site_data"));
+        settingsActivity.finish();
+    }
+
+    /**
+     * Test that showing the Site Settings menu contains the "Third-party cookies" and "Site data"
+     * rows.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testSiteSettingsMenuWithPSS4Enabled() {
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
+        SiteSettings websitePreferences = (SiteSettings) settingsActivity.getMainFragment();
+        assertNull(websitePreferences.findPreference("cookies"));
+        assertNotNull(websitePreferences.findPreference("third_party_cookies"));
+        assertNotNull(websitePreferences.findPreference("site_data"));
+        settingsActivity.finish();
+    }
+
+    /**
      * Tests that only expected Preferences are shown for a category. This
      * santiy checks the number of categories only. Each category has its own
      * individual test below.
@@ -1121,7 +1165,7 @@ public class SiteSettingsTest {
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please update this total AND add a test for
         // it below, named "testOnlyExpectedPreferences<Category>".
-        Assert.assertEquals(26, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(28, SiteSettingsCategory.Type.NUM_ENTRIES);
     }
 
     @Test
@@ -1223,6 +1267,17 @@ public class SiteSettingsTest {
         setFourStateCookieToggle(CookieSettingsState.BLOCK);
         checkPreferencesForCategory(SiteSettingsCategory.Type.COOKIES, cookie);
     }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testOnlyExpectedPreferencesSiteData() {
+        testExpectedPreferences(SiteSettingsCategory.Type.SITE_DATA, BINARY_TOGGLE_WITH_EXCEPTION,
+                BINARY_TOGGLE_WITH_EXCEPTION);
+    }
+
+    // TODO(b/254415173): Add tests for third-party cookies page.
 
     @Test
     @SmallTest
@@ -1948,7 +2003,7 @@ public class SiteSettingsTest {
                     blockedGroup.getPreference(0).getSummary());
 
             // Blocked origin should has no summary.
-            Assert.assertNull(blockedGroup.getPreference(1).getSummary());
+            assertNull(blockedGroup.getPreference(1).getSummary());
         });
         settingsActivity.finish();
     }
@@ -2113,6 +2168,89 @@ public class SiteSettingsTest {
         settingsActivity.finish();
     }
 
+    /**
+     * Allows third party cookies for a website, and tests that the UI shows a managed preference
+     * in the allowed group. Checks that it shows the toast when the preference is clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesAllowedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testAllowCookiesForURL_DisableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.ALLOWED_GROUP);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesAllowedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testAllowCookiesForURL_EnableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.ALLOWED_GROUP);
+    }
+
+    /**
+     * Blocks third party cookies for a website, and tests that the UI shows a managed preference
+     * in the blocked group. Checks that it shows toast when the preference is clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesBlockedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testBlockCookiesForURL_DisableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.BLOCKED_GROUP);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesBlockedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testBlockCookiesForURL_EnableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.BLOCKED_GROUP);
+    }
+
+    public void testCookiesSettingsManagedForURL(String setting) throws Exception {
+        final SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        String managedText = InstrumentationRegistry.getTargetContext().getString(
+                R.string.managed_by_your_organization);
+
+        SingleCategorySettings websitePreferences =
+                (SingleCategorySettings) settingsActivity.getMainFragment();
+        ExpandablePreferenceGroup managedGroup =
+                (ExpandablePreferenceGroup) websitePreferences.findPreference(setting);
+        Assert.assertTrue("The blocked group should be expanded.", managedGroup.isExpanded());
+        Assert.assertEquals("The blocked expandable group should have exactly one website listed.",
+                1, managedGroup.getPreferenceCount());
+        ChromeImageViewPreference websitePreference =
+                (ChromeImageViewPreference) managedGroup.getPreference(0);
+
+        /*
+         * Swipes to the end of the screen to show the website preference for the blocked site
+         * then checks that the content description and the summary text reflect the managed state.
+         */
+        onView(ViewMatchers.isRoot()).perform(swipeUp());
+        onData(withKey(setting))
+                .inAdapterView(allOf(withContentDescription(R.string.managed_by_your_organization),
+                        withText(R.string.managed_by_your_organization), isDisplayed()));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { websitePreference.performClick(); });
+        onView(withText(R.string.managed_by_your_organization))
+                .inRoot(withDecorView(allOf(withId(R.id.toast_text))))
+                .check(matches(isDisplayed()));
+    }
+
     static class PermissionTestCase {
         protected final String mTestName;
         protected final @SiteSettingsCategory.Type int mSiteSettingsType;
@@ -2200,7 +2338,7 @@ public class SiteSettingsTest {
 
             ChromeSwitchPreference toggle =
                     singleCategorySettings.findPreference(SingleCategorySettings.BINARY_TOGGLE_KEY);
-            Assert.assertNotNull("Toggle should not be null.", toggle);
+            assertNotNull("Toggle should not be null.", toggle);
 
             singleCategorySettings.onPreferenceChange(toggle, mIsCategoryEnabled);
             Assert.assertEquals(exceptionString, mIsCategoryEnabled,
@@ -2212,20 +2350,25 @@ public class SiteSettingsTest {
         private void assertToggleTitleAndSummary(SingleCategorySettings singleCategorySettings) {
             ChromeSwitchPreference toggle =
                     singleCategorySettings.findPreference(SingleCategorySettings.BINARY_TOGGLE_KEY);
+            assert toggle != null;
+
+            var delegate = new ChromeSiteSettingsDelegate(
+                    toggle.getContext(), Profile.getLastUsedRegularProfile());
 
             Assert.assertEquals("Preference title is not set correctly.",
                     singleCategorySettings.getResources().getString(
-                            ContentSettingsResources.getTitle(mContentSettingsType)),
+                            ContentSettingsResources.getTitle(mContentSettingsType, delegate)),
                     toggle.getTitle());
-            Assert.assertNotNull("Enabled summary text should not be null.", toggle.getSummaryOn());
-            Assert.assertNotNull(
-                    "Disabled summary text should not be null.", toggle.getSummaryOff());
+            assertNotNull("Enabled summary text should not be null.", toggle.getSummaryOn());
+            assertNotNull("Disabled summary text should not be null.", toggle.getSummaryOff());
 
             String summary = mIsCategoryEnabled ? toggle.getSummaryOn().toString()
                                                 : toggle.getSummaryOff().toString();
             String expected = singleCategorySettings.getResources().getString(mIsCategoryEnabled
-                            ? ContentSettingsResources.getEnabledSummary(mContentSettingsType)
-                            : ContentSettingsResources.getDisabledSummary(mContentSettingsType));
+                            ? ContentSettingsResources.getEnabledSummary(
+                                    mContentSettingsType, delegate)
+                            : ContentSettingsResources.getDisabledSummary(
+                                    mContentSettingsType, delegate));
             Assert.assertEquals(
                     "Summary text in state <" + mIsCategoryEnabled + "> does not match.", expected,
                     summary);

@@ -565,7 +565,8 @@
       "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB",  // http://crbug.com/891460
       "81986D4F846CEDDDB962643FA501D1780DD441BB",  // http://crbug.com/891460
       "A9A9FC0228ADF541F0334F22BEFB8F9C245B21D7"   // http://crbug.com/891460
-    ]
+    ],
+    "platforms": ["chromeos", "lacros"]
   },
   "management": [
     {
@@ -631,7 +632,8 @@
     "allowlist": [
       "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Media Router Dev
       "226CF815E39A363090A1E547D53063472B8279FA",  // Media Router Stable
-      "1BFB3A47AA4A1E1C4714D919217602685CDD0FA7"   // http://crbug.com/574600
+      "1BFB3A47AA4A1E1C4714D919217602685CDD0FA7",  // http://crbug.com/574600
+      "DD87C93131FF8D3DE4E483DC1EB298D73C7223A6"   // http://crbug.com/1328114
     ]
   },
   {

@@ -5,6 +5,7 @@
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 
@@ -12,6 +13,29 @@ namespace content {
 
 std::string KAnonKeyFor(const url::Origin& owner, const std::string& name) {
   return owner.GetURL().spec() + '\n' + name;
+}
+
+std::string KAnonKeyForAdBid(const blink::InterestGroup& group,
+                             const blink::InterestGroup::Ad& ad) {
+  DCHECK(group.ads);
+  DCHECK(base::Contains(*group.ads, ad) ||
+         (group.ad_components && base::Contains(*group.ad_components, ad)));
+  DCHECK(group.bidding_url);
+  return group.owner.GetURL().spec() + '\n' +
+         group.bidding_url.value_or(GURL()).spec() + '\n' +
+         group.bidding_wasm_helper_url.value_or(GURL()).spec() + '\n' +
+         ad.render_url.spec();
+}
+
+std::string KAnonKeyForAdNameReporting(const blink::InterestGroup& group,
+                                       const blink::InterestGroup::Ad& ad) {
+  DCHECK(group.ads);
+  DCHECK(base::Contains(*group.ads, ad));
+  DCHECK(group.bidding_url);
+  return group.owner.GetURL().spec() + '\n' + group.name + '\n' +
+         group.bidding_url.value_or(GURL()).spec() + '\n' +
+         group.bidding_wasm_helper_url.value_or(GURL()).spec() + '\n' +
+         ad.render_url.spec();
 }
 
 InterestGroupKAnonymityManager::InterestGroupKAnonymityManager(
@@ -47,7 +71,12 @@ void InterestGroupKAnonymityManager::QueryKAnonymityForInterestGroup(
     }
   }
 
-  for (const auto& ad : storage_group.ads_kanon) {
+  for (const auto& ad : storage_group.bidding_ads_kanon) {
+    if (ad.last_updated < check_time - min_wait) {
+      ids_to_query.push_back(ad.key);
+    }
+  }
+  for (const auto& ad : storage_group.reporting_ads_kanon) {
     if (ad.last_updated < check_time - min_wait) {
       ids_to_query.push_back(ad.key);
     }
@@ -90,8 +119,11 @@ void InterestGroupKAnonymityManager::RegisterInterestGroupAsJoined(
     RegisterIDAsJoined(group.daily_update_url->spec());
 }
 
-void InterestGroupKAnonymityManager::RegisterAdAsWon(const GURL& render_url) {
-  RegisterIDAsJoined(render_url.spec());
+void InterestGroupKAnonymityManager::RegisterAdAsWon(
+    const blink::InterestGroup& group,
+    const blink::InterestGroup::Ad& ad) {
+  RegisterIDAsJoined(KAnonKeyForAdBid(group, ad));
+  RegisterIDAsJoined(KAnonKeyForAdNameReporting(group, ad));
   // TODO(behamilton): Consider proactively starting a query here to improve the
   // speed that browsers see new ads. We will likely want to rate limit this
   // somehow though.
@@ -101,6 +133,9 @@ void InterestGroupKAnonymityManager::RegisterIDAsJoined(
     const std::string& key) {
   if (!k_anonymity_service_)
     return;
+  if (joins_in_progress.contains(key))
+    return;
+  joins_in_progress.insert(key);
   interest_group_manager_->GetLastKAnonymityReported(
       key,
       base::BindOnce(&InterestGroupKAnonymityManager::OnGotLastReportedTime,
@@ -110,14 +145,17 @@ void InterestGroupKAnonymityManager::RegisterIDAsJoined(
 void InterestGroupKAnonymityManager::OnGotLastReportedTime(
     std::string key,
     absl::optional<base::Time> last_update_time) {
-  DCHECK(last_update_time);
-  if (!last_update_time)
+  if (!last_update_time) {
+    joins_in_progress.erase(key);
     return;
+  }
 
   // If it has been long enough since we last joined
   if (base::Time::Now() < last_update_time.value_or(base::Time()) +
-                              k_anonymity_service_->GetJoinInterval())
+                              k_anonymity_service_->GetJoinInterval()) {
+    joins_in_progress.erase(key);
     return;
+  }
 
   k_anonymity_service_->JoinSet(
       key, base::BindOnce(&InterestGroupKAnonymityManager::JoinSetCallback,
@@ -128,6 +166,7 @@ void InterestGroupKAnonymityManager::JoinSetCallback(std::string key,
                                                      bool status) {
   // Update the time regardless of status until we verify the server is stable.
   interest_group_manager_->UpdateLastKAnonymityReported(key);
+  joins_in_progress.erase(key);
 }
 
 }  // namespace content

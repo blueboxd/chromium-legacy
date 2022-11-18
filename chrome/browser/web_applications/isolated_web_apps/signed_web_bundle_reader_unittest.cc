@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/web_applications/test/signed_web_bundle_utils.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
@@ -126,8 +127,12 @@ class SignedWebBundleReaderTest : public testing::Test {
             &web_package::MockWebBundleParserFactory::AddReceiver,
             base::Unretained(parser_factory_.get())));
 
-    return SignedWebBundleReader::CreateAndStartReading(
-        temp_file_path,
+    std::unique_ptr<SignedWebBundleReader> reader =
+        SignedWebBundleReader::Create(
+            temp_file_path,
+            std::make_unique<FakeSignatureVerifier>(signature_verifier_error));
+
+    reader->StartReading(
         base::BindLambdaForTesting(
             [verification_action](
                 const std::vector<web_package::Ed25519PublicKey>&
@@ -139,8 +144,9 @@ class SignedWebBundleReaderTest : public testing::Test {
 
               std::move(callback).Run(verification_action);
             }),
-        std::move(callback),
-        std::make_unique<FakeSignatureVerifier>(signature_verifier_error));
+        std::move(callback));
+
+    return reader;
   }
 
   base::expected<web_package::mojom::BundleResponsePtr,
@@ -186,6 +192,7 @@ TEST_F(SignedWebBundleReaderTest, ReadValidIntegrityBlockAndMetadata) {
   base::test::TestFuture<
       absl::optional<SignedWebBundleReader::ReadIntegrityBlockAndMetadataError>>
       parse_error_future;
+  base::HistogramTester histogram_tester;
   auto reader = CreateReaderAndInitialize(parse_error_future.GetCallback());
 
   parser_factory_->RunIntegrityBlockCallback(integrity_block_->Clone());
@@ -199,6 +206,9 @@ TEST_F(SignedWebBundleReaderTest, ReadValidIntegrityBlockAndMetadata) {
   EXPECT_EQ(reader->GetPrimaryURL(), metadata_->primary_url);
   EXPECT_EQ(reader->GetEntries().size(), 1ul);
   EXPECT_EQ(reader->GetEntries()[0], metadata_->primary_url);
+
+  histogram_tester.ExpectTotalCount(
+      "WebApp.Isolated.SignatureVerificationDuration", 1);
 }
 
 TEST_F(SignedWebBundleReaderTest, ReadIntegrityBlockError) {

@@ -18,7 +18,7 @@ import {LogType} from '../../common/log_types.js';
 import {Msgs} from '../../common/msgs.js';
 import {CustomRole} from '../../common/role_type.js';
 import {Spannable} from '../../common/spannable.js';
-import {QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_interface.js';
+import {QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_types.js';
 import {ValueSelectionSpan, ValueSpan} from '../braille/spans.js';
 import {ChromeVox} from '../chromevox.js';
 import {EventSourceState} from '../event_source.js';
@@ -677,70 +677,6 @@ export class Output {
   format_(params) {
     const formatter = new OutputFormatter(this, params);
     new OutputFormatParser(formatter).parse(params.outputFormat);
-  }
-
-  /** @override */
-  formatPressed_(data, token) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    const msg = outputTypes.OutputPropertyMap.PRESSED[node.checked];
-    if (msg) {
-      formatLog.writeToken(token);
-      this.format_({
-        node,
-        outputFormat: '@' + msg,
-        outputBuffer: buff,
-        outputFormatLogger: formatLog,
-      });
-    }
-  }
-
-  /** @override */
-  formatState_(data, token) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    if (node.state) {
-      Object.getOwnPropertyNames(node.state).forEach(state => {
-        const stateInfo = outputTypes.OUTPUT_STATE_INFO[state];
-        if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on) {
-          formatLog.writeToken(token);
-          this.format_({
-            node,
-            outputFormat: '$' + state,
-            outputBuffer: buff,
-            outputFormatLogger: formatLog,
-          });
-        }
-      });
-    }
-  }
-
-  /** @override */
-  formatFind_(data, token, tree) {
-    const buff = data.outputBuffer;
-    const formatLog = data.outputFormatLogger;
-    let node = data.node;
-
-    // Find takes two arguments: JSON query string and format string.
-    if (tree.firstChild) {
-      const jsonQuery = tree.firstChild.value;
-      node = node.find(
-          /** @type {chrome.automation.FindParams}*/ (JSON.parse(jsonQuery)));
-      const formatString = tree.firstChild.nextSibling || '';
-      if (node) {
-        formatLog.writeToken(token);
-        this.format_({
-          node,
-          outputFormat: formatString,
-          outputBuffer: buff,
-          outputFormatLogger: formatLog,
-        });
-      }
-    }
   }
 
   /** @override */

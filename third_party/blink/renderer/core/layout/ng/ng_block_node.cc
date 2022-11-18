@@ -483,7 +483,7 @@ const NGLayoutResult* NGBlockNode::Layout(
         CalculateInitialFragmentGeometry(constraint_space, *this, break_token);
   }
 
-  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
+  if (
       // Only consider the size of the first container fragment.
       !IsBreakInside(break_token) && CanMatchSizeContainerQueries()) {
     if (auto* element = DynamicTo<Element>(GetDOMNode())) {
@@ -1393,7 +1393,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   // Replaced elements already have |LayoutBox::UpdateAfterLayout| called when
   // we force a layout for them inside |NGBlockNode::FinishLayout|.
-  if (!box_->IsLayoutReplaced())
+  if (RuntimeEnabledFeatures::LayoutNGUnifyUpdateAfterLayoutEnabled() ||
+      !box_->IsLayoutReplaced())
     box_->UpdateAfterLayout();
 
   if (needs_full_invalidation)

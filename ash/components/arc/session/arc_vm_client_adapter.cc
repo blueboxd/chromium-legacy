@@ -86,14 +86,6 @@ constexpr char kArcVmPostVmStartServicesJobName[] =
 constexpr const char kArcVmBootNotificationServerSocketPath[] =
     "/run/arcvm_boot_notification_server/host.socket";
 
-constexpr base::TimeDelta kArcBugReportBackupTimeMetricMinTime =
-    base::Milliseconds(1);
-constexpr base::TimeDelta kArcBugReportBackupTimeMetricMaxTime =
-    base::Seconds(60);
-constexpr int kArcBugReportBackupTimeMetricBuckets = 50;
-constexpr const char kArcBugReportBackupTimeMetric[] =
-    "Login.ArcBugReportBackupTime";
-
 constexpr int kLogdConfigSizeSmall = 256;   // kBytes
 constexpr int kLogdConfigSizeMed = 512;     // kBytes
 constexpr int kLogdConfigSizeLarge = 1024;  // kBytes
@@ -234,7 +226,7 @@ std::vector<std::string> GenerateKernelCmdline(const StartParams& start_params,
   if (start_params.arc_generate_play_auto_install)
     result.push_back("androidboot.arc_generate_pai=1");
 
-  if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
+  if (start_params.use_virtio_blk_data)
     result.push_back("androidboot.arcvm_virtio_blk_data=1");
   else
     result.push_back("androidboot.arcvm_virtio_blk_data=0");
@@ -574,8 +566,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       base::FeatureList::IsEnabled(arc::kVmGmsCoreLowMemoryKillerProtection));
   request.set_enable_broadcast_anr_prenotify(
       base::FeatureList::IsEnabled(arc::kVmBroadcastPreNotifyANR));
-  request.set_enable_virtio_blk_data(
-      base::FeatureList::IsEnabled(kEnableVirtioBlkForData));
+  request.set_enable_virtio_blk_data(start_params.use_virtio_blk_data);
 
   if (base::FeatureList::IsEnabled(kGuestZram)) {
     request.set_guest_swappiness(kGuestZramSwappiness.Get());
@@ -866,7 +857,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       GetDebugDaemonClient()->BackupArcBugReport(
           cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_),
           base::BindOnce(&ArcVmClientAdapter::OnArcBugReportBackedUp,
-                         weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+                         weak_factory_.GetWeakPtr()));
     } else {
       StopArcInstanceInternal();
     }
@@ -947,16 +938,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   }
 
  private:
-  void OnArcBugReportBackedUp(base::TimeTicks arc_bug_report_backup_time,
-                              bool result) {
-    if (result) {
-      base::TimeDelta elapsed_time =
-          base::TimeTicks::Now() - arc_bug_report_backup_time;
-      base::UmaHistogramCustomTimes(kArcBugReportBackupTimeMetric, elapsed_time,
-                                    kArcBugReportBackupTimeMetricMinTime,
-                                    kArcBugReportBackupTimeMetricMaxTime,
-                                    kArcBugReportBackupTimeMetricBuckets);
-    } else {
+  void OnArcBugReportBackedUp(bool result) {
+    if (!result) {
       LOG(ERROR) << "Error contacting debugd to back up ARC bug report.";
     }
 
@@ -1077,7 +1060,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void OnDemoResourcesLoaded(chromeos::VoidDBusMethodCallback callback,
                              FileSystemStatus file_system_status) {
-    if (!base::FeatureList::IsEnabled(kEnableVirtioBlkForData)) {
+    if (!start_params_.use_virtio_blk_data) {
       VLOG(1) << "Using virtio-fs for /data";
       StartArcVm(std::move(callback), std::move(file_system_status),
                  /*data_disk_path=*/absl::nullopt);

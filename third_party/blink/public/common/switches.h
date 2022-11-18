@@ -38,6 +38,17 @@ BLINK_COMMON_EXPORT extern const char kEnableZeroCopy[];
 BLINK_COMMON_EXPORT extern const char kEventPathPolicy[];
 BLINK_COMMON_EXPORT extern const char kEventPathPolicy_ForceDisable[];
 BLINK_COMMON_EXPORT extern const char kEventPathPolicy_ForceEnable[];
+BLINK_COMMON_EXPORT extern const char kOffsetParentNewSpecBehaviorPolicy[];
+BLINK_COMMON_EXPORT extern const char
+    kOffsetParentNewSpecBehaviorPolicy_ForceDisable[];
+BLINK_COMMON_EXPORT extern const char
+    kOffsetParentNewSpecBehaviorPolicy_ForceEnable[];
+BLINK_COMMON_EXPORT extern const char
+    kSendMouseEventsDisabledFormControlsPolicy[];
+BLINK_COMMON_EXPORT extern const char
+    kSendMouseEventsDisabledFormControlsPolicy_ForceDisable[];
+BLINK_COMMON_EXPORT extern const char
+    kSendMouseEventsDisabledFormControlsPolicy_ForceEnable[];
 BLINK_COMMON_EXPORT extern const char kGpuRasterizationMSAASampleCount[];
 BLINK_COMMON_EXPORT extern const char
     kIntensiveWakeUpThrottlingPolicy_ForceDisable[];
@@ -51,11 +62,6 @@ BLINK_COMMON_EXPORT extern const char kMinHeightForGpuRasterTile[];
 BLINK_COMMON_EXPORT extern const char kNetworkQuietTimeout[];
 BLINK_COMMON_EXPORT extern const char kNumRasterThreads[];
 BLINK_COMMON_EXPORT extern const char kPrefixedStorageInfoEnabled[];
-BLINK_COMMON_EXPORT extern const char kSetTimeoutWithout1MsClampPolicy[];
-BLINK_COMMON_EXPORT extern const char
-    kSetTimeoutWithout1MsClampPolicy_ForceDisable[];
-BLINK_COMMON_EXPORT extern const char
-    kSetTimeoutWithout1MsClampPolicy_ForceEnable[];
 BLINK_COMMON_EXPORT extern const char kUnthrottledNestedTimeoutPolicy[];
 BLINK_COMMON_EXPORT extern const char
     kUnthrottledNestedTimeoutPolicy_ForceDisable[];

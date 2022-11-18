@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.ANIMATION_LISTENER;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.HAS_SUGGESTIONS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.OBFUSCATED_CHILD_AT_CALLBACK;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_OPENER_ITEM;
@@ -72,6 +74,7 @@ class KeyboardAccessoryMediator
         mModel.set(OBFUSCATED_CHILD_AT_CALLBACK, this::onSuggestionObfuscatedAt);
         mModel.set(SHOW_KEYBOARD_CALLBACK, this::closeSheet);
         mModel.set(SHEET_OPENER_ITEM, new SheetOpenerBarItem(sheetOpenerCallbacks));
+        mModel.set(ANIMATION_LISTENER, mVisibilityDelegate::onBarFadeInAnimationEnd);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             mModel.get(BAR_ITEMS).add(mModel.get(SHEET_OPENER_ITEM));
         }
@@ -98,7 +101,17 @@ class KeyboardAccessoryMediator
                 retainedItems.add(retainedItems.size(), mModel.get(SHEET_OPENER_ITEM));
             }
             mModel.get(BAR_ITEMS).set(retainedItems);
+            mModel.set(HAS_SUGGESTIONS, barHasSuggestions());
         };
+    }
+
+    private boolean barHasSuggestions() {
+        for (BarItem barItem : mModel.get(BAR_ITEMS)) {
+            if (barItem.getViewType() == BarItem.Type.SUGGESTION) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -112,6 +125,7 @@ class KeyboardAccessoryMediator
             retainedItems.add(retainedItems.size(), mModel.get(SHEET_OPENER_ITEM));
         }
         mModel.get(BAR_ITEMS).set(retainedItems);
+        mModel.set(HAS_SUGGESTIONS, barHasSuggestions());
         TraceEvent.end("KeyboardAccessoryMediator#onItemAvailable");
     }
 
@@ -262,7 +276,8 @@ class KeyboardAccessoryMediator
                 || propertyKey == SHEET_OPENER_ITEM || propertyKey == SHEET_TITLE
                 || propertyKey == SKIP_CLOSING_ANIMATION
                 || propertyKey == DISABLE_ANIMATIONS_FOR_TESTING
-                || propertyKey == OBFUSCATED_CHILD_AT_CALLBACK || propertyKey == SHOW_SWIPING_IPH) {
+                || propertyKey == OBFUSCATED_CHILD_AT_CALLBACK || propertyKey == SHOW_SWIPING_IPH
+                || propertyKey == HAS_SUGGESTIONS || propertyKey == ANIMATION_LISTENER) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";

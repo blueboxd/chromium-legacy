@@ -296,7 +296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnIncognitoReauth"
-    units="ms" expires_after="2023-04-09">
+    units="ms" expires_after="M115">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -822,6 +822,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records that the back press causes the app to be minimized or the current
     tab to be closed.
+  </summary>
+</histogram>
+
+<histogram name="Android.BindingManger.ConnectionsDroppedDueToMaxSize"
+    units="connections" expires_after="2023-04-16">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the total number of BindingManager bindings to
+    ChildProcessConnections that were dropped due to the BindingManager reaching
+    the connection limit. This value accumulates while the app is running and is
+    emitted upong the app being backgrounded at which time the counter is reset.
   </summary>
 </histogram>
 
@@ -1799,7 +1811,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.Fonts.TimeDownloadableFontsRetrievedAfterPostInflationStartup{ActivityType}"
-    units="ms" expires_after="2021-12-15">
+    units="ms" expires_after="2023-06-15">
   <owner>sinansahin@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1807,14 +1819,12 @@ chromium-metrics-reviews@google.com.
     startup. Mutually exclusive with *BeforePostInflationStartup. Recorded when
     all downloadable fonts are retrieved. {ActivityType}
   </summary>
-  <token key="ActivityType" variants="ActivityType">
-    <variant name=""/>
-  </token>
+  <token key="ActivityType" variants="ActivityType"/>
 </histogram>
 
 <histogram
     name="Android.Fonts.TimeDownloadableFontsRetrievedBeforePostInflationStartup{ActivityType}"
-    units="ms" expires_after="2021-12-15">
+    units="ms" expires_after="2023-06-15">
   <owner>sinansahin@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1822,23 +1832,19 @@ chromium-metrics-reviews@google.com.
     startup. Mutually exclusive with *AfterPostInflationStartup. Recorded after
     AsyncInitializationActivity#performPostInflationStartup. {ActivityType}
   </summary>
-  <token key="ActivityType" variants="ActivityType">
-    <variant name=""/>
-  </token>
+  <token key="ActivityType" variants="ActivityType"/>
 </histogram>
 
 <histogram
     name="Android.Fonts.TimeToRetrieveDownloadableFontsAfterOnCreate{ActivityType}"
-    units="ms" expires_after="2021-12-15">
+    units="ms" expires_after="2023-06-15">
   <owner>sinansahin@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
     Time it took to retrieve the downloadable fonts after Application#OnCreate.
     Recorded when all downloadable fonts are retrieved. {ActivityType}
   </summary>
-  <token key="ActivityType" variants="ActivityType">
-    <variant name=""/>
-  </token>
+  <token key="ActivityType" variants="ActivityType"/>
 </histogram>
 
 <histogram name="Android.HistoryPage.ClearBrowsingData.PerProfileType"
@@ -1873,7 +1879,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.IncognitoReauth.PrefToggledFromSettingPage"
-    enum="IncognitoReauthToggleValueType" expires_after="2023-03-26">
+    enum="IncognitoReauthToggleValueType" expires_after="M115">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1891,7 +1897,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.IncognitoReauth.PromoActionType"
-    enum="IncognitoReauthPromoActionType" expires_after="M110">
+    enum="IncognitoReauthPromoActionType" expires_after="M115">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1935,16 +1941,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     When a site attempts to navigate an intent: or android-app: URI, records
     whether or not the URI contained an intent selector.
-  </summary>
-</histogram>
-
-<histogram name="Android.Intent.LaunchExternalAppFormSubmitHasUserGesture"
-    enum="Boolean" expires_after="M74">
-  <owner>tedchoc@chromium.org</owner>
-  <owner>thildebr@chromium.org</owner>
-  <summary>
-    When an external application was launched as a result of a form submit, this
-    tracks whether there was a user gesture associated with the submit.
   </summary>
 </histogram>
 
@@ -3647,13 +3643,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Android.TabPersistentStore.MetadataFileSize" units="units"
-    expires_after="M85">
-  <owner>wnwen@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>The number of bytes written for the tab metadata file.</summary>
-</histogram>
-
 <histogram name="Android.TabStrip.TimeToSwitchTab" units="ms"
     expires_after="2023-04-16">
   <owner>gauravjj@google.com</owner>
@@ -3691,24 +3680,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.SetupRecyclerView.Time" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>skavuluru@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
     Records the time taken to create TabListCoordinator, which inflates the
     RecyclerView for the grid tab switcher, and bind views.
-  </summary>
-</histogram>
-
-<histogram name="Android.ThemeColor" enum="Android.ThemeColor"
-    expires_after="2022-06-19">
-  <owner>sinansahin@google.com</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Records whether a page defined theme color is available and applied to top
-    UI. Recorded in didFirstVisuallyNonEmptyPaint while a web page is being
-    loaded.
   </summary>
 </histogram>
 

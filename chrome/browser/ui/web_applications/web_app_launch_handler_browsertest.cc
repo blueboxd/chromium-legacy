@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/embedder_support/switches.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
@@ -28,6 +29,13 @@
 #include "ui/base/page_transition_types.h"
 
 namespace web_app {
+
+namespace {
+
+constexpr char kLaunchHandlerHistogram[] =
+    "Launch.WebAppLaunchHandlerClientMode";
+
+}  // namespace
 
 using ClientMode = LaunchHandler::ClientMode;
 
@@ -111,6 +119,7 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
 
   void ExpectNavigateExistingBehaviour(const AppId& app_id,
                                        const GURL& start_url) {
+    base::HistogramTester histogram_tester;
     EXPECT_EQ(GetLaunchHandler(app_id),
               (LaunchHandler{ClientMode::kNavigateExisting}));
 
@@ -130,10 +139,14 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(browser_1, browser_2);
     EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
     EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
+
+    histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                        ClientMode::kNavigateExisting, 2);
   }
 
   void ExpectFocusExistingBehaviour(const AppId& app_id,
                                     const GURL& start_url) {
+    base::HistogramTester histogram_tester;
     EXPECT_EQ(GetLaunchHandler(app_id),
               (LaunchHandler{ClientMode::kFocusExisting}));
 
@@ -196,6 +209,9 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
       EXPECT_TRUE(
           EvalJs(web_contents, "window.thisIsTheSamePage").ExtractBool());
     }
+
+    histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                        ClientMode::kFocusExisting, 4);
   }
 
  private:
@@ -205,6 +221,7 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeEmpty) {
+  base::HistogramTester histogram_tester;
   AppId app_id =
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
   EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
@@ -212,9 +229,13 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeEmpty) {
   Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
   Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
   EXPECT_NE(browser_1, browser_2);
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kAuto, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeAuto) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?launch_handler_client_mode_auto.json");
   EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{ClientMode::kAuto}));
@@ -228,9 +249,13 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeAuto) {
   EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
 
   EXPECT_NE(browser_1, browser_2);
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kAuto, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeNavigateNew) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_navigate_new.json");
@@ -246,6 +271,9 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeNavigateNew) {
   EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
 
   EXPECT_NE(browser_1, browser_2);
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kNavigateNew, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
@@ -271,6 +299,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        ClientModeFocusExistingMultipleLaunches) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_focus_existing.json");
@@ -304,10 +333,14 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
   EXPECT_EQ(EvalJs(web_contents, script).ExtractString(),
             base::StrCat({start_url.spec(), "|", start_url.spec(), "|",
                           start_url.spec()}));
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kFocusExisting, 3);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        ClientModeNavigateExistingMultipleLaunches) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_navigate_existing.json");
@@ -339,10 +372,14 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
       });
     )";
   EXPECT_EQ(EvalJs(web_contents, script).ExtractString(), start_url.spec());
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kNavigateExisting, 3);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        LaunchNavigationInterruptedByOutOfScopeNavigation) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_navigate_new.json");
@@ -372,9 +409,13 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
       });
     )";
   EXPECT_EQ(EvalJs(web_contents, script).ExtractString(), "");
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kNavigateNew, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, GlobalLaunchQueue) {
+  base::HistogramTester histogram_tester;
   AppId app_id =
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
 
@@ -385,6 +426,30 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, GlobalLaunchQueue) {
   EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
   EXPECT_TRUE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
   EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kAuto, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, SelectActiveBrowser) {
+  AppId app_id =
+      InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
+  EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
+
+  Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
+  Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+  EXPECT_NE(browser_1, browser_2);
+
+  {
+    ScopedRegistryUpdate update(
+        &WebAppProvider::GetForTest(profile())->sync_bridge());
+    WebApp* web_app = update->UpdateApp(app_id);
+    web_app->SetLaunchHandler(LaunchHandler{ClientMode::kFocusExisting});
+  }
+
+  Browser* browser_3 = LaunchWebAppBrowser(profile(), app_id);
+  // Select the most recently opened app window.
+  EXPECT_EQ(browser_3, browser_2);
 }
 
 class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
@@ -412,6 +477,7 @@ class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallWebAppFromPage(
       browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
 
@@ -422,6 +488,8 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
   EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
   EXPECT_FALSE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
   EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
+
+  histogram_tester.ExpectTotalCount(kLaunchHandlerHistogram, 0);
 }
 
 class WebAppLaunchHandlerOriginTrialBrowserTest : public InProcessBrowserTest {

@@ -25,17 +25,20 @@
 #if defined(WAYLAND_GBM)
 #include "ui/gfx/linux/gbm_wrapper.h"  // nogncheck
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
-#include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
 #endif
 
 namespace ui {
 
-WaylandBufferManagerGpu::WaylandBufferManagerGpu() {
+WaylandBufferManagerGpu::WaylandBufferManagerGpu()
+    : WaylandBufferManagerGpu(base::FilePath()) {}
+
+WaylandBufferManagerGpu::WaylandBufferManagerGpu(
+    const base::FilePath& drm_node_path) {
 #if defined(WAYLAND_GBM)
   // The path_finder and the handle do syscalls, which are permitted before
   // the sandbox entry. After the gpu enters the sandbox, they fail. Thus,
-  // open the handle early and store it.
-  OpenAndStoreDrmRenderNodeFd();
+  // we get node path from the platform instance and get a handle for that here.
+  OpenAndStoreDrmRenderNodeFd(drm_node_path);
 #endif
 
   // The WaylandBufferManagerGpu takes the task runner where it was created.
@@ -345,6 +348,11 @@ uint32_t WaylandBufferManagerGpu::AllocateBufferID() {
   return ++next_buffer_id_ ? next_buffer_id_ : ++next_buffer_id_;
 }
 
+bool WaylandBufferManagerGpu::SupportsFormat(
+    gfx::BufferFormat buffer_format) const {
+  return supported_buffer_formats_with_modifiers_.contains(buffer_format);
+}
+
 void WaylandBufferManagerGpu::BindHostInterface(
     mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
@@ -406,16 +414,10 @@ void WaylandBufferManagerGpu::SubmitPresentationOnOriginThread(
 }
 
 #if defined(WAYLAND_GBM)
-void WaylandBufferManagerGpu::OpenAndStoreDrmRenderNodeFd() {
-  DrmRenderNodePathFinder path_finder;
-  const base::FilePath drm_node_path = path_finder.GetDrmRenderNodePath();
-  if (drm_node_path.empty()) {
-    LOG(WARNING) << "Failed to find drm render node path.";
-    return;
-  }
-
+void WaylandBufferManagerGpu::OpenAndStoreDrmRenderNodeFd(
+    const base::FilePath& drm_node_path) {
   DrmRenderNodeHandle handle;
-  if (!handle.Initialize(drm_node_path)) {
+  if (drm_node_path.empty() || !handle.Initialize(drm_node_path)) {
     LOG(WARNING) << "Failed to initialize drm render node handle.";
     return;
   }

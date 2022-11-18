@@ -25,6 +25,7 @@
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/metrics/cellular_network_metrics_logger.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_device_handler.h"
 #include "chromeos/ash/components/network/network_event_log.h"
@@ -3604,6 +3605,8 @@ void CrosNetworkConfig::CreateCustomApn(const std::string& network_guid,
   if (!network || network->profile_path().empty()) {
     NET_LOG(ERROR) << "CreateCustomApn: Called with unconfigured network: "
                    << network_guid << ".";
+    ash::CellularNetworkMetricsLogger::LogCreateCustomApnResult(
+        /*success=*/false, std::move(apn));
     return;
   }
 
@@ -3612,9 +3615,17 @@ void CrosNetworkConfig::CreateCustomApn(const std::string& network_guid,
   DCHECK(network_metadata_store);
 
   base::Value::List new_apns;
-  if (const base::Value::List* old_apns =
+  if (const base::Value::List* old_custom_apns =
           network_metadata_store->GetCustomApnList(network_guid)) {
-    new_apns = old_apns->Clone();
+    if (old_custom_apns->size() >= mojom::kMaxNumCustomApns) {
+      NET_LOG(ERROR)
+          << "CreateCustomApn: Cannot create new custom APN for network: "
+          << network_guid << ". Network already has the max amount allowed: "
+          << mojom::kMaxNumCustomApns;
+      return;
+    }
+
+    new_apns = old_custom_apns->Clone();
   }
 
   // Set unique Id for custom APNs
@@ -3623,29 +3634,84 @@ void CrosNetworkConfig::CreateCustomApn(const std::string& network_guid,
   // insertion order
   new_apns.Insert(new_apns.begin(), base::Value(MojoApnToOnc(*apn)));
 
-  NET_LOG(USER) << "Setting user APNs for: " << network_guid << ": "
-                << new_apns.size();
+  NET_LOG(USER) << "CreateCustomApn: Setting user APNs for: " << network_guid
+                << ": " << new_apns.size();
 
   network_metadata_store->SetCustomApnList(network_guid, new_apns.Clone());
 
-  base::Value::Dict onc;
-  onc.Set(::onc::network_config::kGUID, network_guid);
-  const std::string& onc_type =
-      MojoNetworkTypeToOnc(mojom::NetworkType::kCellular);
-  onc.Set(::onc::network_config::kType, onc_type);
-  base::Value::Dict type_dict;
-  type_dict.Set(::onc::cellular::kUserAPNList, std::move(new_apns));
-  onc.Set(onc_type, std::move(type_dict));
-
   SetPropertiesInternal(
-      network_guid, *network, std::move(onc),
+      network_guid, *network,
+      UserApnListToOnc(network_guid, std::move(new_apns)),
+      base::BindOnce(
+          [](const std::string& guid, mojom::ApnPropertiesPtr apn, bool success,
+             const std::string& message) {
+            if (!success) {
+              NET_LOG(ERROR)
+                  << "CreateCustomApn: Failed to update the user APN "
+                     "list in Shill for network: "
+                  << guid << ": [" << message << ']';
+            }
+            ash::CellularNetworkMetricsLogger::LogCreateCustomApnResult(
+                success, std::move(apn));
+          },
+          network_guid, std::move(apn)));
+}
+
+void CrosNetworkConfig::RemoveCustomApn(const std::string& network_guid,
+                                        const std::string& apn_id) {
+  if (!ash::features::IsApnRevampEnabled()) {
+    receivers_.ReportBadMessage(
+        "RemoveCustomApn: Cannot be called if the APN Revamp feature flag is "
+        "disabled.");
+    return;
+  }
+
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(network_guid);
+  if (!network || network->profile_path().empty()) {
+    NET_LOG(ERROR) << "RemoveCustomApn: Called with unconfigured network: "
+                   << network_guid << ".";
+    return;
+  }
+
+  NetworkMetadataStore* network_metadata_store =
+      NetworkHandler::Get()->network_metadata_store();
+  DCHECK(network_metadata_store);
+
+  const base::Value::List* current_apns =
+      network_metadata_store->GetCustomApnList(network_guid);
+  if (!current_apns) {
+    NET_LOG(ERROR) << "RemoveCustomApn: Called for network: " << network_guid
+                   << " that does not have any user APNs.";
+    return;
+  }
+
+  base::Value::List new_apns = current_apns->Clone();
+  if (!new_apns.EraseIf([&apn_id](const base::Value& item) {
+        const std::string* item_id =
+            item.GetDict().FindString(::onc::cellular_apn::kId);
+        return item_id && apn_id == *item_id;
+      })) {
+    NET_LOG(ERROR) << "RemoveCustomApn: Called for network: " << network_guid
+                   << " that does have an user APNs with id: " << apn_id << '.';
+    return;
+  }
+  NET_LOG(USER) << "RemoveCustomApn: Setting user APNs for: " << network_guid
+                << ": " << new_apns.size();
+
+  network_metadata_store->SetCustomApnList(network_guid, new_apns.Clone());
+  SetPropertiesInternal(
+      network_guid, *network,
+      UserApnListToOnc(network_guid, std::move(new_apns)),
       base::BindOnce(
           [](const std::string& guid, bool success,
              const std::string& message) {
-            if (!success)
-              NET_LOG(ERROR) << "CreateCustomApn failed to update the user APN "
-                                "list in Shill: ["
-                             << message << ']';
+            if (!success) {
+              NET_LOG(ERROR)
+                  << "RemoveCustomApn: Failed to update the user APN "
+                     "list in Shill for network: "
+                  << guid << ": [" << message << ']';
+            }
           },
           network_guid));
 }

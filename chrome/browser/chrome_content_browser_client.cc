@@ -1306,6 +1306,7 @@ void MaybeAddThrottle(
     throttles->push_back(std::move(maybe_throttle));
 }
 
+#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 void MaybeAddCondition(
     std::unique_ptr<content::CommitDeferringCondition> maybe_condition,
     std::vector<std::unique_ptr<content::CommitDeferringCondition>>*
@@ -1313,6 +1314,7 @@ void MaybeAddCondition(
   if (maybe_condition)
     conditions->push_back(std::move(maybe_condition));
 }
+#endif
 
 void MaybeAddThrottles(
     std::vector<std::unique_ptr<content::NavigationThrottle>> additional,
@@ -1547,8 +1549,6 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kSuppressDifferentOriginSubframeJSDialogs, true);
   registry->RegisterBooleanPref(
-      policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled, false);
-  registry->RegisterBooleanPref(
       policy::policy_prefs::kUnthrottledNestedTimeoutEnabled, false);
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kWebXRImmersiveArEnabled, true);
@@ -1578,6 +1578,11 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(
       prefs::kAccessControlAllowMethodsInCORSPreflightSpecConformant, true);
+
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kOffsetParentNewSpecBehaviorEnabled, true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kSendMouseEventsDisabledFormControlsEnabled, true);
 }
 
 // static
@@ -2407,14 +2412,6 @@ bool ChromeContentBrowserClient::IsIsolatedContextAllowedForUrl(
 #endif
 }
 
-bool ChromeContentBrowserClient::IsIsolatedWebAppsDeveloperModeAllowed(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return profile &&
-         profile->GetPrefs()->GetBoolean(
-             policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed);
-}
-
 bool ChromeContentBrowserClient::IsGetDisplayMediaSetSelectAllScreensAllowed(
     content::BrowserContext* context,
     const url::Origin& origin) {
@@ -2679,18 +2676,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kDisableScrollToTextFragment);
       }
 
-      // Override SetTimeoutWithoutClamp feature if its Enterprise Policy
-      // is specified.
-      if (prefs->HasPrefPath(
-              policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled)) {
-        command_line->AppendSwitchASCII(
-            blink::switches::kSetTimeoutWithout1MsClampPolicy,
-            prefs->GetBoolean(
-                policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled)
-                ? blink::switches::kSetTimeoutWithout1MsClampPolicy_ForceEnable
-                : blink::switches::
-                      kSetTimeoutWithout1MsClampPolicy_ForceDisable);
-      }
       // Override MaxUnthrottledTimeoutNestingLevel feature if its Enterprise
       // Policy is specified.
       if (prefs->HasPrefPath(
@@ -2710,6 +2695,32 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             prefs->GetBoolean(policy::policy_prefs::kEventPathEnabled)
                 ? blink::switches::kEventPathPolicy_ForceEnable
                 : blink::switches::kEventPathPolicy_ForceDisable);
+      }
+      // Override OffsetParentNewSpecBehavior feature if its Enterprise policy
+      // is specified.
+      if (prefs->HasPrefPath(
+              policy::policy_prefs::kOffsetParentNewSpecBehaviorEnabled)) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kOffsetParentNewSpecBehaviorPolicy,
+            prefs->GetBoolean(
+                policy::policy_prefs::kOffsetParentNewSpecBehaviorEnabled)
+                ? blink::switches::
+                      kOffsetParentNewSpecBehaviorPolicy_ForceEnable
+                : blink::switches::
+                      kOffsetParentNewSpecBehaviorPolicy_ForceDisable);
+      }
+      // Override SendMouseEventsDisabledFormControls feature if its Enterprise
+      // Policy is specified.
+      if (prefs->HasPrefPath(policy::policy_prefs::
+                                 kSendMouseEventsDisabledFormControlsEnabled)) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kSendMouseEventsDisabledFormControlsPolicy,
+            prefs->GetBoolean(policy::policy_prefs::
+                                  kSendMouseEventsDisabledFormControlsEnabled)
+                ? blink::switches::
+                      kSendMouseEventsDisabledFormControlsPolicy_ForceEnable
+                : blink::switches::
+                      kSendMouseEventsDisabledFormControlsPolicy_ForceDisable);
       }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a
@@ -5381,6 +5392,16 @@ void ChromeContentBrowserClient::
   DCHECK(browser_context);
   DCHECK(factories);
 
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kIsolatedWebApps) &&
+      !browser_context->ShutdownStarted()) {
+    factories->emplace(
+        chrome::kIsolatedAppScheme,
+        web_app::IsolatedWebAppURLLoaderFactory::CreateForServiceWorker(
+            browser_context));
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   factories->emplace(
       extensions::kExtensionScheme,
@@ -5600,16 +5621,26 @@ void ChromeContentBrowserClient::
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kIsolatedWebApps) &&
-      web_contents) {
-    if (auto* browser_context = web_contents->GetBrowserContext();
-        !browser_context->ShutdownStarted()) {
+  if (base::FeatureList::IsEnabled(features::kIsolatedWebApps)) {
+    content::BrowserContext* browser_context =
+        content::RenderProcessHost::FromID(render_process_id)
+            ->GetBrowserContext();
+    DCHECK(browser_context);
+    if (!browser_context->ShutdownStarted()) {
       // TODO(crbug.com/1365848): Only register the factory if we are already in
       // an isolated storage partition.
-      factories->emplace(
-          chrome::kIsolatedAppScheme,
-          web_app::IsolatedWebAppURLLoaderFactory::Create(
-              frame_host->GetFrameTreeNodeId(), browser_context));
+
+      if (frame_host != nullptr) {
+        factories->emplace(
+            chrome::kIsolatedAppScheme,
+            web_app::IsolatedWebAppURLLoaderFactory::Create(
+                frame_host->GetFrameTreeNodeId(), browser_context));
+      } else {
+        factories->emplace(
+            chrome::kIsolatedAppScheme,
+            web_app::IsolatedWebAppURLLoaderFactory::CreateForServiceWorker(
+                browser_context));
+      }
     }
   }
 #endif

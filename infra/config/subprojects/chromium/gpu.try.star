@@ -60,6 +60,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm64 Builder",
         "ci/Android FYI Release (Nexus 5X)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -69,6 +70,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm Builder",
         "ci/Android FYI Release (NVIDIA Shield TV)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -78,6 +80,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm Builder",
         "ci/Android FYI Release (Pixel 2)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -87,6 +90,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm Builder",
         "ci/Android FYI Release (Pixel 4)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -96,6 +100,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm64 Builder",
         "ci/Android FYI Release (Pixel 6)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -455,6 +460,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder",
         "ci/Win10 FYI x64 Release (Intel HD 630)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -464,6 +470,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder (dbg)",
         "ci/Win10 FYI x64 Debug (NVIDIA)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(

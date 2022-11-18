@@ -156,8 +156,8 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
 
 void BuiltInChromeOsApps::LaunchAppWithParams(AppLaunchParams&& params,
                                               LaunchCallback callback) {
-  Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
-         nullptr);
+  Launch(params.app_id, ui::EF_NONE, LaunchSource::kUnknown, nullptr);
+
   // TODO(crbug.com/1244506): Add launch return value.
   std::move(callback).Run(LaunchResult());
 }
@@ -205,15 +205,6 @@ void BuiltInChromeOsApps::Connect(
   // mojo::RemoteSet<apps::mojom::Subscriber> subscribers_) after this
   // function returns. The list of built-in Chrome OS apps is fixed for the
   // lifetime of the Chrome OS session. There won't be any further updates.
-}
-
-void BuiltInChromeOsApps::Launch(const std::string& app_id,
-                                 int32_t event_flags,
-                                 apps::mojom::LaunchSource launch_source,
-                                 apps::mojom::WindowInfoPtr window_info) {
-  if (app_id == ash::kInternalAppIdKeyboardShortcutViewer) {
-    ash::ToggleKeyboardShortcutViewer();
-  }
 }
 
 void BuiltInChromeOsApps::GetMenuModel(const std::string& app_id,

@@ -2191,7 +2191,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidChangeLoadProgress(double load_progress) override;
   void DidFinishLoad(const GURL& validated_url) override;
   void DispatchLoad() override;
-  void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
+  void GoToEntryAtOffset(int32_t offset,
+                         bool has_user_gesture,
+                         absl::optional<blink::scheduler::TaskAttributionId>
+                             soft_navigation_heuristic_task_id) override;
   void NavigateToNavigationApiKey(const std::string& key,
                                   bool has_user_gesture) override;
   void UpdateTitle(const absl::optional<::std::u16string>& title,
@@ -3801,8 +3804,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // HasStickyUserActivation() or HasTransientUserActivation() instead.
   bool last_navigation_started_with_transient_activation_ = false;
 
-  // Whether the last committed navigation is to an error page.
-  bool is_error_page_ = false;
+  // Whether the last committed navigation is to an error document.
+  bool is_error_document_ = false;
 
   // Local root subframes directly own their RenderWidgetHost.
   // Please see comments about the GetLocalRenderWidgetHost() function.

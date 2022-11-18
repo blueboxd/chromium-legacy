@@ -63,6 +63,10 @@ function createOSSettingsRoutes() {
   r.KNOWN_NETWORKS = createSubpage(
       r.INTERNET, routesMojomWebui.KNOWN_NETWORKS_SUBPAGE_PATH,
       Subpage.kKnownNetworks);
+  if (loadTimeData.getBoolean('isHotspotEnabled')) {
+    r.HOTSPOT_DETAIL =
+        createSubpage(r.INTERNET, 'hotspotDetail', Subpage.kHotspotDetails);
+  }
   if (loadTimeData.getBoolean('isApnRevampEnabled')) {
     r.APN = createSubpage(
         r.INTERNET, routesMojomWebui.APN_SUBPAGE_PATH, Subpage.kApn);
@@ -91,9 +95,6 @@ function createOSSettingsRoutes() {
     r.MULTIDEVICE_FEATURES = createSubpage(
         r.MULTIDEVICE, routesMojomWebui.MULTI_DEVICE_FEATURES_SUBPAGE_PATH,
         Subpage.kMultiDeviceFeatures);
-    r.SMART_LOCK = createSubpage(
-        r.MULTIDEVICE_FEATURES, routesMojomWebui.SMART_LOCK_SUBPAGE_PATH,
-        Subpage.kSmartLock);
     if (loadTimeData.getBoolean('isNearbyShareSupported')) {
       r.NEARBY_SHARE = createSubpage(
           r.MULTIDEVICE, routesMojomWebui.NEARBY_SHARE_SUBPAGE_PATH,
@@ -226,6 +227,14 @@ function createOSSettingsRoutes() {
     r.A11Y_AUDIO_AND_CAPTIONS = createSubpage(
         r.OS_ACCESSIBILITY, routesMojomWebui.AUDIO_AND_CAPTIONS_SUBPAGE_PATH,
         Subpage.kAudioAndCaptions);
+    if (loadTimeData.valueExists(
+            'isAccessibilitySelectToSpeakPageMigrationEnabled') &&
+        loadTimeData.getBoolean(
+            'isAccessibilitySelectToSpeakPageMigrationEnabled')) {
+      r.A11Y_SELECT_TO_SPEAK = createSubpage(
+          r.A11Y_TEXT_TO_SPEECH, routesMojomWebui.SELECT_TO_SPEAK_SUBPAGE_PATH,
+          Subpage.kSelectToSpeak);
+    }
     r.MANAGE_TTS_SETTINGS = createSubpage(
         loadTimeData.getBoolean('isKioskModeActive') ? r.MANAGE_ACCESSIBILITY :
                                                        r.A11Y_TEXT_TO_SPEECH,

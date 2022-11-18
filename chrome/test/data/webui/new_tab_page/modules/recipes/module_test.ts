@@ -16,7 +16,7 @@ import {eventToPromise} from 'chrome://webui-test/test_util.js';
 import {installMock} from '../../test_support.js';
 
 suite('NewTabPageModulesRecipesTest', () => {
-  let handler: TestBrowserProxy;
+  let handler: TestBrowserProxy<RecipesHandlerRemote>;
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -212,7 +212,10 @@ suite('NewTabPageModulesRecipesTest', () => {
     const restoreCallback = dismissEvent.detail.restoreCallback;
 
     // Assert.
-    assertEquals('Recipe ideas hidden', toastMessage);
+    const moduleHeaderTitle =
+        moduleElement.shadowRoot!.querySelector(
+                                     'ntp-module-header')!.textContent!.trim();
+    assertEquals(moduleHeaderTitle + ' hidden', toastMessage);
     assertEquals('Hello world', await handler.whenCalled('dismissTask'));
 
     // Act.

@@ -24,8 +24,12 @@
 #include "base/time/time.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/bounded_list.h"
+#include "components/attribution_reporting/constants.h"
+#include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
@@ -57,8 +61,7 @@
 
 namespace attribution_reporting {
 class AggregatableTriggerData;
-struct EventTriggerData;
-class TriggerRegistration;
+struct TriggerRegistration;
 }  // namespace attribution_reporting
 
 namespace mojo {
@@ -169,7 +172,7 @@ class MockDataHostManager : public AttributionDataHostManager {
       void,
       RegisterDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       url::Origin context_origin,
+       attribution_reporting::SuitableOrigin context_origin,
        bool is_within_fenced_frame),
       (override));
 
@@ -185,16 +188,15 @@ class MockDataHostManager : public AttributionDataHostManager {
               NotifyNavigationRedirectRegistration,
               (const blink::AttributionSrcToken& attribution_src_token,
                std::string header_value,
-               url::Origin reporting_origin,
-               const url::Origin& source_origin,
+               attribution_reporting::SuitableOrigin reporting_origin,
+               const attribution_reporting::SuitableOrigin& source_origin,
                AttributionInputEvent input_event),
               (override));
 
   MOCK_METHOD(void,
               NotifyNavigationForDataHost,
               (const blink::AttributionSrcToken& attribution_src_token,
-               const url::Origin& source_origin,
-               const url::Origin& destination_origin),
+               const attribution_reporting::SuitableOrigin& source_origin),
               (override));
 
   MOCK_METHOD(void,
@@ -325,14 +327,13 @@ class MockAttributionManager : public AttributionManager {
   MOCK_METHOD(void,
               NotifyFailedSourceRegistration,
               (const std::string& header_value,
-               const url::Origin& reporting_origin,
+               const attribution_reporting::SuitableOrigin& reporting_origin,
                attribution_reporting::mojom::SourceRegistrationError),
               (override));
 
   void AddObserver(AttributionObserver* observer) override;
   void RemoveObserver(AttributionObserver* observer) override;
   AttributionDataHostManager* GetDataHostManager() override;
-  OsLevelAttributionManager* GetOsLevelManager() override;
 
   void NotifySourcesChanged();
   void NotifyReportsChanged(AttributionReport::Type report_type);
@@ -349,7 +350,7 @@ class MockAttributionManager : public AttributionManager {
       absl::optional<uint64_t> cleared_debug_key = absl::nullopt);
   void NotifySourceRegistrationFailure(
       const std::string& header_value,
-      const url::Origin& reporting_origin,
+      const attribution_reporting::SuitableOrigin& reporting_origin,
       attribution_reporting::mojom::SourceRegistrationError);
 
   void SetDataHostManager(std::unique_ptr<AttributionDataHostManager> manager);
@@ -444,13 +445,23 @@ class SourceBuilder {
 
   SourceBuilder& SetSourceEventId(uint64_t source_event_id);
 
+  // TODO(crbug.com/1383580): Remove this method.
   SourceBuilder& SetSourceOrigin(url::Origin origin);
 
+  SourceBuilder& SetSourceOrigin(attribution_reporting::SuitableOrigin);
+
+  // TODO(crbug.com/1383580): Remove this method.
   SourceBuilder& SetDestinationOrigin(url::Origin origin);
 
-  SourceBuilder& SetDestinationOrigins(base::flat_set<url::Origin>);
+  SourceBuilder& SetDestinationOrigin(attribution_reporting::SuitableOrigin);
 
+  SourceBuilder& SetDestinationOrigins(
+      base::flat_set<attribution_reporting::SuitableOrigin>);
+
+  // TODO(crbug.com/1383580): Remove this method.
   SourceBuilder& SetReportingOrigin(url::Origin origin);
+
+  SourceBuilder& SetReportingOrigin(attribution_reporting::SuitableOrigin);
 
   SourceBuilder& SetSourceType(AttributionSourceType source_type);
 
@@ -494,9 +505,9 @@ class SourceBuilder {
   base::TimeDelta expiry_;
   absl::optional<base::TimeDelta> event_report_window_;
   absl::optional<base::TimeDelta> aggregatable_report_window_;
-  url::Origin source_origin_;
-  base::flat_set<url::Origin> destination_origins_;
-  url::Origin reporting_origin_;
+  attribution_reporting::SuitableOrigin source_origin_;
+  base::flat_set<attribution_reporting::SuitableOrigin> destination_origins_;
+  attribution_reporting::SuitableOrigin reporting_origin_;
   AttributionSourceType source_type_ = AttributionSourceType::kNavigation;
   int64_t priority_ = 0;
   StoredSource::AttributionLogic attribution_logic_ =
@@ -537,9 +548,15 @@ class TriggerBuilder {
 
   TriggerBuilder& SetEventSourceTriggerData(uint64_t event_source_trigger_data);
 
+  // TODO(crbug.com/1383580): Remove this method.
   TriggerBuilder& SetDestinationOrigin(url::Origin destination_origin);
 
+  TriggerBuilder& SetDestinationOrigin(attribution_reporting::SuitableOrigin);
+
+  // TODO(crbug.com/1383580): Remove this method.
   TriggerBuilder& SetReportingOrigin(url::Origin reporting_origin);
+
+  TriggerBuilder& SetReportingOrigin(attribution_reporting::SuitableOrigin);
 
   TriggerBuilder& SetPriority(int64_t priority);
 
@@ -565,8 +582,8 @@ class TriggerBuilder {
  private:
   uint64_t trigger_data_ = 111;
   uint64_t event_source_trigger_data_ = 0;
-  url::Origin destination_origin_;
-  url::Origin reporting_origin_;
+  attribution_reporting::SuitableOrigin destination_origin_;
+  attribution_reporting::SuitableOrigin reporting_origin_;
   int64_t priority_ = 0;
   absl::optional<uint64_t> dedup_key_;
   absl::optional<uint64_t> debug_key_;
@@ -914,13 +931,39 @@ struct EventTriggerDataMatcherConfig {
 ::testing::Matcher<const attribution_reporting::EventTriggerData&>
 EventTriggerDataMatches(const EventTriggerDataMatcherConfig&);
 
+template <typename T>
+struct BoundedListMatcherConfig {
+  ::testing::Matcher<const std::vector<T>&> vec = ::testing::_;
+
+  BoundedListMatcherConfig() = delete;
+  explicit BoundedListMatcherConfig(
+      ::testing::Matcher<const std::vector<T>&> vec = ::testing::_)
+      : vec(std::move(vec)) {}
+
+  ~BoundedListMatcherConfig() = default;
+};
+
+template <typename T, size_t kMaxSize>
+::testing::Matcher<const attribution_reporting::BoundedList<T, kMaxSize>&>
+BoundedListMatches(const BoundedListMatcherConfig<T>& cfg) {
+  return Property("vec", &attribution_reporting::BoundedList<T, kMaxSize>::vec,
+                  cfg.vec);
+}
+
+using EventTriggerDataListMatcherConfig =
+    BoundedListMatcherConfig<attribution_reporting::EventTriggerData>;
+
+constexpr auto EventTriggerDataListMatches =
+    BoundedListMatches<attribution_reporting::EventTriggerData,
+                       attribution_reporting::kMaxEventTriggerData>;
+
 struct TriggerRegistrationMatcherConfig {
-  ::testing::Matcher<const url::Origin&> reporting_origin = ::testing::_;
+  ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
+      reporting_origin = ::testing::_;
   ::testing::Matcher<const attribution_reporting::Filters&> filters =
       ::testing::_;
   ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_;
-  ::testing::Matcher<
-      const std::vector<attribution_reporting::EventTriggerData>&>
+  ::testing::Matcher<const attribution_reporting::EventTriggerDataList&>
       event_triggers = ::testing::_;
   ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key =
       ::testing::_;
@@ -928,12 +971,12 @@ struct TriggerRegistrationMatcherConfig {
 
   TriggerRegistrationMatcherConfig() = delete;
   explicit TriggerRegistrationMatcherConfig(
-      ::testing::Matcher<const url::Origin&> reporting_origin = ::testing::_,
+      ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
+          reporting_origin = ::testing::_,
       ::testing::Matcher<const attribution_reporting::Filters&> filters =
           ::testing::_,
       ::testing::Matcher<absl::optional<uint64_t>> debug_key = ::testing::_,
-      ::testing::Matcher<
-          const std::vector<attribution_reporting::EventTriggerData>&>
+      ::testing::Matcher<const attribution_reporting::EventTriggerDataList&>
           event_triggers = ::testing::_,
       ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key =
           ::testing::_,
@@ -947,7 +990,8 @@ TriggerRegistrationMatches(const TriggerRegistrationMatcherConfig&);
 struct AttributionTriggerMatcherConfig {
   ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
       registration = ::testing::_;
-  ::testing::Matcher<const url::Origin&> destination_origin = ::testing::_;
+  ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
+      destination_origin = ::testing::_;
 
   ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_;
 
@@ -955,7 +999,8 @@ struct AttributionTriggerMatcherConfig {
   explicit AttributionTriggerMatcherConfig(
       ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
           registration = ::testing::_,
-      ::testing::Matcher<const url::Origin&> destination_origin = ::testing::_,
+      ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
+          destination_origin = ::testing::_,
       ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_);
   ~AttributionTriggerMatcherConfig();
 };

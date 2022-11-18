@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -59,7 +60,7 @@ constexpr char kBackendErrorCodeMetric[] =
 constexpr char kUnenrollmentHistogram[] =
     "PasswordManager.UnenrolledFromUPMDueToErrors";
 constexpr char kUPMActiveHistogram[] =
-    "PasswordManager.UnifiedPasswordManager.ActiveStatus";
+    "PasswordManager.UnifiedPasswordManager.ActiveStatus2";
 constexpr char kUptimeOnAPIErrorHistogram[] =
     "PasswordManager.PasswordStoreAndroidBackend.UptimeOnAPIError";
 constexpr char kRetryHistogramBase[] =
@@ -259,7 +260,8 @@ class PasswordStoreAndroidBackendTest : public testing::Test {
   CreatePasswordSyncControllerDelegate() {
     auto unique_delegate = std::make_unique<
         PasswordSyncControllerDelegateAndroid>(
-        std::make_unique<NiceMock<MockPasswordSyncControllerDelegateBridge>>());
+        std::make_unique<NiceMock<MockPasswordSyncControllerDelegateBridge>>(),
+        base::DoNothing());
     sync_controller_delegate_ = unique_delegate.get();
     return unique_delegate;
   }

@@ -404,6 +404,15 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInterestGroupStorageMaxOpsBeforeMaintenance;
 // FLEDGE ad serving runtime flag/JS API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledge);
+
+// Configures FLEDGE to consider k-anononymity. If both
+// kFledgeConsiderKAnonymity and kFledgeEnforceKAnonymity are on it will be
+// enforced; if only kFledgeConsiderKAnonymity is on it will be simulated.
+//
+// Turning on kFledgeEnforceKAnonymity alone does nothing.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeConsiderKAnonymity);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeEnforceKAnonymity);
+
 // Runtime flag that changes default Permissions Policy for features
 // join-ad-interest-group and run-ad-auction to a more restricted EnableForSelf.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -465,14 +474,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCORSErrorsIssueOnly);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kDelayLowPriorityRequestsAccordingToNetworkState);
 
-// When enabled, this turns off an LCP calculation optimization that's ignoring
-// initially invisible images, and resulting in LCP correctness issues. See
-// https://crbug.com/1249622
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kIncludeInitiallyInvisibleImagesInLCP);
-
-// When enabled, this includes SVG background images in LCP calculation.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kIncludeBackgroundSVGInLCP);
-
 // Number of the requests that can be handled in the tight mode.
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode;
@@ -506,12 +507,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsViewportWidth_DEPRECATED);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSetTimeoutWithoutClamp);
-// window.setTimeout() has a feature to remove 1ms clamp to improve performance
-// and battery life. Enterprise policy can override this to control the feature.
-// Normally, the result of this feature calculation is cached; allow tests
-// to clear the cache to recompute the feature value.
-BLINK_COMMON_EXPORT void
-ClearSetTimeoutWithout1MsClampPolicyOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsSetTimeoutWithoutClampEnabled();
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMaxUnthrottledTimeoutNestingLevel);
@@ -528,10 +523,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTabSwitchMetrics2);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPAnimatedImagesReporting);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEarlyBodyLoad);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEarlyCodeCache);
-
 // If enabled, an absent Origin-Agent-Cluster: header is interpreted as
 // requesting an origin agent cluster, but in the same process.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultEnabled);
@@ -541,16 +532,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultEnabled);
 // (This is a transitory behaviour on the road to perma-enabling
 // kOriginAgentClusterDefaultEnabled above.)
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultWarning);
-
-#if BUILDFLAG(IS_ANDROID)
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrefetchAndroidFonts);
-#endif
-
-// Allows pages that support App Install Banners to stay eligible for the
-// back/forward cache.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheAppBanner);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDefaultStyleSheetsEarlyInit);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSystemColorChooser);
 

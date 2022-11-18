@@ -399,6 +399,11 @@ BASE_FEATURE(kOmniboxFuzzyUrlSuggestions,
              "OmniboxFuzzyUrlSuggestions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Feature used to enable the default browser pedal.
+BASE_FEATURE(kOmniboxDefaultBrowserPedal,
+             "OmniboxDefaultBrowserPedal",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Feature used to update the left and bottom padding of the omnibox suggestion
 // header.
 BASE_FEATURE(kOmniboxHeaderPaddingUpdate,
@@ -419,6 +424,11 @@ BASE_FEATURE(kOmniboxRemoveSuggestionHeaderCapitalization,
 // header under omnibox.
 BASE_FEATURE(kOmniboxRemoveSuggestionHeaderChevron,
              "OmniboxRemoveSuggestionHeaderChevron",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Feature used to add a recycled view pool on the most visited tile carousel.
+BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
+             "OmniboxMostVisitedTilesAddRecycledViewPool",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature used to add fading effect to most visited tiles on tablet.

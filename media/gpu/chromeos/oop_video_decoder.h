@@ -5,13 +5,21 @@
 #ifndef MEDIA_GPU_CHROMEOS_OOP_VIDEO_DECODER_H_
 #define MEDIA_GPU_CHROMEOS_OOP_VIDEO_DECODER_H_
 
+#include "base/containers/lru_cache.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "media/base/media_log.h"
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
 #include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+#if BUILDFLAG(IS_CHROMEOS)
+namespace chromeos {
+class StableCdmContextImpl;
+}  // namespace chromeos
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace media {
 
@@ -92,6 +100,28 @@ class OOPVideoDecoder : public VideoDecoderMixin,
   std::map<uint64_t, DecodeCB> pending_decodes_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // |fake_timestamp_to_real_timestamp_cache_| allows us to associate Decode()
+  // calls with decoded frames. On each non-flush Decode() call, we generate a
+  // fake timestamp (tracked in |current_fake_timestamp_|) and we map that to
+  // the DecoderBuffer's timestamp. When a decoded frame is received, we look up
+  // its timestamp in |fake_timestamp_to_real_timestamp_cache_| and update it to
+  // the real timestamp. This logic allows us to do a couple of things:
+  //
+  // 1) Not trust the timestamps that come from the remote decoder (the trust
+  //    model is that the remote decoder is untrusted).
+  //
+  // 2) Guarantee the following requirement mandated by the
+  //    VideoDecoder::Decode() API: "If |buffer| is an EOS buffer then the
+  //    decoder must be flushed, i.e. |output_cb| must be called for each frame
+  //    pending in the queue and |decode_cb| must be called after that." We can
+  //    do this by clearing the cache when a flush has been reported to be
+  //    completed by the remote decoder.
+  base::TimeDelta current_fake_timestamp_
+      GUARDED_BY_CONTEXT(sequence_checker_) = base::Microseconds(0u);
+  base::LRUCache<base::TimeDelta, base::TimeDelta>
+      fake_timestamp_to_real_timestamp_cache_
+          GUARDED_BY_CONTEXT(sequence_checker_);
+
   base::OnceClosure reset_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   mojo::AssociatedReceiver<stable::mojom::VideoDecoderClient> client_receiver_
@@ -99,6 +129,13 @@ class OOPVideoDecoder : public VideoDecoderMixin,
 
   mojo::Receiver<stable::mojom::MediaLog> stable_media_log_receiver_
       GUARDED_BY_CONTEXT(sequence_checker_){this};
+
+#if BUILDFLAG(IS_CHROMEOS)
+  std::unique_ptr<chromeos::StableCdmContextImpl> stable_cdm_context_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+  std::unique_ptr<mojo::Receiver<stable::mojom::StableCdmContext>>
+      stable_cdm_context_receiver_ GUARDED_BY_CONTEXT(sequence_checker_);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   VideoDecoderType decoder_type_ GUARDED_BY_CONTEXT(sequence_checker_) =
       VideoDecoderType::kUnknown;

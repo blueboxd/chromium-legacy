@@ -849,7 +849,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, StopListening) {
 IN_PROC_BROWSER_TEST_P(DictationTest, SmartCapitalization) {
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
-  SendFinalResultAndWaitForEditableValue("This", "This");
+  SendFinalResultAndWaitForEditableValue("this", "This");
   SendFinalResultAndWaitForEditableValue("Is", "This is");
   SendFinalResultAndWaitForEditableValue("a test.", "This is a test.");
   SendFinalResultAndWaitForEditableValue("you passed!",
@@ -1306,23 +1306,22 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DeleteAllTextMultiLineString) {
 // and ensure that you can't run the Dictation
 // Commands under that feature flag.
 
-IN_PROC_BROWSER_TEST_P(DictationCommandsTest, DISABLED_NavStartTextSimple) {
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, NavStartTextSimple) {
   SendFinalResultAndWaitForEditableValue("Is good", "Is good");
   SendFinalResultAndWaitForCaretBoundsChanged("move to the start");
-  SendFinalResultAndWaitForEditableValue("the weather outside",
-                                         "the weather outside Is good");
+  SendFinalResultAndWaitForEditableValue("The weather outside",
+                                         "The weather outside Is good");
 }
 
-IN_PROC_BROWSER_TEST_P(DictationCommandsTest,
-                       DISABLED_NavStartTextMultiLineString) {
+IN_PROC_BROWSER_TEST_P(DictationCommandsTest, NavStartTextMultiLineString) {
   if (!RunOnMultilineContent())
     return;
 
   std::string text = "Is good\n and we should go for a run.";
   SendFinalResultAndWaitForEditableValue(text, text);
   SendFinalResultAndWaitForCaretBoundsChanged("move to the start");
-  std::string expected = "the weather outside " + text;
-  SendFinalResultAndWaitForEditableValue("the weather outside", expected);
+  std::string expected = "The weather outside " + text;
+  SendFinalResultAndWaitForEditableValue("The weather outside", expected);
 }
 
 #if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)

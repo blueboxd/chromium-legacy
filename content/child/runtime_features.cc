@@ -243,7 +243,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableMediaCastOverlayButton, media::kMediaCastOverlayButton},
     {wf::EnableMediaEngagementBypassAutoplayPolicies,
      media::kMediaEngagementBypassAutoplayPolicies},
-    {wf::EnableMediaSessionWebRTC, media::kMediaSessionWebRTC},
     {wf::EnableMouseSubframeNoImplicitCapture,
      features::kMouseSubframeNoImplicitCapture},
     {wf::EnableNeverSlowMode, features::kNeverSlowMode},
@@ -292,6 +291,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRHandInput, device::features::kWebXrHandInput},
     {wf::EnableWebXRHitTest, device::features::kWebXrHitTest},
     {wf::EnableWebXRImageTracking, device::features::kWebXrIncubations},
+    {wf::EnableWebXRLayers, device::features::kWebXrLayers},
     {wf::EnableWebXRPlaneDetection, device::features::kWebXrIncubations},
     {wf::EnableRemoveMobileViewportDoubleTap,
      features::kRemoveMobileViewportDoubleTap},
@@ -436,6 +436,34 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       WebRuntimeFeatures::EnableEventPath(true);
     if (value == blink::switches::kEventPathPolicy_ForceDisable)
       WebRuntimeFeatures::EnableEventPath(false);
+  }
+
+  // Enable or disable OffsetParentNewSpecBehavior for Enterprise Policy. This
+  // overrides any existing settings via base::Feature.
+  if (command_line.HasSwitch(
+          blink::switches::kOffsetParentNewSpecBehaviorPolicy)) {
+    const std::string value = command_line.GetSwitchValueASCII(
+        blink::switches::kOffsetParentNewSpecBehaviorPolicy);
+    if (value ==
+        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceEnable)
+      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(true);
+    if (value ==
+        blink::switches::kOffsetParentNewSpecBehaviorPolicy_ForceDisable)
+      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(false);
+  }
+
+  // Enable or disable SendMouseEventsDisabledFormControls for Enterprise
+  // Policy. This overrides any existing settings via base::Feature.
+  if (command_line.HasSwitch(
+          blink::switches::kSendMouseEventsDisabledFormControlsPolicy)) {
+    const std::string value = command_line.GetSwitchValueASCII(
+        blink::switches::kSendMouseEventsDisabledFormControlsPolicy);
+    if (value ==
+        blink::switches::kSendMouseEventsDisabledFormControlsPolicy_ForceEnable)
+      WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(true);
+    if (value == blink::switches::
+                     kSendMouseEventsDisabledFormControlsPolicy_ForceDisable)
+      WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(false);
   }
 }
 

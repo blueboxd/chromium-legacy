@@ -191,6 +191,11 @@ constexpr base::TimeDelta kDefaultCommitTimeout = base::Seconds(30);
 // Overrideable via SetCommitTimeoutForTesting.
 base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
 
+#if BUILDFLAG(IS_ANDROID)
+// Timeout for locking the compositor at the beginning of navigation.
+constexpr base::TimeDelta kCompositorLockTimeout = base::Milliseconds(150);
+#endif
+
 // crbug.com/954271: This feature is a part of an ablation study which makes
 // history navigations slower.
 // TODO(altimin): Clean this up after the study finishes.
@@ -1250,18 +1255,20 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*old_page_info=*/nullptr, /*http_response_code=*/-1,
           blink::mojom::NavigationApiHistoryEntryArrays::New(),
           /*early_hints_preloaded_resources=*/
-          std::vector<GURL>(), absl::nullopt /* ad_auction_components */,
+          std::vector<GURL>(),
+          /*ad_auction_components=*/absl::nullopt,
           /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
-          base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
-          GURL() /* fallback_srcdoc_baseurl */,
-          false /* should_load_data_url */,
+          /*commit_sent=*/base::TimeTicks(), /*srcdoc_value=*/std::string(),
+          /*fallback_srcdoc_baseurl=*/GURL(),
+          /*should_load_data_url=*/false,
           /*ancestor_or_self_has_cspee=*/
           frame_tree_node->AncestorOrSelfHasCSPEE(),
-          std::string() /* reduced_accept_language */,
+          /*reduced_accept_language=*/std::string(),
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
-          /*view_transition_state=*/absl::nullopt);
+          /*view_transition_state=*/absl::nullopt,
+          /*soft_navigation_heuristic_task_id=*/absl::nullopt);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1351,50 +1358,58 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           // The correct storage key is computed right after creating the
           // NavigationRequest below.
           blink::StorageKey(), is_overriding_user_agent, redirects,
+          /*redirect_response=*/
           std::vector<network::mojom::URLResponseHeadPtr>(),
-          std::vector<net::RedirectInfo>(),
-          std::string() /* redirect_response */, original_url,
-          method /* original_method */, false /* can_load_local_resources */,
-          std::string(), 0 /* nav_entry_id*/,
-          base::flat_map<std::string, bool>() /* subframe_unique_names */,
-          false /* intended_as_new_entry */,
-          -1 /* pending_history_list_offset */,
-          -1 /* current_history_list_offset */,
-          -1 /* current_history_list_length */, false /* was_discard */,
-          false /* is_view_source */, false /* should_clear_history_list */,
-          blink::mojom::NavigationTiming::New(),
+          /*redirect_infos=*/std::vector<net::RedirectInfo>(),
+          /*post_content_type=*/std::string(), original_url,
+          /*original_method=*/method,
+          /*can_load_local_resources=*/false,
+          /*page_state=*/std::string(),
+          /*nav_entry_id=*/0,
+          /*subframe_unique_names=*/base::flat_map<std::string, bool>(),
+          /*intended_as_new_entry=*/false,
+          /*pending_history_list_offset=*/-1,
+          /*current_history_list_offset=*/-1,
+          /*current_history_list_length=*/-1,
+          /*was_discarded=*/false,
+          /*is_view_source=*/false,
+          /*should_clear_history_list=*/false,
+          /*navigation_timing=*/blink::mojom::NavigationTiming::New(),
           blink::mojom::WasActivatedOption::kUnknown,
-          base::UnguessableToken::Create() /* navigation_token */,
+          /*navigation_token=*/base::UnguessableToken::Create(),
+          /*prefetched_signed_exchanges=*/
           std::vector<blink::mojom::PrefetchedSignedExchangeInfoPtr>(),
 #if BUILDFLAG(IS_ANDROID)
-          std::string() /* data_url_as_string */,
+          /*data_url_as_string=*/std::string(),
 #endif
-          false /* is_browser_initiated */,
-          GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */,
-          ukm::kInvalidSourceId /* document_ukm_source_id */,
+          /*is_browser_initiated=*/false,
+          /*web_bundle_physical_url=*/GURL(),
+          /*base_url_override_for_web_bundle=*/GURL(),
+          /*document_ukm_source_id=*/ukm::kInvalidSourceId,
           frame_tree_node->pending_frame_policy(),
-          std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_agent_cluster */,
-          true /* origin_agent_cluster_left_as_default */,
-          std::vector<
-              network::mojom::WebClientHintsType>() /* enabled_client_hints */,
-          false /* is_cross_browsing_instance */, nullptr /* old_page_info */,
-          http_response_code,
+          /*force_enabled_origin_trials=*/std::vector<std::string>(),
+          /*origin_agent_cluster=*/false,
+          /*origin_agent_cluster_left_as_default=*/true,
+          /*enabled_client_hints=*/
+          std::vector<network::mojom::WebClientHintsType>(),
+          /*is_cross_browsing_instance=*/false,
+          /*old_page_info=*/nullptr, http_response_code,
           blink::mojom::NavigationApiHistoryEntryArrays::New(),
-          std::vector<GURL>() /* early_hints_preloaded_resources */,
-          absl::nullopt /* ad_auction_components */,
+          /*early_hints_preloaded_resources=*/
+          std::vector<GURL>(),
+          /*ad_auction_components=*/absl::nullopt,
           /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
-          base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
-          GURL() /* fallback_srcdoc_baseurl_value */,
-          false /* should_load_data_url */,
+          /*commit_sent=*/base::TimeTicks(), /*srcdoc_value=*/std::string(),
+          /*fallback_srcdoc_baseurl=*/GURL(),
+          /*should_load_data_url=*/false,
           /*ancestor_or_self_has_cspee=*/
           frame_tree_node->AncestorOrSelfHasCSPEE(),
-          std::string() /* reduced_accept_language */,
+          /*reduced_accept_language=*/std::string(),
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
-          /*view_transition_state=*/absl::nullopt);
+          /*view_transition_state=*/absl::nullopt,
+          /*soft_navigation_heuristic_task_id=*/absl::nullopt);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1798,8 +1813,7 @@ NavigationRequest::NavigationRequest(
 #if BUILDFLAG(IS_ANDROID)
   RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
       frame_tree_node_->current_frame_host()->GetRenderWidgetHost());
-  if (base::FeatureList::IsEnabled(features::kOptimizeEarlyNavigation) &&
-      NeedsUrlLoader() && IsInPrimaryMainFrame() && host &&
+  if (NeedsUrlLoader() && IsInPrimaryMainFrame() && host &&
       !host->is_hidden() && host->GetView() &&
       host->GetView()->GetNativeView() &&
       host->GetView()->GetNativeView()->GetWindowAndroid()) {
@@ -1808,16 +1822,14 @@ NavigationRequest::NavigationRequest(
     ui::WindowAndroidCompositor* compositor =
         host->GetView()->GetNativeView()->GetWindowAndroid()->GetCompositor();
     if (compositor) {
-      compositor_lock_ =
-          compositor->GetCompositorLock(features::kCompositorLockTimeout.Get());
+      compositor_lock_ = compositor->GetCompositorLock(kCompositorLockTimeout);
     }
   }
 
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kNavigationRequestPreconnect) &&
-      NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
+  if (NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
     BrowserContext* browser_context =
         frame_tree_node_->navigator().controller().GetBrowserContext();
     if (GetContentClient()->browser()->ShouldPreconnectNavigation(
@@ -2607,6 +2619,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   navigation_handle_timing_ = NavigationHandleTiming();
 
   policy_container_builder_->ResetForCrossDocumentRestart();
+  commit_params_->soft_navigation_heuristic_task_id = absl::nullopt;
 }
 
 void NavigationRequest::ResetStateForSiteInstanceChange() {
@@ -4962,6 +4975,11 @@ void NavigationRequest::CommitNavigation() {
   // A navigation request should only commit once the response has been
   // processed.
   DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
+  // In NavigationControllerImpl::NavigateToExistingPendingEntry we're verifying
+  // that the task ID is only passed along if the initiator RFH is the same as
+  // the navigated RFH.
+  DCHECK((IsSameDocument() && IsInOutermostMainFrame()) ||
+         !commit_params_->soft_navigation_heuristic_task_id);
 
   if (!CoopCoepSanityCheck())
     return;
@@ -5058,12 +5076,26 @@ void NavigationRequest::CommitNavigation() {
 
   PersistOriginTrialsFromHeaders(origin, response(), browser_context);
 
-  // If the final response do not have a valid ReduceAcceptLanguage origin trial
-  // token, stop persisting the accepted language. This happens when the token
-  // expires, is invalid, or is missing when the server stop using it.
+  // Update the reduced accept-language to commit if it's empty, and stop
+  // persisting the accepted language if the final response do not have a valid
+  // ReduceAcceptLanguage origin trial token. This happens when a site initially
+  // opts-in to the origin trial, the token expires, is invalid, or is missing
+  // when the server stops using it.
   if (auto reduce_accept_lang_utils =
           ReduceAcceptLanguageUtils::Create(browser_context);
       reduce_accept_lang_utils && !devtools_accept_language_override_) {
+    // When the server initially opt into the origin trial, via an OT token in
+    // the navigation response, the reduced accept-language to commit has not
+    // been set. It is set here to make sure the initial page load uses an
+    // appropriate value. E.g. this helps subresource requests send reduced
+    // accept-language when server initially opt into the origin trial.
+    if (commit_params_->reduced_accept_language.empty()) {
+      commit_params_->reduced_accept_language =
+          reduce_accept_lang_utils.value()
+              .LookupReducedAcceptLanguage(GetOriginToCommit().value(),
+                                           frame_tree_node_)
+              .value_or("");
+    }
     reduce_accept_lang_utils.value().RemoveOriginTrialReducedAcceptLanguage(
         commit_params_->reduced_accept_language, GetOriginToCommit().value(),
         response(), frame_tree_node_);

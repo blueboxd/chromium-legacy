@@ -252,6 +252,32 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
     ),
 )
 
+_BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
+    BanRule(
+      r'/\bchrome\.send\b',
+      (
+       'The use of chrome.send is disallowed in Chrome (context: https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/security/handling-messages-from-web-content.md).',
+       'Please use mojo instead for new webuis. https://docs.google.com/document/d/1RF-GSUoveYa37eoyZ9EhwMtaIwoW7Z88pIgNZ9YzQi4/edit#heading=h.gkk22wgk6wff',
+      ),
+      True,
+      (
+          r'^(?!ash\/webui).+',
+          # TODO(crbug.com/1385601): pre-existing violations still need to be
+          # cleaned up.
+          'ash/webui/common/resources/multidevice_setup/multidevice_setup_browser_proxy.js',
+          'ash/webui/common/resources/quick_unlock/lock_screen_constants.js',
+          'ash/webui/common/resources/smb_shares/smb_browser_proxy.js',
+          'ash/webui/connectivity_diagnostics/resources/connectivity_diagnostics.js',
+          'ash/webui/diagnostics_ui/resources/diagnostics_browser_proxy.ts',
+          'ash/webui/multidevice_debug/resources/logs.js',
+          'ash/webui/multidevice_debug/resources/webui.js',
+          'ash/webui/projector_app/resources/annotator/trusted/annotator_browser_proxy.js',
+          'ash/webui/projector_app/resources/app/trusted/projector_browser_proxy.js',
+          'ash/webui/scanning/resources/scanning_browser_proxy.js',
+      ),
+    ),
+)
+
 _BANNED_OBJC_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       'addTrackingRect:',
@@ -1161,6 +1187,41 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       (
         r'^sql/initialization\.(cc|h)$',
         r'^third_party/sqlite/.*\.(c|cc|h)$',
+      ),
+    ),
+    BanRule(
+      'CREATE VIEW',
+      (
+        'SQL views are disabled in Chromium feature code',
+        'https://chromium.googlesource.com/chromium/src/+/HEAD/sql#no-views',
+      ),
+      True,
+      (
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # sql/ itself uses views when using memory-mapped IO.
+        r'^sql/.*',
+        # Various performance tools that do not build as part of Chrome.
+        r'^infra/.*',
+        r'^tools/perf.*',
+        r'.*perfetto.*',
+      ),
+    ),
+    BanRule(
+      'CREATE VIRTUAL TABLE',
+      (
+        'SQL virtual tables are disabled in Chromium feature code',
+        'https://chromium.googlesource.com/chromium/src/+/HEAD/sql#no-virtual-tables',
+      ),
+      True,
+      (
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # sql/ itself uses virtual tables in the recovery module and tests.
+        r'^sql/.*',
+        # TODO(https://crbug.com/695592): Remove once WebSQL is deprecated.
+        r'third_party/blink/web_tests/storage/websql/.*'
+        # Various performance tools that do not build as part of Chrome.
+        r'^tools/perf.*',
+        r'.*perfetto.*',
       ),
     ),
     BanRule(
@@ -2077,6 +2138,12 @@ def CheckNoBannedFunctions(input_api, output_api):
     for f in input_api.AffectedFiles(file_filter=file_filter):
         for line_num, line in f.ChangedContents():
             for ban_rule in _BANNED_JAVA_FUNCTIONS:
+                CheckForMatch(f, line_num, line, ban_rule)
+
+    file_filter = lambda f: f.LocalPath().endswith(('.js', '.ts'))
+    for f in input_api.AffectedFiles(file_filter=file_filter):
+        for line_num, line in f.ChangedContents():
+            for ban_rule in _BANNED_JAVASCRIPT_FUNCTIONS:
                 CheckForMatch(f, line_num, line, ban_rule)
 
     file_filter = lambda f: f.LocalPath().endswith(('.mm', '.m', '.h'))
@@ -5046,6 +5113,30 @@ def CheckAccessibilityTreeTestsAreIncludedForAndroid(input_api, output_api):
         return []
 
     return [output_api.PresubmitPromptWarning(message)]
+
+
+def CheckEsLintConfigChanges(input_api, output_api):
+    """Suggest using "git cl presubmit --files" when .eslintrc.js files are
+    modified. This is important because enabling an error in .eslintrc.js can
+    trigger errors in any .js or .ts files in its directory, leading to hidden
+    presubmit errors."""
+    results = []
+    eslint_filter = lambda f: input_api.FilterSourceFile(
+        f, files_to_check=[r'.*\.eslintrc\.js$'])
+    for f in input_api.AffectedFiles(include_deletes=False,
+                                     file_filter=eslint_filter):
+        local_dir = input_api.os_path.dirname(f.LocalPath())
+        # Use / characters so that the commands printed work on any OS.
+        local_dir = local_dir.replace(input_api.os_path.sep, '/')
+        if local_dir:
+            local_dir += '/'
+        results.append(
+            output_api.PresubmitNotifyResult(
+                '%(file)s modified. Consider running \'git cl presubmit --files '
+                '"%(dir)s*.js;%(dir)s*.ts"\' in order to check and fix the affected '
+                'files before landing this change.' %
+                { 'file' : f.LocalPath(), 'dir' : local_dir}))
+    return results
 
 
 # string pattern, sequence of strings to show when pattern matches,

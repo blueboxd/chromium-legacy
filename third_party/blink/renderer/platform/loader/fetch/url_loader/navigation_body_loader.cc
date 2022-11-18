@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
+#include "third_party/ced/src/compact_enc_det/compact_enc_det.h"
 
 namespace blink {
 namespace {
@@ -422,6 +423,12 @@ void NavigationBodyLoader::StartLoadingBodyInBackground(
   if (!response_body_)
     return;
 
+  // Initializing the map used when detecting encodings is not thread safe.
+  // Initialize on the main thread here to avoid races.
+  // TODO(crbug.com/1384221): Consider making the map thread safe in
+  // third_party/ced/src/util/encodings/encodings.cc.
+  EncodingNameAliasToEncoding("");
+
   off_thread_body_reader_.reset(new OffThreadBodyReader(
       std::move(response_body_), std::move(decoder), weak_factory_.GetWeakPtr(),
       task_runner_, worker_pool::CreateSequencedTaskRunner({}),
@@ -534,10 +541,8 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
 
 void NavigationBodyLoader::
     BindURLLoaderAndStartLoadingResponseBodyIfPossible() {
-  if (!response_body_ && !off_thread_body_reader_) {
-    DCHECK(base::FeatureList::IsEnabled(features::kEarlyBodyLoad));
+  if (!response_body_ && !off_thread_body_reader_)
     return;
-  }
   // Bind the mojo::URLLoaderClient interface in advance, because we will start
   // to read from the data pipe immediately which may potentially postpone the
   // method calls from the remote. That causes the flakiness of some layout

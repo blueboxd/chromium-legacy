@@ -395,6 +395,9 @@ class PixelTestPages():
                       test_rect=[0, 0, 400, 400],
                       optional_action='ScrollOutAndBack',
                       grace_period_end=date(2022, 8, 29)),
+        PixelTestPage('pixel_webgl_display_p3.html',
+                      base_name + '_WebGLDisplayP3',
+                      test_rect=[0, 0, 300, 300]),
     ]
 
   @staticmethod
@@ -505,6 +508,10 @@ class PixelTestPages():
           PixelTestPage('pixel_webgpu_copy_externalImage_webgpu_canvas.html',
                         base_name + '_WebGPUCopyExternalImageWebGPUCanvas',
                         test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_display_p3.html',
+                        base_name + '_WebGPUDisplayP3',
+                        test_rect=[0, 0, 300, 300],
                         browser_args=webgpu_args),
       ]
 

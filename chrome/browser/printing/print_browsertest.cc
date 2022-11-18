@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
@@ -2995,8 +2996,14 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 
+// TODO(crbug.com/1384459): Flaky on MSan builds.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_StartPrintingFails DISABLED_StartPrintingFails
+#else
+#define MAYBE_StartPrintingFails StartPrintingFails
+#endif
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
-                       StartPrintingFails) {
+                       MAYBE_StartPrintingFails) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
   PrimeForErrorsInNewDocument();
@@ -3549,6 +3556,8 @@ class ContentAnalysisPrintBrowserTest
                 &ContentAnalysisPrintBrowserTest::ScanningResponse,
                 base::Unretained(this)),
             kFakeDmToken));
+    enterprise_connectors::ContentAnalysisDialog::SetShowDialogDelayForTesting(
+        base::Milliseconds(0));
 
     feature_list_.InitAndEnableFeature(features::kEnablePrintContentAnalysis);
   }

@@ -162,10 +162,7 @@ void FakePowerManagerClient::GetKeyboardBrightnessPercent(
       base::BindOnce(std::move(callback), keyboard_brightness_percent_));
 }
 
-void FakePowerManagerClient::SetKeyboardBacklightToggledOff(bool toggled_off) {}
-
-void FakePowerManagerClient::GetKeyboardBacklightToggledOff(
-    DBusMethodCallback<bool> callback) {}
+void FakePowerManagerClient::ToggleKeyboardBacklight() {}
 
 const absl::optional<power_manager::PowerSupplyProperties>&
 FakePowerManagerClient::GetLastStatus() {
@@ -297,10 +294,6 @@ void FakePowerManagerClient::UnblockSuspend(
   CHECK_GT(num_pending_suspend_readiness_callbacks_, 0);
 
   --num_pending_suspend_readiness_callbacks_;
-}
-
-bool FakePowerManagerClient::SupportsAmbientColor() {
-  return supports_ambient_color_;
 }
 
 void FakePowerManagerClient::CreateArcTimers(

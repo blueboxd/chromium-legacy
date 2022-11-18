@@ -323,6 +323,19 @@ std::string GetServiceWorkerForError(const std::string& error) {
         );
         chrome.test.succeed();
       },
+      async function runNvmeSelfTestRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runNvmeSelfTestRoutine(
+              {
+                test_type: 'short_test'
+              }
+            ),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runNvmeSelfTestRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
       async function runNvmeWearLevelRoutine() {
         await chrome.test.assertPromiseRejects(
             chrome.os.diagnostics.runNvmeWearLevelRoutine(
@@ -332,6 +345,15 @@ std::string GetServiceWorkerForError(const std::string& error) {
             ),
             'Error: Unauthorized access to ' +
             'chrome.os.diagnostics.runNvmeWearLevelRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function runSensitiveSensorRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.runSensitiveSensorRoutine(),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.runSensitiveSensorRoutine. ' +
             '%s'
         );
         chrome.test.succeed();

@@ -43,6 +43,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -71,7 +72,9 @@ GLES2CommandBufferStub::GLES2CommandBufferStub(
                         sequence_id,
                         stream_id,
                         route_id),
-      gles2_decoder_(nullptr) {}
+      gles2_decoder_(nullptr),
+      use_shared_images_swapchain_for_ppapi_(
+          features::UseSharedImagesSwapChainForPPAPI()) {}
 
 GLES2CommandBufferStub::~GLES2CommandBufferStub() = default;
 
@@ -147,8 +150,9 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     // We hit this code path when creating the onscreen render context
     // used for compositing on low-end Android devices.
     //
-    // TODO(klausw): explicitly copy rgba sizes? Currently the formats
-    // supported are only RGB565 and default (RGBA8888).
+    // Currently the only formats supported are RGB565 and default (RGBA8888).
+    // See also comments in ui/gl/gl_surface_format.h in case there's
+    // a use case requiring more fine-grained control.
     surface_format.SetRGB565();
     DVLOG(1) << __FUNCTION__ << ": Choosing RGB565 mode.";
   }
@@ -219,9 +223,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
       }
       // Currently, we can't separately control alpha channel for surfaces,
       // it's generally enabled by default except for RGB565 and (on desktop)
-      // smaller-than-32bit formats.
-      //
-      // TODO(klausw): use init_params.attribs.alpha_size here if possible.
+      // smaller-than-32bit formats. If there's a future use case that
+      // requires this, it should use init_params.attribs.alpha_size here.
     }
     if (!surface_format.IsCompatible(default_surface->GetFormat())) {
       DVLOG(1) << __FUNCTION__ << ": Hit the OwnOffscreenSurface path";
@@ -464,6 +467,20 @@ void GLES2CommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
                                                  bool is_lost) {
   // No need to pull texture updates.
   gles2_decoder_->ReturnFrontBuffer(mailbox, is_lost);
+}
+
+void GLES2CommandBufferStub::OnSetDefaultFramebufferSharedImage(
+    const Mailbox& mailbox,
+    int samples_count,
+    bool preserve,
+    bool needs_depth,
+    bool needs_stencil) {
+  if (!use_shared_images_swapchain_for_ppapi_)
+    return;
+
+  // No need to pull texture updates.
+  gles2_decoder_->SetDefaultFramebufferSharedImage(
+      mailbox, samples_count, preserve, needs_depth, needs_stencil);
 }
 
 void GLES2CommandBufferStub::CreateGpuFenceFromHandle(

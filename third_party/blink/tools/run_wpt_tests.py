@@ -575,8 +575,14 @@ class ChromeiOS(Product):
     @property
     def wpt_args(self):
         wpt_args = list(super().wpt_args)
+        cwt_chromedriver_path = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                '../../../ios/chrome/test/wpt/tools/'
+                'run_cwt_chromedriver_wrapper.py'))
         wpt_args.extend([
             '--processes=%d' % self._options.processes,
+            '--webdriver-binary=%s' % cwt_chromedriver_path,
         ])
         return wpt_args
 
@@ -851,7 +857,8 @@ def get_devices(args):
                 instances.append(instance)
 
             SyncParallelizer(instances).Start(writable_system=True,
-                                              window=args.emulator_window)
+                                              window=args.emulator_window,
+                                              require_fast_start=True)
 
         #TODO(weizhong): when choose device, make sure abi matches with target
         yield device_utils.DeviceUtils.HealthyDevices()

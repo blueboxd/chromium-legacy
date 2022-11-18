@@ -109,18 +109,15 @@ class StyleSelfAlignmentData;
 namespace css_longhand {
 
 class AccentColor;
-class Appearance;
 class BackgroundColor;
 class BorderBottomColor;
 class BorderLeftColor;
 class BorderRightColor;
 class BorderTopColor;
 class CaretColor;
-class Clear;
 class Color;
 class ColumnRuleColor;
 class Fill;
-class Float;
 class FloodColor;
 class InternalForcedBackgroundColor;
 class InternalForcedBorderColor;
@@ -144,18 +141,13 @@ class InternalVisitedTextFillColor;
 class InternalVisitedTextStrokeColor;
 class LightingColor;
 class OutlineColor;
-class PointerEvents;
-class Position;
-class Resize;
 class StopColor;
 class Stroke;
 class TextDecorationColor;
 class TextEmphasisColor;
-class UserSelect;
 class WebkitTapHighlightColor;
 class WebkitTextFillColor;
 class WebkitTextStrokeColor;
-class WebkitUserModify;
 
 }  // namespace css_longhand
 
@@ -225,7 +217,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Accesses GetColor().
   friend class ComputedStyleUtils;
-  // These get visited and unvisited colors separately.
+  // Color properties need access to private color utils.
   friend class css_longhand::AccentColor;
   friend class css_longhand::BackgroundColor;
   friend class css_longhand::BorderBottomColor;
@@ -261,23 +253,18 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedTextStrokeColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
-  friend class css_longhand::PointerEvents;
-  friend class css_longhand::Position;
   friend class css_longhand::Resize;
   friend class css_longhand::StopColor;
   friend class css_longhand::Stroke;
   friend class css_longhand::TextDecorationColor;
   friend class css_longhand::TextEmphasisColor;
-  friend class css_longhand::UserSelect;
   friend class css_longhand::WebkitTapHighlightColor;
   friend class css_longhand::WebkitTextFillColor;
   friend class css_longhand::WebkitTextStrokeColor;
-  friend class css_longhand::WebkitUserModify;
   // Access to private Appearance() and HasAppearance().
   friend class LayoutTheme;
   friend class StyleAdjuster;
   friend class StyleCascade;
-  friend class css_longhand::Appearance;
   // Editing has to only reveal unvisited info.
   friend class EditingStyle;
   // Saves Border/Background information for later comparison.
@@ -293,6 +280,10 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleResolver;
   // Access to UserModify().
   friend class MatchedPropertiesCache;
+
+  using ComputedStyleBase::Clear;
+  using ComputedStyleBase::Floating;
+  using ComputedStyleBase::Resize;
 
  protected:
   mutable std::unique_ptr<StyleCachedData> cached_data_;
@@ -910,9 +901,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool StrokeDashArrayDataEquivalent(const ComputedStyle&) const;
 
   // accent-color
-  const StyleAutoColor& AccentColor() const { return AccentColorInternal(); }
   // An empty optional means the accent-color is 'auto'
-  absl::optional<Color> AccentColorResolved() const;
+  absl::optional<blink::Color> AccentColorResolved() const;
 
   // Comparison operators
   // FIXME: Replace callers of operator== wth a named method instead, e.g.
@@ -986,7 +976,7 @@ class ComputedStyle : public ComputedStyleBase,
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
   bool ColumnRuleIsTransparent() const {
-    return !ColumnRuleColorInternal()
+    return !ColumnRuleColor()
                 .Resolve(GetCurrentColor(), UsedColorScheme())
                 .Alpha();
   }
@@ -1452,15 +1442,15 @@ class ComputedStyle : public ComputedStyleBase,
   bool CanRenderBorderImage() const;
 
   // Float utility functions.
-  bool IsFloating() const { return FloatingInternal() != EFloat::kNone; }
-  EFloat UnresolvedFloating() const { return FloatingInternal(); }
+  bool IsFloating() const { return Floating() != EFloat::kNone; }
+  EFloat UnresolvedFloating() const { return Floating(); }
 
   EFloat Floating(const ComputedStyle& cb_style) const {
     return Floating(cb_style.Direction());
   }
 
   EFloat Floating(TextDirection cb_direction) const {
-    const EFloat value = FloatingInternal();
+    const EFloat value = Floating();
     switch (value) {
       case EFloat::kInlineStart:
         return IsLtr(cb_direction) ? EFloat::kLeft : EFloat::kRight;
@@ -1527,15 +1517,15 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Clear utility functions.
-  bool HasClear() const { return ClearInternal() != EClear::kNone; }
-  EClear UnresolvedClear() const { return ClearInternal(); }
+  bool HasClear() const { return Clear() != EClear::kNone; }
+  EClear UnresolvedClear() const { return Clear(); }
 
   EClear Clear(const ComputedStyle& cb_style) const {
     return Clear(cb_style.Direction());
   }
 
   EClear Clear(TextDirection cb_direction) const {
-    const EClear value = ClearInternal();
+    const EClear value = Clear();
     switch (value) {
       case EClear::kInlineStart:
         return IsLtr(cb_direction) ? EClear::kLeft : EClear::kRight;
@@ -1718,12 +1708,12 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Resize utility functions.
   bool HasResize() const {
-    return StyleType() == kPseudoIdNone && ResizeInternal() != EResize::kNone;
+    return StyleType() == kPseudoIdNone && Resize() != EResize::kNone;
   }
-  EResize UnresolvedResize() const { return ResizeInternal(); }
+  EResize UnresolvedResize() const { return Resize(); }
 
   EResize Resize(const ComputedStyle& cb_style) const {
-    EResize value = ResizeInternal();
+    EResize value = Resize();
     switch (value) {
       case EResize::kBlock:
         return cb_style.IsHorizontalWritingMode() ? EResize::kVertical
@@ -1740,26 +1730,26 @@ class ComputedStyle : public ComputedStyleBase,
   EPointerEvents UsedPointerEvents() const {
     if (IsInert())
       return EPointerEvents::kNone;
-    return PointerEventsInternal();
+    return PointerEvents();
   }
 
   // User modify utility functions.
   EUserModify UsedUserModify() const {
     if (IsInert())
       return EUserModify::kReadOnly;
-    return UserModifyInternal();
+    return UserModify();
   }
 
   // User select utility functions.
   EUserSelect UsedUserSelect() const {
     if (IsInert())
       return EUserSelect::kNone;
-    return UserSelectInternal();
+    return UserSelect();
   }
 
   bool IsSelectable() const {
-    return !IsInert() && !(UserSelectInternal() == EUserSelect::kNone &&
-                           UserModifyInternal() == EUserModify::kReadOnly);
+    return !IsInert() && !(UserSelect() == EUserSelect::kNone &&
+                           UserModify() == EUserModify::kReadOnly);
   }
 
   bool IsFocusable() const {
@@ -1773,7 +1763,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Text decoration utility functions.
   bool TextDecorationVisualOverflowEqual(const ComputedStyle& o) const;
-  void ApplyTextDecorations(const Color& parent_text_decoration_color,
+  void ApplyTextDecorations(const blink::Color& parent_text_decoration_color,
                             bool override_existing_colors);
   void ClearAppliedTextDecorations();
   void RestoreParentTextDecorations(const ComputedStyle& parent_style);
@@ -1937,9 +1927,18 @@ class ComputedStyle : public ComputedStyleBase,
     return !Transform().Operations().empty();
   }
   ETransformStyle3D UsedTransformStyle3D() const {
+    if (TransformStyle3D() == ETransformStyle3D::kFlat) {
+      return ETransformStyle3D::kFlat;
+    }
+
+    // Even if the user specified transform-style: preserves-3d (which is
+    // non-default), it could be overridden by a number of other properties.
+    // These checks are fairly expensive (since there are so many of them),
+    // so we only bother going through them if needed.
+    DCHECK_EQ(TransformStyle3D(), ETransformStyle3D::kPreserve3d);
     return HasGroupingPropertyForUsedTransformStyle3D()
                ? ETransformStyle3D::kFlat
-               : TransformStyle3D();
+               : ETransformStyle3D::kPreserve3d;
   }
   // Returns whether the transform operations for |otherStyle| differ from the
   // operations for this style instance. Note that callers may want to also
@@ -2214,7 +2213,7 @@ class ComputedStyle : public ComputedStyleBase,
     return ShadowListHasCurrentColor(BoxShadow());
   }
   bool HasBackground() const {
-    Color color = VisitedDependentColor(GetCSSPropertyBackgroundColor());
+    blink::Color color = VisitedDependentColor(GetCSSPropertyBackgroundColor());
     if (color.Alpha())
       return true;
     // When background color animation is running on the compositor thread, we
@@ -2227,9 +2226,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Color utility functions.
-  CORE_EXPORT Color
-  VisitedDependentColor(const CSSProperty& color_property,
-                        bool* is_current_color = nullptr) const;
+  CORE_EXPORT blink::Color VisitedDependentColor(
+      const CSSProperty& color_property,
+      bool* is_current_color = nullptr) const;
 
   // -webkit-appearance utility functions.
   bool HasEffectiveAppearance() const {
@@ -2267,9 +2266,12 @@ class ComputedStyle : public ComputedStyleBase,
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
 
+  static mojom::blink::ColorScheme UsedColorScheme(bool is_dark_color_scheme) {
+    return is_dark_color_scheme ? mojom::blink::ColorScheme::kDark
+                                : mojom::blink::ColorScheme::kLight;
+  }
   mojom::blink::ColorScheme UsedColorScheme() const {
-    return DarkColorScheme() ? mojom::blink::ColorScheme::kDark
-                             : mojom::blink::ColorScheme::kLight;
+    return UsedColorScheme(DarkColorScheme());
   }
 
   bool GeneratesMarkerImage() const {
@@ -2309,13 +2311,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasViewportUnits() const { return ViewportUnitFlags(); }
 
  private:
-  EClear Clear() const { return ClearInternal(); }
-  EFloat Floating() const { return FloatingInternal(); }
-  EPointerEvents PointerEvents() const { return PointerEventsInternal(); }
-  EResize Resize() const { return ResizeInternal(); }
-  EUserModify UserModify() const { return UserModifyInternal(); }
-  EUserSelect UserSelect() const { return UserSelectInternal(); }
-
   bool IsInlineSizeContainer() const {
     return ContainerType() & kContainerTypeInlineSize;
   }
@@ -2382,63 +2377,11 @@ class ComputedStyle : public ComputedStyleBase,
            display == EDisplay::kTableCaption;
   }
 
-  // Color accessors are all private to make sure callers use
-  // VisitedDependentColor instead to access them.
-  const StyleColor& BorderLeftColor() const {
-    return BorderLeftColorInternal();
-  }
-  const StyleColor& BorderRightColor() const {
-    return BorderRightColorInternal();
-  }
-  const StyleColor& BorderTopColor() const { return BorderTopColorInternal(); }
-  const StyleColor& BorderBottomColor() const {
-    return BorderBottomColorInternal();
-  }
-
-  const StyleColor& BackgroundColor() const {
-    return BackgroundColorInternal();
-  }
-  const StyleAutoColor& CaretColor() const { return CaretColorInternal(); }
-  const StyleColor& GetColor() const { return ColorInternal(); }
-  bool ColorIsCurrentColor() const { return ColorIsCurrentColorInternal(); }
-  const StyleColor& ColumnRuleColor() const {
-    return ColumnRuleColorInternal();
-  }
-  const StyleColor& OutlineColor() const { return OutlineColorInternal(); }
-  const StyleColor& StopColor() const { return StopColorInternal(); }
-  const StyleColor& TextDecorationColor() const {
-    return TextDecorationColorInternal();
-  }
-  const StyleColor& TextEmphasisColor() const {
-    return TextEmphasisColorInternal();
-  }
-  const StyleColor& TextFillColor() const { return TextFillColorInternal(); }
-  const StyleColor& TextStrokeColor() const {
-    return TextStrokeColorInternal();
-  }
-  const StyleColor& InternalVisitedColor() const {
-    return InternalVisitedColorInternal();
-  }
-  bool InternalVisitedColorIsCurrentColor() const {
-    return InternalVisitedColorIsCurrentColorInternal();
-  }
-  const StyleAutoColor& InternalVisitedCaretColor() const {
-    return InternalVisitedCaretColorInternal();
-  }
-  const StyleColor& InternalVisitedBackgroundColor() const {
-    return InternalVisitedBackgroundColorInternal();
-  }
-  const StyleColor& InternalVisitedBorderLeftColor() const {
-    return InternalVisitedBorderLeftColorInternal();
-  }
   bool InternalVisitedBorderLeftColorHasNotChanged(
       const ComputedStyle& other) const {
     return (InternalVisitedBorderLeftColor() ==
                 other.InternalVisitedBorderLeftColor() ||
             !BorderLeftWidth());
-  }
-  const StyleColor& InternalVisitedBorderRightColor() const {
-    return InternalVisitedBorderRightColorInternal();
   }
   bool InternalVisitedBorderRightColorHasNotChanged(
       const ComputedStyle& other) const {
@@ -2446,17 +2389,11 @@ class ComputedStyle : public ComputedStyleBase,
                 other.InternalVisitedBorderRightColor() ||
             !BorderRightWidth());
   }
-  const StyleColor& InternalVisitedBorderBottomColor() const {
-    return InternalVisitedBorderBottomColorInternal();
-  }
   bool InternalVisitedBorderBottomColorHasNotChanged(
       const ComputedStyle& other) const {
     return (InternalVisitedBorderBottomColor() ==
                 other.InternalVisitedBorderBottomColor() ||
             !BorderBottomWidth());
-  }
-  const StyleColor& InternalVisitedBorderTopColor() const {
-    return InternalVisitedBorderTopColorInternal();
   }
   bool InternalVisitedBorderTopColorHasNotChanged(
       const ComputedStyle& other) const {
@@ -2464,56 +2401,20 @@ class ComputedStyle : public ComputedStyleBase,
                 other.InternalVisitedBorderTopColor() ||
             !BorderTopWidth());
   }
-  const StyleColor& InternalVisitedOutlineColor() const {
-    return InternalVisitedOutlineColorInternal();
-  }
+
   bool InternalVisitedOutlineColorHasNotChanged(
       const ComputedStyle& other) const {
     return (InternalVisitedOutlineColor() ==
                 other.InternalVisitedOutlineColor() ||
             !OutlineWidth());
   }
-  const StyleColor& InternalVisitedColumnRuleColor() const {
-    return InternalVisitedColumnRuleColorInternal();
-  }
-  const StyleColor& InternalVisitedTextDecorationColor() const {
-    return InternalVisitedTextDecorationColorInternal();
-  }
-  const StyleColor& InternalVisitedTextEmphasisColor() const {
-    return InternalVisitedTextEmphasisColorInternal();
-  }
-  const StyleColor& InternalVisitedTextFillColor() const {
-    return InternalVisitedTextFillColorInternal();
-  }
-  const StyleColor& InternalVisitedTextStrokeColor() const {
-    return InternalVisitedTextStrokeColorInternal();
-  }
-
-  const StyleColor& InternalForcedBackgroundColor() const {
-    return InternalForcedBackgroundColorInternal();
-  }
-  const StyleColor& InternalForcedBorderColor() const {
-    return InternalForcedBorderColorInternal();
-  }
-  const StyleColor& InternalForcedColor() const {
-    return InternalForcedColorInternal();
-  }
-  const StyleColor& InternalForcedOutlineColor() const {
-    return InternalForcedOutlineColorInternal();
-  }
-  const StyleColor& InternalForcedVisitedColor() const {
-    return InternalForcedVisitedColorInternal();
-  }
 
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
 
-  // Appearance accessors are private to make sure callers use
-  // EffectiveAppearance in almost all cases.
-  ControlPart Appearance() const { return AppearanceInternal(); }
   bool HasAppearance() const { return Appearance() != kNoControlPart; }
 
   void AddAppliedTextDecoration(const AppliedTextDecoration&);
-  void OverrideTextDecorationColors(Color propagated_color);
+  void OverrideTextDecorationColors(blink::Color propagated_color);
   void ApplyMotionPathTransform(float origin_x,
                                 float origin_y,
                                 const gfx::RectF& bounding_box,
@@ -2546,10 +2447,12 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT bool CustomPropertiesEqual(const Vector<AtomicString>& properties,
                                          const ComputedStyle& other) const;
 
-  Color GetCurrentColor(bool* is_current_color = nullptr) const;
-  Color GetInternalVisitedCurrentColor(bool* is_current_color = nullptr) const;
-  Color GetInternalForcedCurrentColor(bool* is_current_color = nullptr) const;
-  Color GetInternalForcedVisitedCurrentColor(
+  blink::Color GetCurrentColor(bool* is_current_color = nullptr) const;
+  blink::Color GetInternalVisitedCurrentColor(
+      bool* is_current_color = nullptr) const;
+  blink::Color GetInternalForcedCurrentColor(
+      bool* is_current_color = nullptr) const;
+  blink::Color GetInternalForcedVisitedCurrentColor(
       bool* is_current_color = nullptr) const;
 
   // Helper for resolving a StyleColor which may contain currentColor or a
@@ -2557,8 +2460,8 @@ class ComputedStyle : public ComputedStyleBase,
   // consists of a StyleColor plus additional information. For <color>
   // properties, prefer VisitedDependentColor() or
   // Longhand::ColorIncludingFallback() instead.
-  Color ResolvedColor(const StyleColor& color,
-                      bool* is_current_color = nullptr) const;
+  blink::Color ResolvedColor(const StyleColor& color,
+                             bool* is_current_color = nullptr) const;
 
   static bool ShadowListHasCurrentColor(const ShadowList*);
 
@@ -2689,6 +2592,12 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   STACK_ALLOCATED();
 
  public:
+  friend class ColorPropertyFunctions;
+  friend class StyleAdjuster;
+  friend class StyleResolverState;
+  // Access to UserModify().
+  friend class MatchedPropertiesCache;
+
   explicit ComputedStyleBuilder(const ComputedStyle& style) {
     SetStyle(ComputedStyle::Clone(style));
   }
@@ -2703,17 +2612,16 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
 
   scoped_refptr<ComputedStyle> TakeStyle() { return std::move(style_); }
 
-#if DCHECK_IS_ON()
-  scoped_refptr<ComputedStyle> ToStyle() {
+  // NOTE: Prefer `TakeStyle()` if possible.
+  scoped_refptr<const ComputedStyle> CloneStyle() const {
     DCHECK(style_);
     return ComputedStyle::Clone(*style_);
   }
-#endif  // DCHECK_IS_ON()
 
   CORE_EXPORT void InheritFrom(
       const ComputedStyle& inherit_parent,
       IsAtShadowBoundary is_at_shadow_boundary = kNotAtShadowBoundary) {
-    EUserModify current_user_modify = UserModifyInternal();
+    EUserModify current_user_modify = UserModify();
     ComputedStyleBuilderBase::InheritFrom(inherit_parent,
                                           is_at_shadow_boundary);
 
@@ -3100,6 +3008,13 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   // zoom
   CORE_EXPORT bool SetEffectiveZoom(float);
 
+  // BaseData
+  const ComputedStyle* GetBaseComputedStyle() const {
+    if (auto* base_data = BaseData().get())
+      return base_data->GetBaseComputedStyle();
+    return nullptr;
+  }
+
   /// CallbackSelector
   void AddCallbackSelector(const String& selector) {
     if (!CallbackSelectors().Contains(selector))
@@ -3146,7 +3061,14 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
       mojom::blink::PreferredColorScheme preferred_color_scheme,
       bool force_dark);
 
+  mojom::blink::ColorScheme UsedColorScheme() const {
+    return ComputedStyle::UsedColorScheme(DarkColorScheme());
+  }
+
   // Variables
+  const StyleInheritedVariables* InheritedVariables() const {
+    return InheritedVariablesInternal().get();
+  }
   CORE_EXPORT StyleInheritedVariables& MutableInheritedVariables();
   CORE_EXPORT StyleNonInheritedVariables& MutableNonInheritedVariables();
   CORE_EXPORT void SetVariableData(const AtomicString& name,
@@ -3171,10 +3093,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   }
 
  private:
-  friend class ColorPropertyFunctions;
-  friend class StyleAdjuster;
-  friend class StyleResolverState;
-
   ComputedStyleBuilder() = default;
 
   CORE_EXPORT void ClearVariableNamesCache();

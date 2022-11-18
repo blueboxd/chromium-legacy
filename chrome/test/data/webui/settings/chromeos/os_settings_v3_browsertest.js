@@ -280,6 +280,46 @@ TEST_F('OSSettingsInternetPageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
+// TODO(b/239477916) Move this test back into the list of tests below once
+// hotspot is launched.
+var OSSettingsHotspotSubpageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/hotspot_subpage_tests.js&host=test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(['ash::features::kHotspot'])
+    };
+  }
+};
+
+TEST_F('OSSettingsHotspotSubpageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// TODO(b/239477916) Move this test back into the list of tests below once
+// hotspot is launched.
+var OSSettingsHotspotSummaryItemV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/hotspot_summary_item_tests.js&host=test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(['ash::features::kHotspot'])
+    };
+  }
+};
+
+TEST_F('OSSettingsHotspotSummaryItemV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
 function crostiniTestGenPreamble() {
   GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
   GEN('fake_crostini_features.SetAll(true);');
@@ -325,6 +365,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
 [['AccessibilityPage', 'os_a11y_page_tests.js'],
  ['AboutPage', 'os_about_page_tests.js'],
  ['AccountsPage', 'add_users_tests.js'],
+ ['ApnDetailDialog', 'apn_detail_dialog_tests.js'],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
  ['AppManagementAppDetailsItem', 'app_management/app_details_item_test.js'],
@@ -423,7 +464,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'multidevice_permissions_setup_dialog_tests.js',
  ],
  ['MultideviceSmartLockItem', 'multidevice_smartlock_item_test.js'],
- ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.js'],
  ['MultideviceSubPage', 'multidevice_subpage_tests.js'],
  [
    'MultideviceTaskContinuationItem',
@@ -443,11 +483,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.js'],
  ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.js'],
  ['NetworkProxySection', 'network_proxy_section_test.js'],
- [
-   'NetworkSummary',
-   'network_summary_test.js',
-   {enabled: ['ash::features::kHotspot']},
- ],
+ ['NetworkSummary', 'network_summary_test.js'],
  ['NetworkSummaryItem', 'network_summary_item_test.js'],
  ['OncMojoTest', 'onc_mojo_test.js'],
  ['OsBluetoothPage', 'os_bluetooth_page_tests.js'],
@@ -500,6 +536,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['ResetPage', 'os_reset_page_test.js'],
  ['SettingsSchedulerSlider', 'settings_scheduler_slider_test.js'],
  ['SearchSubpage', 'search_subpage_test.js'],
+ [
+   'SelectToSpeakSubpage',
+   'select_to_speak_subpage_tests.js',
+   {enabled: ['features::kAccessibilitySelectToSpeakPageMigration']},
+ ],
  ['SettingsTrafficCounters', 'settings_traffic_counters_test.js'],
  ['SmartInputsPage', 'smart_inputs_page_test.js'],
  ['SmbPage', 'smb_shares_page_tests.js'],
@@ -563,6 +604,17 @@ function registerTest(testName, module, featureList) {
     GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
     TEST_F(className, 'OfficialBuild' || 'All', () => {
       mocha.grep('PrivacyHubSubpageTest_OfficialBuild').run();
+    });
+    GEN('#endif');
+  } else if (testName === 'OsSettingsSearchBox') {
+    TEST_F(className, 'AllBuilds' || 'All', () => {
+      mocha.grep('/^(?!(OSSettingsSearchBox SearchFeedback_OfficialBuild)).*$/')
+          .run();
+    });
+
+    GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+    TEST_F(className, 'OfficialBuild' || 'All', () => {
+      mocha.grep('SearchFeedback_OfficialBuild').run();
     });
     GEN('#endif');
   } else {

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/reporting/metrics/collector_base.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
@@ -26,6 +27,18 @@ class Sampler;
 // is enabled.
 class PeriodicCollector : public CollectorBase {
  public:
+  // Start periodic collection after `init_delay`.
+  PeriodicCollector(Sampler* sampler,
+                    MetricReportQueue* metric_report_queue,
+                    ReportingSettings* reporting_settings,
+                    const std::string& enable_setting_path,
+                    bool setting_enabled_default_value,
+                    const std::string& rate_setting_path,
+                    base::TimeDelta default_rate,
+                    int rate_unit_to_ms,
+                    base::TimeDelta init_delay);
+
+  // Start periodic collection immediately.
   PeriodicCollector(Sampler* sampler,
                     MetricReportQueue* metric_report_queue,
                     ReportingSettings* reporting_settings,
@@ -44,17 +57,21 @@ class PeriodicCollector : public CollectorBase {
   void OnMetricDataCollected(absl::optional<MetricData> metric_data) override;
 
  private:
-  virtual void StartPeriodicCollection();
+  void StartPeriodicCollection();
 
-  virtual void StopPeriodicCollection();
+  void StopPeriodicCollection();
+
+  void SetReportingControllerCb();
 
   const raw_ptr<MetricReportQueue> metric_report_queue_;
 
-  // `rate_controller_` should be initialized before `reporting_controller_` as
-  // initializing `reporting_controller` will trigger `rate_controller_` call if
-  // the setting is enabled.
+  // `rate_controller_` should be initialized before the setting update
+  // callbacks of `reporting_controller_` are set, as `reporting_controller`
+  // will trigger `rate_controller_` call if the setting is enabled.
   const std::unique_ptr<MetricRateController> rate_controller_;
   const std::unique_ptr<MetricReportingController> reporting_controller_;
+
+  base::WeakPtrFactory<PeriodicCollector> weak_ptr_factory_{this};
 };
 }  // namespace reporting
 

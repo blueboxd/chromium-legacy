@@ -56,12 +56,6 @@ chrome.fileManagerPrivate.DriveOfflineReason = {
 };
 
 /** @enum {string} */
-chrome.fileManagerPrivate.MountCondition = {
-  ERROR_UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
-  ERROR_UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-};
-
-/** @enum {string} */
 chrome.fileManagerPrivate.MountContext = {
   USER: 'user',
   AUTO: 'auto',
@@ -77,23 +71,23 @@ chrome.fileManagerPrivate.MountCompletedEventType = {
 chrome.fileManagerPrivate.MountError = {
   SUCCESS: 'success',
   IN_PROGRESS: 'in_progress',
-  ERROR_UNKNOWN: 'error_unknown',
-  ERROR_INTERNAL: 'error_internal',
-  ERROR_INVALID_ARGUMENT: 'error_invalid_argument',
-  ERROR_INVALID_PATH: 'error_invalid_path',
-  ERROR_PATH_ALREADY_MOUNTED: 'error_path_already_mounted',
-  ERROR_PATH_NOT_MOUNTED: 'error_path_not_mounted',
-  ERROR_DIRECTORY_CREATION_FAILED: 'error_directory_creation_failed',
-  ERROR_INVALID_MOUNT_OPTIONS: 'error_invalid_mount_options',
-  ERROR_INSUFFICIENT_PERMISSIONS: 'error_insufficient_permissions',
-  ERROR_MOUNT_PROGRAM_NOT_FOUND: 'error_mount_program_not_found',
-  ERROR_MOUNT_PROGRAM_FAILED: 'error_mount_program_failed',
-  ERROR_INVALID_DEVICE_PATH: 'error_invalid_device_path',
-  ERROR_UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
-  ERROR_UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-  ERROR_NEED_PASSWORD: 'error_need_password',
-  ERROR_CANCELLED: 'error_cancelled',
-  ERROR_BUSY: 'error_busy',
+  UNKNOWN_ERROR: 'unknown_error',
+  INTERNAL_ERROR: 'internal_error',
+  INVALID_ARGUMENT: 'invalid_argument',
+  INVALID_PATH: 'invalid_path',
+  PATH_ALREADY_MOUNTED: 'path_already_mounted',
+  PATH_NOT_MOUNTED: 'path_not_mounted',
+  DIRECTORY_CREATION_FAILED: 'directory_creation_failed',
+  INVALID_MOUNT_OPTIONS: 'invalid_mount_options',
+  INSUFFICIENT_PERMISSIONS: 'insufficient_permissions',
+  MOUNT_PROGRAM_NOT_FOUND: 'mount_program_not_found',
+  MOUNT_PROGRAM_FAILED: 'mount_program_failed',
+  INVALID_DEVICE_PATH: 'invalid_device_path',
+  UNKNOWN_FILESYSTEM: 'unknown_filesystem',
+  UNSUPPORTED_FILESYSTEM: 'unsupported_filesystem',
+  NEED_PASSWORD: 'need_password',
+  CANCELLED: 'cancelled',
+  BUSY: 'busy',
 };
 
 /** @enum {string} */
@@ -465,7 +459,7 @@ chrome.fileManagerPrivate.IconSet;
  *   hasMedia: boolean,
  *   configurable: boolean,
  *   watchable: boolean,
- *   mountCondition: (!chrome.fileManagerPrivate.MountCondition|undefined),
+ *   mountCondition: (!chrome.fileManagerPrivate.MountError|undefined),
  *   mountContext: (!chrome.fileManagerPrivate.MountContext|undefined),
  *   diskFileSystemType: (string|undefined),
  *   iconSet: !chrome.fileManagerPrivate.IconSet,

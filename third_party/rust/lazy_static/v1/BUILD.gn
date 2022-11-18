@@ -24,3 +24,7 @@ cargo_crate("lib") {
   cargo_pkg_description =
       "A macro for declaring lazily evaluated statics in Rust."
 }
+group("test_support") {
+  public_deps = [ ":lib" ]
+  testonly = true
+}

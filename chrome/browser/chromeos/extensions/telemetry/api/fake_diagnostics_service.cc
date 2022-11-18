@@ -249,7 +249,7 @@ void FakeDiagnosticsService::RunNvmeSelfTestRoutine(
     crosapi::mojom::DiagnosticsNvmeSelfTestTypeEnum nvme_self_test_type,
     RunNvmeSelfTestRoutineCallback callback) {
   actual_passed_parameters_.clear();
-  actual_passed_parameters_.Set("nvme_self_test_type",
+  actual_passed_parameters_.Set("test_type",
                                 static_cast<int32_t>(nvme_self_test_type));
 
   actual_called_routine_ =
@@ -284,6 +284,16 @@ void FakeDiagnosticsService::RunPrimeSearchRoutine(
 
   actual_called_routine_ = crosapi::mojom::DiagnosticsRoutineEnum::kPrimeSearch;
 
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), run_routine_response_->Clone()));
+}
+
+void FakeDiagnosticsService::RunSensitiveSensorRoutine(
+    RunSensitiveSensorRoutineCallback callback) {
+  actual_passed_parameters_.clear();
+  actual_called_routine_ =
+      crosapi::mojom::DiagnosticsRoutineEnum::kSensitiveSensor;
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), run_routine_response_->Clone()));

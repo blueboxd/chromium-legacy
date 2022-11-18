@@ -36,7 +36,6 @@ import org.json.JSONObject;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FeatureList;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
@@ -62,6 +61,7 @@ import org.chromium.chrome.browser.customtabs.features.sessionrestore.SessionRes
 import org.chromium.chrome.browser.customtabs.features.sessionrestore.SessionRestoreManagerImpl;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
@@ -183,6 +183,9 @@ public class CustomTabsConnection {
     static final String GET_GREATEST_SCROLL_PERCENTAGE = "getGreatestScrollPercentage";
     @VisibleForTesting
     static final String GREATEST_SCROLL_PERCENTAGE_KEY = "greatestScrollPercentage";
+    private static final MutableFlagWithSafeDefault sRealTimeEngagementFlag =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS, false);
 
     @IntDef({ParallelRequestStatus.NO_REQUEST, ParallelRequestStatus.SUCCESS,
             ParallelRequestStatus.FAILURE_NOT_INITIALIZED,
@@ -232,6 +235,10 @@ public class CustomTabsConnection {
     private SessionRestoreManager mSessionRestoreManager;
 
     private volatile ChainedTasks mWarmupTasks;
+
+    // Caches the previous height reported via |onResized|. Used for extraCallback
+    // |ON_RESIZED_CALLLBACK| which cares about height only.
+    private int mPrevHeight;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -664,9 +671,7 @@ public class CustomTabsConnection {
         Bundle result = null;
         switch (commandName) {
             case GET_GREATEST_SCROLL_PERCENTAGE:
-                if (!FeatureList.isInitialized()
-                        || !ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
+                if (!sRealTimeEngagementFlag.isEnabled()) {
                     break;
                 }
                 Integer percentage = mGreatestScrollPercentageSupplier != null
@@ -1188,13 +1193,29 @@ public class CustomTabsConnection {
     /**
      * Called when a resizable Custom Tab is resized.
      */
-    public void onResized(@Nullable CustomTabsSessionToken session, int size) {
+    public void onResized(@Nullable CustomTabsSessionToken session, int height, int width) {
         Bundle args = new Bundle();
-        args.putInt(ON_RESIZED_SIZE_EXTRA, size);
+        if (height != mPrevHeight) {
+            args.putInt(ON_RESIZED_SIZE_EXTRA, height);
 
-        if (safeExtraCallback(session, ON_RESIZED_CALLBACK, args) && mLogRequests) {
-            logCallback("extraCallback(" + ON_RESIZED_CALLBACK + ")", args);
+            // TODO(crbug.com/1366844): Deprecate the extra callback.
+            if (safeExtraCallback(session, ON_RESIZED_CALLBACK, args) && mLogRequests) {
+                logCallback("extraCallback(" + ON_RESIZED_CALLBACK + ")", args);
+            }
+            mPrevHeight = height;
         }
+
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (callback == null) return;
+        try {
+            callback.onActivityResized(height, width, args);
+        } catch (Exception e) {
+            // Catching all exceptions is really bad, but we need it here,
+            // because Android exposes us to client bugs by throwing a variety
+            // of exceptions. See crbug.com/517023.
+            return;
+        }
+        logCallback("onActivityResized()", "(" + height + "x" + width + ")");
     }
 
     /**
@@ -1683,7 +1704,7 @@ public class CustomTabsConnection {
 
     public static void createSpareWebContents() {
         if (SysUtils.isLowEndDevice()) return;
-        WarmupManager.getInstance().createSpareWebContents(WarmupManager.FOR_CCT);
+        WarmupManager.getInstance().createSpareWebContents();
     }
 
     public boolean receiveFile(

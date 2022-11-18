@@ -316,6 +316,9 @@ extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsLowEndBypass;
 // Indicates whether to support transpose edit operations in fuzzy search.
 extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsTranspose;
 
+// Returns true if the default browser pedal feature is enabled.
+bool IsDefaultBrowserPedalEnabled();
+
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
@@ -342,7 +345,7 @@ bool IsSiteSearchStarterPackEnabled();
 // Returns true if the feature to enable uniform row height is enabled.
 bool IsUniformRowHeightEnabled();
 // Specifies the row height in pixels for omnibox suggestions.
-extern const base::FeatureParam<int> kSuggestionRowHeight;
+extern const base::FeatureParam<int> kSuggestionVerticalMargin;
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:

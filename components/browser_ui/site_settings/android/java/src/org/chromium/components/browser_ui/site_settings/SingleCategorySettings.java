@@ -94,6 +94,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     // e.g. Location/Popups/All sites (if blank).
     public static final String EXTRA_CATEGORY = "category";
     public static final String EXTRA_TITLE = "title";
+    public static final String POLICY = "policy";
 
     private SettingsLauncher mSettingsLauncher;
 
@@ -178,9 +179,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     public static final String COOKIE_INFO_TEXT_KEY = "cookie_info_text";
 
     // Keys for Allowed/Blocked preference groups/headers.
-    private static final String ALLOWED_GROUP = "allowed_group";
-    private static final String BLOCKED_GROUP = "blocked_group";
-    private static final String MANAGED_GROUP = "managed_group";
+    public static final String ALLOWED_GROUP = "allowed_group";
+    public static final String BLOCKED_GROUP = "blocked_group";
+    public static final String MANAGED_GROUP = "managed_group";
 
     private class ResultsPopulator implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
         @Override
@@ -352,8 +353,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         int contentType = mCategory.getContentSettingsType();
         mRequiresTriStateSetting =
                 WebsitePreferenceBridge.requiresTriStateContentSetting(contentType);
-        mRequiresFourStateSetting =
-                WebsitePreferenceBridge.requiresFourStateContentSetting(contentType);
+        mRequiresFourStateSetting = WebsitePreferenceBridge.requiresFourStateContentSetting(
+                contentType, getSiteSettingsDelegate());
 
         ViewGroup view = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
 
@@ -453,14 +454,19 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
 
         if (preference instanceof WebsitePreference) {
-            WebsitePreference website_pref = (WebsitePreference) preference;
+            WebsitePreference websitePreference = (WebsitePreference) preference;
+            if (websitePreference.isManaged()) {
+                showManagedToast();
+                return false;
+            }
 
-            if (website_pref.getParent().getKey().equals(MANAGED_GROUP)) {
-                website_pref.setFragment(SingleWebsiteSettings.class.getName());
-                website_pref.putSiteAddressIntoExtras(SingleWebsiteSettings.EXTRA_SITE_ADDRESS);
+            if (websitePreference.getParent().getKey().equals(MANAGED_GROUP)) {
+                websitePreference.setFragment(SingleWebsiteSettings.class.getName());
+                websitePreference.putSiteAddressIntoExtras(
+                        SingleWebsiteSettings.EXTRA_SITE_ADDRESS);
                 int navigationSource = getArguments().getInt(
                         SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
-                website_pref.getExtras().putInt(
+                websitePreference.getExtras().putInt(
                         SettingsNavigationSource.EXTRA_KEY, navigationSource);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                     && mCategory.getType() == SiteSettingsCategory.Type.NOTIFICATIONS) {
@@ -468,7 +474,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 // is the case we send the user directly to Android Settings to modify the
                 // Notification exception.
                 String channelId = getSiteSettingsDelegate().getChannelIdForOrigin(
-                        website_pref.site().getAddress().getOrigin());
+                        websitePreference.site().getAddress().getOrigin());
                 Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
                 intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
                 intent.putExtra(
@@ -477,7 +483,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                         intent, SingleWebsiteSettings.REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS);
 
             } else {
-                buildPreferenceDialog(website_pref.site()).show();
+                buildPreferenceDialog(websitePreference.site()).show();
                 if (mCategory.getType() == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
                     RecordUserAction.record(
                             "DesktopSiteContentSetting.SettingsPage.SiteException.Opened");
@@ -626,6 +632,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                         ? R.string.website_settings_add_site_description_cookies_block
                         : R.string.website_settings_add_site_description_cookies_allow;
             }
+        } else if (mCategory.getType() == SiteSettingsCategory.Type.SITE_DATA) {
+            resource = WebsitePreferenceBridge.isCategoryEnabled(
+                               browserContextHandle, ContentSettingsType.COOKIES)
+                    ? R.string.website_settings_add_site_description_site_data_block
+                    : R.string.website_settings_add_site_description_site_data_allow;
         } else if (mCategory.getType() == SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT) {
             assert WebsitePreferenceBridge.isCategoryEnabled(
                     browserContextHandle, ContentSettingsType.AUTO_DARK_WEB_CONTENT);
@@ -723,27 +734,29 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
         BrowserContextHandle browserContextHandle =
                 getSiteSettingsDelegate().getBrowserContextHandle();
+        @ContentSettingsType
+        int type = mCategory.getContentSettingsType();
         boolean allowSpecifyingExceptions = false;
-        if (mCategory.getType() == SiteSettingsCategory.Type.SOUND) {
-            allowSpecifyingExceptions = true;
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.JAVASCRIPT) {
-            allowSpecifyingExceptions = true;
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.COOKIES) {
-            allowSpecifyingExceptions = true;
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.BACKGROUND_SYNC
-                && !WebsitePreferenceBridge.isCategoryEnabled(
-                        browserContextHandle, ContentSettingsType.BACKGROUND_SYNC)) {
-            allowSpecifyingExceptions = true;
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS
-                && !WebsitePreferenceBridge.isCategoryEnabled(
-                        browserContextHandle, ContentSettingsType.AUTOMATIC_DOWNLOADS)) {
-            allowSpecifyingExceptions = true;
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.FEDERATED_IDENTITY_API) {
-            allowSpecifyingExceptions = true;
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE
-                && ContentFeatureList.isEnabled(
-                        ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS)) {
-            allowSpecifyingExceptions = true;
+
+        switch (mCategory.getType()) {
+            case SiteSettingsCategory.Type.SOUND:
+            case SiteSettingsCategory.Type.JAVASCRIPT:
+            case SiteSettingsCategory.Type.COOKIES:
+            case SiteSettingsCategory.Type.SITE_DATA:
+            case SiteSettingsCategory.Type.FEDERATED_IDENTITY_API:
+                allowSpecifyingExceptions = true;
+                break;
+            case SiteSettingsCategory.Type.BACKGROUND_SYNC:
+            case SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS:
+                allowSpecifyingExceptions =
+                        !WebsitePreferenceBridge.isCategoryEnabled(browserContextHandle, type);
+                break;
+            case SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE:
+                allowSpecifyingExceptions = ContentFeatureList.isEnabled(
+                        ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS);
+                break;
+            default:
+                break;
         }
         if (allowSpecifyingExceptions) {
             getPreferenceScreen().addPreference(new AddExceptionPreference(getStyledContext(),
@@ -755,12 +768,17 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         filterSelectedDomains(sites);
 
         List<WebsitePreference> websites = new ArrayList<>();
+        ForwardingManagedPreferenceDelegate websiteDelegate = createWebsiteManagedPrefDelegate();
 
         // Find origins matching the current search.
+        // Check if the source of the exception for each website is a policy
+        // to set the managed state needed for the UI.
         for (Website site : sites) {
             if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
-                websites.add(new WebsitePreference(
-                        getStyledContext(), getSiteSettingsDelegate(), site, mCategory));
+                WebsitePreference preference = new WebsitePreference(
+                        getStyledContext(), getSiteSettingsDelegate(), site, mCategory);
+                websites.add(preference);
+                preference.setManagedPreferenceDelegate(websiteDelegate);
             }
         }
 
@@ -901,7 +919,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             extras.putSerializable(ChosenObjectSettings.EXTRA_OBJECT_INFOS, entry.first);
             extras.putSerializable(ChosenObjectSettings.EXTRA_SITES, entry.second);
             preference.setIcon(SettingsUtils.getTintedIcon(getContext(),
-                    ContentSettingsResources.getIcon(mCategory.getContentSettingsType())));
+                    ContentSettingsResources.getIcon(
+                            mCategory.getContentSettingsType(), getSiteSettingsDelegate())));
             preference.setTitle(entry.first.get(0).getName());
             preference.setFragment(ChosenObjectSettings.class.getCanonicalName());
             getPreferenceScreen().addPreference(preference);
@@ -1107,7 +1126,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
     private void configureBinaryToggle(ChromeSwitchPreference binaryToggle, int contentType) {
         binaryToggle.setOnPreferenceChangeListener(this);
-        binaryToggle.setTitle(ContentSettingsResources.getTitle(contentType));
+        binaryToggle.setTitle(
+                ContentSettingsResources.getTitle(contentType, getSiteSettingsDelegate()));
 
         // Set summary on or off.
         BrowserContextHandle browserContextHandle =
@@ -1116,9 +1136,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 && WebsitePreferenceBridge.isLocationAllowedByPolicy(browserContextHandle)) {
             binaryToggle.setSummaryOn(ContentSettingsResources.getGeolocationAllowedSummary());
         } else {
-            binaryToggle.setSummaryOn(ContentSettingsResources.getEnabledSummary(contentType));
+            binaryToggle.setSummaryOn(ContentSettingsResources.getEnabledSummary(
+                    contentType, getSiteSettingsDelegate()));
         }
-        binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
+        binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(
+                contentType, getSiteSettingsDelegate()));
 
         binaryToggle.setManagedPreferenceDelegate(new SingleCategoryManagedPreferenceDelegate(
                 getSiteSettingsDelegate().getManagedPreferenceDelegate()));
@@ -1277,5 +1299,29 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                                     .USER_ENABLED_DESKTOP_SITE_GLOBAL_SETTING_PREFERENCE_KEY,
                         enabled)
                 .apply();
+    }
+
+    public ForwardingManagedPreferenceDelegate createWebsiteManagedPrefDelegate() {
+        return new ForwardingManagedPreferenceDelegate(
+                getSiteSettingsDelegate().getManagedPreferenceDelegate()) {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                WebsitePreference websitePref = (WebsitePreference) preference;
+                ContentSettingException exception = websitePref.site().getContentSettingException(
+                        mCategory.getContentSettingsType());
+                return websitePref.site()
+                        .getContentSettingException(mCategory.getContentSettingsType())
+                        .getSource()
+                        .equals(POLICY);
+            }
+
+            /*
+             * Click is always enabled as a toast will be shown if a managed preference is clicked.
+             */
+            @Override
+            public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
+                return false;
+            }
+        };
     }
 }

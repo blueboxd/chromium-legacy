@@ -201,7 +201,7 @@ BASE_FEATURE(kSCTAuditingRetryReports,
 
 BASE_FEATURE(kSCTAuditingPersistReports,
              "SCTAuditingPersistReports",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 // The default Mojo ring buffer size, used to send the content body.
@@ -253,18 +253,6 @@ uint32_t GetLoaderChunkSize() {
 BASE_FEATURE(kCorsNonWildcardRequestHeadersSupport,
              "CorsNonWildcardRequestHeadersSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Whether the sync client optimization is used for communication between the
-// CorsURLLoader and URLLoader.
-BASE_FEATURE(kURLLoaderSyncClient,
-             "URLLoaderSyncClient",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Don't wait for database write before responding to
-// RestrictedCookieManager::SetCookieFromString.
-BASE_FEATURE(kFasterSetCookie,
-             "FasterSetCookie",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allow batching SimpleURLLoaders when the underlying network state is
 // inactive.
@@ -347,5 +335,9 @@ BASE_FEATURE(kOutOfProcessSystemDnsResolution,
 BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
              "AccessControlAllowMethodsInCORSPreflightSpecConformant",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrefetchNoVarySearch,
+             "PrefetchNoVarySearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace network::features

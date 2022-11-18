@@ -17,9 +17,13 @@ class WebContents;
 namespace web_app {
 
 class OsIntegrationManager;
+class WebAppIconManager;
 class WebAppInstallFinalizer;
+class WebAppInstallManager;
 class WebAppRegistrar;
 class WebAppSyncBridge;
+class WebAppTranslationManager;
+class WebAppUiManager;
 
 // This locks both the background shared web contents AND the given app ids. The
 // background web contents is used by the WebAppProvider system to do operations
@@ -37,13 +41,20 @@ class SharedWebContentsWithAppLockDescription : public LockDescription {
   ~SharedWebContentsWithAppLockDescription();
 };
 
-class SharedWebContentsWithAppLock : public SharedWebContentsLock, AppLock {
+class SharedWebContentsWithAppLock : public SharedWebContentsLock,
+                                     public AppLock {
  public:
+  using LockDescription = SharedWebContentsWithAppLockDescription;
+
   SharedWebContentsWithAppLock(content::WebContents& shared_web_contents,
                                WebAppRegistrar& registrar,
                                WebAppSyncBridge& sync_bridge,
                                WebAppInstallFinalizer& install_finalizer,
-                               OsIntegrationManager& os_integration_manager);
+                               OsIntegrationManager& os_integration_manager,
+                               WebAppInstallManager& install_manager,
+                               WebAppIconManager& icon_manager,
+                               WebAppTranslationManager& translation_manager,
+                               WebAppUiManager& ui_manager);
   ~SharedWebContentsWithAppLock();
 };
 

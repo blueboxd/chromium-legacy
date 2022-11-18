@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="43">
+  <interface name="zaura_shell" version="45">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -296,7 +296,7 @@
     <enum name="fullscreen_mode">
       <description
         summary="Specifies the behavior of the surface in fullscreen.">
-          Possible windowing system behaviors if this surface were to go
+          [Deprecated] Possible windowing system behaviors if this surface were to go
           fullscreen.
       </description>
       <entry
@@ -312,6 +312,7 @@
 
     <request name="set_fullscreen_mode" since="10">
       <description summary="Sets the behavior of the surface in fullscreen.">
+        [Deprecated] Use the set_fullscreen_mode in the toplevel interface.
         Suggests how the windowing system should behave if this surface were
         to go fullscreen. Does not make the surface fullscreen.
 
@@ -536,7 +537,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_output" version="43">
+  <interface name="zaura_output" version="45">
     <description summary="aura shell interface to a wl_output">
       An additional interface to a wl_output object, which allows the
       client to access aura shell specific functionality for output.
@@ -691,9 +692,17 @@
       <arg name="display_id_hi" type="uint"/>
       <arg name="display_id_lo" type="uint"/>
     </event>
+
+    <!-- Version 45 additions -->
+    <event name="activated" since="45">
+      <description summary="target display for new windows">
+        Notifies that this output is now active output. It is typically used as a
+        target when a new window is created without specific bounds.
+      </description>
+    </event>
   </interface>
 
-  <interface name="zaura_toplevel" version="42">
+  <interface name="zaura_toplevel" version="44">
     <description summary="aura shell interface to the toplevel shell">
       An interface to the toplevel shell, which allows the
       client to access shell specific functionality.
@@ -743,8 +752,8 @@
 	coordinates.  The size will be applied to visible bounds used
 	in set_geometry.  The output is a hint for the compositor to
 	determine which output the window should move to. If the
-	output is null, the compositor should make decision sololy by
-	the given boudns. These parameters are just a request and the
+	output is null, the compositor should make decision solely by
+	the given bounds. These parameters are just a request and the
 	compositor may ignore, adjust the size and position based on
 	the rule imposed by the window manager, or may preserve it for
 	future operations. For example, the compositor will not allow
@@ -931,7 +940,7 @@
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="output" type="object" interface="wl_output" allow-null="true"
-           summary="output to contain the surface"/>
+        summary="output to contain the surface"/>
     </request>
 
     <request name="activate" since="42">
@@ -949,6 +958,32 @@
         compositor-defined. The compositor is free to ignore this request
         if it deems the client to be misbehaving.
       </description>
+    </request>
+
+    <!-- Version 44 additions -->
+    <enum name="fullscreen_mode">
+      <description
+        summary="Specifies the behavior of the surface in fullscreen.">
+          Possible windowing system behaviors if this surface were to go
+          fullscreen.
+      </description>
+       <entry
+        name="plain"
+        value="0"
+        summary="user cannot access system UIs using mouse/touches"/>
+      <entry
+        name="immersive"
+        value="1"
+        summary="user can access system UIs such as the shelf and window frame
+          by pointing to, or swiping over, the screen edge"/>
+    </enum>
+
+    <request name="set_fullscreen_mode" since="44">
+      <description summary="Sets the behavior of the surface in fullscreen.">
+        Suggests how the windowing manager should behave if this surface were
+        to go fullscreen. Does not make the surface fullscreen.
+      </description>
+      <arg name="mode" type="uint" enum="fullscreen_mode"/>
     </request>
   </interface>
 

@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
@@ -141,6 +142,17 @@ std::unique_ptr<TabContainer> MakeTabContainer(
   }
   return std::make_unique<TabContainerImpl>(
       *tab_strip, hover_card_controller, drag_context, *tab_strip, tab_strip);
+}
+
+void UpdateDragEventSourceCrashKey(
+    absl::optional<ui::mojom::DragEventSource> event_source) {
+  static crash_reporter::CrashKeyString<8> key("tabdrag-event-source");
+  if (!event_source.has_value()) {
+    key.Clear();
+    return;
+  }
+  key.Set(*event_source == ui::mojom::DragEventSource::kTouch ? "touch"
+                                                              : "mouse");
 }
 
 }  // namespace
@@ -291,6 +303,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
     drag_controller_->Init(this, source, dragging_views, gfx::Point(x, y),
                            event.x(), std::move(selection_model),
                            EventSourceFromEvent(event));
+
+    UpdateDragEventSourceCrashKey(drag_controller_->event_source());
     if (drag_controller_set_callback_)
       std::move(drag_controller_set_callback_).Run(drag_controller_.get());
   }
@@ -556,6 +570,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
   void StoppedDragging(const std::vector<TabSlotView*>& views) override {
     // Let the controller know that the user stopped dragging tabs.
     tab_strip_->controller_->OnStoppedDragging();
+    UpdateDragEventSourceCrashKey({});
 
     // Animate the dragged views to their ideal positions. We'll hand them back
     // to TabContainer when the animation ends.
@@ -1292,7 +1307,7 @@ TabDragContext* TabStrip::GetDragContext() {
 }
 
 bool TabStrip::IsAnimating() const {
-  return tab_container_->IsAnimating();
+  return tab_container_->IsAnimating() || drag_context_->IsAnimatingDragEnd();
 }
 
 void TabStrip::StopAnimating(bool layout) {
@@ -1359,6 +1374,18 @@ bool TabStrip::CanExtendDragHandle() const {
 
 const views::View* TabStrip::GetTabClosingModeMouseWatcherHostView() const {
   return this;
+}
+
+bool TabStrip::IsAnimatingInTabStrip() const {
+  return IsAnimating();
+}
+
+void TabStrip::UpdateAnimationTarget(TabSlotView* tab_slot_view,
+                                     gfx::Rect target_bounds) {
+  // TODO(1116121): This may need to do coordinate space transformations if the
+  // view hierarchy changes so `tab_container_` and `drag_context_` don't share
+  // spaces.
+  drag_context_->UpdateAnimationTarget(tab_slot_view, target_bounds);
 }
 
 bool TabStrip::IsGroupCollapsed(const tab_groups::TabGroupId& group) const {

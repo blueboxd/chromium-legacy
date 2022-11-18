@@ -934,6 +934,7 @@ void LocalFrameView::WillStartForcedLayout() {
   if (forced_layout_stack_depth_ > 1)
     return;
   forced_layout_start_time_ = base::TimeTicks::Now();
+  EnsureUkmAggregator().BeginForcedLayout();
 }
 
 void LocalFrameView::DidFinishForcedLayout(DocumentUpdateReason reason) {
@@ -2418,7 +2419,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     {
       // We need scoping braces here because this
       // DisallowLayoutInvalidationScope is meant to be in effect during
-      // pre-paint, but not during ResizeObserver.
+      // pre-paint, but not during ResizeObserver or ViewTransition.
 #if DCHECK_IS_ON()
       DisallowLayoutInvalidationScope disallow_layout_invalidation(this);
 #endif
@@ -2438,11 +2439,20 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
         return;
 
       run_more_lifecycle_phases = RunPrePaintLifecyclePhase(target_state);
+    }
+
+    if (!run_more_lifecycle_phases) {
+      // If we won't be proceeding to paint, update view transition stylesheet
+      // here.
+      bool needs_to_repeat_lifecycle = RunViewTransitionSteps(target_state);
+      if (needs_to_repeat_lifecycle)
+        continue;
+    }
+
       DCHECK(ShouldThrottleRendering() ||
              Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
       if (ShouldThrottleRendering() || !run_more_lifecycle_phases)
         return;
-    }
 
     // Some features may require several passes over style and layout
     // within the same lifecycle update.
@@ -2538,23 +2548,29 @@ bool LocalFrameView::RunCSSToggleSteps() {
 bool LocalFrameView::RunViewTransitionSteps(
     DocumentLifecycle::LifecycleState target_state) {
   DCHECK(frame_ && frame_->GetDocument());
-  DCHECK(frame_->IsLocalRoot());
+  DCHECK(frame_->IsLocalRoot() || !IsAttached());
 
-  if (target_state != DocumentLifecycle::kPaintClean)
+  if (target_state < DocumentLifecycle::kPrePaintClean)
     return false;
 
   bool re_run_lifecycle = false;
   ForAllNonThrottledLocalFrameViews(
-      [&re_run_lifecycle](LocalFrameView& frame_view) {
+      [&re_run_lifecycle, target_state](LocalFrameView& frame_view) {
         const auto* document = frame_view.GetFrame().GetDocument();
         if (!document)
           return;
 
+        DCHECK_GE(document->Lifecycle().GetState(),
+                  DocumentLifecycle::kPrePaintClean);
         auto* transition = ViewTransitionUtils::GetActiveTransition(*document);
         if (!transition)
           return;
 
-        transition->RunViewTransitionStepsDuringMainFrame();
+        if (target_state == DocumentLifecycle::kPaintClean)
+          transition->RunViewTransitionStepsDuringMainFrame();
+        else
+          transition->RunViewTransitionStepsOutsideMainFrame();
+
         re_run_lifecycle |= document->Lifecycle().GetState() <
                             DocumentLifecycle::kPrePaintClean;
       });
@@ -3128,15 +3144,6 @@ void LocalFrameView::AppendViewTransitionRequests(
   });
 }
 
-void LocalFrameView::VerifySharedElementsForViewTransition() {
-  DCHECK(frame_ && frame_->GetDocument());
-
-  if (auto* transition =
-          ViewTransitionUtils::GetActiveTransition(*frame_->GetDocument())) {
-    transition->VerifySharedElements();
-  }
-}
-
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(
     LayerTreeFlags flags) {
   auto* root_frame_view = GetFrame().LocalFrameRoot().View();
@@ -3206,14 +3213,6 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
 
   GetFrame().Selection().UpdateStyleAndLayoutIfNeeded();
   GetFrame().GetPage()->GetDragCaret().UpdateStyleAndLayoutIfNeeded();
-
-  // If we're running the lifecycle with intent of painting, we need to
-  // verify the view transitions, since any requests will be
-  // propagated to the compositor.
-  if (GetFrame().LocalFrameRoot().View()->target_state_ ==
-      DocumentLifecycle::kPaintClean) {
-    VerifySharedElementsForViewTransition();
-  }
 }
 
 void LocalFrameView::UpdateStyleAndLayout() {
@@ -4726,11 +4725,6 @@ LayoutUnit LocalFrameView::CaretWidth() const {
       1.0f, GetChromeClient()->WindowToViewportScalar(&GetFrame(), 1.0f)));
 }
 
-void LocalFrameView::DidChangeMobileFriendliness(
-    const blink::MobileFriendliness& mf) {
-  GetFrame().Client()->DidChangeMobileFriendliness(mf);
-}
-
 void LocalFrameView::RegisterTapEvent(Element* target) {
   if (tap_friendliness_checker_) {
     tap_friendliness_checker_->RegisterTapEvent(target);
@@ -4743,7 +4737,8 @@ LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
   if (!local_root->ukm_aggregator_) {
     local_root->ukm_aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
         local_root->frame_->GetDocument()->UkmSourceID(),
-        local_root->frame_->GetDocument()->UkmRecorder());
+        local_root->frame_->GetDocument()->UkmRecorder(),
+        local_root->frame_->IsMainFrame());
   }
   return *local_root->ukm_aggregator_;
 }

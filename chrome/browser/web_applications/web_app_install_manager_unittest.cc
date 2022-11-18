@@ -20,7 +20,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/traits_bag.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
 #include "chrome/browser/web_applications/test/fake_data_retriever.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -188,15 +188,15 @@ class WebAppInstallManagerTest
       webapps::WebappInstallSource install_source) {
     InstallResult result;
     base::RunLoop run_loop;
-    command_manager().ScheduleCommand(std::make_unique<InstallFromInfoCommand>(
-        std::move(install_info), &finalizer(),
-        overwrite_existing_manifest_fields, install_source,
+    provider().scheduler().InstallFromInfo(
+        std::move(install_info), overwrite_existing_manifest_fields,
+        install_source,
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        webapps::InstallResultCode code) {
           result.app_id = installed_app_id;
           result.code = code;
           run_loop.Quit();
-        })));
+        }));
 
     run_loop.Run();
     return result;
@@ -244,9 +244,7 @@ class WebAppInstallManagerTest
           result = code;
           run_loop.Quit();
         }),
-        profile(), &provider().os_integration_manager(),
-        &provider().sync_bridge(), &icon_manager(), &registrar(),
-        &install_manager(), &provider().translation_manager());
+        profile());
     uninstall_command->SetRemoveManagementTypeCallbackForTesting(
         base::BindLambdaForTesting([&](const AppId& app_id) {
           // On removing the policy source, the web app can now be user
@@ -269,9 +267,7 @@ class WebAppInstallManagerTest
           result = code;
           run_loop.Quit();
         }),
-        profile(), &provider().os_integration_manager(),
-        &provider().sync_bridge(), &icon_manager(), &registrar(),
-        &install_manager(), &provider().translation_manager());
+        profile());
     command_manager().ScheduleCommand(std::move(uninstall_command));
     run_loop.Run();
     return result;

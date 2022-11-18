@@ -50,6 +50,8 @@ namespace SetCurrentInputMethod =
 namespace SwitchToLastUsedInputMethod =
     extensions::api::input_method_private::SwitchToLastUsedInputMethod;
 namespace SetXkbLayout = extensions::api::input_method_private::SetXkbLayout;
+namespace OpenOptionsPage =
+    extensions::api::input_method_private::OpenOptionsPage;
 namespace OnChanged = extensions::api::input_method_private::OnChanged;
 namespace OnDictionaryChanged =
     extensions::api::input_method_private::OnDictionaryChanged;
@@ -67,12 +69,6 @@ namespace GetSettings = extensions::api::input_method_private::GetSettings;
 namespace SetSettings = extensions::api::input_method_private::SetSettings;
 namespace SetCompositionRange =
     extensions::api::input_method_private::SetCompositionRange;
-namespace GetAutocorrectRange =
-    extensions::api::input_method_private::GetAutocorrectRange;
-namespace GetAutocorrectCharacterBounds =
-    extensions::api::input_method_private::GetAutocorrectCharacterBounds;
-namespace SetAutocorrectRange =
-    extensions::api::input_method_private::SetAutocorrectRange;
 namespace OnInputMethodOptionsChanged =
     extensions::api::input_method_private::OnInputMethodOptionsChanged;
 namespace OnAutocorrect = extensions::api::input_method_private::OnAutocorrect;
@@ -170,11 +166,11 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
   ash::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
       manager->GetActiveIMEState();
-  std::unique_ptr<ash::input_method::InputMethodDescriptors> input_methods =
+  ash::input_method::InputMethodDescriptors input_methods =
       ime_state->GetEnabledInputMethodsSortedByLocalizedDisplayNames();
-  for (size_t i = 0; i < input_methods->size(); ++i) {
+  for (size_t i = 0; i < input_methods.size(); ++i) {
     const ash::input_method::InputMethodDescriptor& input_method =
-        (*input_methods)[i];
+        input_methods[i];
     base::Value::Dict val;
     val.Set("id", input_method.id());
     val.Set("name", util->GetInputMethodLongName(input_method));
@@ -267,6 +263,35 @@ InputMethodPrivateHideInputViewFunction::Run() {
   }
 
   keyboard_client->HideKeyboard(ash::HideReason::kUser);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateOpenOptionsPageFunction::Run() {
+  std::unique_ptr<OpenOptionsPage::Params> params(
+      OpenOptionsPage::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
+      ash::input_method::InputMethodManager::Get()->GetActiveIMEState();
+  const ash::input_method::InputMethodDescriptor* ime =
+      ime_state->GetInputMethodFromId(params->input_method_id);
+  if (!ime)
+    return RespondNow(Error(InformativeError(
+        base::StringPrintf("%s Input Method: %s", kErrorInvalidInputMethod,
+                           params->input_method_id.c_str()),
+        static_function_name())));
+
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (web_contents) {
+    const GURL& options_page_url = ime->options_page_url();
+    if (!options_page_url.is_empty()) {
+      Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+      content::OpenURLParams url_params(options_page_url, content::Referrer(),
+                                        WindowOpenDisposition::SINGLETON_TAB,
+                                        ui::PAGE_TRANSITION_LINK, false);
+      browser->OpenURL(url_params);
+    }
+  }
   return RespondNow(NoArguments());
 }
 
@@ -406,49 +431,6 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
-InputMethodPrivateGetAutocorrectRangeFunction::Run() {
-  std::string error;
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id(), &error);
-  if (!engine)
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-
-  const auto parent_params = GetAutocorrectRange::Params::Create(args());
-  const auto& params = parent_params->parameters;
-  const gfx::Range range =
-      engine->InputMethodEngine::GetAutocorrectRange(params.context_id, &error);
-  base::Value::Dict ret;
-  ret.Set("start", static_cast<int>(range.is_empty() ? 0 : range.start()));
-  ret.Set("end", static_cast<int>(range.is_empty() ? 0 : range.end()));
-  return RespondNow(WithArguments(std::move(ret)));
-}
-
-ExtensionFunction::ResponseAction
-InputMethodPrivateGetAutocorrectCharacterBoundsFunction::Run() {
-  std::string error;
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id(), &error);
-  if (!engine)
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-
-  const auto parent_params =
-      GetAutocorrectCharacterBounds::Params::Create(args());
-  const auto& params = parent_params->parameters;
-  const gfx::Rect rect =
-      engine->InputMethodEngine::GetAutocorrectCharacterBounds(
-          params.context_id, &error);
-  if (rect.IsEmpty()) {
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-  }
-  base::Value::Dict ret;
-  ret.Set("x", rect.x());
-  ret.Set("y", rect.y());
-  ret.Set("width", rect.width());
-  ret.Set("height", rect.height());
-  return RespondNow(WithArguments(std::move(ret)));
-}
-
-ExtensionFunction::ResponseAction
 InputMethodPrivateGetTextFieldBoundsFunction::Run() {
   std::string error;
   InputMethodEngine* engine =
@@ -469,24 +451,6 @@ InputMethodPrivateGetTextFieldBoundsFunction::Run() {
   ret.Set("width", rect.width());
   ret.Set("height", rect.height());
   return RespondNow(WithArguments(std::move(ret)));
-}
-
-ExtensionFunction::ResponseAction
-InputMethodPrivateSetAutocorrectRangeFunction::Run() {
-  std::string error;
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id(), &error);
-  if (!engine)
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-
-  const auto parent_params = SetAutocorrectRange::Params::Create(args());
-  const auto& params = parent_params->parameters;
-  if (!engine->InputMethodEngine::SetAutocorrectRange(
-          params.context_id,
-          gfx::Range(params.selection_start, params.selection_end), &error)) {
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-  }
-  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction InputMethodPrivateResetFunction::Run() {
@@ -559,6 +523,7 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
   registry.RegisterFunction<InputMethodPrivateAddWordToDictionaryFunction>();
   registry
       .RegisterFunction<InputMethodPrivateNotifyImeMenuItemActivatedFunction>();
+  registry.RegisterFunction<InputMethodPrivateOpenOptionsPageFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() = default;

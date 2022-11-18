@@ -43,8 +43,6 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/variations/service/variations_field_trial_creator.h"
-#include "components/variations/service/variations_service.h"
 
 namespace autofill {
 
@@ -219,9 +217,7 @@ void FormDataImporter::ImportAndProcessFormData(
 bool FormDataImporter::ComplementCountry(
     AutofillProfile& profile,
     const std::string& predicted_country_code) {
-  bool should_complement_country =
-      !profile.HasRawInfo(ADDRESS_HOME_COUNTRY) &&
-      base::FeatureList::IsEnabled(features::kAutofillAddressProfileSavePrompt);
+  bool should_complement_country = !profile.HasRawInfo(ADDRESS_HOME_COUNTRY);
   return should_complement_country &&
          profile.SetInfoWithVerificationStatus(
              AutofillType(ADDRESS_HOME_COUNTRY),
@@ -281,7 +277,7 @@ FormDataImporter::ImportFormDataResult FormDataImporter::ImportFormData(
   //   at most one import prompt is shown.
   // Reset `imported_credit_card_record_type_` every time we import data from
   // form no matter whether `ImportCreditCard()` is called or not.
-  imported_credit_card_record_type_ = ImportedCreditCardRecordType::NO_CARD;
+  imported_credit_card_record_type_ = ImportedCreditCardRecordType::kNoCard;
   if (payment_methods_autofill_enabled) {
     imported_form_data.credit_card_import_candidate =
         ImportCreditCard(submitted_form);
@@ -690,8 +686,7 @@ bool FormDataImporter::ProcessAddressProfileImportCandidates(
   // At this point, no credit card prompt was shown. Initiate the import of
   // addresses is possible.
   int imported_profiles = 0;
-  if (allow_prompt || !base::FeatureList::IsEnabled(
-                          features::kAutofillAddressProfileSavePrompt)) {
+  if (allow_prompt) {
     for (const auto& candidate : address_profile_import_candidates) {
       // First try to import a single complete profile.
       if (!candidate.all_requirements_fulfilled)
@@ -732,7 +727,7 @@ bool FormDataImporter::ProcessCreditCardImportCandidate(
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   // If no card was successfully imported from the form, return.
   if (imported_credit_card_record_type_ ==
-      ImportedCreditCardRecordType::NO_CARD) {
+      ImportedCreditCardRecordType::kNoCard) {
     return false;
   }
   // Do not offer upload save for google domain.
@@ -783,19 +778,19 @@ bool FormDataImporter::ProcessCreditCardImportCandidate(
     // allowing upload, |credit_card_save_manager_| is tasked with deciding if
     // we should fall back to local save or not.
     DCHECK(imported_credit_card_record_type_ ==
-               ImportedCreditCardRecordType::LOCAL_CARD ||
+               ImportedCreditCardRecordType::kLocalCard ||
            imported_credit_card_record_type_ ==
-               ImportedCreditCardRecordType::NEW_CARD);
+               ImportedCreditCardRecordType::kNewCard);
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
         submitted_form, from_dynamic_change_form_, has_non_focusable_field_,
         *credit_card_import_candidate,
         /*uploading_local_card=*/imported_credit_card_record_type_ ==
-            ImportedCreditCardRecordType::LOCAL_CARD);
+            ImportedCreditCardRecordType::kLocalCard);
     return true;
   };
   // If upload save is not allowed, new cards should be saved locally.
   DCHECK(imported_credit_card_record_type_ ==
-         ImportedCreditCardRecordType::NEW_CARD);
+         ImportedCreditCardRecordType::kNewCard);
   if (credit_card_save_manager_->AttemptToOfferCardLocalSave(
           from_dynamic_change_form_, has_non_focusable_field_,
           *credit_card_import_candidate)) {
@@ -838,9 +833,9 @@ absl::optional<CreditCard> FormDataImporter::ImportCreditCard(
   if (fetched_virtual_cards_.contains(candidate.LastFourDigits()))
     return absl::nullopt;
 
-  // Can import one valid card per form. Start by treating it as NEW_CARD, but
+  // Can import one valid card per form. Start by treating it as kNewCard, but
   // overwrite this type if we discover it is already a local or server card.
-  imported_credit_card_record_type_ = ImportedCreditCardRecordType::NEW_CARD;
+  imported_credit_card_record_type_ = ImportedCreditCardRecordType::kNewCard;
 
   // Attempt to merge with an existing local credit card without presenting a
   // prompt.
@@ -852,7 +847,7 @@ absl::optional<CreditCard> FormDataImporter::ImportCreditCard(
     if (maybe_updated_card.UpdateFromImportedCard(candidate, app_locale_)) {
       personal_data_manager_->UpdateCreditCard(maybe_updated_card);
       imported_credit_card_record_type_ =
-          ImportedCreditCardRecordType::LOCAL_CARD;
+          ImportedCreditCardRecordType::kLocalCard;
       if (!maybe_updated_card.nickname().empty()) {
         // The nickname may be shown in the upload save bubble.
         candidate.SetNickname(maybe_updated_card.nickname());
@@ -884,7 +879,7 @@ absl::optional<CreditCard> FormDataImporter::ImportCreditCard(
   if (candidate.expiration_month() == 0 || candidate.expiration_year() == 0)
     return absl::nullopt;
 
-  imported_credit_card_record_type_ = ImportedCreditCardRecordType::SERVER_CARD;
+  imported_credit_card_record_type_ = ImportedCreditCardRecordType::kServerCard;
 
   if (candidate.expiration_month() == server_card->expiration_month() &&
       candidate.expiration_year() == server_card->expiration_year()) {
@@ -1021,7 +1016,7 @@ bool FormDataImporter::ShouldOfferUploadCardOrLocalCardSave(
 
   // We do not want to offer upload save or local card save for server cards.
   if (imported_credit_card_record_type_ ==
-      ImportedCreditCardRecordType::SERVER_CARD) {
+      ImportedCreditCardRecordType::kServerCard) {
     return false;
   }
 
@@ -1030,7 +1025,7 @@ bool FormDataImporter::ShouldOfferUploadCardOrLocalCardSave(
   // local card save as it is already saved as a local card.
   if (!is_credit_card_upload_enabled &&
       imported_credit_card_record_type_ ==
-          ImportedCreditCardRecordType::LOCAL_CARD) {
+          ImportedCreditCardRecordType::kLocalCard) {
     return false;
   }
 

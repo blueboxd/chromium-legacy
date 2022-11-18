@@ -170,6 +170,10 @@
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
+              "external/wpt/css/css-color/parsing/",
+              "external/wpt/css/css-transitions/parsing/",
+              "external/wpt/css/css-animations/parsing/",
+              "external/wpt/css/css-images/parsing/",
               "http/tests/navigation",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
@@ -475,6 +479,12 @@
               "inspector-protocol/worker"
             ],
     "args": ["--enable-features=PlzDedicatedWorker"]
+  },
+  {
+    "prefix": "service-worker-storage-control-on-thread-pool",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/service-workers/service-worker/fetch-event.https.html"],
+    "args": ["--enable-features=ServiceWorkerStorageControlOnThreadPool"]
   },
   {
     "prefix": "direct-sockets",
@@ -948,7 +958,10 @@
   {
     "prefix": "first-party-sets",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/inspector-protocol/network"],
+    "bases": [
+      "http/tests/inspector-protocol/network",
+      "http/tests/inspector-protocol/issues"
+    ],
     "args": ["--use-first-party-set={\"primary\":\"https://firstparty.test\",\"associatedSites\":[\"https://cookie.test\"]}"]
   },
   {
@@ -1193,7 +1206,8 @@
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies",
+             "--enable-blink-features=FencedFramesAPIChanges"]
   },
   {
     "prefix": "cors-non-wildcard-request-headers",
@@ -1256,6 +1270,13 @@
     "bases": [],
     "args": ["--enable-features=DocumentPictureInPictureAPI",
              "--enable-blink-features=DocumentPictureInPictureAPI"]
+  },
+
+  {
+    "prefix": "idna-2008",
+    "platforms": ["Linux"],
+    "bases": [ "external/wpt/url", "fast/url"],
+    "args": ["--enable-features=UseIDNA2008NonTransitional"]
   },
 
   "Tests in the virtual/origin-agent-cluster-default suite. These tests",
@@ -1449,6 +1470,13 @@
     "args": ["--enable-features=JavaScriptExperimentalSharedMemory"]
   },
   {
+    "prefix": "fedcm-multi-idp",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/credential-management/fedcm-multi-idp/"],
+    "exclusive_tests": "ALL",
+    "args": ["--enable-features=FedCmMultipleIdentityProviders"]
+  },
+  {
     "prefix": "scoped-custom-element-registry-disabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/custom-elements/scoped-registry"],
@@ -1469,5 +1497,19 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/devtools/extensions", "http/tests/devtools/tracing", "http/tests/devtools/coverage"],
     "args": ["--content-shell-devtools-tab-target"]
+  },
+  {
+    "prefix": "split-user-media-queues",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/mediacapture-streams/parallel-capture-requests.https.html"
+    ],
+    "args": ["--enable-features=SplitUserMediaQueues"]
+  },
+  {
+    "prefix": "enable-persistent-origin-trials",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "http/tests/persistent-origin-trials/" ],
+    "args": ["--enable-features=PersistentOriginTrials"]
   }
 ]

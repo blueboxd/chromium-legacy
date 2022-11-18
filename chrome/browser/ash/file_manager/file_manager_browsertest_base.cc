@@ -858,7 +858,6 @@ std::ostream& operator<<(std::ostream& out,
   PRINT_IF_NOT_DEFAULT(photos_documents_provider)
   PRINT_IF_NOT_DEFAULT(single_partition_format)
   PRINT_IF_NOT_DEFAULT(tablet_mode)
-  PRINT_IF_NOT_DEFAULT(enable_guest_os_files)
   PRINT_IF_NOT_DEFAULT(enable_virtio_blk_for_data)
 
 #undef PRINT_IF_NOT_DEFAULT
@@ -1931,12 +1930,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         chromeos::features::kDriveFsBidirectionalNativeMessaging);
   }
 
-  if (options.extract_archive) {
-    enabled_features.push_back(chromeos::features::kFilesExtractArchive);
-  } else {
-    disabled_features.push_back(chromeos::features::kFilesExtractArchive);
-  }
-
   if (options.single_partition_format) {
     enabled_features.push_back(chromeos::features::kFilesSinglePartitionFormat);
   }
@@ -1977,12 +1970,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         command_line->GetSwitchValuePath(switches::kDevtoolsCodeCoverage);
   }
 
-  if (options.enable_guest_os_files) {
-    enabled_features.push_back(chromeos::features::kGuestOsFiles);
-  } else {
-    disabled_features.push_back(chromeos::features::kGuestOsFiles);
-  }
-
   if (options.enable_virtio_blk_for_data) {
     enabled_features.push_back(arc::kEnableVirtioBlkForData);
   } else {
@@ -2003,6 +1990,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(
         enterprise_connectors::kEnterpriseConnectorsEnabled);
     disabled_features.push_back(features::kFileTransferEnterpriseConnector);
+  }
+
+  if (options.enable_search_v2) {
+    enabled_features.push_back(chromeos::features::kFilesSearchV2);
+  } else {
+    disabled_features.push_back(chromeos::features::kFilesSearchV2);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the

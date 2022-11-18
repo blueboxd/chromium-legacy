@@ -8,6 +8,7 @@
 
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/core/error_strings.h"
+#include "content/public/browser/render_frame_host.h"
 
 namespace payments {
 
@@ -16,7 +17,13 @@ TestContentPaymentRequestDelegate::TestContentPaymentRequestDelegate(
     autofill::PersonalDataManager* pdm)
     : core_delegate_(std::move(task_executor), pdm) {}
 
-TestContentPaymentRequestDelegate::~TestContentPaymentRequestDelegate() {}
+TestContentPaymentRequestDelegate::~TestContentPaymentRequestDelegate() =
+    default;
+
+content::RenderFrameHost*
+TestContentPaymentRequestDelegate::GetRenderFrameHost() const {
+  return content::RenderFrameHost::FromID(frame_routing_id_);
+}
 
 std::unique_ptr<webauthn::InternalAuthenticator>
 TestContentPaymentRequestDelegate::CreateInternalAuthenticator() const {
@@ -56,10 +63,6 @@ void TestContentPaymentRequestDelegate::ShowProcessingSpinner() {
 
 bool TestContentPaymentRequestDelegate::IsBrowserWindowActive() const {
   return core_delegate_.IsBrowserWindowActive();
-}
-
-bool TestContentPaymentRequestDelegate::SkipUiForBasicCard() const {
-  return false;
 }
 
 std::string TestContentPaymentRequestDelegate::GetTwaPackageName() const {

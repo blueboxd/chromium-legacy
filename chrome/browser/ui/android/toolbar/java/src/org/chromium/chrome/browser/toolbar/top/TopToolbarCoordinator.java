@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -52,6 +51,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * A coordinator for the top toolbar component.
@@ -67,8 +67,10 @@ public class TopToolbarCoordinator implements Toolbar {
          * @param fraction The toolbar expansion progress. 0 indicates that the URL bar is not
          *                   expanded. 1 indicates that the URL bar is expanded to the maximum
          *                   width.
+         *
+         * @param changeInProgress Whether the toolbar animation is still in progress or not.
          */
-        void onUrlExpansionProgressChanged(float fraction);
+        void onUrlExpansionProgressChanged(float fraction, boolean changeInProgress);
     }
 
     /**

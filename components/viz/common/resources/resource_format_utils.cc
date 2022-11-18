@@ -168,37 +168,6 @@ int BitsPerPixel(ResourceFormat format) {
   return 0;
 }
 
-bool HasAlpha(ResourceFormat format) {
-  switch (format) {
-    case RGBA_8888:
-    case RGBA_4444:
-    case BGRA_8888:
-    case ALPHA_8:
-    case RGBA_F16:
-    case YUVA_420_TRIPLANAR:
-      return true;
-    case LUMINANCE_8:
-    case RGB_565:
-    case BGR_565:
-    case ETC1:
-    case RED_8:
-    case RG_88:
-    case LUMINANCE_F16:
-    case R16_EXT:
-    case RG16_EXT:
-    case RGBX_8888:
-    case BGRX_8888:
-    case RGBA_1010102:
-    case BGRA_1010102:
-    case YVU_420:
-    case YUV_420_BIPLANAR:
-    case P010:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
 unsigned int GLDataType(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const GLenum format_gl_data_type[] = {
@@ -637,65 +606,6 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
                                                SharedImageFormat format) {
   return ResourceFormatToClosestSkColorType(gpu_compositing,
                                             format.resource_format());
-}
-
-int BitsPerPixel(SharedImageFormat format) {
-  return BitsPerPixel(format.resource_format());
-}
-
-bool HasAlpha(SharedImageFormat format) {
-  return HasAlpha(format.resource_format());
-}
-
-unsigned int GLDataType(SharedImageFormat format) {
-  return GLDataType(format.resource_format());
-}
-
-unsigned int GLDataFormat(SharedImageFormat format) {
-  return GLDataFormat(format.resource_format());
-}
-
-unsigned int GLInternalFormat(SharedImageFormat format) {
-  return GLInternalFormat(format.resource_format());
-}
-
-gfx::BufferFormat BufferFormat(SharedImageFormat format) {
-  return BufferFormat(format.resource_format());
-}
-
-bool IsResourceFormatCompressed(SharedImageFormat format) {
-  return IsResourceFormatCompressed(format.resource_format());
-}
-
-unsigned int TextureStorageFormat(SharedImageFormat format,
-                                  bool use_angle_rgbx_format) {
-  return TextureStorageFormat(format.resource_format(), use_angle_rgbx_format);
-}
-
-bool IsGpuMemoryBufferFormatSupported(SharedImageFormat format) {
-  return IsGpuMemoryBufferFormatSupported(format.resource_format());
-}
-
-bool GLSupportsFormat(SharedImageFormat format) {
-  return GLSupportsFormat(format.resource_format());
-}
-
-#if BUILDFLAG(ENABLE_VULKAN)
-bool HasVkFormat(SharedImageFormat format) {
-  return HasVkFormat(format.resource_format());
-}
-
-VkFormat ToVkFormat(SharedImageFormat format) {
-  return ToVkFormat(format.resource_format());
-}
-#endif
-
-wgpu::TextureFormat ToDawnFormat(SharedImageFormat format) {
-  return ToDawnFormat(format.resource_format());
-}
-
-WGPUTextureFormat ToWGPUFormat(SharedImageFormat format) {
-  return ToWGPUFormat(format.resource_format());
 }
 
 }  // namespace viz

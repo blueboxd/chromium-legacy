@@ -30,7 +30,6 @@ after discussions on the right group.
       <annotation id="download_manager_service_retry"/>
       <annotation id="explore_sites"/>
       <annotation id="family_info"/>
-      <annotation id="gstatic_change_password_scripts"/>
       <annotation id="gstatic_onboarding_definition"/>
       <annotation id="kids_chrome_management_client_classify_url"/>
       <annotation id="minidump_uploader_android"/>
@@ -88,7 +87,6 @@ after discussions on the right group.
       <annotation id="tachyon_ice_config_fetcher"/>
       <annotation id="terms_of_service_fetch"/>
       <annotation id="timezone_lookup"/>
-      <annotation id="url_icon_source_fetch"/>
       <annotation id="wallpaper_backdrop_collection_names"/>
       <annotation id="wallpaper_backdrop_images_info"/>
       <annotation id="wallpaper_backdrop_surprise_me_image"/>
@@ -271,6 +269,7 @@ after discussions on the right group.
       <annotation id="managed_acccount_signin_restrictions_secure_connect_chromeos"/>
       <annotation id="ntp_custom_background"/>
       <annotation id="iwa_policy_update_manifest"/>
+      <annotation id="iwa_policy_signed_web_bundle"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">

@@ -60,7 +60,6 @@ import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -174,6 +173,11 @@ public class FeedSurfaceMediator
                 FeedSurfaceMediator.this.switchToStream(headerIndex);
             }
         }
+
+        @Override
+        public void refreshStream() {
+            mCoordinator.onRefresh();
+        }
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
@@ -279,23 +283,31 @@ public class FeedSurfaceMediator
 
     @Override
     public void onOptionChanged() {
-        updateLayout(true, false);
+        updateLayout(false);
     }
 
-    private void updateLayout(boolean optionsSupported, boolean overrideSingleSpan) {
+    private void updateLayout(boolean isSmallLayoutWidth) {
         ListLayoutHelper listLayoutHelper =
                 mCoordinator.getHybridListRenderer().getListLayoutHelper();
         if (!FeedFeatures.isMultiColumnFeedEnabled(mContext) || listLayoutHelper == null) return;
-        int spanCount = overrideSingleSpan ? SPAN_COUNT_SMALL_WIDTH : SPAN_COUNT_LARGE_WIDTH;
-        if (!overrideSingleSpan && optionsSupported) {
+        int spanCount = shouldUseSingleSpan(isSmallLayoutWidth) ? SPAN_COUNT_SMALL_WIDTH
+                                                                : SPAN_COUNT_LARGE_WIDTH;
+        listLayoutHelper.setSpanCount(spanCount);
+    }
+
+    private boolean shouldUseSingleSpan(boolean isSmallLayoutWidth) {
+        boolean supportsOptions = mCurrentStream != null && mCurrentStream.supportsOptions();
+        boolean isFollowingFeedSortDisabled =
+                (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED_SORT)
+                        && mCurrentStream.getStreamKind() == StreamKind.FOLLOWING);
+        boolean isFeedSortedBySite = false;
+        if (supportsOptions) {
             @ContentOrder
             int selectedOption = mOptionsCoordinator.getSelectedOptionId();
-            // Override to single span count when showing following feed sort by site.
-            if (ContentOrder.GROUPED == selectedOption) {
-                spanCount = SPAN_COUNT_SMALL_WIDTH;
-            }
+            // Use single span count when showing following feed sorted by site.
+            isFeedSortedBySite = (ContentOrder.GROUPED == selectedOption);
         }
-        listLayoutHelper.setSpanCount(spanCount);
+        return isFollowingFeedSortDisabled || isSmallLayoutWidth || isFeedSortedBySite;
     }
 
     private void switchToStream(int headerIndex) {
@@ -314,7 +326,7 @@ public class FeedSurfaceMediator
                     .set(SectionHeaderProperties.OPTIONS_INDICATOR_VISIBILITY_KEY,
                             ViewVisibility.VISIBLE);
         }
-        updateLayout(newStream.supportsOptions(), false);
+        updateLayout(false);
         if (!mSettingUpStreams) {
             logSwitchedFeeds(newStream);
             bindStream(newStream, /*shouldScrollToTop=*/true);
@@ -349,14 +361,7 @@ public class FeedSurfaceMediator
                     int widthDp = (int) ((right - left) / pixelToDp);
                     int heightDp = (int) ((bottom - top) / pixelToDp);
                     mIsStickyHeaderEnabledInLayout = (widthDp >= 360 && heightDp >= 360);
-                    if (FeedFeatures.isMultiColumnFeedEnabled(mContext)) {
-                        boolean useSingleSpan =
-                                (right - left) <= ViewUtils.dpToPx(mContext, SMALL_WIDTH_DP);
-                        Stream stream = mTabToStreamMap.get(mSectionHeaderModel.get(
-                                SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY));
-                        boolean supportsOptions = (stream != null) && stream.supportsOptions();
-                        updateLayout(supportsOptions, useSingleSpan);
-                    }
+                    updateLayout(widthDp < SMALL_WIDTH_DP);
                 });
     }
 
@@ -496,20 +501,7 @@ public class FeedSurfaceMediator
 
             @Override
             public void onScrolled(RecyclerView v, int dx, int dy) {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_STICK_TO_TOP)) {
-                    int headerPosition = mCoordinator.getFeedHeaderPosition();
-                    int toolbarHeight = mCoordinator.getToolbarHeight();
-                    // When the distance from the header to the top is bigger than the toolbar
-                    // height, it hasn't yet reached the position where it should be fixed/sticky,
-                    // so the sticky header is kept hidden. Show it otherwise.
-                    boolean isHeaderOutOfView = headerPosition < toolbarHeight;
-                    boolean isStickyHeaderVisible =
-                            isHeaderOutOfView && mIsStickyHeaderEnabledInLayout;
-                    mSectionHeaderModel.set(
-                            SectionHeaderListProperties.STICKY_HEADER_VISIBLILITY_KEY,
-                            isStickyHeaderVisible);
-                    mCoordinator.setToolbarHairlineVisibility(!isStickyHeaderVisible);
-                }
+                updateStickyHeaderVisibility();
 
                 if (mSnapScrollHelper != null) {
                     mSnapScrollHelper.handleScroll();
@@ -526,6 +518,20 @@ public class FeedSurfaceMediator
         mMemoryPressureCallback =
                 pressure -> mCoordinator.getRecyclerView().getRecycledViewPool().clear();
         MemoryPressureListener.addCallback(mMemoryPressureCallback);
+    }
+
+    private void updateStickyHeaderVisibility() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_STICK_TO_TOP)) {
+            // When the distance from the header to the top is bigger than the toolbar
+            // height, it hasn't yet reached the position where it should be fixed/sticky,
+            // so the sticky header is kept hidden. Show it otherwise.
+            boolean isHeaderOutOfView =
+                    mCoordinator.getFeedHeaderPosition() < mCoordinator.getToolbarHeight();
+            boolean isStickyHeaderVisible = isHeaderOutOfView && mIsStickyHeaderEnabledInLayout;
+            mSectionHeaderModel.set(SectionHeaderListProperties.STICKY_HEADER_VISIBLILITY_KEY,
+                    isStickyHeaderVisible);
+            mCoordinator.setToolbarHairlineVisibility(!isStickyHeaderVisible);
+        }
     }
 
     void addScrollListener(ScrollListener listener) {
@@ -646,6 +652,13 @@ public class FeedSurfaceMediator
 
     void onContentsChanged() {
         if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
+
+        // Update the sticky header visibility only when the coordinator is active as well as
+        // the feed should show.
+        if (mCoordinator.isActive()
+                && mSectionHeaderModel.get(SectionHeaderListProperties.IS_SECTION_ENABLED_KEY)) {
+            updateStickyHeaderVisibility();
+        }
 
         mActionDelegate.onContentsChanged();
 
@@ -1149,7 +1162,7 @@ public class FeedSurfaceMediator
         return mSignInPromo;
     }
 
-    public void manualRefresh(Callback<Boolean> callback) {
+    void manualRefresh(Callback<Boolean> callback) {
         if (mCurrentStream != null) {
             mCurrentStream.triggerRefresh(callback);
         } else {

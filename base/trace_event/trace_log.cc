@@ -1293,16 +1293,12 @@ TraceLogStatus TraceLog::GetStatus() const {
   return result;
 }
 
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 bool TraceLog::BufferIsFull() const {
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-  // TODO(skyostil): Remove this method since there are no non-test usages.
-  DCHECK(false);
-  return false;
-#else
   AutoLock lock(lock_);
   return logged_events_->IsFull();
-#endif
 }
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
     TraceEventHandle* handle,
@@ -1367,7 +1363,7 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
   perfetto::TrackEvent::Flush();
 
-  if (discard_events) {
+  if (!tracing_session_ || discard_events) {
     tracing_session_.reset();
     scoped_refptr<RefCountedString> empty_result = new RefCountedString;
     cb.Run(empty_result, /*has_more_events=*/false);
@@ -2207,12 +2203,7 @@ void TraceLog::SetProcessSortIndex(int sort_index) {
   process_sort_index_ = sort_index;
 }
 
-void TraceLog::set_process_name(const std::string& process_name) {
-  {
-    AutoLock lock(lock_);
-    process_name_ = process_name;
-  }
-
+void TraceLog::OnSetProcessName(const std::string& process_name) {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   if (perfetto::Tracing::IsInitialized()) {
     auto track = perfetto::ProcessTrack::Current();

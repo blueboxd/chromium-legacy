@@ -31,25 +31,49 @@
 namespace {
 
 base::TimeDelta GetMinTimeToPrompt() {
-  return features::kTrustSafetySentimentSurveyMinTimeToPrompt.Get();
+  return base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)
+             ? features::kTrustSafetySentimentSurveyV2MinTimeToPrompt.Get()
+             : features::kTrustSafetySentimentSurveyMinTimeToPrompt.Get();
 }
 
 base::TimeDelta GetMaxTimeToPrompt() {
-  return features::kTrustSafetySentimentSurveyMaxTimeToPrompt.Get();
+  return base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)
+             ? features::kTrustSafetySentimentSurveyV2MaxTimeToPrompt.Get()
+             : features::kTrustSafetySentimentSurveyMaxTimeToPrompt.Get();
 }
 
 int GetRequiredNtpCount() {
-  return base::RandInt(
-      features::kTrustSafetySentimentSurveyNtpVisitsMinRange.Get(),
-      features::kTrustSafetySentimentSurveyNtpVisitsMaxRange.Get());
+  return base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)
+             ? base::RandInt(
+                   features::kTrustSafetySentimentSurveyV2NtpVisitsMinRange
+                       .Get(),
+                   features::kTrustSafetySentimentSurveyV2NtpVisitsMaxRange
+                       .Get())
+             : base::RandInt(
+                   features::kTrustSafetySentimentSurveyNtpVisitsMinRange.Get(),
+                   features::kTrustSafetySentimentSurveyNtpVisitsMaxRange
+                       .Get());
 }
 
 int GetMaxRequiredNtpCount() {
-  return features::kTrustSafetySentimentSurveyNtpVisitsMaxRange.Get();
+  return base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)
+             ? features::kTrustSafetySentimentSurveyV2NtpVisitsMaxRange.Get()
+             : features::kTrustSafetySentimentSurveyNtpVisitsMaxRange.Get();
 }
 
 std::string GetHatsTriggerForFeatureArea(
     TrustSafetySentimentService::FeatureArea feature_area) {
+  if (base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)) {
+    switch (feature_area) {
+      case (TrustSafetySentimentService::FeatureArea::kTrustedSurface):
+        return kHatsSurveyTriggerTrustSafetyV2TrustedSurface;
+      case (TrustSafetySentimentService::FeatureArea::kSafetyCheck):
+        return kHatsSurveyTriggerTrustSafetyV2SafetyCheck;
+      default:
+        NOTREACHED();
+        return "";
+    }
+  }
   switch (feature_area) {
     case (TrustSafetySentimentService::FeatureArea::kPrivacySettings):
       return kHatsSurveyTriggerTrustSafetyPrivacySettings;
@@ -80,7 +104,59 @@ std::string GetHatsTriggerForFeatureArea(
   }
 }
 
+// Checks that this feature is valid for the current version.
+bool VersionCheck(TrustSafetySentimentService::FeatureArea feature_area) {
+  bool isV2 =
+      base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2);
+  switch (feature_area) {
+    // Version 1 only
+    case (TrustSafetySentimentService::FeatureArea::kPrivacySettings):
+    case (TrustSafetySentimentService::FeatureArea::kTransactions):
+    case (TrustSafetySentimentService::FeatureArea::
+              kPrivacySandbox3ConsentAccept):
+    case (TrustSafetySentimentService::FeatureArea::
+              kPrivacySandbox3ConsentDecline):
+    case (TrustSafetySentimentService::FeatureArea::
+              kPrivacySandbox3NoticeDismiss):
+    case (TrustSafetySentimentService::FeatureArea::kPrivacySandbox3NoticeOk):
+    case (TrustSafetySentimentService::FeatureArea::
+              kPrivacySandbox3NoticeSettings):
+    case (TrustSafetySentimentService::FeatureArea::
+              kPrivacySandbox3NoticeLearnMore):
+      return isV2 == false;
+    // Version 2 only
+    case (TrustSafetySentimentService::FeatureArea::kSafetyCheck):
+      return isV2 == true;
+    // Both Versions
+    case (TrustSafetySentimentService::FeatureArea::kTrustedSurface):
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 bool ProbabilityCheck(TrustSafetySentimentService::FeatureArea feature_area) {
+  if (!VersionCheck(feature_area)) {
+    return false;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)) {
+    switch (feature_area) {
+      case (TrustSafetySentimentService::FeatureArea::kTrustedSurface):
+        return base::RandDouble() <
+               features::kTrustSafetySentimentSurveyV2TrustedSurfaceProbability
+                   .Get();
+      case (TrustSafetySentimentService::FeatureArea::kSafetyCheck):
+        return base::RandDouble() <
+               features::kTrustSafetySentimentSurveyV2SafetyCheckProbability
+                   .Get();
+      default:
+        NOTREACHED();
+        return false;
+    }
+  }
+
   switch (feature_area) {
     case (TrustSafetySentimentService::FeatureArea::kPrivacySettings):
       return base::RandDouble() <
@@ -323,6 +399,10 @@ void TrustSafetySentimentService::InteractedWithPrivacySettings(
 }
 
 void TrustSafetySentimentService::RanSafetyCheck() {
+  // Since we have logic to block a trigger for an incorrect version, we can
+  // call both of these and only the appropriate trigger and probability will be
+  // recorded.
+  TriggerOccurred(FeatureArea::kSafetyCheck, {});
   TriggerOccurred(FeatureArea::kPrivacySettings,
                   GetPrivacySettingsProductSpecificData(
                       profile_, /*ran_safety_check=*/true));
@@ -342,10 +422,13 @@ void TrustSafetySentimentService::InteractedWithPageInfo() {
 void TrustSafetySentimentService::PageInfoClosed() {
   DCHECK(page_info_state_);
 
+  base::TimeDelta threshold =
+      base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurveyV2)
+          ? features::kTrustSafetySentimentSurveyV2TrustedSurfaceTime.Get()
+          : features::kTrustSafetySentimentSurveyTrustedSurfaceTime.Get();
   // Record a trigger if either the user had page info open for the required
   // time, or if they interacted with it.
-  if (base::Time::Now() - page_info_state_->opened_time >=
-          features::kTrustSafetySentimentSurveyTrustedSurfaceTime.Get() ||
+  if (base::Time::Now() - page_info_state_->opened_time >= threshold ||
       page_info_state_->interacted) {
     TriggerOccurred(
         FeatureArea::kTrustedSurface,

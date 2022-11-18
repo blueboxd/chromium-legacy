@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://diagnostics/keyboard_tester.js';
+import 'chrome://diagnostics/strings.m.js';
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
 import {ConnectionType, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRightKey} from 'chrome://diagnostics/input_data_provider.mojom-webui.js';
@@ -10,8 +12,9 @@ import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from '../mock_controller.m.js';
+import {isVisible} from '../test_util.js';
 
 suite('keyboardTesterTestSuite', function() {
   /** @type {?KeyboardTesterElement} */
@@ -34,6 +37,15 @@ suite('keyboardTesterTestSuite', function() {
         document.createElement('keyboard-tester'));
     document.body.appendChild(keyboardTesterElement);
   });
+
+  /**
+   * @param {boolean} isLoggedIn
+   * @return {!Promise}
+   */
+  function setLoggedInState(isLoggedIn) {
+    keyboardTesterElement.isLoggedIn = isLoggedIn;
+    return flushTasks();
+  }
 
   test('topRightKeyCorrections', async () => {
     keyboardTesterElement.keyboard = Object.assign({}, fakeKeyboard, {
@@ -181,7 +193,7 @@ suite('keyboardTesterTestSuite', function() {
     keyboardTesterElement.keyboard = fakeKeyboard;
     await flushTasks();
 
-    keyboardTesterElement.$.dialog.showModal();
+    keyboardTesterElement.show();
     await flushTasks();
     assertTrue(keyboardTesterElement.isOpen());
 
@@ -192,5 +204,23 @@ suite('keyboardTesterTestSuite', function() {
         'keydown', {bubbles: true, key: 'Escape', altKey: true}));
     await keyDownEvent;
     assertFalse(keyboardTesterElement.isOpen());
+  });
+
+  test('helpLinkIsHiddenWhenNotLoggedIn', async () => {
+    keyboardTesterElement.keyboard = fakeKeyboard;
+    await setLoggedInState(/** isLoggedIn */ false);
+
+    keyboardTesterElement.show();
+    await flushTasks();
+    assertTrue(keyboardTesterElement.isOpen());
+    const helpLink = keyboardTesterElement.shadowRoot.querySelector('#help');
+    assertTrue(!!helpLink);
+    assertFalse(isVisible(helpLink));
+
+    keyboardTesterElement.close();
+    await setLoggedInState(/** isLoggedIn */ true);
+    keyboardTesterElement.show();
+    await flushTasks();
+    assertTrue(isVisible(helpLink));
   });
 });

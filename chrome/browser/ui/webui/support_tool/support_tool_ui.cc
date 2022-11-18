@@ -54,6 +54,7 @@ content::WebUIDataSource* CreateSupportToolHTMLSource(const GURL& url) {
   webui::SetupWebUIDataSource(
       source, base::make_span(kSupportToolResources, kSupportToolResourcesSize),
       IDR_SUPPORT_TOOL_SUPPORT_TOOL_CONTAINER_HTML);
+  webui::EnableTrustedTypesCSP(source);
 
   source->AddResourcePath("url-generator",
                           IDR_SUPPORT_TOOL_URL_GENERATOR_CONTAINER_HTML);
@@ -211,7 +212,7 @@ void SupportToolMessageHandler::HandleGetAllDataCollectors(
   AllowJavascript();
   CHECK_EQ(1U, args.size());
   const base::Value& callback_id = args[0];
-  ResolveJavascriptCallback(callback_id, GetAllDataCollectors());
+  ResolveJavascriptCallback(callback_id, GetAllDataCollectorItems());
 }
 
 // Starts data collection with the issue details and selected set of data

@@ -665,8 +665,6 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document,
       ax_tree_source_(BlinkAXTreeSource::Create(*this)),
       ax_tree_serializer_(
           std::make_unique<ui::AXTreeSerializer<AXObject*>>(ax_tree_source_)) {
-  if (document_->IsLoadCompleted())
-    AddPermissionStatusListener();
   use_ax_menu_list_ = GetSettings()->GetUseAXMenuList();
 }
 
@@ -699,6 +697,8 @@ void AXObjectCacheImpl::RemoveInspectorAgent(
 }
 
 AXObject* AXObjectCacheImpl::Root() {
+  if (AXObject* root = SafeGet(document_))
+    return root;
   return GetOrCreate(document_);
 }
 
@@ -748,7 +748,7 @@ void AXObjectCacheImpl::UpdateAXForAllDocuments() {
 
   // Next flush all accessibility events and dirty objects, for both the main
   // and popup document.
-  if (IsDirty())
+  if (IsDirty() || HasDirtyObjects())
     ProcessDeferredAccessibilityEvents(GetDocument());
 }
 
@@ -2056,6 +2056,9 @@ void AXObjectCacheImpl::SelectionChanged(Node* node) {
   if (settings && settings->GetAriaModalPrunesAXTree())
     UpdateActiveAriaModalDialog(node);
 
+  // Firing the document selection changed event triggers the immediate
+  // serialization that is desired for user input events -- see
+  // IsImmediateProcessingRequiredForEvent().
   DeferTreeUpdate(&AXObjectCacheImpl::PostNotification, &GetDocument(),
                   ax::mojom::blink::Event::kDocumentSelectionChanged);
 
@@ -2076,35 +2079,19 @@ void AXObjectCacheImpl::StyleChanged(const LayoutObject* layout_object) {
   DCHECK(layout_object);
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION();
   Node* node = GetClosestNodeForLayoutObject(layout_object);
-  if (node)
-    DeferTreeUpdate(&AXObjectCacheImpl::StyleChangedWithCleanLayout, node);
-}
-
-void AXObjectCacheImpl::StyleChangedWithCleanLayout(Node* node) {
-  DCHECK(node);
-  DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
-
-  // There is a ton of style change notifications coming from newly-opened
-  // calendar popups for pickers. Solving that problem is what inspired the
-  // approach below, which is likely true for all elements.
-  //
-  // If we don't know about an object, then its style did not change as far as
-  // we (and ATs) are concerned. For this reason, don't call GetOrCreate.
-  AXObject* obj = Get(node);
-  if (!obj)
+  if (!node)
     return;
 
-  DCHECK(!obj->IsDetached());
-
-  // If the foreground or background color on an item inside a container which
-  // supports selection changes, it can be the result of the selection changing
-  // as well as the container losing focus. We handle these notifications via
-  // their state changes, so no need to mark them dirty here.
-  AXObject* parent = obj->CachedParentObject();
-  if (parent && ui::IsContainerWithSelectableChildren(parent->RoleValue()))
+  AXObject* ax_object = SafeGet(node);
+  if (!ax_object) {
+    // No object exists to mark dirty yet -- there can sometimes be a layout in
+    // the initial empty document, or style has changed before the object cache
+    // becomes aware that the node exists. It's too early for the style change
+    // to be useful.
     return;
+  }
 
-  MarkAXObjectDirtyWithCleanLayout(obj);
+  MarkAXObjectDirty(ax_object);
 }
 
 void AXObjectCacheImpl::TextChanged(Node* node) {
@@ -2291,8 +2278,7 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
 }
 
 void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
-  // If a node is inserted that is a descendant of a leaf node in the
-  // accessibility tree, notify the root of that subtree that its children have
+  // If a node is inserted, notify its parent that its text/children may have
   // changed.
   DCHECK(node);
   while (node) {
@@ -2515,6 +2501,15 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
       ProcessDeferredAccessibilityEventsImpl(*GetPopupDocumentIfShowing());
     }
     ProcessDeferredAccessibilityEventsImpl(document);
+  }
+
+  // Check whether there are dirty objects ready to be serialized.
+  // TODO(accessibility) It's a bit confusing that this can be true when the
+  // IsDirty() is false, but this is the case for objects marked dirty from
+  // RenderAccessibilityImpl, e.g. for the kEndOfTest event.
+  if (HasDirtyObjects()) {
+    if (auto* client = GetWebLocalFrameClient())
+      client->AXReadyCallback();
   }
 
   // Accessibility is now clean for both documents: AXObjects can be safely
@@ -2908,7 +2903,7 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
   ScheduleAXUpdate();
 }
 
-void AXObjectCacheImpl::ScheduleAXUpdate() {
+void AXObjectCacheImpl::ScheduleAXUpdate() const {
   // A visual update will force accessibility to be updated as well.
   // Scheduling visual updates before the document is finished loading can
   // interfere with event ordering. In any case, at least one visual update will
@@ -3287,22 +3282,11 @@ void AXObjectCacheImpl::HandleAriaHiddenChangedWithCleanLayout(Node* node) {
     if (parent->IsInert() || parent->IsAriaHidden())
       return;
     // If the parent is 'display: none', then the subtree will be ignored and
-    // changing aria-hidden will have no effect.
-    if (!parent->GetLayoutObject()) {
-      // No layout object: may be in display: none.
-      if (Element* parent_element = parent->GetElement()) {
-        if (!IsDisplayLocked(parent_element)) {
-          // No layout object: must ensure computed style.
-          // Do not perform this check for display locked content, where
-          // computed styles are not updated. In that case, we will need to
-          // assume the need for marking the subtree dirty.
-          const ComputedStyle* parent_style =
-              parent_element->EnsureComputedStyle();
-          if (!parent_style || parent_style->IsEnsuredInDisplayNone())
-            return;
-        }
-      }
-    }
+    // changing aria-hidden will have no effect. However, determining whether
+    // something is in display:none would require calling EnsureComputedStyle(),
+    // which is not ok during post lifecycle tasks. Ultimately, it does not
+    // really matter if we perform this check, because it's just an optimization
+    // to avoid invalidating the entire aria-hidden subtree.
     // Unlike AXObject's |IsVisible| or |IsHiddenViaStyle| this method does not
     // consider 'visibility: [hidden|collapse]', because while the visibility
     // property is inherited it can be overridden by any descendant by providing
@@ -4119,7 +4103,10 @@ void AXObjectCacheImpl::SerializeDirtyObjectsAndEvents(
            "the first place: "
         << obj->ToString(true)
         << "\nParent: " << obj->ParentObjectIncludedInTree()->ToString(true)
-        << "\nIndex in parent: " << obj->IndexInParent();
+        << "\nIndex in parent: "
+        << obj->ParentObjectIncludedInTree()
+               ->CachedChildrenIncludingIgnored()
+               .Find(obj);
 
     updates.push_back(update);
   }
@@ -4347,7 +4334,11 @@ void AXObjectCacheImpl::DidHideMenuListPopupWithCleanLayout(Node* menu_list) {
 
 void AXObjectCacheImpl::HandleLoadStart(Document* document) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION();
-  if (!IsPopup(*document)) {
+  // Popups do not need to fire load start or load complete , because ATs do not
+  // regard popups as documents -- that is an implementation detail of the
+  // browser. The AT regards popups as part of a widget, and a load start or
+  // load complete event would only potentially confuse the AT.
+  if (!IsPopup(*document) && !IsInitialEmptyDocument(*document)) {
     DeferTreeUpdate(&AXObjectCacheImpl::EnsurePostNotification, document,
                     ax::mojom::blink::Event::kLoadStart);
   }
@@ -4356,29 +4347,20 @@ void AXObjectCacheImpl::HandleLoadStart(Document* document) {
 void AXObjectCacheImpl::HandleLoadComplete(Document* document) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION();
 
-  // Popups do not need to fire a load complete message.
-  if (!IsPopup(*document)) {
-    AddPermissionStatusListener();
-    DeferTreeUpdate(&AXObjectCacheImpl::HandleLoadCompleteWithCleanLayout,
-                    document);
-  }
-}
-
-void AXObjectCacheImpl::HandleLoadCompleteWithCleanLayout(Node* document_node) {
-  DCHECK(document_node);
-  const Document* document = To<Document>(document_node);
-#if DCHECK_IS_ON()
-  DCHECK(document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean)
-      << "Unclean document at lifecycle " << document->Lifecycle().ToString();
-  DCHECK(document == document_.Get());
-#endif  // DCHECK_IS_ON()
-
-  if (!document->IsLoadCompleted() || IsInitialEmptyDocument(*document))
+  // TODO(accessibility) Change this to a DCHECK, but that would fail right now
+  // in navigation API tests.
+  if (!document->IsLoadCompleted())
     return;
 
-  AddPermissionStatusListener();
-  PostNotification(GetOrCreate(document_node),
-                   ax::mojom::blink::Event::kLoadComplete);
+  // Popups do not need to fire load start or load complete , because ATs do not
+  // regard popups as documents -- that is an implementation detail of the
+  // browser. The AT regards popups as part of a widget, and a load start or
+  // load complete event would only potentially confuse the AT.
+  if (!IsPopup(*document) && !IsInitialEmptyDocument(*document)) {
+    AddPermissionStatusListener();
+    DeferTreeUpdate(&AXObjectCacheImpl::EnsurePostNotification, document,
+                    ax::mojom::blink::Event::kLoadComplete);
+  }
 }
 
 void AXObjectCacheImpl::HandleLayoutComplete(Document* document) {
@@ -4386,10 +4368,6 @@ void AXObjectCacheImpl::HandleLayoutComplete(Document* document) {
   DCHECK(document);
   // Do not fire kLayoutComplete for popup document.
   if (IsPopup(*document))
-    return;
-
-  // Do not fire for initial empty document.
-  if (IsInitialEmptyDocument(*document))
     return;
 
   // TODO(accessibility) Investigate removal of the layout complete event, which

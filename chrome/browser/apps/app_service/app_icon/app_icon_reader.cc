@@ -4,27 +4,29 @@
 
 #include "chrome/browser/apps/app_service/app_icon/app_icon_reader.h"
 
-#include "base/files/file_util.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_decoder.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/dip_px_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/grit/component_extension_resources.h"
 
 namespace {
 
-std::vector<uint8_t> ReadOnBackgroundThread(Profile* profile,
-                                            const std::string& app_id,
-                                            int32_t icon_size_in_px) {
-  const auto icon_path = apps::GetIconPath(profile, app_id, icon_size_in_px);
-  if (icon_path.empty() || !base::PathExists(icon_path)) {
-    return std::vector<uint8_t>{};
+int GetResourceIdForIcon(const std::string& app_id,
+                         int32_t size_in_dip,
+                         const apps::IconKey& icon_key) {
+  int resource_id = icon_key.resource_id;
+
+  if (app_id == arc::kPlayStoreAppId) {
+    int size_in_px = apps_util::ConvertDipToPx(
+        size_in_dip, /*quantize_to_supported_scale_factor=*/true);
+    resource_id = (size_in_px <= 32) ? IDR_ARC_SUPPORT_ICON_32_PNG
+                                     : IDR_ARC_SUPPORT_ICON_192_PNG;
   }
 
-  std::string unsafe_icon_data;
-  if (!base::ReadFileToString(icon_path, &unsafe_icon_data)) {
-    return std::vector<uint8_t>{};
-  }
-
-  return {unsafe_icon_data.begin(), unsafe_icon_data.end()};
+  return resource_id;
 }
 
 }  // namespace
@@ -36,10 +38,22 @@ AppIconReader::AppIconReader(Profile* profile) : profile_(profile) {}
 AppIconReader::~AppIconReader() = default;
 
 void AppIconReader::ReadIcons(const std::string& app_id,
-                              int32_t size_hint_in_dip,
-                              IconEffects icon_effects,
+                              int32_t size_in_dip,
+                              const IconKey& icon_key,
                               IconType icon_type,
                               LoadIconCallback callback) {
+  IconEffects icon_effects = static_cast<IconEffects>(icon_key.icon_effects);
+  int resource_id = GetResourceIdForIcon(app_id, size_in_dip, icon_key);
+
+  if (icon_key.resource_id != IconKey::kInvalidResourceId) {
+    LoadIconFromResource(icon_type, size_in_dip, resource_id,
+                         /*is_placeholder_icon=*/false, icon_effects,
+                         std::move(callback));
+    return;
+  }
+
+  const base::FilePath& base_path = profile_->GetPath();
+
   switch (icon_type) {
     case IconType::kUnknown: {
       std::move(callback).Run(std::make_unique<apps::IconValue>());
@@ -49,12 +63,12 @@ void AppIconReader::ReadIcons(const std::string& app_id,
       if (icon_effects == apps::IconEffects::kNone) {
         base::ThreadPool::PostTaskAndReplyWithResult(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-            base::BindOnce(&ReadOnBackgroundThread, profile_, app_id,
+            base::BindOnce(&ReadOnBackgroundThread, base_path, app_id,
                            apps_util::ConvertDipToPx(
-                               size_hint_in_dip,
+                               size_in_dip,
                                /*quantize_to_supported_scale_factor=*/true)),
-            base::BindOnce(&AppIconReader::OnIconRead,
-                           weak_ptr_factory_.GetWeakPtr(), icon_type,
+            base::BindOnce(&AppIconReader::OnCompleteWithCompressedData,
+                           weak_ptr_factory_.GetWeakPtr(),
                            std::move(callback)));
         return;
       }
@@ -62,19 +76,83 @@ void AppIconReader::ReadIcons(const std::string& app_id,
     case IconType::kUncompressed:
       [[fallthrough]];
     case IconType::kStandard: {
-      // TODO(crbug.com/1380608): Implement the icon reading function.
+      decodes_.emplace_back(std::make_unique<AppIconDecoder>(
+          base_path, app_id, size_in_dip,
+          base::BindOnce(&AppIconReader::OnUncompressedIconRead,
+                         weak_ptr_factory_.GetWeakPtr(), size_in_dip,
+                         icon_effects, icon_type, std::move(callback))));
+      decodes_.back()->Start();
     }
   }
 }
 
-void AppIconReader::OnIconRead(IconType icon_type,
-                               LoadIconCallback callback,
-                               std::vector<uint8_t> icon_data) {
-  // TODO(crbug.com/1380608): Implement OnIconRead for uncompressed and standard
-  // icons.
+void AppIconReader::OnUncompressedIconRead(int32_t size_in_dip,
+                                           IconEffects icon_effects,
+                                           IconType icon_type,
+                                           LoadIconCallback callback,
+                                           AppIconDecoder* decoder,
+                                           gfx::ImageSkia image) {
+  DCHECK_NE(IconType::kUnknown, icon_type);
 
   auto iv = std::make_unique<apps::IconValue>();
   iv->icon_type = icon_type;
+  iv->uncompressed = image;
+
+  auto it = base::ranges::find(decodes_, decoder,
+                               &std::unique_ptr<AppIconDecoder>::get);
+  DCHECK(it != decodes_.end());
+  decodes_.erase(it);
+
+  if (image.isNull()) {
+    std::move(callback).Run(std::move(iv));
+    return;
+  }
+
+  // Apply the icon effects on the uncompressed data. If the caller requests
+  // an uncompressed icon, return the uncompressed result; otherwise, encode
+  // the icon to a compressed icon, return the compressed result.
+  if (icon_effects) {
+    apps::ApplyIconEffects(
+        icon_effects, size_in_dip, std::move(iv),
+        base::BindOnce(&AppIconReader::OnCompleteWithIconValue,
+                       weak_ptr_factory_.GetWeakPtr(), size_in_dip, icon_type,
+                       std::move(callback)));
+    return;
+  }
+
+  // If icon effects are none, ReadIcons can return the compressed icon
+  // directly.
+  DCHECK_NE(IconType::kCompressed, icon_type);
+
+  std::move(callback).Run(std::move(iv));
+}
+
+void AppIconReader::OnCompleteWithIconValue(int32_t size_in_dip,
+                                            IconType icon_type,
+                                            LoadIconCallback callback,
+                                            IconValuePtr iv) {
+  if (icon_type != IconType::kCompressed) {
+    std::move(callback).Run(std::move(iv));
+    return;
+  }
+
+  float icon_scale = static_cast<float>(apps_util::ConvertDipToPx(
+                         size_in_dip,
+                         /*quantize_to_supported_scale_factor=*/true)) /
+                     size_in_dip;
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&apps::EncodeImageToPngBytes, iv->uncompressed,
+                     icon_scale),
+      base::BindOnce(&AppIconReader::OnCompleteWithCompressedData,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AppIconReader::OnCompleteWithCompressedData(
+    LoadIconCallback callback,
+    std::vector<uint8_t> icon_data) {
+  auto iv = std::make_unique<IconValue>();
+  iv->icon_type = IconType::kCompressed;
   iv->compressed = std::move(icon_data);
 
   std::move(callback).Run(std::move(iv));

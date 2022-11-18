@@ -10,8 +10,10 @@ import android.app.Activity;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewParent;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
@@ -22,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 
 import org.chromium.base.Callback;
-import org.chromium.base.Function;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
@@ -78,6 +79,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * A implementation of a Feed {@link Stream} that is just able to render a vertical stream of
@@ -674,12 +676,19 @@ public class FeedStream implements Stream {
         mFeedAutoplaySettingsDelegate = feedAutoplaySettingsDelegate;
         mRotationObserver = new RotationObserver();
         mFeedContentFirstLoadWatcher = feedContentFirstLoadWatcher;
-        WebFeedSnackbarController.FeedLauncher switchToFollowing = () -> {
-            // Note: for now there's no need to store streamsMediator as an instance variable.
-            streamsMediator.switchToStreamKind(StreamKind.FOLLOWING);
-        };
-        mWebFeedSnackbarController = new WebFeedSnackbarController(activity, switchToFollowing,
-                windowAndroid.getModalDialogManager(), snackbarManager);
+        WebFeedSnackbarController.FeedLauncher snackbarAction;
+        // Note: for now there's no need to store streamsMediator as an instance variable.
+        if (mStreamKind == StreamKind.FOLLOWING) {
+            snackbarAction = () -> {
+                streamsMediator.refreshStream();
+            };
+        } else {
+            snackbarAction = () -> {
+                streamsMediator.switchToStreamKind(StreamKind.FOLLOWING);
+            };
+        }
+        mWebFeedSnackbarController = new WebFeedSnackbarController(
+                activity, snackbarAction, windowAndroid.getModalDialogManager(), snackbarManager);
 
         mHandlersMap = new HashMap<>();
         mHandlersMap.put(SurfaceActionsHandler.KEY, new FeedSurfaceActionsHandler(actionDelegate));
@@ -803,6 +812,7 @@ public class FeedStream implements Stream {
             mSnackManager.dismissSnackbars(controller);
         }
         mSnackbarControllers.clear();
+        mWebFeedSnackbarController.dismissSnackbars();
 
         mSliceViewTracker.destroy();
         mSliceViewTracker = null;
@@ -1128,6 +1138,31 @@ public class FeedStream implements Stream {
         if (mStreamKind == StreamKind.FOLLOWING) {
             return new NtpListContentManager.NativeViewContent(
                     getLateralPaddingsPx(), sliceId, R.layout.following_empty_state);
+        }
+        if (mStreamKind == StreamKind.SINGLE_WEB_FEED) {
+            View creatorErrorCard;
+            if (slice.getZeroStateSlice().getType()
+                    == FeedUiProto.ZeroStateSlice.Type.CANT_REFRESH) {
+                creatorErrorCard = LayoutInflater.from(mActivity).inflate(
+                        R.layout.creator_offline_error, mRecyclerView, false);
+            } else if (slice.getZeroStateSlice().getType()
+                    == FeedUiProto.ZeroStateSlice.Type.NO_CARDS_AVAILABLE) {
+                creatorErrorCard = LayoutInflater.from(mActivity).inflate(
+                        R.layout.creator_content_unavailable_error, mRecyclerView, false);
+            } else {
+                creatorErrorCard = LayoutInflater.from(mActivity).inflate(
+                        R.layout.creator_general_error, mRecyclerView, false);
+            }
+             // TODO(crbug/1385903): Replace display height dependency with setting the
+             // RecyclerView height to match_parent.
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            mActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            MarginLayoutParams marginParams =
+                    (MarginLayoutParams) creatorErrorCard.getLayoutParams();
+            marginParams.setMargins(0, displayMetrics.heightPixels / 4, 0, 0);
+            creatorErrorCard.setLayoutParams(marginParams);
+            return new NtpListContentManager.NativeViewContent(
+                    getLateralPaddingsPx(), sliceId, creatorErrorCard);
         }
         if (slice.getZeroStateSlice().getType() == FeedUiProto.ZeroStateSlice.Type.CANT_REFRESH) {
             return new NtpListContentManager.NativeViewContent(

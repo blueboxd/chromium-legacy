@@ -103,7 +103,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Ensure that a full document lifecycle will occur, which in turn ensures
   // that a call to ProcessDeferredAccessibilityEvents() will occur soon.
-  void ScheduleAXUpdate() override;
+  void ScheduleAXUpdate() const override;
 
   void Dispose() override;
 
@@ -313,11 +313,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleAriaPressedChangedWithCleanLayout(Element*);
   void HandleNodeLostFocusWithCleanLayout(Node*);
   void HandleNodeGainedFocusWithCleanLayout(Node*);
-  void HandleLoadCompleteWithCleanLayout(Node*);
   void UpdateCacheAfterNodeIsAttachedWithCleanLayout(Node*);
   void DidShowMenuListPopupWithCleanLayout(Node*);
   void DidHideMenuListPopupWithCleanLayout(Node*);
-  void StyleChangedWithCleanLayout(Node*);
   void HandleScrollPositionChangedWithCleanLayout(Node*);
   void HandleValidationMessageVisibilityChangedWithCleanLayout(const Node*);
   void HandleUpdateActiveMenuOptionWithCleanLayout(Node*);
@@ -455,9 +453,7 @@ class MODULES_EXPORT AXObjectCacheImpl
     pending_events_.clear();
   }
 
-  bool HasDirtyObjects() override {
-    return !dirty_objects_.empty();
-  }
+  bool HasDirtyObjects() const override { return !dirty_objects_.empty(); }
 
   bool AddPendingEvent(const ui::AXEvent& event,
                        bool insert_at_beginning) override;

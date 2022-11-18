@@ -13,6 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_external_install_options.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
+#include "services/data_decoder/public/mojom/json_parser.mojom.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -30,9 +32,14 @@ class IsolatedWebAppPolicyManager {
     kErrorNotEphemeralSession,
     kErrorCantCreateRootDirectory,
     kErrorUpdateManifestDownloadFailed,
+    kErrorUpdateManifestParsingFailed,
+    kErrorWebBundleUrlCantBeDetermined,
+    kErrorCantCreateIwaDirectory,
+    kErrorCantDownloadWebBundle,
     kUnknown,
   };
   static constexpr char kEphemeralIwaRootDirectory[] = "EphemeralIWA";
+  static constexpr char kMainSignedWebBundleFileName[] = "main.swbn";
 
   IsolatedWebAppPolicyManager(
       const base::FilePath& context_dir,
@@ -53,17 +60,42 @@ class IsolatedWebAppPolicyManager {
   IsolatedWebAppPolicyManager& operator=(const IsolatedWebAppPolicyManager&) =
       delete;
 
+  // Extracts the URL of the Web Bundle that corresponds to the latest version
+  // of the app in the Update Manifest.
+  static absl::optional<GURL> ExtractWebBundleURL(
+      const base::Value& parsed_update_manifest);
+
  private:
+  // Creating root directory where the ephemeral apps will be placed.
   void CreateIwaEphemeralRootDirectory();
   void OnIwaEphemeralRootDirectoryCreated(base::File::Error error);
+
+  // Downloading of the update manifest of the current app.
   void DownloadUpdateManifest();
   void OnUpdateManifestDownloaded(
       std::unique_ptr<network::SimpleURLLoader> simple_loader,
       std::unique_ptr<std::string>);
-  void ContinueWithTheNextApp();
+
+  // Parsing of the update manifest from JSON string to Value tree.
+  void ParseUpdateManifest(const std::string& manifest_content);
+  void OnUpdateManifestParsed(absl::optional<base::Value> result,
+                              const absl::optional<std::string>& error);
+
+  // Create a new directory for the exact instance of the IWA.
+  void CreateIwaDirectory();
+  void OnIwaDirectoryCreated(const base::FilePath& iwa_dir,
+                             base::File::Error error);
+
+  // Downloading of the Signed Web Bundle.
+  void DownloadWebBundle();
+  void OnWebBundleDownloaded(
+      std::unique_ptr<network::SimpleURLLoader> simple_loader,
+      base::FilePath path);
 
   void SetResultForCurrentEphemeralApp(EphemeralAppInstallResult result);
   void SetResultForAllEphemeralApps(EphemeralAppInstallResult result);
+  void ContinueWithTheNextApp();
+  data_decoder::mojom::JsonParser* GetJsonParserPtr();
 
   // Isolated Web Apps for installation in ephemeral managed guest session.
   std::vector<IsolatedWebAppExternalInstallOptions>
@@ -77,6 +109,11 @@ class IsolatedWebAppPolicyManager {
   std::vector<EphemeralAppInstallResult> result_vector_;
   base::OnceCallback<void(std::vector<EphemeralAppInstallResult>)>
       ephemeral_install_cb_;
+
+  data_decoder::DataDecoder data_decoder_;
+  // Dont use this variable directly. Use GetJsonParserPtr() instead.
+  mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
+
   base::WeakPtrFactory<IsolatedWebAppPolicyManager> weak_factory_{this};
 };
 

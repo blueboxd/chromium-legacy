@@ -16,7 +16,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
-#include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/ash/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/ash/input_method/stub_input_method_engine_observer.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
@@ -169,10 +168,7 @@ class InputMethodEngineTest : public testing::Test {
   }
 
   void Focus(ui::TextInputType input_type) {
-    ui::TextInputMethod::InputContext input_context(
-        input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE,
-        ui::TextInputClient::FOCUS_REASON_OTHER,
-        ui::PersonalizationMode::kDisabled);
+    ui::TextInputMethod::InputContext input_context(input_type);
     engine_->Focus(input_context);
     ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }

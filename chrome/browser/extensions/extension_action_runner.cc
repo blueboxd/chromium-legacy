@@ -426,10 +426,10 @@ void ExtensionActionRunner::RunPendingScriptsForExtension(
 
   content::NavigationEntry* visible_entry =
       web_contents()->GetController().GetVisibleEntry();
-  // Refuse to run if there's no visible entry that is not the initial
-  // NavigationEntry, because we have no way of determining if it's the proper
-  // page. This should rarely, if ever, happen.
-  if (!visible_entry || visible_entry->IsInitialEntry())
+  // Refuse to run if the visible entry is the initial NavigationEntry, because
+  // we have no way of determining if it's the proper page. This should rarely,
+  // if ever, happen.
+  if (visible_entry->IsInitialEntry())
     return;
 
   // We add this to the list of permitted extensions and erase pending entries
@@ -611,25 +611,27 @@ void ExtensionActionRunner::UpdatePageAccessSettings(
 
   const GURL& url = web_contents()->GetLastCommittedURL();
   ScriptingPermissionsModifier modifier(browser_context_, extension);
-  DCHECK(modifier.CanAffectExtension());
+  PermissionsManager* permissions_manager =
+      PermissionsManager::Get(browser_context_);
+  DCHECK(permissions_manager->CanAffectExtension(*extension));
 
   switch (new_access) {
     case SitePermissionsHelper::SiteAccess::kOnClick:
-      if (modifier.HasBroadGrantedHostPermissions())
+      if (permissions_manager->HasBroadGrantedHostPermissions(*extension))
         modifier.RemoveBroadGrantedHostPermissions();
       // Note: SetWithholdHostPermissions() is a no-op if host permissions are
       // already being withheld.
       modifier.SetWithholdHostPermissions(true);
-      if (modifier.HasGrantedHostPermission(url))
+      if (permissions_manager->HasGrantedHostPermission(*extension, url))
         modifier.RemoveGrantedHostPermission(url);
       break;
     case SitePermissionsHelper::SiteAccess::kOnSite:
-      if (modifier.HasBroadGrantedHostPermissions())
+      if (permissions_manager->HasBroadGrantedHostPermissions(*extension))
         modifier.RemoveBroadGrantedHostPermissions();
       // Note: SetWithholdHostPermissions() is a no-op if host permissions are
       // already being withheld.
       modifier.SetWithholdHostPermissions(true);
-      if (!modifier.HasGrantedHostPermission(url))
+      if (!permissions_manager->HasGrantedHostPermission(*extension, url))
         modifier.GrantHostPermission(url);
       break;
     case SitePermissionsHelper::SiteAccess::kOnAllSites:

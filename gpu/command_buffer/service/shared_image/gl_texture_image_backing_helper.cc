@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
 
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -15,6 +14,35 @@
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
+
+ScopedPackState::ScopedPackState(int pack_row_length)
+    : api_(gl::g_current_gl_context) {
+  bool is_es3_capable = gl::g_current_gl_version->is_es3_capable;
+
+  if (is_es3_capable) {
+    // Need to unbind any GL_PIXEL_PACK_BUFFER for the nullptr in
+    // glTexImage2D to mean "no pixels" (as opposed to offset 0 in the
+    // buffer).
+    api_->glGetIntegervFn(GL_PIXEL_PACK_BUFFER_BINDING, &pack_buffer_);
+    if (pack_buffer_)
+      api_->glBindBufferFn(GL_PIXEL_PACK_BUFFER, 0);
+  }
+
+  pack_alignment_.emplace(GL_PACK_ALIGNMENT, 4);
+
+  if (is_es3_capable) {
+    pack_row_length_.emplace(GL_PACK_ROW_LENGTH, pack_row_length);
+    pack_skip_rows_.emplace(GL_PACK_SKIP_ROWS, 0);
+    pack_skip_pixels_.emplace(GL_PACK_SKIP_PIXELS, 0);
+  } else {
+    DCHECK_EQ(pack_row_length, 0);
+  }
+}
+
+ScopedPackState::~ScopedPackState() {
+  if (pack_buffer_)
+    api_->glBindBufferFn(GL_PIXEL_PACK_BUFFER, pack_buffer_);
+}
 
 ScopedUnpackState::ScopedUnpackState(bool uploading_data, int unpack_row_length)
     : api_(gl::g_current_gl_context) {

@@ -377,13 +377,13 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   Frame* Top();
 
   // Returns the first child frame.
-  Frame* FirstChild() const;
+  Frame* FirstChild() const { return first_child_; }
 
   // Returns the previous sibling frame.
   Frame* PreviousSibling() const { return previous_sibling_; }
 
   // Returns the next sibling frame.
-  Frame* NextSibling() const;
+  Frame* NextSibling() const { return next_sibling_; }
 
   // Returns the last child frame.
   Frame* LastChild() const { return last_child_; }
@@ -393,7 +393,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // Detaches a frame from its parent frame if it has one.
   void DetachFromParent();
 
-  // Swap out this frame for a new local frame.
+  // Swap out this frame for a new local frame. Note that this frame and the
+  // local frame can belong to different Pages in case of main frame
+  // LocalFrame <-> LocalFrame swaps. In that case, the frame actually being
+  // swapped in this frame's place in the old Page will be a placeholder
+  // RemoteFrame, while the new LocalFrame will get swapped in into a new Page.
+  // See comments in SwapImpl()'s implementation for more details.
   bool Swap(WebLocalFrame*);
 
   // Swap out this frame for a new remote frame. This method takes the

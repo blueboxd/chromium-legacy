@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_TRIGGER_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_TRIGGER_H_
 
+#include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/common/content_export.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -38,7 +38,8 @@ class CONTENT_EXPORT AttributionTrigger {
     kNoMatchingConfigurations = 12,
     kExcessiveReports = 13,
     kFalselyAttributedSource = 14,
-    kMaxValue = kFalselyAttributedSource,
+    kReportWindowPassed = 15,
+    kMaxValue = kReportWindowPassed,
   };
 
   // Represents the potential aggregatable outcomes from attempting to register
@@ -59,11 +60,12 @@ class CONTENT_EXPORT AttributionTrigger {
     kNotRegistered = 9,
     kProhibitedByBrowserPolicy = 10,
     kDeduplicated = 11,
-    kMaxValue = kDeduplicated,
+    kReportWindowPassed = 12,
+    kMaxValue = kReportWindowPassed,
   };
 
   AttributionTrigger(attribution_reporting::TriggerRegistration registration,
-                     url::Origin destination_origin,
+                     attribution_reporting::SuitableOrigin destination_origin,
                      bool is_within_fenced_frame);
 
   AttributionTrigger(const AttributionTrigger&);
@@ -80,15 +82,17 @@ class CONTENT_EXPORT AttributionTrigger {
     return registration_;
   }
 
-  const url::Origin& destination_origin() const { return destination_origin_; }
+  const attribution_reporting::SuitableOrigin& destination_origin() const {
+    return destination_origin_;
+  }
 
   bool is_within_fenced_frame() const { return is_within_fenced_frame_; }
 
  private:
   attribution_reporting::TriggerRegistration registration_;
 
-  // Origin that this trigger was registered.
-  url::Origin destination_origin_;
+  // Origin on which this trigger was registered.
+  attribution_reporting::SuitableOrigin destination_origin_;
 
   // Whether the trigger is registered within a fenced frame tree.
   bool is_within_fenced_frame_;

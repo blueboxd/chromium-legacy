@@ -5,8 +5,11 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-mojom("source_registration_error_mojom") {
-  sources = [ "source_registration_error.mojom" ]
+mojom("mojom") {
+  sources = [
+    "source_registration_error.mojom",
+    "trigger_registration_error.mojom",
+  ]
   webui_module_path = "/"
 }
 
@@ -18,6 +21,7 @@ component("attribution_reporting") {
     "aggregatable_values.h",
     "aggregation_keys.cc",
     "aggregation_keys.h",
+    "bounded_list.h",
     "constants.h",
     "event_trigger_data.cc",
     "event_trigger_data.h",
@@ -25,6 +29,8 @@ component("attribution_reporting") {
     "filters.h",
     "os_registration.cc",
     "os_registration.h",
+    "parsing_utils.cc",
+    "parsing_utils.h",
     "source_registration.cc",
     "source_registration.h",
     "suitable_origin.cc",
@@ -34,7 +40,7 @@ component("attribution_reporting") {
   ]
 
   public_deps = [
-    ":source_registration_error_mojom",
+    ":mojom",
     "//base",
     "//url",
   ]
@@ -51,9 +57,14 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "aggregatable_trigger_data_unittest.cc",
+    "aggregatable_values_unittest.cc",
     "aggregation_keys_unittest.cc",
+    "bounded_list_unittest.cc",
+    "event_trigger_data_unittest.cc",
     "filters_unittest.cc",
     "os_registration_unittest.cc",
+    "parsing_utils_unittest.cc",
     "source_registration_unittest.cc",
     "suitable_origin_unittest.cc",
     "trigger_registration_unittest.cc",
@@ -114,5 +125,5 @@ fuzzer_test("source_registration_fuzzer") {
     "//third_party/libprotobuf-mutator",
   ]
   seed_corpus =
-      "//testing/libfuzzer/fuzzers/attribution_source_registration_corpus/"
+      "//components/attribution_reporting/source_registration_fuzzer_corpus"
 }

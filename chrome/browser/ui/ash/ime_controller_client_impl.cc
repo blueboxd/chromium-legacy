@@ -104,20 +104,6 @@ void ImeControllerClientImpl::SetCapsLockEnabled(bool caps_enabled) {
     keyboard->SetCapsLockEnabled(caps_enabled);
 }
 
-void ImeControllerClientImpl::UpdateMirroringState(bool mirroring_enabled) {
-  ui::TextInputMethod* ime_engine =
-      ui::IMEBridge::Get()->GetCurrentEngineHandler();
-  if (ime_engine)
-    ime_engine->SetMirroringEnabled(mirroring_enabled);
-}
-
-void ImeControllerClientImpl::UpdateCastingState(bool casting_enabled) {
-  ui::TextInputMethod* ime_engine =
-      ui::IMEBridge::Get()->GetCurrentEngineHandler();
-  if (ime_engine)
-    ime_engine->SetCastingEnabled(casting_enabled);
-}
-
 void ImeControllerClientImpl::OverrideKeyboardKeyset(
     ash::input_method::ImeKeyset keyset,
     OverrideKeyboardKeysetCallback callback) {
@@ -225,9 +211,9 @@ void ImeControllerClientImpl::RefreshIme() {
   const std::string current_ime_id = state->GetCurrentInputMethod().id();
 
   std::vector<ash::ImeInfo> available_imes;
-  std::unique_ptr<std::vector<InputMethodDescriptor>> enabled_ime_descriptors =
+  std::vector<InputMethodDescriptor> enabled_ime_descriptors =
       state->GetEnabledInputMethodsSortedByLocalizedDisplayNames();
-  for (const InputMethodDescriptor& descriptor : *enabled_ime_descriptors) {
+  for (const InputMethodDescriptor& descriptor : enabled_ime_descriptors) {
     ash::ImeInfo info = GetAshImeInfo(descriptor);
     available_imes.push_back(std::move(info));
   }

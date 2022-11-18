@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/browser/ui/app_list/reorder/app_list_reorder_core.h"
 #include "chrome/browser/ui/app_list/test/app_list_syncable_service_test_base.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
@@ -601,10 +600,6 @@ TEST_F(AppListSyncableServiceTest, InitialMerge) {
   EXPECT_EQ("ordinal", GetSyncItem(kItemId2)->item_ordinal.ToDebugString());
   EXPECT_EQ("pinordinal",
             GetSyncItem(kItemId2)->item_pin_ordinal.ToDebugString());
-
-  // Default page breaks are not installed for non-first time users that don't
-  // have them in their sync.
-  EXPECT_FALSE(GetSyncItem(kDefaultPageBreak1));
 }
 
 class AppListInternalAppSyncableServiceTest
@@ -622,63 +617,6 @@ class AppListInternalAppSyncableServiceTest
 
   ~AppListInternalAppSyncableServiceTest() override = default;
 };
-
-TEST_F(AppListInternalAppSyncableServiceTest, ExistingDefaultPageBreak) {
-  // Non-first time users have items in their remote sync data.
-  syncer::SyncDataList sync_list;
-  sync_list.push_back(CreateAppRemoteData(
-      kDefaultPageBreak1, "page_break_1", "", "ordinal", "pinordinal",
-      sync_pb::AppListSpecifics_AppListItemType_TYPE_PAGE_BREAK));
-
-  app_list_syncable_service()->MergeDataAndStartSyncing(
-      syncer::APP_LIST, sync_list,
-      std::make_unique<syncer::FakeSyncChangeProcessor>(),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
-  content::RunAllTasksUntilIdle();
-
-  // Existing page break item in remote sync will be added, and its data will be
-  // updated with the item's remote sync data.
-  auto* page_break_sync_item = GetSyncItem(kDefaultPageBreak1);
-  ASSERT_TRUE(page_break_sync_item);
-  EXPECT_EQ(page_break_sync_item->item_type,
-            sync_pb::AppListSpecifics::TYPE_PAGE_BREAK);
-  EXPECT_EQ("page_break_1", page_break_sync_item->item_name);
-  EXPECT_EQ("", page_break_sync_item->parent_id);
-  EXPECT_EQ("ordinal", page_break_sync_item->item_ordinal.ToDebugString());
-  EXPECT_EQ("pinordinal",
-            page_break_sync_item->item_pin_ordinal.ToDebugString());
-}
-
-TEST_F(AppListInternalAppSyncableServiceTest, DefaultPageBreakFirstTimeUser) {
-  // Empty sync list simulates a first time user.
-  syncer::SyncDataList sync_list;
-
-  app_list_syncable_service()->MergeDataAndStartSyncing(
-      syncer::APP_LIST, sync_list,
-      std::make_unique<syncer::FakeSyncChangeProcessor>(),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
-  content::RunAllTasksUntilIdle();
-
-  auto* page_break_sync_item = GetSyncItem(kDefaultPageBreak1);
-  ASSERT_TRUE(page_break_sync_item);
-  EXPECT_EQ(page_break_sync_item->item_type,
-            sync_pb::AppListSpecifics::TYPE_PAGE_BREAK);
-
-  // Since internal apps are added by default, we'll use the settings apps to
-  // test the ordering.
-  auto* settings_app_sync_item = GetSyncItem(web_app::kOsSettingsAppId);
-  auto* hosted_app_sync_item = GetSyncItem(kHostedAppId);
-  ASSERT_TRUE(settings_app_sync_item);
-  ASSERT_TRUE(hosted_app_sync_item);
-
-  // The default page break should be between the hosted app, and the settings
-  // app; i.e. the hosted app is in the first page, and the settings app is in
-  // the second page.
-  EXPECT_TRUE(page_break_sync_item->item_ordinal.LessThan(
-      settings_app_sync_item->item_ordinal));
-  EXPECT_TRUE(page_break_sync_item->item_ordinal.GreaterThan(
-      hosted_app_sync_item->item_ordinal));
-}
 
 TEST_F(AppListSyncableServiceTest, InitialMerge_BadData) {
   const syncer::SyncDataList sync_list = CreateBadAppRemoteData(kDefault);
@@ -1141,64 +1079,6 @@ TEST_F(AppListSyncableServiceTest, UpdateSyncItemRemoveLastItemFromFolder) {
   EXPECT_EQ(productivity_launcher ? kFolderId : "", child_item_2->folder_id());
 }
 
-TEST_F(AppListSyncableServiceTest, AddPageBreakItems) {
-  RemoveAllExistingItems();
-
-  // Populate item list with 2 items.
-  const std::string kItemId1 = GenerateId("item_id1");
-  const std::string kItemId2 = GenerateId("item_id2");
-
-  syncer::SyncDataList sync_list;
-  sync_list.push_back(CreateAppRemoteData(kItemId1, "item_name",
-                                          "" /* parent_id */, "c" /* ordinal */,
-                                          "pinordinal"));
-  sync_list.push_back(CreateAppRemoteData(kItemId2, "item_name",
-                                          "" /* parent_id */, "d" /* ordinal */,
-                                          "pinordinal"));
-
-  app_list_syncable_service()->MergeDataAndStartSyncing(
-      syncer::APP_LIST, sync_list,
-      std::make_unique<syncer::FakeSyncChangeProcessor>(),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
-  content::RunAllTasksUntilIdle();
-
-  ASSERT_TRUE(GetSyncItem(kItemId1));
-  ASSERT_TRUE(GetSyncItem(kItemId2));
-
-  // Add a "page break" items before 1st item, after 1st item and after 2nd
-  // item.
-  const std::string kPageBreakItemId1 = GenerateId("page_break_item_id1");
-  const std::string kPageBreakItemId2 = GenerateId("page_break_item_id2");
-  const std::string kPageBreakItemId3 = GenerateId("page_break_item_id3");
-  AppListModelUpdater* model_updater = GetModelUpdater();
-  std::unique_ptr<ChromeAppListItem> page_break_item1 =
-      std::make_unique<ChromeAppListItem>(profile_.get(), kPageBreakItemId1,
-                                          model_updater);
-  std::unique_ptr<ChromeAppListItem> page_break_item2 =
-      std::make_unique<ChromeAppListItem>(profile_.get(), kPageBreakItemId2,
-                                          model_updater);
-  std::unique_ptr<ChromeAppListItem> page_break_item3 =
-      std::make_unique<ChromeAppListItem>(profile_.get(), kPageBreakItemId3,
-                                          model_updater);
-  ItemTestApi(page_break_item1.get()).SetPosition(syncer::StringOrdinal("bm"));
-  page_break_item1->SetIsPageBreak(true);
-  ItemTestApi(page_break_item2.get()).SetPosition(syncer::StringOrdinal("cm"));
-  page_break_item2->SetIsPageBreak(true);
-  ItemTestApi(page_break_item3.get()).SetPosition(syncer::StringOrdinal("dm"));
-  page_break_item3->SetIsPageBreak(true);
-  app_list_syncable_service()->AddItem(std::move(page_break_item1));
-  app_list_syncable_service()->AddItem(std::move(page_break_item2));
-  app_list_syncable_service()->AddItem(std::move(page_break_item3));
-  content::RunAllTasksUntilIdle();
-
-  // Only 2nd "page break" item remains.
-  ASSERT_FALSE(GetSyncItem(kPageBreakItemId1));
-  ASSERT_TRUE(GetSyncItem(kItemId1));
-  ASSERT_TRUE(GetSyncItem(kPageBreakItemId2));
-  ASSERT_TRUE(GetSyncItem(kItemId2));
-  ASSERT_FALSE(GetSyncItem(kPageBreakItemId3));
-}
-
 TEST_F(AppListSyncableServiceTest, PruneRedundantPageBreakItems) {
   RemoveAllExistingItems();
 
@@ -1494,24 +1374,8 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
   EXPECT_TRUE(last_app_position.CreateAfter().Equals(
       model_updater->GetFirstAvailablePosition()));
 
-  // Add a "page break" item at the end of first page.
-  std::unique_ptr<ChromeAppListItem> page_break_item =
-      std::make_unique<ChromeAppListItem>(
-          profile_.get(), GenerateId("page_break_item_id"), model_updater);
-  const syncer::StringOrdinal page_break_position =
-      last_app_position.CreateAfter();
-  ItemTestApi(page_break_item.get()).SetPosition(page_break_position);
-  page_break_item->SetIsPageBreak(true);
-  model_updater->AddItem((std::move(page_break_item)));
-  // For productivity launcher, page breaks are ignored by app list model
-  // updater.
-  if (ash::features::IsProductivityLauncherEnabled()) {
-    EXPECT_TRUE(last_app_position.CreateAfter().Equals(
-        model_updater->GetFirstAvailablePosition()));
-  } else {
-    EXPECT_TRUE(last_app_position.CreateBetween(page_break_position)
-                    .Equals(model_updater->GetFirstAvailablePosition()));
-  }
+  EXPECT_TRUE(last_app_position.CreateAfter().Equals(
+      model_updater->GetFirstAvailablePosition()));
 
   // Fill up the first page.
   std::unique_ptr<ChromeAppListItem> app_item =
@@ -1520,52 +1384,10 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
           GenerateId("item_id" + base::NumberToString(max_items_in_first_page)),
           model_updater);
   const syncer::StringOrdinal new_item_position =
-      last_app_position.CreateBetween(page_break_position);
+      last_app_position.CreateAfter();
   ItemTestApi(app_item.get()).SetPosition(new_item_position);
   model_updater->AddItem(std::move(app_item));
-  // For productivity launcher, page breaks are ignored by app list model
-  // updater.
-  if (ash::features::IsProductivityLauncherEnabled()) {
-    EXPECT_TRUE(new_item_position.CreateAfter().Equals(
-        model_updater->GetFirstAvailablePosition()));
-  } else {
-    EXPECT_TRUE(page_break_position.CreateAfter().Equals(
-        model_updater->GetFirstAvailablePosition()));
-  }
-}
-
-// Test that installing an app between two items with the same position will put
-// that app at next available position. The test also ensures that no crash
-// occurs (See https://crbug.com/907637).
-TEST_F(AppListSyncableServiceTest, FirstAvailablePositionNotExist) {
-  RemoveAllExistingItems();
-
-  // Populate the first page with items and leave 1 empty slot at the end.
-  const int max_items_in_first_page =
-      ash::SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
-  syncer::StringOrdinal last_app_position =
-      syncer::StringOrdinal::CreateInitialOrdinal();
-  AppListModelUpdater* model_updater = GetModelUpdater();
-  for (int i = 0; i < max_items_in_first_page - 1; ++i) {
-    std::unique_ptr<ChromeAppListItem> item =
-        std::make_unique<ChromeAppListItem>(
-            profile_.get(), GenerateId("item_id" + base::NumberToString(i)),
-            model_updater);
-    ItemTestApi(item.get()).SetPosition(last_app_position);
-    model_updater->AddItem(std::move(item));
-    if (i < max_items_in_first_page - 2)
-      last_app_position = last_app_position.CreateAfter();
-  }
-
-  // Add a "page break" item at the end of first page with the same position as
-  // last app item.
-  std::unique_ptr<ChromeAppListItem> page_break_item =
-      std::make_unique<ChromeAppListItem>(
-          profile_.get(), GenerateId("page_break_item_id"), model_updater);
-  ItemTestApi(page_break_item.get()).SetPosition(last_app_position);
-  page_break_item->SetIsPageBreak(true);
-  model_updater->AddItem((std::move(page_break_item)));
-  EXPECT_TRUE(last_app_position.CreateAfter().Equals(
+  EXPECT_TRUE(new_item_position.CreateAfter().Equals(
       model_updater->GetFirstAvailablePosition()));
 }
 
@@ -3539,16 +3361,18 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   const std::string kItemId2 = CreateNextAppId(kItemId1);
   sync_list.push_back(
       CreateAppRemoteData(kItemId2, "A", "", GetLastPositionString(), kUnset));
+  const std::string kPageBreak1 = CreateNextAppId(kItemId2);
   sync_list.push_back(CreateAppRemoteData(
-      kDefaultPageBreak1, "page_break_1", "", GetLastPositionString(), kUnset,
+      kPageBreak1, "page_break_1", "", GetLastPositionString(), kUnset,
       sync_pb::AppListSpecifics_AppListItemType_TYPE_PAGE_BREAK));
-  const std::string kItemId3 = CreateNextAppId(kItemId2);
+  const std::string kItemId3 = CreateNextAppId(kPageBreak1);
   sync_list.push_back(
       CreateAppRemoteData(kItemId3, "C", "", GetLastPositionString(), kUnset));
+  const std::string kPageBreak2 = CreateNextAppId(kItemId3);
   sync_list.push_back(CreateAppRemoteData(
-      kDefaultPageBreak1, "page_break_2", "", GetLastPositionString(), kUnset,
+      kPageBreak2, "page_break_2", "", GetLastPositionString(), kUnset,
       sync_pb::AppListSpecifics_AppListItemType_TYPE_PAGE_BREAK));
-  const std::string kItemId4 = CreateNextAppId(kItemId3);
+  const std::string kItemId4 = CreateNextAppId(kPageBreak2);
   sync_list.push_back(
       CreateAppRemoteData(kItemId4, "D", "", GetLastPositionString(), kUnset));
 

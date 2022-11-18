@@ -34,3 +34,7 @@ cargo_crate("lib") {
   build_root = "crate/build.rs"
   build_sources = [ "crate/build.rs" ]
 }
+group("test_support") {
+  public_deps = [ ":lib" ]
+  testonly = true
+}

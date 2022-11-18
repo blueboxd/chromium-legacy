@@ -83,13 +83,6 @@ export class OutputInterface {
   /**
    * @param {!OutputFormattingData} data
    * @param {string} token
-   * @param {!OutputFormatTree} tree
-   */
-  formatFind_(data, token, tree) {}
-
-  /**
-   * @param {!OutputFormattingData} data
-   * @param {string} token
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
    */
   formatInputType_(data, token, options) {}
@@ -135,21 +128,9 @@ export class OutputInterface {
   /**
    * @param {!OutputFormattingData} data
    * @param {string} token
-   */
-  formatPressed_(data, token) {}
-
-  /**
-   * @param {!OutputFormattingData} data
-   * @param {string} token
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
    */
   formatRole_(data, token, options) {}
-
-  /**
-   * @param {!OutputFormattingData} data
-   * @param {string} token
-   */
-  formatState_(data, token) {}
 
   /**
    * @param {!OutputFormattingData} data

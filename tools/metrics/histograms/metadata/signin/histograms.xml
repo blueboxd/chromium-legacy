@@ -546,7 +546,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSentinelError"
-    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2023-02-26">
+    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2023-05-14">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -556,7 +556,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSentinelPathGenerated"
-    enum="BooleanSuccess" expires_after="2023-02-26">
+    enum="BooleanSuccess" expires_after="2023-05-14">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -609,7 +609,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSNumberOfDeviceAccounts" units="accounts"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -666,6 +666,16 @@ the browser and content area. -->
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>Tracks the latency of calls to the Kids Management API.</summary>
+</histogram>
+
+<histogram name="Signin.ListFamilyMembersRequest.LegacyNoError.Latency"
+    units="ms" expires_after="2023-11-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Latency of the legacy calls to the Kids Management API that resulted with
+    success.
+  </summary>
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Status"

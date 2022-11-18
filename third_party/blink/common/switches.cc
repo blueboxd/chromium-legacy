@@ -132,16 +132,6 @@ const char kTouchTextSelectionStrategy[] = "touch-selection-strategy";
 const char kTouchTextSelectionStrategy_Character[] = "character";
 const char kTouchTextSelectionStrategy_Direction[] = "direction";
 
-// Used to communicate managed policy for the SetTimeoutWithoutClamp feature.
-// This feature is typically controlled by base::Feature (see
-// blink/common/features.*) but requires an enterprise policy override.
-// This is implicitly a tri-state, and can be either unset, or
-// set to "1" for force enable, or "0" for force disable.
-extern const char kSetTimeoutWithout1MsClampPolicy[] =
-    "set-timeout-without-1ms-clamp-policy";
-extern const char kSetTimeoutWithout1MsClampPolicy_ForceDisable[] = "0";
-extern const char kSetTimeoutWithout1MsClampPolicy_ForceEnable[] = "1";
-
 // Used to communicate managed policy for the MaxUnthrottledTimeoutNestingLevel
 // feature. This feature is typically controlled by base::Feature (see
 // blink/common/features.*) but requires an enterprise policy override. This is
@@ -178,6 +168,28 @@ const char kWebSQLNonSecureContextEnabled[] =
 extern const char kEventPathPolicy[] = "event-path-policy";
 extern const char kEventPathPolicy_ForceDisable[] = "0";
 extern const char kEventPathPolicy_ForceEnable[] = "1";
+
+// Used to communicate managed policy for the OffsetParentNewSpecBehavior
+// feature. This feature is typically controlled by base::Feature (see
+// blink/common/features.*) but requires an enterprise policy override. This is
+// implicitly a tri-state, and can be either unset, or set to "1" for force
+// enable, or "0" for force disable.
+extern const char kOffsetParentNewSpecBehaviorPolicy[] =
+    "offset-parent-new-spec-behavior-policy";
+extern const char kOffsetParentNewSpecBehaviorPolicy_ForceDisable[] = "0";
+extern const char kOffsetParentNewSpecBehaviorPolicy_ForceEnable[] = "1";
+
+// Used to communicate managed policy for the
+// SendMouseEventsDisabledFormControls feature. This feature is typically
+// controlled by base::Feature (see blink/common/features.*) but requires an
+// enterprise policy override. This is implicitly a tri-state, and can be either
+// unset, or set to "1" for force enable, or "0" for force disable.
+extern const char kSendMouseEventsDisabledFormControlsPolicy[] =
+    "send-mouse-events-disabled-form-controls-policy";
+extern const char kSendMouseEventsDisabledFormControlsPolicy_ForceDisable[] =
+    "0";
+extern const char kSendMouseEventsDisabledFormControlsPolicy_ForceEnable[] =
+    "1";
 
 // Controls whether legacy quota API webkitStorageInfo is forced enabled.
 const char kPrefixedStorageInfoEnabled[] = "prefixed-storage-info-enabled";

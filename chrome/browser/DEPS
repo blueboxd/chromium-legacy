@@ -46,6 +46,7 @@ include_rules = [
   "+components/access_code_cast",
   "+components/accuracy_tips",
   "+components/account_manager_core",
+  "+components/app_restore",
   "+components/assist_ranker",
   "+components/autofill_assistant/android",
   "+components/autofill_assistant/browser",
@@ -156,7 +157,7 @@ include_rules = [
   "+components/file_access",
   "+components/find_in_page",
   "+components/flags_ui",
-  "+components/app_restore",
+  "+components/fuchsia_component_support",
   "+components/gcm_driver",
   "+components/global_media_controls",
   "+components/google/core/browser",
@@ -244,6 +245,7 @@ include_rules = [
   "+components/paint_preview/browser",
   "+components/paint_preview/buildflags",
   "+components/password_manager/content/browser",
+  "+components/password_manager/content/common",
   "+components/password_manager/core/browser",
   "+components/password_manager/core/common",
   "+components/payments/content",
@@ -585,5 +587,8 @@ specific_include_rules = {
   ],
   "dbus_memory_pressure_evaluator_linux(_unittest)?\.(cc|h)" : [
     "+dbus",
+  ],
+  "browsing_data_model_browsertest.cc" : [
+    "+components/services/storage/shared_storage/shared_storage_manager.h",
   ]
 }

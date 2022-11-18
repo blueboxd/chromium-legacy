@@ -124,11 +124,10 @@ grit("dev_ui_content_resources") {
     "dev_ui_content_resources.pak",
   ]
   deps = [
-    "//components/attribution_reporting:source_registration_error_mojom_webui_js",
+    "//components/attribution_reporting:mojom_webui_js",
     "//content/browser/aggregation_service:mojo_bindings_webui_js",
     "//content/browser/attribution_reporting:internals_mojo_bindings_webui_js",
     "//content/browser/attribution_reporting:mojo_bindings_webui_js",
-    "//content/browser/preloading/prerender:mojo_bindings_webui_js",
     "//content/browser/resources/aggregation_service:build_ts",
     "//content/browser/resources/attribution_reporting:build_ts",
     "//content/browser/resources/gpu:html_wrapper_files",

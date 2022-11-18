@@ -236,14 +236,8 @@ extern const char kAutofillEnableRankingFormulaDescription[];
 extern const char kAutofillEnableRemadeDownstreamMetricsName[];
 extern const char kAutofillEnableRemadeDownstreamMetricsDescription[];
 
-extern const char kAutofillEnableSendingBcnInGetUploadDetailsName[];
-extern const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[];
-
 extern const char kAutofillEnableStickyManualFallbackForCardsName[];
 extern const char kAutofillEnableStickyManualFallbackForCardsDescription[];
-
-extern const char kAutofillEnableUnmaskCardRequestSetInstrumentIdName[];
-extern const char kAutofillEnableUnmaskCardRequestSetInstrumentIdDescription[];
 
 extern const char kAutofillEnableUpdateVirtualCardEnrollmentName[];
 extern const char kAutofillEnableUpdateVirtualCardEnrollmentDescription[];
@@ -276,9 +270,6 @@ extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[];
 
 extern const char kAutofillParseIBANFieldsName[];
 extern const char kAutofillParseIBANFieldsDescription[];
-
-extern const char kAutofillParseMerchantPromoCodeFieldsName[];
-extern const char kAutofillParseMerchantPromoCodeFieldsDescription[];
 
 extern const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsName[];
 extern const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsDescription[];
@@ -459,6 +450,7 @@ extern const char kFontAccessAPIDescription[];
 
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
+extern const char kForceColorProfileRec2020[];
 extern const char kForceColorProfileColorSpin[];
 extern const char kForceColorProfileSCRGBLinear[];
 extern const char kForceColorProfileHDR10[];
@@ -522,9 +514,6 @@ extern const char kDesktopPWAsAppHomePageFlagId[];
 extern const char kDesktopPWAsAppHomePageName[];
 extern const char kDesktopPWAsAppHomePageDescription[];
 #endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
-
-extern const char kDesktopPWAsRemoveStatusBarName[];
-extern const char kDesktopPWAsRemoveStatusBarDescription[];
 
 extern const char kDesktopPWAsElidedExtensionsMenuName[];
 extern const char kDesktopPWAsElidedExtensionsMenuDescription[];
@@ -694,6 +683,9 @@ extern const char kEnableIphDescription[];
 extern const char kEnableIsolatedWebAppsName[];
 extern const char kEnableIsolatedWebAppsDescription[];
 
+extern const char kEnableIsolatedWebAppDevModeName[];
+extern const char kEnableIsolatedWebAppDevModeDescription[];
+
 extern const char kEnableLensStandaloneFlagId[];
 extern const char kEnableLensStandaloneName[];
 extern const char kEnableLensStandaloneDescription[];
@@ -805,9 +797,6 @@ extern const char kExtensionContentVerificationEnforceStrict[];
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kExtensionsMenuAccessControlName[];
 extern const char kExtensionsMenuAccessControlDescription[];
-
-extern const char kExtensionsFSPInServiceWorkersName[];
-extern const char kExtensionsFSPInServiceWorkersDescription[];
 #endif
 
 extern const char kExtensionsOnChromeUrlsName[];
@@ -821,6 +810,9 @@ extern const char kFractionalScrollOffsetsDescription[];
 
 extern const char kFedCmName[];
 extern const char kFedCmDescription[];
+
+extern const char kFedCmWithoutThirdPartyCookiesName[];
+extern const char kFedCmWithoutThirdPartyCookiesDescription[];
 
 extern const char kFedCmMetricsEndpointName[];
 extern const char kFedCmMetricsEndpointDescription[];
@@ -862,6 +854,12 @@ extern const char kOpenscreenCastStreamingSessionDescription[];
 
 extern const char kCastStreamingAv1Name[];
 extern const char kCastStreamingAv1Description[];
+
+extern const char kCastStreamingHardwareH264Name[];
+extern const char kCastStreamingHardwareH264Description[];
+
+extern const char kCastStreamingHardwareVp8Name[];
+extern const char kCastStreamingHardwareVp8Description[];
 
 extern const char kCastStreamingVp9Name[];
 extern const char kCastStreamingVp9Description[];
@@ -1001,12 +999,6 @@ extern const char kJourneysOmniboxActionDescription[];
 extern const char kJourneysOmniboxHistoryClusterProviderName[];
 extern const char kJourneysOmniboxHistoryClusterProviderDescription[];
 
-extern const char kJourneysOnDeviceClusteringBackendName[];
-extern const char kJourneysOnDeviceClusteringBackendDescription[];
-
-extern const char kJourneysOnDeviceClusteringKeywordFilteringName[];
-extern const char kJourneysOnDeviceClusteringKeywordFilteringDescription[];
-
 extern const char kJourneysShowAllClustersName[];
 extern const char kJourneysShowAllClustersDescription[];
 
@@ -1101,6 +1093,9 @@ extern const char kOmniboxBookmarkPathsDescription[];
 extern const char kOmniboxClosePopupWithEscapeName[];
 extern const char kOmniboxClosePopupWithEscapeDescription[];
 
+extern const char kOmniboxDefaultBrowserPedalName[];
+extern const char kOmniboxDefaultBrowserPedalDescription[];
+
 extern const char kOmniboxDisableCGIParamMatchingName[];
 extern const char kOmniboxDisableCGIParamMatchingDescription[];
 
@@ -1132,6 +1127,9 @@ extern const char kOmniboxMatchToolbarAndStatusBarColorDescription[];
 
 extern const char kOmniboxMostVisitedTilesName[];
 extern const char kOmniboxMostVisitedTilesDescription[];
+
+extern const char kOmniboxMostVisitedTilesAddRecycledViewPoolName[];
+extern const char kOmniboxMostVisitedTilesAddRecycledViewPoolDescription[];
 
 extern const char kOmniboxMostVisitedTilesDynamicSpacingName[];
 extern const char kOmniboxMostVisitedTilesDynamicSpacingDescription[];
@@ -1303,9 +1301,6 @@ extern const char kPasswordImportDescription[];
 extern const char kPasswordDomainCapabilitiesFetchingName[];
 extern const char kPasswordDomainCapabilitiesFetchingDescription[];
 
-extern const char kPasswordScriptsFetchingName[];
-extern const char kPasswordScriptsFetchingDescription[];
-
 extern const char kPasswordChangeAccountStoreUsersName[];
 extern const char kPasswordChangeAccountStoreUsersDescription[];
 
@@ -1467,6 +1462,10 @@ extern const char kScrollableTabStripWithDraggingFlagId[];
 extern const char kScrollableTabStripWithDraggingName[];
 extern const char kScrollableTabStripWithDraggingDescription[];
 
+extern const char kScrollableTabStripOverflowFlagId[];
+extern const char kScrollableTabStripOverflowName[];
+extern const char kScrollableTabStripOverflowDescription[];
+
 extern const char kSplitTabStripName[];
 extern const char kSplitTabStripDescription[];
 
@@ -1563,9 +1562,6 @@ extern const char kStrictOriginIsolationDescription[];
 
 extern const char kStylusBatteryStatusName[];
 extern const char kStylusBatteryStatusDescription[];
-
-extern const char kSubframeShutdownDelayName[];
-extern const char kSubframeShutdownDelayDescription[];
 
 extern const char kSupportTool[];
 extern const char kSupportToolDescription[];
@@ -1917,6 +1913,9 @@ extern const char kSkipServiceWorkerFetchHandlerDescription[];
 extern const char kWebSQLAccessName[];
 extern const char kWebSQLAccessDescription[];
 
+extern const char kUseIDNA2008NonTransitionalName[];
+extern const char kUseIDNA2008NonTransitionalDescription[];
+
 #if !BUILDFLAG(IS_CHROMEOS)
 extern const char kDmTokenDeletionName[];
 extern const char kDmTokenDeletionDescription[];
@@ -2041,9 +2040,6 @@ extern const char kEnableAutofillRefreshStyleDescription[];
 
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
-
-extern const char kEnableFamilyInfoFeedbackName[];
-extern const char kEnableFamilyInfoFeedbackDescription[];
 
 extern const char kEnablePasswordsAccountStorageName[];
 extern const char kEnablePasswordsAccountStorageDescription[];
@@ -2412,9 +2408,6 @@ extern const char kAllowAllSitesToInitiateMirroringDescription[];
 extern const char kBatterySaverModeAvailableName[];
 extern const char kBatterySaverModeAvailableDescription[];
 
-extern const char kBlockMigratedDefaultChromeAppSyncName[];
-extern const char kBlockMigratedDefaultChromeAppSyncDescription[];
-
 extern const char kCopyLinkToTextName[];
 extern const char kCopyLinkToTextDescription[];
 
@@ -2516,17 +2509,20 @@ extern const char kEnableReaderModeDescription[];
 extern const char kHappinessTrackingSurveysForDesktopDemoName[];
 extern const char kHappinessTrackingSurveysForDesktopDemoDescription[];
 
+extern const char kLayoutExtractionName[];
+extern const char kLayoutExtractionDescription[];
+
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescription[];
 
 extern const char kOmniboxExperimentalKeywordModeName[];
 extern const char kOmniboxExperimentalKeywordModeDescription[];
 
+extern const char kPasswordsGroupingName[];
+extern const char kPasswordsGroupingDescription[];
+
 extern const char kPasswordManagerRedesignName[];
 extern const char kPasswordManagerRedesignDescription[];
-
-extern const char kScreenAIName[];
-extern const char kScreenAIDescription[];
 
 extern const char kSCTAuditingName[];
 extern const char kSCTAuditingDescription[];
@@ -2566,9 +2562,6 @@ extern const char kHardwareSecureDecryptionFallbackDescription[];
 
 extern const char kMediaFoundationClearName[];
 extern const char kMediaFoundationClearDescription[];
-
-extern const char kPervasiveSystemAccentColorName[];
-extern const char kPervasiveSystemAccentColorDescription[];
 
 extern const char kRawAudioCaptureName[];
 extern const char kRawAudioCaptureDescription[];
@@ -2824,9 +2817,6 @@ extern const char kDesksSaveAndRecallDescription[];
 extern const char kDesksTemplatesName[];
 extern const char kDesksTemplatesDescription[];
 
-extern const char kDesksTrackpadSwipeImprovementsName[];
-extern const char kDesksTrackpadSwipeImprovementsDescription[];
-
 extern const char kPreferConstantFrameRateName[];
 extern const char kPreferConstantFrameRateDescription[];
 
@@ -2866,12 +2856,6 @@ extern const char kSystemExtensionsDescription[];
 extern const char kEnableServiceWorkersForChromeUntrustedName[];
 extern const char kEnableServiceWorkersForChromeUntrustedDescription[];
 
-extern const char kCrostiniBullseyeUpgradeName[];
-extern const char kCrostiniBullseyeUpgradeDescription[];
-
-extern const char kCrostiniDiskResizingName[];
-extern const char kCrostiniDiskResizingDescription[];
-
 extern const char kCrostiniContainerInstallName[];
 extern const char kCrostiniContainerInstallDescription[];
 
@@ -2880,9 +2864,6 @@ extern const char kCrostiniGpuSupportDescription[];
 
 extern const char kCrostiniResetLxdDbName[];
 extern const char kCrostiniResetLxdDbDescription[];
-
-extern const char kCrostiniUseLxd4Name[];
-extern const char kCrostiniUseLxd4Description[];
 
 extern const char kCrostiniMultiContainerName[];
 extern const char kCrostiniMultiContainerDescription[];
@@ -3045,6 +3026,9 @@ extern const char kEnablePalmOnToolTypePalmDescription[];
 extern const char kEnablePalmSuppressionName[];
 extern const char kEnablePalmSuppressionDescription[];
 
+extern const char kEnablePerDeskZOrderName[];
+extern const char kEnablePerDeskZOrderDescription[];
+
 extern const char kEnableSeamlessRefreshRateSwitchingName[];
 extern const char kEnableSeamlessRefreshRateSwitchingDescription[];
 
@@ -3173,9 +3157,6 @@ extern const char kFullRestoreForLacrosDescription[];
 
 extern const char kFuseBoxDebugName[];
 extern const char kFuseBoxDebugDescription[];
-
-extern const char kGuestOsFilesName[];
-extern const char kGuestOsFilesDescription[];
 
 extern const char kHelpAppBackgroundPageName[];
 extern const char kHelpAppBackgroundPageDescription[];
@@ -3377,9 +3358,6 @@ extern const char kReleaseTrackUiDescription[];
 extern const char kArcWindowPredictorName[];
 extern const char kArcWindowPredictorDescription[];
 
-extern const char kArcInputOverlayName[];
-extern const char kArcInputOverlayDescription[];
-
 extern const char kArcInputOverlayNameBeta[];
 extern const char kArcInputOverlayDescriptionBeta[];
 
@@ -3563,10 +3541,6 @@ extern const char kLacrosScreenCoordinatesEnabledDescription[];
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS)
-extern const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[];
-extern const char
-    kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[];
-
 extern const char kCrOSDspBasedAecAllowedName[];
 extern const char kCrOSDspBasedAecAllowedDescription[];
 
@@ -3593,9 +3567,6 @@ extern const char kCrOSEnforceSystemAecNsDescription[];
 
 extern const char kCrOSEnforceSystemAecNsAgcName[];
 extern const char kCrOSEnforceSystemAecNsAgcDescription[];
-
-extern const char kDefaultCalculatorWebAppName[];
-extern const char kDefaultCalculatorWebAppDescription[];
 
 extern const char kDisableIdleSocketsCloseOnMemoryPressureName[];
 extern const char kDisableIdleSocketsCloseOnMemoryPressureDescription[];

@@ -2707,6 +2707,9 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     if (ElementAnimations* element_animations = data->GetElementAnimations())
       element_animations->CssAnimations().Cancel();
 
+    NodeRareData* node_data = RareData();
+    node_data->InvalidateAssociatedAnimationEffects();
+
     if (was_in_document && data->IntersectionObserverData()) {
       data->IntersectionObserverData()->ComputeIntersectionsForTarget(
           IntersectionObservation::kExplicitRootObserversNeedUpdate |
@@ -3028,8 +3031,6 @@ void Element::RecalcStyleForTraversalRootAncestor() {
 bool Element::SkipStyleRecalcForContainer(
     const ComputedStyle& style,
     const StyleRecalcChange& child_change) {
-  DCHECK(RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled());
-
   if (!GetDocument().GetStyleEngine().SkipStyleRecalcAllowed())
     return false;
 
@@ -3193,33 +3194,29 @@ StyleRecalcChange Element::RecalcStyle(
 
   StyleRecalcContext child_recalc_context = style_recalc_context;
 
-  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled()) {
-    if (const ComputedStyle* style = GetComputedStyle()) {
-      if (style->CanMatchSizeContainerQueries(*this)) {
-        if (RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled()) {
-          if (change.IsSuppressed()) {
-            // IsSuppressed() means we are at the root of a container subtree
-            // called from UpdateStyleAndLayoutTreeForContainer(). If we skipped
-            // the subtree during style recalc, retrieve the StyleRecalcChange
-            // which was the current change for the skipped subtree and combine
-            // it with any current container flags.
-            auto* cq_data = GetContainerQueryData();
-            // Should be guaranteed to have ContainerQueryData here since we at
-            // least have a ContainerQueryEvaluator at this point.
-            DCHECK(cq_data);
-            if (cq_data->SkippedStyleRecalc()) {
-              child_change =
-                  cq_data->ClearAndReturnRecalcChangeForChildren().Combine(
-                      child_change);
-            }
-          } else if (SkipStyleRecalcForContainer(*style, child_change)) {
-            return sibling_change;
-          }
+  if (const ComputedStyle* style = GetComputedStyle()) {
+    if (style->CanMatchSizeContainerQueries(*this)) {
+      if (change.IsSuppressed()) {
+        // IsSuppressed() means we are at the root of a container subtree
+        // called from UpdateStyleAndLayoutTreeForContainer(). If we skipped
+        // the subtree during style recalc, retrieve the StyleRecalcChange
+        // which was the current change for the skipped subtree and combine
+        // it with any current container flags.
+        auto* cq_data = GetContainerQueryData();
+        // Should be guaranteed to have ContainerQueryData here since we at
+        // least have a ContainerQueryEvaluator at this point.
+        DCHECK(cq_data);
+        if (cq_data->SkippedStyleRecalc()) {
+          child_change =
+              cq_data->ClearAndReturnRecalcChangeForChildren().Combine(
+                  child_change);
         }
+      } else if (SkipStyleRecalcForContainer(*style, child_change)) {
+        return sibling_change;
       }
-      if (style->IsContainerForSizeContainerQueries())
-        child_recalc_context.container = this;
     }
+    if (style->IsContainerForSizeContainerQueries())
+      child_recalc_context.container = this;
   }
 
   if (child_change.TraversePseudoElements(*this)) {
@@ -3619,32 +3616,30 @@ StyleRecalcChange Element::RecalcOwnStyle(
       if (UpdateForceLegacyLayout(*new_style, old_style.get()))
         child_change = child_change.ForceReattachLayoutTree();
     }
-    if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled()) {
-      auto* evaluator =
-          ComputeContainerQueryEvaluator(*this, old_style.get(), *new_style);
-      if (evaluator != GetContainerQueryEvaluator()) {
-        EnsureElementRareData()
-            .EnsureContainerQueryData()
-            .SetContainerQueryEvaluator(evaluator);
-      } else if (evaluator) {
-        DCHECK(old_style);
-        evaluator->MarkFontDirtyIfNeeded(*old_style, *new_style);
-        if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
-          if (diff != ComputedStyle::Difference::kEqual &&
-              (!base::ValuesEquivalent(old_style->InheritedVariables(),
-                                       new_style->InheritedVariables()) ||
-               !base::ValuesEquivalent(old_style->NonInheritedVariables(),
-                                       new_style->NonInheritedVariables()))) {
-            switch (evaluator->StyleContainerChanged()) {
-              case ContainerQueryEvaluator::Change::kNone:
-                break;
-              case ContainerQueryEvaluator::Change::kNearestContainer:
-                child_change = change.ForceRecalcStyleContainerChildren();
-                break;
-              case ContainerQueryEvaluator::Change::kDescendantContainers:
-                child_change = change.ForceRecalcStyleContainerDescendants();
-                break;
-            }
+    auto* evaluator =
+        ComputeContainerQueryEvaluator(*this, old_style.get(), *new_style);
+    if (evaluator != GetContainerQueryEvaluator()) {
+      EnsureElementRareData()
+          .EnsureContainerQueryData()
+          .SetContainerQueryEvaluator(evaluator);
+    } else if (evaluator) {
+      DCHECK(old_style);
+      evaluator->MarkFontDirtyIfNeeded(*old_style, *new_style);
+      if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
+        if (diff != ComputedStyle::Difference::kEqual &&
+            (!base::ValuesEquivalent(old_style->InheritedVariables(),
+                                     new_style->InheritedVariables()) ||
+             !base::ValuesEquivalent(old_style->NonInheritedVariables(),
+                                     new_style->NonInheritedVariables()))) {
+          switch (evaluator->StyleContainerChanged()) {
+            case ContainerQueryEvaluator::Change::kNone:
+              break;
+            case ContainerQueryEvaluator::Change::kNearestContainer:
+              child_change = change.ForceRecalcStyleContainerChildren();
+              break;
+            case ContainerQueryEvaluator::Change::kDescendantContainers:
+              child_change = change.ForceRecalcStyleContainerDescendants();
+              break;
           }
         }
       }
@@ -5727,8 +5722,6 @@ ContainerQueryEvaluator& Element::EnsureContainerQueryEvaluator() {
 }
 
 bool Element::SkippedContainerStyleRecalc() const {
-  if (!RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled())
-    return false;
   if (const auto* cq_data = GetContainerQueryData())
     return cq_data->SkippedStyleRecalc();
   return false;
@@ -6077,8 +6070,7 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
   style_request.pseudo_argument = pseudo_argument;
 
   StyleRecalcContext child_recalc_context = style_recalc_context;
-  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
-      element_style->IsContainerForSizeContainerQueries()) {
+  if (element_style->IsContainerForSizeContainerQueries()) {
     child_recalc_context.container = this;
   }
 
@@ -7421,7 +7413,7 @@ bool Element::SetInlineStyleProperty(CSSPropertyID property_id,
   DCHECK_NE(property_id, CSSPropertyID::kVariable);
   DCHECK(IsStyledElement());
   bool did_change =
-      EnsureMutableInlineStyle().SetProperty(
+      EnsureMutableInlineStyle().ParseAndSetProperty(
           property_id, value, important,
           GetExecutionContext() ? GetExecutionContext()->GetSecureContextMode()
                                 : SecureContextMode::kInsecureContext,
@@ -7508,7 +7500,8 @@ void Element::AddPropertyToPresentationAttributeStyle(
     CSSPropertyID property_id,
     CSSValueID identifier) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, *CSSIdentifierValue::Create(identifier));
+  style->SetLonghandProperty(property_id,
+                             *CSSIdentifierValue::Create(identifier));
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
@@ -7517,7 +7510,8 @@ void Element::AddPropertyToPresentationAttributeStyle(
     double value,
     CSSPrimitiveValue::UnitType unit) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, *CSSNumericLiteralValue::Create(value, unit));
+  style->SetLonghandProperty(property_id,
+                             *CSSNumericLiteralValue::Create(value, unit));
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
@@ -7525,11 +7519,11 @@ void Element::AddPropertyToPresentationAttributeStyle(
     CSSPropertyID property_id,
     const String& value) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, value, false,
-                     GetExecutionContext()
-                         ? GetExecutionContext()->GetSecureContextMode()
-                         : SecureContextMode::kInsecureContext,
-                     GetDocument().ElementSheet().Contents());
+  style->ParseAndSetProperty(property_id, value, false,
+                             GetExecutionContext()
+                                 ? GetExecutionContext()->GetSecureContextMode()
+                                 : SecureContextMode::kInsecureContext,
+                             GetDocument().ElementSheet().Contents());
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
@@ -7537,7 +7531,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
     CSSPropertyID property_id,
     const CSSValue& value) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, value);
+  style->SetLonghandProperty(property_id, value);
 }
 
 void Element::MapLanguageAttributeToLocale(const AtomicString& value,

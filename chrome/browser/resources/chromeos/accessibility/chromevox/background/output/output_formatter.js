@@ -64,11 +64,11 @@ export class OutputFormatter {
     } else if (token === 'checked') {
       this.formatChecked_(this.params_, token);
     } else if (token === 'pressed') {
-      this.output_.formatPressed_(this.params_, token);
+      this.formatPressed_(this.params_, token);
     } else if (token === 'state') {
-      this.output_.formatState_(this.params_, token);
+      this.formatState_(this.params_, token);
     } else if (token === 'find') {
-      this.output_.formatFind_(this.params_, token, tree);
+      this.formatFind_(this.params_, token, tree);
     } else if (token === 'descendants') {
       this.output_.formatDescendants_(this.params_, token);
     } else if (token === 'joinedDescendants') {
@@ -219,6 +219,35 @@ export class OutputFormatter {
    * @param {!outputTypes.OutputFormattingData} data
    * @param {string} token
    * @param {!OutputFormatTree} tree
+   * @private
+   */
+  formatFind_(data, token, tree) {
+    const buff = data.outputBuffer;
+    const formatLog = data.outputFormatLogger;
+    let node = data.node;
+
+    // Find takes two arguments: JSON query string and format string.
+    if (tree.firstChild) {
+      const jsonQuery = tree.firstChild.value;
+      node = node.find(
+          /** @type {chrome.automation.FindParams}*/ (JSON.parse(jsonQuery)));
+      const formatString = tree.firstChild.nextSibling || '';
+      if (node) {
+        formatLog.writeToken(token);
+        this.output_.format_({
+          node,
+          outputFormat: formatString,
+          outputBuffer: buff,
+          outputFormatLogger: formatLog,
+        });
+      }
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!OutputFormatTree} tree
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
    * @private
    */
@@ -337,6 +366,28 @@ export class OutputFormatter {
    * @param {string} token
    * @private
    */
+  formatPressed_(data, token) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    const msg = outputTypes.OutputPropertyMap.PRESSED[node.checked];
+    if (msg) {
+      formatLog.writeToken(token);
+      this.output_.format_({
+        node,
+        outputFormat: '@' + msg,
+        outputBuffer: buff,
+        outputFormatLogger: formatLog,
+      });
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @private
+   */
   formatRestriction_(data, token) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -350,6 +401,32 @@ export class OutputFormatter {
         outputFormat: '@' + msg,
         outputBuffer: buff,
         outputFormatLogger: formatLog,
+      });
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @private
+   */
+  formatState_(data, token) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    if (node.state) {
+      Object.getOwnPropertyNames(node.state).forEach(state => {
+        const stateInfo = outputTypes.OUTPUT_STATE_INFO[state];
+        if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on) {
+          formatLog.writeToken(token);
+          this.output_.format_({
+            node,
+            outputFormat: '$' + state,
+            outputBuffer: buff,
+            outputFormatLogger: formatLog,
+          });
+        }
       });
     }
   }

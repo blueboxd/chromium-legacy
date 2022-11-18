@@ -111,7 +111,6 @@ namespace http://www.w3.org/1999/xhtml
     property contains
     property contentEditable
     property dataset
-    property defaultOpen
     property dir
     property dispatchEvent
     property draggable
@@ -194,7 +193,7 @@ namespace http://www.w3.org/1999/xhtml
     property onchange
     property onclick
     property onclose
-    property oncontentvisibilityautostatechanged
+    property oncontentvisibilityautostatechange
     property oncontextlost
     property oncontextmenu
     property oncontextrestored
@@ -1426,7 +1425,7 @@ namespace http://www.w3.org/2000/svg
     property onchange
     property onclick
     property onclose
-    property oncontentvisibilityautostatechanged
+    property oncontentvisibilityautostatechange
     property oncontextlost
     property oncontextmenu
     property oncontextrestored

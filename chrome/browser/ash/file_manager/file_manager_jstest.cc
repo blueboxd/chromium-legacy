@@ -56,6 +56,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
   RunTestURL("foreground/js/metadata/content_metadata_provider_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DlpMetadataProvider) {
+  RunTestURL("foreground/js/metadata/dlp_metadata_provider_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContextMenuHandler) {
   RunTestURL("foreground/js/ui/context_menu_handler_unittest.js");
 }
@@ -270,10 +274,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailModel) {
   RunTestURL("foreground/js/metadata/thumbnail_model_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Trash) {
-  RunTestURL("background/js/trash_unittest.js");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
   RunTestURL("common/js/util_unittest.js");
 }
@@ -292,6 +292,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, RecentDateBucketTest) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfBreadcrumbs) {
   RunTestURL("widgets/xf_breadcrumb_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfSearchOptions) {
+  RunTestURL("widgets/xf_search_options_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileGridTest) {

@@ -12,7 +12,7 @@
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_view.h"
 #include "chromecast/cast_core/grpc/grpc_server.h"
-#include "chromecast/cast_core/runtime/browser/runtime_application_base.h"
+#include "components/cast_receiver/browser/public/embedder_application.h"
 #include "components/cast_receiver/browser/public/runtime_application.h"
 #include "components/cast_receiver/common/public/status.h"
 #include "third_party/cast_core/public/src/proto/common/application_state.pb.h"
@@ -25,6 +25,7 @@
 #include "third_party/cast_core/public/src/proto/web/message_channel.pb.h"
 
 namespace cast_receiver {
+class MessagePortService;
 class StreamingConfigManager;
 }  // namespace cast_receiver
 
@@ -36,17 +37,15 @@ class WebUIControllerFactory;
 namespace chromecast {
 
 class CastContentWindow;
-class MessagePortService;
 class MessagePortServiceGrpc;
-class RuntimeApplicationBase;
 
-class RuntimeApplicationServiceImpl : public RuntimeApplicationBase::Delegate,
+class RuntimeApplicationServiceImpl : public cast_receiver::EmbedderApplication,
                                       public CastWebContents::Observer {
  public:
   using StatusCallback = cast_receiver::RuntimeApplication::StatusCallback;
 
   RuntimeApplicationServiceImpl(
-      std::unique_ptr<RuntimeApplicationBase> runtime_application,
+      std::unique_ptr<cast_receiver::RuntimeApplication> runtime_application,
       cast::common::ApplicationConfig config,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       CastWebService& web_service);
@@ -61,13 +60,13 @@ class RuntimeApplicationServiceImpl : public RuntimeApplicationBase::Delegate,
 
   const std::string& app_id() { return runtime_application_->GetAppId(); }
 
-  // RuntimeApplication::Delegate implementation:
+  // EmbedderApplication implementation:
   void NotifyApplicationStarted() override;
   void NotifyApplicationStopped(ApplicationStopReason stop_reason,
                                 int32_t net_error_code) override;
   void NotifyMediaPlaybackChanged(bool playing) override;
   void GetAllBindings(GetAllBindingsCallback callback) override;
-  MessagePortService* GetMessagePortService() override;
+  cast_receiver::MessagePortService* GetMessagePortService() override;
   std::unique_ptr<content::WebUIControllerFactory> CreateWebUIControllerFactory(
       std::vector<std::string> hosts) override;
   content::WebContents* GetWebContents() override;
@@ -137,7 +136,7 @@ class RuntimeApplicationServiceImpl : public RuntimeApplicationBase::Delegate,
   void InnerContentsCreated(CastWebContents* inner_contents,
                             CastWebContents* outer_contents) override;
 
-  std::unique_ptr<RuntimeApplicationBase> const runtime_application_;
+  std::unique_ptr<cast_receiver::RuntimeApplication> const runtime_application_;
   const cast::common::ApplicationConfig config_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

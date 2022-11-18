@@ -6,18 +6,21 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryIPHUtils.hasShownAnyAutofillIphBefore;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryIPHUtils.showHelpBubble;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.HAS_SUGGESTIONS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.OBFUSCATED_CHILD_AT_CALLBACK;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_SWIPING_IPH;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.browser.autofill.AutofillUiUtils;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
@@ -103,16 +106,19 @@ class KeyboardAccessoryModernViewBinder {
             // the event that the bitmap is not present in the PersonalDataManager, fall back to the
             // default `iconId`.
             Bitmap customIconBitmap = null;
+            Resources res = chipView.getContext().getResources();
             if (item.getSuggestion().getCustomIconUrl() != null
                     && item.getSuggestion().getCustomIconUrl().isValid()) {
-                customIconBitmap = PersonalDataManager.getInstance()
-                                           .getCustomImageForAutofillSuggestionIfAvailable(
-                                                   item.getSuggestion().getCustomIconUrl());
+                customIconBitmap =
+                        PersonalDataManager.getInstance().getCustomImageForAutofillSuggestionIfAvailable(
+                                AutofillUiUtils.getCCIconURLWithParams(
+                                        item.getSuggestion().getCustomIconUrl(),
+                                        res.getDimensionPixelSize(
+                                                R.dimen.keyboard_accessory_bar_item_cc_icon_width),
+                                        res.getDimensionPixelSize(R.dimen.chip_icon_size)));
             }
             if (customIconBitmap != null) {
-                chipView.setIcon(new BitmapDrawable(mRootViewForIPH.getContext().getResources(),
-                                         customIconBitmap),
-                        false);
+                chipView.setIcon(new BitmapDrawable(res, customIconBitmap), false);
             } else {
                 chipView.setIcon(iconId != 0 ? iconId : ChipView.INVALID_ICON_ID, false);
             }
@@ -160,6 +166,8 @@ class KeyboardAccessoryModernViewBinder {
                 showHelpBubble(FeatureConstants.KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE,
                         swipingIphRectProvider, modernView.mBarItemsView);
             }
+        } else if (propertyKey == HAS_SUGGESTIONS) {
+            modernView.setAccessibilityMessage(model.get(HAS_SUGGESTIONS));
         } else {
             assert wasBound : "Every possible property update needs to be handled!";
         }

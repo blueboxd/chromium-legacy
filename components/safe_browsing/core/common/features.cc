@@ -144,6 +144,10 @@ BASE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings,
              "TailoredSecurityLogAccountEnhancedProtectionStateInProtegoPings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kMmapSafeBrowsingDatabase,
+             "MmapSafeBrowsingDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNestedArchives,
              "SafeBrowsingArchiveImprovements",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -166,7 +170,7 @@ BASE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger,
 
 BASE_FEATURE(kSafeBrowsingCsbrrWithToken,
              "SafeBrowsingCsbrrWithToken",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingDisableConsumerCsdForEnterprise,
              "SafeBrowsingDisableConsumerCsdForEnterprise",
@@ -211,7 +215,7 @@ BASE_FEATURE(kThreatDomDetailsTagAndAttributeFeature,
 
 BASE_FEATURE(kVisualFeaturesForReusePings,
              "VisualFeaturesInReusePings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kVisualFeaturesSizes,
              "VisualFeaturesSizes",
@@ -251,7 +255,8 @@ constexpr struct {
       {&kExtensionTelemetryTabsExecuteScriptSignal, true},
       {&kFileTypePoliciesTag, true},
       {&kLogAccountEnhancedProtectionStateInProtegoPings, true},
-      {&kNestedArchives, true}, {&kOmitNonUserGesturesFromReferrerChain, true},
+      {&kMmapSafeBrowsingDatabase, true}, {&kNestedArchives, true},
+      {&kOmitNonUserGesturesFromReferrerChain, true},
       {&kRealTimeUrlFilteringForEnterprise, true},
       {&kRealTimeUrlLookupForEnterpriseAllowlistBypass, true},
       {&kSafeBrowsingCsbrrNewDownloadTrigger, true},

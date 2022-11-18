@@ -12,11 +12,14 @@
 #include "chrome/browser/web_applications/commands/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_data_fetch_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
+#include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 
 class GURL;
 class Profile;
+
+struct WebAppInstallInfo;
 
 namespace content {
 class WebContents;
@@ -25,6 +28,7 @@ class WebContents;
 namespace web_app {
 
 class IsolatedWebAppUrlInfo;
+class WebAppDataRetriever;
 class WebAppProvider;
 struct IsolationData;
 
@@ -59,6 +63,27 @@ class WebAppCommandScheduler {
                                WebAppInstallDialogCallback dialog_callback,
                                OnceInstallCallback callback,
                                bool use_fallback);
+
+  // Install with provided `WebAppInstallInfo` instead of fetching data from
+  // manifest.
+  void InstallFromInfo(std::unique_ptr<WebAppInstallInfo> install_info,
+                       bool overwrite_existing_manifest_fields,
+                       webapps::WebappInstallSource install_surface,
+                       OnceInstallCallback install_callback);
+
+  void InstallFromInfoWithParams(
+      std::unique_ptr<WebAppInstallInfo> install_info,
+      bool overwrite_existing_manifest_fields,
+      webapps::WebappInstallSource install_surface,
+      OnceInstallCallback install_callback,
+      const WebAppInstallParams& install_params);
+
+  // Install web apps managed by `ExternallyInstalledAppsManager`.
+  void InstallExternallyManagedApp(
+      const ExternalInstallOptions& external_install_options,
+      OnceInstallCallback callback,
+      base::WeakPtr<content::WebContents> contents,
+      std::unique_ptr<WebAppDataRetriever> data_retriever);
 
   void PersistFileHandlersUserChoice(const AppId& app_id,
                                      bool allowed,
@@ -96,6 +121,24 @@ class WebAppCommandScheduler {
   void InstallIsolatedWebApp(const IsolatedWebAppUrlInfo& url_info,
                              const IsolationData& isolation_data,
                              InstallIsolatedWebAppCallback callback);
+
+  // Schedules a command that updates run on os login to provided `login_mode`
+  // for a web app.
+  void SetRunOnOsLoginMode(const AppId& app_id,
+                           RunOnOsLoginMode login_mode,
+                           base::OnceClosure callback);
+
+  // Schedules a command that syncs the run on os login mode from web app DB to
+  // OS.
+  void SyncRunOnOsLoginMode(const AppId& app_id, base::OnceClosure callback);
+
+  // Schedules provided callback after `lock` is granted. The callback can
+  // access web app resources through the `lock`.
+  template <typename LockType,
+            typename DescriptionType = typename LockType::LockDescription>
+  void ScheduleCallbackWithLock(
+      std::unique_ptr<DescriptionType> lock_description,
+      base::OnceCallback<void(LockType& lock)> callback);
 
   // TODO(https://crbug.com/1298130): expose all commands for web app
   // operations.

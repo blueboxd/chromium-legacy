@@ -44,6 +44,7 @@ enum Subpage {
   kTetherDetails = 6,
   kVpnDetails = 7,
   kApn = 8,
+  kHotspotDetails = 9,
 
   // Bluetooth section.
   kBluetoothDevices = 100,
@@ -52,7 +53,8 @@ enum Subpage {
 
   // MultiDevice section.
   kMultiDeviceFeatures = 200,
-  kSmartLock = 201,
+  // Note: Value 201 was for deprecated SmartLock subpage - see b/227674947.
+  // Do not reuse.
   kNearbyShare = 202,
 
   // People section.
@@ -152,6 +154,7 @@ enum Subpage {
   kKeyboardAndTextInput = 1507,
   kCursorAndTouchpad = 1508,
   kAudioAndCaptions = 1509,
+  kSelectToSpeak = 1510,
 
   // Note: Reset section has no subpages.
 
@@ -175,6 +178,7 @@ const string kCellularDetailsSubpagePath = "networkDetail";
 const string kTetherDetailsSubpagePath = "networkDetail";
 const string kVpnDetailsSubpagePath = "networkDetail";
 const string kApnSubpagePath = "apn";
+const string kHotspotSubpagePath = "hotspotDetail";
 
 // Bluetooth section.
 const string kBluetoothSectionPath = "bluetooth";
@@ -277,6 +281,7 @@ const string kTextToSpeechPagePath = "textToSpeech";
 const string kDisplayAndMagnificationSubpagePath = "displayAndMagnification";
 const string kKeyboardAndTextInputSubpagePath = "keyboardAndTextInput";
 const string kCursorAndTouchpadSubpagePath = "cursorAndTouchpad";
+const string kSelectToSpeakSubpagePath = "textToSpeech/selectToSpeak";
 const string kAudioAndCaptionsSubpagePath = "audioAndCaptions";
 const string kTextToSpeechSubpagePath = "manageAccessibility/tts";
 const string kSwitchAccessOptionsSubpagePath =

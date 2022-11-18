@@ -217,7 +217,7 @@ void ParsePath(const CHAR* spec,
     ref->reset();
     return;
   }
-  DCHECK(path.len > 0) << "We should never have 0 length paths";
+  DCHECK(path.is_nonempty()) << "We should never have 0 length paths";
 
   // Search for first occurrence of either ? or #.
   int query_separator = -1;  // Index of the '?'
@@ -584,7 +584,7 @@ template<typename CHAR>
 int DoParsePort(const CHAR* spec, const Component& component) {
   // Easy success case when there is no port.
   const int kMaxDigits = 5;
-  if (!component.is_nonempty())
+  if (component.is_empty())
     return PORT_UNSPECIFIED;
 
   // Skip over any leading 0s.
@@ -628,7 +628,7 @@ void DoExtractFileName(const CHAR* spec,
                        const Component& path,
                        Component* file_name) {
   // Handle empty paths: they have no file names.
-  if (!path.is_nonempty()) {
+  if (path.is_empty()) {
     file_name->reset();
     return;
   }

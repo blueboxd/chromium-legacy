@@ -735,8 +735,8 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
-          'marshmallow',
-          'bullhead',
+          'pie_fleet',
+          'walleye',
         ],
         'test_suites': {
           'gtest_tests': 'android_marshmallow_gtests',
@@ -1012,6 +1012,9 @@
         ],
         'additional_compile_targets': [
           'monochrome_static_initializers',
+        ],
+        'args': [
+          '--use-persistent-shell',
         ],
         'test_suites': {
           'gtest_tests': 'android_pie_rel_gtests',
@@ -1373,18 +1376,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromeos_device_only_gtests',
-        },
-        'os_type': 'chromeos',
-      },
-      'chromeos-kevin-rel': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'mixins': [
-          'chromeos-kevin',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_gtests',
         },
         'os_type': 'chromeos',
       },
@@ -3297,12 +3288,6 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         },
       },
-      'linux-ash-chromium-builder-fyi-rel': {
-        'additional_compile_targets': [
-          'chrome',
-          'test_ash_chrome',
-        ],
-      },
       'linux-backuprefptr-x64-fyi-rel': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_dangling_pointer_detection_gtests',
@@ -3329,15 +3314,6 @@
         },
       },
       'linux-blink-heap-verification': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'linux-blink-v8-sandbox-future-rel': {
         'mixins': [
           'linux-bionic',
         ],
@@ -3589,7 +3565,7 @@
           'gtest_tests': 'chromium_mac_gtests',
         },
       },
-      'mac-fieldtrial-rel': {
+      'mac-fieldtrial-tester': {
         'mixins': [
           'mac_12_arm64',
         ],
@@ -4429,8 +4405,7 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Mac FYI Release (Apple M1)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Mac FYI Experimental Release (Intel)': {
@@ -4444,8 +4419,7 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Mac FYI Release (Intel)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Mac FYI Experimental Retina Release (AMD)': {
@@ -4596,14 +4570,15 @@
         'browser_config': 'release_x64',
         'mixins': [
           'limited_capacity_bot',
-          'win10_intel_hd_630_experimental',
+          'win10_intel_uhd_630_experimental',
         ],
         # When the experimental driver is identical to the stable driver, this
         # should be running the gpu_noop_sleep_telemetry_test. Otherwise, it
         # should be running the same test_suites as
         # 'Win10 FYI x64 Release (Intel HD 630)'
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
       'Win10 FYI x64 Exp Release (NVIDIA)': {
@@ -5834,6 +5809,23 @@
           ]
         },
       },
+      'win11-updater-tester-rel': {
+        'mixins': [
+          'win11',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_win',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+              'pool': 'chromium.tests',
+            }
+          ]
+        },
+      },
       'win7(32)-updater-tester-rel': {
         'mixins': [
           'win7',
@@ -5941,21 +5933,19 @@
       },
       'WebRTC Chromium FYI Android Builder (dbg)': {},
       'WebRTC Chromium FYI Android Builder ARM64 (dbg)': {},
-      'WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)': {
+      'WebRTC Chromium FYI Android Tests (dbg)': {
         'os_type': 'android',
         'mixins': [
-          'marshmallow',
-          'bullhead',
+          'walleye',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_simple_gtests',
         },
       },
-      'WebRTC Chromium FYI Android Tests (dbg) (N Nexus5X)': {
+      'WebRTC Chromium FYI Android Tests ARM64 (dbg)': {
         'os_type': 'android',
         'mixins': [
-          'nougat_generic',
-          'bullhead',
+          'walleye',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_simple_gtests',
@@ -6042,15 +6032,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'Win 7 Tests x64 (1)': {
-        'mixins': [
-          'win7',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
-        },
-      },
       # 'Win Builder' and 'Win x64 Builder' should have the same set of
       # additional_compile_targets and test_suites.
       'Win Builder': {
@@ -6074,9 +6055,6 @@
           'scripts': 'chromium_win_scripts',
         },
       },
-      # 'Win10 Tests x64' and 'Win7 Tests (1)' should have the same set of
-      # additional_compile_targets and test_suites.
-      # Added pixel tests on Win 10 only.
       'Win10 Tests x64': {
         'mixins': [
           'x86-64',
@@ -6106,21 +6084,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win10_gtests',
-          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
-        },
-      },
-      'Win7 (32) Tests': {
-        'mixins': [
-          'x86-32',
-          'win7',
-        ],
-        'test_suites': {
-          'gtest_tests': 'win7_32_bit_gtests',
-        }
-      },
-      'Win7 Tests (1)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_win_rel_isolated_scripts',
         },
       },

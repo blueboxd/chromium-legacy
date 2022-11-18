@@ -20,6 +20,9 @@ try_.defaults.set(
     goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
 
@@ -144,9 +147,6 @@ try_.builder(
         skylab_upload_location = builder_config.skylab_upload_location(
             gs_bucket = "gs://lacros-amd64-generic-rel-skylab-try",
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
     builderless = not settings.is_main,
@@ -206,33 +206,12 @@ try_.builder(
 )
 
 try_.builder(
-    name = "chromeos-kevin-compile-rel",
-    mirrors = [
-        "ci/chromeos-kevin-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
-        is_compile_only = True,
-    ),
-)
-
-try_.builder(
     name = "chromeos-jacuzzi-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
     mirrors = [
         "ci/chromeos-jacuzzi-rel",
     ],
     main_list_view = "try",
-)
-
-try_.builder(
-    name = "chromeos-kevin-rel",
-    branch_selector = branches.CROS_LTS_MILESTONE,
-    mirrors = [
-        "ci/chromeos-kevin-rel",
-    ],
-    main_list_view = "try",
-    execution_timeout = 6 * time.hour,
 )
 
 try_.builder(
@@ -270,6 +249,28 @@ try_.compilator_builder(
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
     goma_jobs = goma.jobs.J300,
+)
+
+try_.orchestrator_builder(
+    name = "linux-chromeos-rel-reclient",
+    builderless = True,
+    mirrors = [
+        "ci/linux-chromeos-rel",
+    ],
+    compilator = "linux-chromeos-rel-reclient-compilator",
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+    tryjob = try_.job(
+        experiment_percentage = 3,
+    ),
+    try_settings = builder_config.try_settings(
+        is_compile_only = True,
+    ),
+)
+
+try_.compilator_builder(
+    name = "linux-chromeos-rel-reclient-compilator",
+    builderless = True,
 )
 
 try_.builder(

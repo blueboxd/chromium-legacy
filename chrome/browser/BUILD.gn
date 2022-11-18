@@ -95,6 +95,7 @@ if (is_win) {
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
+    "ENABLE_UPDATE_NOTIFICATIONS=$enable_update_notifications",
     "USE_MINIKIN_HYPHENATION=$use_minikin_hyphenation",
     "USE_THIN_LTO=$use_thin_lto",
   ]
@@ -441,6 +442,8 @@ static_library("browser") {
     "download/download_history.h",
     "download/download_item_model.cc",
     "download/download_item_model.h",
+    "download/download_item_warning_data.cc",
+    "download/download_item_warning_data.h",
     "download/download_manager_utils.cc",
     "download/download_manager_utils.h",
     "download/download_offline_content_provider.cc",
@@ -1995,6 +1998,7 @@ static_library("browser") {
     "//chrome/browser/browsing_data:constants",
     "//chrome/browser/chrome_for_testing:buildflags",
     "//chrome/browser/devtools",
+    "//chrome/browser/enterprise/identifiers",
     "//chrome/browser/enterprise/platform_auth:features",
     "//chrome/browser/favicon",
     "//chrome/browser/feature_guide/notifications:public",
@@ -3018,8 +3022,6 @@ static_library("browser") {
       "fast_checkout/fast_checkout_client_impl.h",
       "fast_checkout/fast_checkout_external_action_delegate.cc",
       "fast_checkout/fast_checkout_external_action_delegate.h",
-      "fast_checkout/fast_checkout_prefs.cc",
-      "fast_checkout/fast_checkout_prefs.h",
       "fast_checkout/fast_checkout_tab_helper.cc",
       "fast_checkout/fast_checkout_tab_helper.h",
       "feature_guide/notifications/android/feature_notification_guide_bridge.cc",
@@ -3555,6 +3557,8 @@ static_library("browser") {
       "apps/app_service/metrics/app_service_metrics.h",
       "apps/app_service/paused_apps.cc",
       "apps/app_service/paused_apps.h",
+      "apps/app_service/policy_util.cc",
+      "apps/app_service/policy_util.h",
       "apps/app_service/publishers/app_publisher.cc",
       "apps/app_service/publishers/app_publisher.h",
       "apps/app_service/publishers/extension_apps_enable_flow.cc",
@@ -4165,8 +4169,6 @@ static_library("browser") {
       "resource_coordinator/tab_manager.h",
       "resource_coordinator/tab_manager_resource_coordinator_signal_observer.cc",
       "resource_coordinator/tab_manager_resource_coordinator_signal_observer.h",
-      "resource_coordinator/tab_manager_stats_collector.cc",
-      "resource_coordinator/tab_manager_stats_collector.h",
       "resource_coordinator/tab_manager_web_contents_data.cc",
       "resource_coordinator/tab_manager_web_contents_data.h",
       "resource_coordinator/tab_metrics_logger.cc",
@@ -4725,6 +4727,8 @@ static_library("browser") {
       "apps/app_discovery_service/result.h",
       "apps/app_discovery_service/test_fetcher.cc",
       "apps/app_discovery_service/test_fetcher.h",
+      "apps/app_preload_service/almanac_api_util.cc",
+      "apps/app_preload_service/almanac_api_util.h",
       "apps/app_preload_service/app_preload_server_connector.cc",
       "apps/app_preload_service/app_preload_server_connector.h",
       "apps/app_preload_service/app_preload_service.cc",
@@ -4737,6 +4741,8 @@ static_library("browser") {
       "apps/app_preload_service/preload_app_definition.h",
       "apps/app_provisioning_service/app_provisioning_data_manager.cc",
       "apps/app_provisioning_service/app_provisioning_data_manager.h",
+      "apps/app_service/app_icon/app_icon_decoder.cc",
+      "apps/app_service/app_icon/app_icon_decoder.h",
       "apps/app_service/app_icon/app_icon_reader.cc",
       "apps/app_service/app_icon/app_icon_reader.h",
       "apps/app_service/app_icon/app_icon_writer.cc",
@@ -4769,8 +4775,6 @@ static_library("browser") {
       "apps/app_service/metrics/browser_to_tab_list.h",
       "apps/app_service/metrics/website_metrics.cc",
       "apps/app_service/metrics/website_metrics.h",
-      "apps/app_service/policy_util.cc",
-      "apps/app_service/policy_util.h",
       "apps/app_service/publishers/arc_apps.cc",
       "apps/app_service/publishers/arc_apps.h",
       "apps/app_service/publishers/arc_apps_factory.cc",
@@ -6094,7 +6098,6 @@ static_library("browser") {
       "//ui/aura_extra",
       "//ui/base:fullscreen_win",
       "//ui/color:accent_color_observer",
-      "//ui/color:color_switches",
       "//ui/display/util:util",
     ]
     allow_circular_includes_from +=
@@ -6563,6 +6566,7 @@ static_library("browser") {
     ]
 
     deps += [
+      "//components/fuchsia_component_support",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.app",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.composition",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.scenic",
@@ -8039,8 +8043,9 @@ grit("resources") {
   }
   if (is_chromeos_ash) {
     deps += [
-      "//chrome/browser/resources/chromeos/account_manager:web_components",
-      "//chrome/browser/resources/chromeos/account_manager/components:web_components",
+      "//chrome/browser/resources/chromeos/account_manager:css_wrapper_files",
+      "//chrome/browser/resources/chromeos/account_manager:html_wrapper_files",
+      "//chrome/browser/resources/chromeos/account_manager/components:html_wrapper_files",
       "//chrome/browser/resources/chromeos/add_supervision:web_components",
       "//chrome/browser/resources/chromeos/arc_account_picker:web_components",
       "//chrome/browser/resources/chromeos/crostini_installer:web_components",
@@ -8111,9 +8116,6 @@ grit("dev_ui_browser_resources") {
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings_js",
     "//components/site_engagement/core/mojom:mojo_bindings_webui_js",
   ]
-  if (is_android) {
-    deps += [ "//chrome/browser/ui/webui/feed_internals:mojo_bindings_js" ]
-  }
 
   if (is_android || is_linux || is_chromeos || is_win) {
     deps += [ "//chrome/browser/resources/sandbox_internals:build_ts" ]

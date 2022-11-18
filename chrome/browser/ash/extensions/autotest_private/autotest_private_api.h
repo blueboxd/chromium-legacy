@@ -27,6 +27,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
@@ -409,16 +410,6 @@ class AutotestPrivateIsSystemWebAppOpenFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
   void OnSystemWebAppsInstalled();
-};
-
-class AutotestPrivateLaunchArcAppFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchArcApp",
-                             AUTOTESTPRIVATE_LAUNCHARCAPP)
-
- private:
-  ~AutotestPrivateLaunchArcAppFunction() override;
-  ResponseAction Run() override;
 };
 
 class AutotestPrivateLaunchAppFunction : public ExtensionFunction {
@@ -963,6 +954,19 @@ class AutotestPrivateGetShelfItemsFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateGetShelfItemsFunction() override;
+  ResponseAction Run() override;
+};
+
+// Returns launcher's search box state.
+class AutotestPrivateGetLauncherSearchBoxStateFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateGetLauncherSearchBoxStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getLauncherSearchBoxState",
+                             AUTOTESTPRIVATE_GETLAUNCHERSSEARCHBOXSTATE)
+
+ private:
+  ~AutotestPrivateGetLauncherSearchBoxStateFunction() override;
   ResponseAction Run() override;
 };
 
@@ -1725,6 +1729,30 @@ class AutotestPrivateRemoveComponentExtensionFunction
  private:
   ~AutotestPrivateRemoveComponentExtensionFunction() override;
   ResponseAction Run() override;
+};
+
+class AutotestPrivateStartFrameCountingFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateStartFrameCountingFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.startFrameCounting",
+                             AUTOTESTPRIVATE_STARTFRAMECOUNTING)
+
+ private:
+  ~AutotestPrivateStartFrameCountingFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateStopFrameCountingFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateStopFrameCountingFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.stopFrameCounting",
+                             AUTOTESTPRIVATE_STOPFRAMECOUNTING)
+
+ private:
+  ~AutotestPrivateStopFrameCountingFunction() override;
+  ResponseAction Run() override;
+
+  void OnDataReceived(viz::mojom::FrameCountingDataPtr data_ptr);
 };
 
 template <>

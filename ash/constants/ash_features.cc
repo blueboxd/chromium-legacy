@@ -152,11 +152,6 @@ BASE_FEATURE(kArcFuseBoxFileSharing,
              "ArcFuseBoxFileSharing",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether to enable support for ARC Input Overlay Alpha.
-BASE_FEATURE(kArcInputOverlay,
-             "ArcInputOverlay",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to enable support for ARC Input Overlay Beta.
 BASE_FEATURE(kArcInputOverlayBeta,
              "ArcInputOverlayBeta",
@@ -440,20 +435,6 @@ BASE_FEATURE(kContextualNudges,
              "ContextualNudges",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables or disables Crosh System Web App. When enabled, crosh (ChromeOS
-// Shell) will run as a tabbed System Web App rather than a normal browser tab.
-BASE_FEATURE(kCroshSWA, "CroshSWA", base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables upgrading the crostini container to debian bullseye.
-BASE_FEATURE(kCrostiniBullseyeUpgrade,
-             "CrostiniBullseyeUpgrade",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables or disables Crostini Disk Resizing.
-BASE_FEATURE(kCrostiniDiskResizing,
-             "CrostiniDiskResizing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables Crostini GPU support.
 // Note that this feature can be overridden by login_manager based on
 // whether a per-board build sets the USE virtio_gpu flag.
@@ -466,11 +447,6 @@ BASE_FEATURE(kCrostiniGpuSupport,
 BASE_FEATURE(kCrostiniResetLxdDb,
              "CrostiniResetLxdDb",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Do we use the default LXD version or try LXD 4?
-BASE_FEATURE(kCrostiniUseLxd4,
-             "CrostiniUseLxd4",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables experimental UI creating and managing multiple Crostini containers.
 BASE_FEATURE(kCrostiniMultiContainer,
@@ -591,7 +567,7 @@ BASE_FEATURE(kDesksTemplates,
 // Enables diacritics on longpress on the physical keyboard.
 BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpress,
              "DiacriticsOnPhysicalKeyboardLongpress",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Disables the CryptAuth v1 DeviceSync flow. Note: During the first phase
 // of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
@@ -648,6 +624,11 @@ BASE_FEATURE(kDriveFsChromeNetworking,
              "DriveFsChromeNetworking",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables DriveFS' bulk pinning functionality.
+BASE_FEATURE(kDriveFsBulkPinning,
+             "DriveFsBulkPinning",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables authenticating to Wi-Fi networks using EAP-GTC.
 BASE_FEATURE(kEapGtcWifiAuthentication,
              "EapGtcWifiAuthentication",
@@ -687,13 +668,6 @@ BASE_FEATURE(kEnable16Desks,
 // may have choppier app list animations while in this mode. crbug.com/765292.
 BASE_FEATURE(kEnableBackgroundBlur,
              "EnableBackgroundBlur",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables some trials aimed at improving user experiencing when using the
-// trackpad to switch desks.
-// TODO(https://crbug.com/1191545): Remove this after the feature is launched.
-BASE_FEATURE(kEnableDesksTrackpadSwipeImprovements,
-             "EnableDesksTrackpadSwipeImprovements",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the DNS proxy service providing support split and secure DNS
@@ -841,7 +815,7 @@ BASE_FEATURE(kExoLinuxDmabufV3,
 // e.g. available KMS hardware planes.
 BASE_FEATURE(kExoLinuxDmabufV4,
              "ExoLinuxDmabufV4",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable or disable use of ordinal (unaccelerated) motion by Exo clients.
 BASE_FEATURE(kExoOrdinalMotion,
@@ -935,12 +909,6 @@ BASE_FEATURE(kFilesAppExperimental,
              "FilesAppExperimental",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable the simple archive extraction.
-// https://crbug.com/953256
-BASE_FEATURE(kFilesExtractArchive,
-             "FilesExtractArchive",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable inline sync status in Files app.
 BASE_FEATURE(kFilesInlineSyncStatus,
              "FilesInlineSyncStatus",
@@ -1018,9 +986,6 @@ const base::FeatureParam<std::string> kGalleryAppPdfEditNotificationText{
 
 // Enable glanceables on login.
 BASE_FEATURE(kGlanceables, "Glanceables", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enable GuestOS integration with the files app.
-BASE_FEATURE(kGuestOsFiles, "GuestOsFiles", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Gaia reauth endpoint.
 BASE_FEATURE(kGaiaReauthEndpoint,
@@ -1391,15 +1356,6 @@ BASE_FEATURE(kMediaAppPhotosIntegrationVideo,
              "MediaAppPhotosIntegrationVideo",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Feature to continuously log PSI memory pressure data to UMA.
-BASE_FEATURE(kMemoryPressureMetricsDetail,
-             "MemoryPressureMetricsDetail",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls how frequently memory pressure is logged
-const base::FeatureParam<int> kMemoryPressureMetricsDetailLogPeriod{
-    &kMemoryPressureMetricsDetail, "period", 10};
-
 // Enables notification of when a microphone-using app is launched while the
 // microphone is muted.
 BASE_FEATURE(kMicMuteNotifications,
@@ -1426,6 +1382,9 @@ BASE_FEATURE(kMinimumChromeVersion,
 BASE_FEATURE(kMojoDBusRelay,
              "MojoDBusRelay",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the full apps list in Phone Hub bubble.
+BASE_FEATURE(kEcheLauncher, "EcheLauncher", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables support for multilingual assistive typing on ChromeOS.
 BASE_FEATURE(kMultilingualTyping,
@@ -1555,12 +1514,6 @@ BASE_FEATURE(kPcieBillboardNotification,
 // Limits the items on the shelf to the ones associated with windows the
 // currently active desk.
 BASE_FEATURE(kPerDeskShelf, "PerDeskShelf", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Allows tablet mode split screen to resize by moving windows instead of
-// resizing. This reduces jank on low end devices.
-BASE_FEATURE(kPerformantSplitViewResizing,
-             "PerformantSplitViewResizing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Provides a UI for users to view information about their Android phone
 // and perform phone-side actions within ChromeOS.
@@ -1778,7 +1731,7 @@ BASE_FEATURE(kReleaseNotesSuggestionChip,
 // settings, for devices running on channels other than "stable."
 BASE_FEATURE(kReleaseTrackUi,
              "ReleaseTrackUi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the overview and desk reverse scrolling behaviors are changed
 // and if the user performs the old gestures, a notification or toast will show
@@ -1799,11 +1752,6 @@ BASE_FEATURE(kScreenSaverPreview,
 BASE_FEATURE(kSeamlessRefreshRateSwitching,
              "SeamlessRefreshRateSwitching",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether to enable kSecondaryGoogleAccountUsage policy.
-BASE_FEATURE(kSecondaryGoogleAccountUsage,
-             "SecondaryGoogleAccountUsage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables displaying separate network icons for different networks types.
 // https://crbug.com/902409
@@ -1951,6 +1899,9 @@ BASE_FEATURE(kSystemExtensionsManagedDeviceHealthServices,
 BASE_FEATURE(kSystemJapanesePhysicalTyping,
              "SystemJapanesePhysicalTyping",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the ability to play sounds for system services.
+BASE_FEATURE(kSystemSounds, "SystemSounds", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables using the system input engine for physical typing in
 // transliteration input methods.
@@ -2216,7 +2167,7 @@ BASE_FEATURE(kPerUserMetrics,
 // Guest OS apps.
 BASE_FEATURE(kArcAndGuestOsFileTasksUseAppService,
              "ArcAndGuestOsFileTasksUseAppService",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2234,8 +2185,8 @@ bool AreDesksTemplatesEnabled() {
   return base::FeatureList::IsEnabled(kDesksTemplates);
 }
 
-bool AreDesksTrackpadSwipeImprovementsEnabled() {
-  return base::FeatureList::IsEnabled(kEnableDesksTrackpadSwipeImprovements);
+bool AreSystemSoundsEnabled() {
+  return base::FeatureList::IsEnabled(kSystemSounds);
 }
 
 bool IsAutocompleteExtendedSuggestionsEnabled() {
@@ -2304,10 +2255,6 @@ bool IsAppNotificationsPageEnabled() {
 
 bool IsArcFuseBoxFileSharingEnabled() {
   return base::FeatureList::IsEnabled(kArcFuseBoxFileSharing);
-}
-
-bool IsArcInputOverlayEnabled() {
-  return base::FeatureList::IsEnabled(kArcInputOverlay);
 }
 
 bool IsArcInputOverlayBetaEnabled() {
@@ -2469,6 +2416,10 @@ bool IsDriveFsMirroringEnabled() {
   return base::FeatureList::IsEnabled(kDriveFsMirroring);
 }
 
+bool IsDriveFsBulkPinningEnabled() {
+  return base::FeatureList::IsEnabled(kDriveFsBulkPinning);
+}
+
 bool IsInlineSyncStatusEnabled() {
   return base::FeatureList::IsEnabled(kFilesInlineSyncStatus);
 }
@@ -2604,10 +2555,6 @@ bool IsGifRecordingEnabled() {
 
 bool AreGlanceablesEnabled() {
   return base::FeatureList::IsEnabled(kGlanceables);
-}
-
-bool IsGuestOsFilesEnabled() {
-  return base::FeatureList::IsEnabled(kGuestOsFiles);
 }
 
 bool IsHatsUseNewHistogramsEnabled() {
@@ -2785,6 +2732,10 @@ bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
 }
 
+bool IsEcheLauncherEnabled() {
+  return base::FeatureList::IsEnabled(kEcheLauncher);
+}
+
 bool IsNearbyKeepAliveFixEnabled() {
   return base::FeatureList::IsEnabled(kNearbyKeepAliveFix);
 }
@@ -2899,10 +2850,6 @@ bool IsPhoneHubFeatureSetupErrorHandlingEnabled() {
 
 bool IsPhoneHubPingOnBubbleOpenEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHubPingOnBubbleOpen);
-}
-
-bool IsPerformantSplitViewResizingEnabled() {
-  return base::FeatureList::IsEnabled(kPerformantSplitViewResizing);
 }
 
 bool IsPhoneHubEnabled() {

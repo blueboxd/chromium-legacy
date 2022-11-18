@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
@@ -451,44 +450,44 @@ file_manager_private::MountError MountErrorToMountCompletedStatus(
     case ash::MountError::kSuccess:
       return file_manager_private::MOUNT_ERROR_SUCCESS;
     case ash::MountError::kUnknownError:
-      return file_manager_private::MOUNT_ERROR_ERROR_UNKNOWN;
+      return file_manager_private::MOUNT_ERROR_UNKNOWN_ERROR;
     case ash::MountError::kInternalError:
-      return file_manager_private::MOUNT_ERROR_ERROR_INTERNAL;
+      return file_manager_private::MOUNT_ERROR_INTERNAL_ERROR;
     case ash::MountError::kInvalidArgument:
-      return file_manager_private::MOUNT_ERROR_ERROR_INVALID_ARGUMENT;
+      return file_manager_private::MOUNT_ERROR_INVALID_ARGUMENT;
     case ash::MountError::kInvalidPath:
-      return file_manager_private::MOUNT_ERROR_ERROR_INVALID_PATH;
+      return file_manager_private::MOUNT_ERROR_INVALID_PATH;
     case ash::MountError::kPathAlreadyMounted:
-      return file_manager_private::MOUNT_ERROR_ERROR_PATH_ALREADY_MOUNTED;
+      return file_manager_private::MOUNT_ERROR_PATH_ALREADY_MOUNTED;
     case ash::MountError::kPathNotMounted:
-      return file_manager_private::MOUNT_ERROR_ERROR_PATH_NOT_MOUNTED;
+      return file_manager_private::MOUNT_ERROR_PATH_NOT_MOUNTED;
     case ash::MountError::kDirectoryCreationFailed:
-      return file_manager_private::MOUNT_ERROR_ERROR_DIRECTORY_CREATION_FAILED;
+      return file_manager_private::MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
     case ash::MountError::kInvalidMountOptions:
-      return file_manager_private::MOUNT_ERROR_ERROR_INVALID_MOUNT_OPTIONS;
+      return file_manager_private::MOUNT_ERROR_INVALID_MOUNT_OPTIONS;
     case ash::MountError::kInsufficientPermissions:
-      return file_manager_private::MOUNT_ERROR_ERROR_INSUFFICIENT_PERMISSIONS;
+      return file_manager_private::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS;
     case ash::MountError::kMountProgramNotFound:
-      return file_manager_private::MOUNT_ERROR_ERROR_MOUNT_PROGRAM_NOT_FOUND;
+      return file_manager_private::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND;
     case ash::MountError::kMountProgramFailed:
-      return file_manager_private::MOUNT_ERROR_ERROR_MOUNT_PROGRAM_FAILED;
+      return file_manager_private::MOUNT_ERROR_MOUNT_PROGRAM_FAILED;
     case ash::MountError::kInvalidDevicePath:
-      return file_manager_private::MOUNT_ERROR_ERROR_INVALID_DEVICE_PATH;
+      return file_manager_private::MOUNT_ERROR_INVALID_DEVICE_PATH;
     case ash::MountError::kUnknownFilesystem:
-      return file_manager_private::MOUNT_ERROR_ERROR_UNKNOWN_FILESYSTEM;
+      return file_manager_private::MOUNT_ERROR_UNKNOWN_FILESYSTEM;
     case ash::MountError::kUnsupportedFilesystem:
-      return file_manager_private::MOUNT_ERROR_ERROR_UNSUPPORTED_FILESYSTEM;
+      return file_manager_private::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM;
     case ash::MountError::kNeedPassword:
-      return file_manager_private::MOUNT_ERROR_ERROR_NEED_PASSWORD;
+      return file_manager_private::MOUNT_ERROR_NEED_PASSWORD;
     case ash::MountError::kInProgress:
       return file_manager_private::MOUNT_ERROR_IN_PROGRESS;
     case ash::MountError::kCancelled:
-      return file_manager_private::MOUNT_ERROR_ERROR_CANCELLED;
+      return file_manager_private::MOUNT_ERROR_CANCELLED;
     case ash::MountError::kBusy:
-      return file_manager_private::MOUNT_ERROR_ERROR_BUSY;
+      return file_manager_private::MOUNT_ERROR_BUSY;
     default:
       LOG(ERROR) << "Unexpected mount error: " << error;
-      return file_manager_private::MOUNT_ERROR_ERROR_UNKNOWN;
+      return file_manager_private::MOUNT_ERROR_UNKNOWN_ERROR;
   }
 }
 
@@ -574,11 +573,9 @@ void EventRouter::Shutdown() {
       chromeos::PowerManagerClient::Get();
   power_manager_client->RemoveObserver(device_event_router_.get());
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles)) {
-    auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
-                         ->MountProviderRegistry();
-    registry->RemoveObserver(this);
-  }
+  auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
+                       ->MountProviderRegistry();
+  registry->RemoveObserver(this);
 
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_)) {
     apps::AppServiceProxy* proxy =
@@ -681,11 +678,9 @@ void EventRouter::ObserveEvents() {
   if (tablet_mode)
     tablet_mode->AddObserver(this);
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles)) {
-    auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
-                         ->MountProviderRegistry();
-    registry->AddObserver(this);
-  }
+  auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
+                       ->MountProviderRegistry();
+  registry->AddObserver(this);
 
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_)) {
     apps::AppServiceProxy* proxy =

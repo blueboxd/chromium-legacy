@@ -384,6 +384,25 @@ class OsDiagnosticsRunMemoryRoutineFunction
   void RunIfAllowed() override;
 };
 
+class OsDiagnosticsRunNvmeSelfTestRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runNvmeSelfTestRoutine",
+                             OS_DIAGNOSTICS_RUNNVMESELFTESTROUTINE)
+
+  OsDiagnosticsRunNvmeSelfTestRoutineFunction();
+  OsDiagnosticsRunNvmeSelfTestRoutineFunction(
+      const OsDiagnosticsRunNvmeSelfTestRoutineFunction&) = delete;
+  OsDiagnosticsRunNvmeSelfTestRoutineFunction& operator=(
+      const OsDiagnosticsRunNvmeSelfTestRoutineFunction&) = delete;
+
+ private:
+  ~OsDiagnosticsRunNvmeSelfTestRoutineFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
 class OsDiagnosticsRunNvmeWearLevelRoutineFunction
     : public DiagnosticsApiRunRoutineFunctionBase {
  public:
@@ -398,6 +417,25 @@ class OsDiagnosticsRunNvmeWearLevelRoutineFunction
 
  private:
   ~OsDiagnosticsRunNvmeWearLevelRoutineFunction() override;
+
+  // BaseTelemetryExtensionApiGuardFunction:
+  void RunIfAllowed() override;
+};
+
+class OsDiagnosticsRunSensitiveSensorRoutineFunction
+    : public DiagnosticsApiRunRoutineFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION("os.diagnostics.runSensitiveSensorRoutine",
+                             OS_DIAGNOSTICS_RUNSENSITIVESENSORROUTINE)
+
+  OsDiagnosticsRunSensitiveSensorRoutineFunction();
+  OsDiagnosticsRunSensitiveSensorRoutineFunction(
+      const OsDiagnosticsRunSensitiveSensorRoutineFunction&) = delete;
+  OsDiagnosticsRunSensitiveSensorRoutineFunction& operator=(
+      const OsDiagnosticsRunSensitiveSensorRoutineFunction&) = delete;
+
+ private:
+  ~OsDiagnosticsRunSensitiveSensorRoutineFunction() override;
 
   // BaseTelemetryExtensionApiGuardFunction:
   void RunIfAllowed() override;

@@ -4,6 +4,7 @@
 
 #include "ash/components/phonehub/fake_phone_hub_manager.h"
 
+#include "ash/components/phonehub/app_stream_launcher_data_model.h"
 #include "ash/constants/ash_features.h"
 
 namespace ash {
@@ -53,6 +54,11 @@ OnboardingUiTracker* FakePhoneHubManager::GetOnboardingUiTracker() {
   return &fake_onboarding_ui_tracker_;
 }
 
+AppStreamLauncherDataModel*
+FakePhoneHubManager::GetAppStreamLauncherDataModel() {
+  return &app_stream_launcher_data_model_;
+}
+
 PhoneModel* FakePhoneHubManager::GetPhoneModel() {
   return &mutable_phone_model_;
 }
@@ -82,6 +88,14 @@ UserActionRecorder* FakePhoneHubManager::GetUserActionRecorder() {
 void FakePhoneHubManager::GetHostLastSeenTimestamp(
     base::OnceCallback<void(absl::optional<base::Time>)> callback) {
   std::move(callback).Run(host_last_seen_timestamp_);
+}
+
+IconDecoder* FakePhoneHubManager::GetIconDecoder() {
+  return &fake_icon_decoder_;
+}
+
+AppStreamManager* FakePhoneHubManager::GetAppStreamManager() {
+  return &app_stream_manager_;
 }
 
 }  // namespace phonehub

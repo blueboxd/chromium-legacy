@@ -77,6 +77,23 @@ bool IsProductBookmark(bookmarks::BookmarkModel* model,
   return meta && meta->has_shopping_specifics();
 }
 
+void SetPriceTrackingStateForClusterId(
+    ShoppingService* service,
+    bookmarks::BookmarkModel* model,
+    const uint64_t cluster_id,
+    bool enabled,
+    base::OnceCallback<void(bool)> callback) {
+  if (!service || !model)
+    return;
+
+  std::vector<const bookmarks::BookmarkNode*> product_bookmarks =
+      GetBookmarksWithClusterId(model, cluster_id, 1);
+  if (product_bookmarks.size() > 0) {
+    SetPriceTrackingStateForBookmark(service, model, product_bookmarks[0],
+                                     enabled, std::move(callback));
+  }
+}
+
 void SetPriceTrackingStateForBookmark(ShoppingService* service,
                                       bookmarks::BookmarkModel* model,
                                       const bookmarks::BookmarkNode* node,
@@ -148,7 +165,8 @@ void SetPriceTrackingStateForBookmark(ShoppingService* service,
 
 std::vector<const bookmarks::BookmarkNode*> GetBookmarksWithClusterId(
     bookmarks::BookmarkModel* model,
-    uint64_t cluster_id) {
+    uint64_t cluster_id,
+    size_t max_count) {
   std::vector<const bookmarks::BookmarkNode*> results =
       GetAllShoppingBookmarks(model);
 
@@ -167,6 +185,11 @@ std::vector<const bookmarks::BookmarkNode*> GetBookmarksWithClusterId(
       continue;
 
     bookmarks_with_cluster.push_back(node);
+
+    // If we're only looking for a fixed number of bookmarks, stop if we reach
+    // that number.
+    if (max_count > 0 && bookmarks_with_cluster.size() >= max_count)
+      break;
   }
 
   return bookmarks_with_cluster;
@@ -236,6 +259,19 @@ bool PopulateOrUpdateBookmarkMetaIfNeeded(
       specifics->current_price().amount_micros() != info.amount_micros) {
     specifics->mutable_current_price()->set_currency_code(info.currency_code);
     specifics->mutable_current_price()->set_amount_micros(info.amount_micros);
+    changed = true;
+  }
+
+  if (info.previous_amount_micros.has_value() &&
+      (specifics->previous_price().currency_code() != info.currency_code ||
+       specifics->previous_price().amount_micros() !=
+           info.previous_amount_micros.value())) {
+    // Intentionally use the same currency code for both current and previous
+    // price. Consistency between the values is guaranteed by the shopping
+    // service.
+    specifics->mutable_previous_price()->set_currency_code(info.currency_code);
+    specifics->mutable_previous_price()->set_amount_micros(
+        info.previous_amount_micros.value());
     changed = true;
   }
 

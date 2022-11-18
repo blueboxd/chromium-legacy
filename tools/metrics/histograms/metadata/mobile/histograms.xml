@@ -192,6 +192,8 @@ chromium-metrics-reviews@google.com.
     <variant name="BookmarkFolder" summary="Bookmark folder"/>
     <variant name="HistoryEntry" summary="History entry"/>
     <variant name="MostVisitedEntry" summary="Most Visited entry"/>
+    <variant name="OmniboxMostVisitedEntry"
+        summary="Omnibox Most Visited entry"/>
     <variant name="ReadingListEntry" summary="Reading List entry"/>
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>
     <variant name="RecentTabsHeader" summary="Recent Tabs header/device"/>
@@ -309,7 +311,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Mobile.Messages.Confirm.Event"
-    enum="MobileMessagesConfirmInfobarEvents" expires_after="2023-02-26">
+    enum="MobileMessagesConfirmInfobarEvents" expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="Mobile.Messages.Confirm.Type" -->
 
   <owner>sczs@chromium.org</owner>
@@ -435,6 +437,8 @@ chromium-metrics-reviews@google.com.
     <variant name="BookmarkEntry" summary="Bookmark entry"/>
     <variant name="HistoryEntry" summary="History entry"/>
     <variant name="MostVisitedEntry" summary="Most Visited entry"/>
+    <variant name="OmniboxMostVisitedEntry"
+        summary="Omnibox Most Visited entry"/>
     <variant name="QRCodeImage" summary="QR code image"/>
     <variant name="ReadingListEntry" summary="Reading List entry"/>
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>

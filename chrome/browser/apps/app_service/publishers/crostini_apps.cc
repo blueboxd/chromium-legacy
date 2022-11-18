@@ -212,24 +212,17 @@ void CrostiniApps::LaunchAppWithParams(AppLaunchParams&& params,
                                        LaunchCallback callback) {
   auto event_flags = apps::GetEventFlags(params.disposition,
                                          /*prefer_container=*/false);
-  auto window_info = apps::MakeWindowInfo(params.display_id);
   if (params.intent) {
     LaunchAppWithIntent(params.app_id, event_flags, std::move(params.intent),
                         params.launch_source,
                         std::make_unique<WindowInfo>(params.display_id),
-                        base::DoNothing());
+                        std::move(callback));
   } else {
-    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-      Launch(params.app_id, event_flags, params.launch_source,
-             std::make_unique<WindowInfo>(params.display_id));
-    } else {
-      Launch(params.app_id, event_flags,
-             ConvertLaunchSourceToMojomLaunchSource(params.launch_source),
-             std::move(window_info));
-    }
+    Launch(params.app_id, event_flags, params.launch_source,
+           std::make_unique<WindowInfo>(params.display_id));
+    // TODO(crbug.com/1244506): Add launch return value.
+    std::move(callback).Run(LaunchResult());
   }
-  // TODO(crbug.com/1244506): Add launch return value.
-  std::move(callback).Run(LaunchResult());
 }
 
 void CrostiniApps::Uninstall(const std::string& app_id,
@@ -302,15 +295,6 @@ void CrostiniApps::Connect(
   subscriber->OnApps(std::move(apps), apps::mojom::AppType::kCrostini,
                      true /* should_notify_initialized */);
   subscribers_.Add(std::move(subscriber));
-}
-
-void CrostiniApps::Launch(const std::string& app_id,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::WindowInfoPtr window_info) {
-  crostini::LaunchCrostiniApp(
-      profile_, app_id,
-      window_info ? window_info->display_id : display::kInvalidDisplayId);
 }
 
 void CrostiniApps::GetMenuModel(const std::string& app_id,

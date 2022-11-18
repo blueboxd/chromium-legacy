@@ -32,7 +32,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-win10-nvidia-dbg-64": {
@@ -43,7 +43,7 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-win10-nvidia-dx12vk-dbg-64": {
@@ -125,7 +125,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true,
+      "use_remoteexec": true,
       "v8_enable_verify_heap": true
     }
   },
@@ -160,8 +160,8 @@
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_goma": true,
-      "use_libfuzzer": true
+      "use_libfuzzer": true,
+      "use_remoteexec": true
     }
   },
   "win-perfetto-rel": {
@@ -248,20 +248,6 @@
       "use_goma": true
     }
   },
-  "win10_chromium_x64_rel_ng-reclient": {
-    "gn_args": {
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "enable_resource_allowlist_generation": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_remoteexec": true
-    }
-  },
   "win10_chromium_x64_rel_ng_exp": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -285,19 +271,6 @@
       "use_goma": true
     }
   },
-  "win7-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "enable_resource_allowlist_generation": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "target_cpu": "x86",
-      "use_goma": true
-    }
-  },
   "win_archive": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -316,7 +289,7 @@
       "proprietary_codecs": true,
       "symbol_level": 0,
       "target_cpu": "x86",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win_chromium_compile_rel_ng": {
@@ -352,7 +325,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win_upload_clang": {

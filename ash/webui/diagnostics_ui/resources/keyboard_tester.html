@@ -28,7 +28,7 @@
     margin-inline-end: 12px;
   }
 </style>
-<cr-dialog id="dialog" show-close-button on-close="handleClose">
+<cr-dialog id="dialog" on-close="handleClose">
   <div slot="title">[[i18n('keyboardTesterTitle')]]</div>
   <div slot="body">
     <p>[[i18n('keyboardTesterInstruction')]]</p>
@@ -57,7 +57,9 @@
     </cr-toast>
   </div>
   <div slot="button-container">
-    <div id="help" inner-h-t-m-l="[[i18nAdvanced('keyboardTesterHelpLink')]]"></div>
+    <div id="help" inner-h-t-m-l="[[i18nAdvanced('keyboardTesterHelpLink')]]"
+        hidden$="[[!isLoggedIn]]">
+    </div>
     <cr-button class="action-button" on-click="close">
       [[i18n('inputTesterDone')]]
     </cr-button>

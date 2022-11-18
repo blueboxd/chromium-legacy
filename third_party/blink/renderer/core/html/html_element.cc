@@ -274,11 +274,19 @@ unsigned HTMLElement::ParseBorderWidthAttribute(
 void HTMLElement::ApplyBorderAttributeToStyle(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderWidth,
-                                          ParseBorderWidthAttribute(value),
-                                          CSSPrimitiveValue::UnitType::kPixels);
-  AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderStyle,
-                                          CSSValueID::kSolid);
+  unsigned width = ParseBorderWidthAttribute(value);
+  for (CSSPropertyID property_id :
+       {CSSPropertyID::kBorderTopWidth, CSSPropertyID::kBorderBottomWidth,
+        CSSPropertyID::kBorderLeftWidth, CSSPropertyID::kBorderRightWidth}) {
+    AddPropertyToPresentationAttributeStyle(
+        style, property_id, width, CSSPrimitiveValue::UnitType::kPixels);
+  }
+  for (CSSPropertyID property_id :
+       {CSSPropertyID::kBorderTopStyle, CSSPropertyID::kBorderBottomStyle,
+        CSSPropertyID::kBorderLeftStyle, CSSPropertyID::kBorderRightStyle}) {
+    AddPropertyToPresentationAttributeStyle(style, property_id,
+                                            CSSValueID::kSolid);
+  }
 }
 
 bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
@@ -772,13 +780,6 @@ void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
       params.old_value.IsNull() != params.new_value.IsNull()) {
     EnsureElementInternals().ReadonlyAttributeChanged();
     return;
-  }
-  if (params.reason == AttributeModificationReason::kByParser &&
-      params.name == html_names::kDefaultopenAttr && HasPopoverAttribute()) {
-    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-        GetDocument().GetExecutionContext()));
-    DCHECK(!isConnected());
-    GetPopoverData()->setHadDefaultOpenWhenParsed(true);
   }
 
   if (params.reason != AttributeModificationReason::kDirectly)
@@ -2374,31 +2375,6 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
 
   if (IsFormAssociatedCustomElement())
     EnsureElementInternals().InsertedInto(insertion_point);
-
-  if (GetPopoverData() && GetPopoverData()->hadDefaultOpenWhenParsed()) {
-    // If a Popover element has the `defaultopen` attribute upon page
-    // load, and it is the *first* such popover, show it.
-    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-        GetDocument().GetExecutionContext()));
-    DCHECK(isConnected());
-    GetPopoverData()->setHadDefaultOpenWhenParsed(false);
-    auto maybe_show_popover = [](HTMLElement* popover) {
-      // The `defaultopen` attribute can only be used on popover=manual and
-      // popover=auto popovers.
-      bool is_open_dialog = popover && IsA<HTMLDialogElement>(popover) &&
-                            popover->hasAttribute(html_names::kOpenAttr);
-      if (popover && popover->isConnected() && !is_open_dialog &&
-          (popover->PopoverType() == PopoverValueType::kManual ||
-           (popover->PopoverType() == PopoverValueType::kAuto &&
-            !popover->GetDocument().PopoverAutoShowing()))) {
-        popover->showPopover(ASSERT_NO_EXCEPTION);
-      }
-    };
-    GetDocument()
-        .GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(FROM_HERE,
-                   WTF::BindOnce(maybe_show_popover, WrapWeakPersistent(this)));
-  }
 
   return kInsertionDone;
 }

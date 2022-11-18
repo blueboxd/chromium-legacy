@@ -479,7 +479,7 @@ static_library("test_support") {
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//cc:test_support",
-    "//components/attribution_reporting:source_registration_error_mojom",
+    "//components/attribution_reporting:mojom",
     "//components/breadcrumbs/core",
     "//components/browsing_topics/common:common",
     "//components/network_session_configurator/common:common",
@@ -1124,6 +1124,7 @@ if (is_android) {
       "//base:base_java_test_support",
       "//base:jni_java",
       "//components/download/internal/common:internal_java",
+      "//components/metrics:metrics_java",
       "//components/viz/service:service_java",
       "//content/public/android:content_java",
       "//content/public/test/android:content_java_test_support",
@@ -1253,7 +1254,6 @@ test("content_browsertests") {
     "../browser/isolated_origin_browsertest.cc",
     "../browser/keyboard_lock_browsertest.cc",
     "../browser/keyboard_lock_browsertest.h",
-    "../browser/largest_contentful_paint_browsertests.cc",
     "../browser/loader/cors_file_origin_browsertest.cc",
     "../browser/loader/cors_origin_pattern_setter_browsertest.cc",
     "../browser/loader/cors_preflight_cache_browsertest.cc",
@@ -1523,7 +1523,7 @@ test("content_browsertests") {
     "//base/test:test_support",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
-    "//components/attribution_reporting:source_registration_error_mojom",
+    "//components/attribution_reporting:mojom",
     "//components/discardable_memory/client",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
@@ -2285,6 +2285,7 @@ test("content_unittests") {
     "../browser/permissions/permission_controller_impl_unittest.cc",
     "../browser/permissions/permission_util_unittest.cc",
     "../browser/picture_in_picture/picture_in_picture_service_impl_unittest.cc",
+    "../browser/preloading/preconnector_unittest.cc",
     "../browser/preloading/prefetch/prefetch_canary_checker_unittest.cc",
     "../browser/preloading/prefetch/prefetch_container_unittest.cc",
     "../browser/preloading/prefetch/prefetch_cookie_listener_unittest.cc",
@@ -2296,9 +2297,11 @@ test("content_unittests") {
     "../browser/preloading/prefetch/prefetch_type_unittest.cc",
     "../browser/preloading/prefetch/prefetch_url_loader_interceptor_unittest.cc",
     "../browser/preloading/prefetch/proxy_lookup_client_impl_unittest.cc",
+    "../browser/preloading/prefetcher_unittest.cc",
     "../browser/preloading/prerender/prerender_host_registry_unittest.cc",
     "../browser/preloading/prerender/prerender_host_unittest.cc",
     "../browser/preloading/prerender/prerender_metrics_unittest.cc",
+    "../browser/preloading/prerenderer_unittest.cc",
     "../browser/preloading/speculation_rules/speculation_host_impl_unittest.cc",
     "../browser/presentation/presentation_service_impl_unittest.cc",
     "../browser/private_aggregation/private_aggregation_budget_key_unittest.cc",
@@ -2309,6 +2312,7 @@ test("content_unittests") {
     "../browser/quota/quota_change_dispatcher_unittest.cc",
     "../browser/reduce_accept_language/reduce_accept_language_utils_unittest.cc",
     "../browser/renderer_host/ancestor_throttle_unittest.cc",
+    "../browser/renderer_host/back_forward_cache_impl_unittest.cc",
     "../browser/renderer_host/back_forward_cache_metrics_unittest.cc",
     "../browser/renderer_host/clipboard_host_impl_unittest.cc",
     "../browser/renderer_host/commit_deferring_condition_runner_unittest.cc",
@@ -2501,6 +2505,7 @@ test("content_unittests") {
     "../common/fetch/fetch_api_request_proto_unittest.cc",
     "../common/fetch/fetch_request_type_converters_unittest.cc",
     "../common/font_list_unittest.cc",
+    "../common/frame_owner_element_type_mojom_traits_unittest.cc",
     "../common/input/actions_parser_test_driver_unittest.cc",
     "../common/input/actions_parser_unittest.cc",
     "../common/input/event_with_latency_info_unittest.cc",
@@ -2633,7 +2638,7 @@ test("content_unittests") {
     "//cc",
     "//cc:test_support",
     "//cc/mojom",
-    "//components/attribution_reporting:source_registration_error_mojom",
+    "//components/attribution_reporting:mojom",
     "//components/cbor",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
@@ -2898,13 +2903,19 @@ test("content_unittests") {
     ]
   }
   if (is_chromeos_ash) {
-    sources += [ "../browser/handwriting/handwriting_recognition_service_impl_cros_unittest.cc" ]
+    sources += [
+      "../browser/handwriting/handwriting_recognition_service_impl_cros_unittest.cc",
+      "../browser/ml/ml_service_impl_cros_unittest.cc",
+      "../browser/ml/ml_service_impl_unittest.cc",
+    ]
     deps += [
       "//ash/constants:constants",
       "//chromeos/ash/components/audio",
       "//chromeos/ash/components/dbus/audio",
       "//chromeos/services/machine_learning/public/cpp:stub",
       "//chromeos/services/machine_learning/public/mojom",
+      "//chromeos/services/machine_learning/public/mojom",
+      "//components/ml/mojom",
     ]
   }
   if (is_chromeos_lacros) {

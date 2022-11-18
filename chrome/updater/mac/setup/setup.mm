@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/updater/mac/setup/setup.h"
+#include "chrome/updater/posix/setup.h"
 
 #import <ServiceManagement/ServiceManagement.h>
 
@@ -36,6 +36,7 @@
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #import "chrome/updater/util/mac_util.h"
+#import "chrome/updater/util/posix_util.h"
 #include "chrome/updater/util/util.h"
 #include "components/crash/core/common/crash_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -151,7 +152,8 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateServiceLaunchdPlist(
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : program_arguments,
     @LAUNCH_JOBKEY_MACHSERVICES : @{GetUpdateServiceMachName(scope) : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @YES,
-    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope)
+    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope),
+    @"AssociatedBundleIdentifiers" : @MAC_BUNDLE_IDENTIFIER_STRING
   };
 
   return base::ScopedCFTypeRef<CFDictionaryRef>(
@@ -177,7 +179,8 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateWakeLaunchdPlist(
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : program_arguments,
     @LAUNCH_JOBKEY_STARTINTERVAL : @3600,
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @YES,
-    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope)
+    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope),
+    @"AssociatedBundleIdentifiers" : @MAC_BUNDLE_IDENTIFIER_STRING
   };
 
   return base::ScopedCFTypeRef<CFDictionaryRef>(
@@ -209,7 +212,8 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateUpdateServiceInternalLaunchdPlist(
     @LAUNCH_JOBKEY_MACHSERVICES :
         @{GetUpdateServiceInternalMachName(scope) : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @YES,
-    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope)
+    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope),
+    @"AssociatedBundleIdentifiers" : @MAC_BUNDLE_IDENTIFIER_STRING
   };
 
   return base::ScopedCFTypeRef<CFDictionaryRef>(
@@ -306,22 +310,8 @@ bool RemoveUpdateServiceInternalJobFromLaunchd(UpdaterScope scope) {
       scope, CopyUpdateServiceInternalLaunchdName(scope));
 }
 
-bool DeleteFolder(const absl::optional<base::FilePath>& installed_path) {
-  if (!installed_path)
-    return false;
-  if (!base::DeletePathRecursively(*installed_path)) {
-    PLOG(ERROR) << "Deleting " << installed_path << " failed";
-    return false;
-  }
-  return true;
-}
-
 bool DeleteInstallFolder(UpdaterScope scope) {
   return DeleteFolder(GetBaseInstallDirectory(scope));
-}
-
-bool DeleteCandidateInstallFolder(UpdaterScope scope) {
-  return DeleteFolder(GetVersionedInstallDirectory(scope));
 }
 
 bool DeleteDataFolder(UpdaterScope scope) {

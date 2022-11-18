@@ -302,11 +302,9 @@
       origin_trial_allows_third_party: true,
       status: "experimental",
     },
-    // The runtime flag for AudioContext.setSinkID().
-    // See: https://github.com/WebAudio/web-audio-api/pull/2498
     {
       name: "AudioContextSetSinkId",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "AudioOutputDevices",
@@ -368,7 +366,7 @@
       status: "experimental",
       origin_trial_feature_name: "BackForwardCacheNotRestoredReasons",
       base_feature: "BackForwardCacheSendNotRestoredReasons",
-      base_feature_status: "enabled",
+      base_feature_status: "disabled",
       copied_from_base_feature_if: "overridden",
       public: true,
     },
@@ -589,7 +587,7 @@
       status:  {"Android": "stable", "default": "experimental"},
     },
     {
-      name: "ContentVisibilityAutoStateChangedEvent",
+      name: "ContentVisibilityAutoStateChangeEvent",
       status: "stable",
     },
     {
@@ -646,10 +644,8 @@
     {
       // Support for CSS Color Module Level 4
       // https://www.w3.org/TR/css-color-4/
-      // It has a kill-switch in case we see that something is not proplery working"
       name: "CSSColor4",
-      status:  "stable",
-      base_feature: "CSSColor4",
+      status:  "experimental",
     },
     {
       name: "CSSColorContrast",
@@ -658,32 +654,6 @@
     {
       name: "CSSColorTypedOM",
       status:  "experimental",
-    },
-    {
-      // Flag for supporting size and inline-size container-types along with the
-      // @container rules for size queries. Also implies support for container
-      // relative units and inline-size containment.
-      // https://drafts.csswg.org/css-contain-3/#container-queries
-      name: "CSSContainerQueries",
-      status: "stable"
-    },
-    {
-      // https://drafts.csswg.org/css-contain-3/#container-lengths
-      name: "CSSContainerRelativeUnits",
-      implied_by: ["CSSContainerQueries"]
-    },
-    {
-      // With this flag disabled, we run UpdateStyle() over the full DOM tree
-      // before running interleaved style/layout. With this flag enabled, we
-      // skip style recalc in UpdateStyle() for containers which are guaranteed
-      // to be reachable in the following layout.
-      name: "CSSContainerSkipStyleRecalc",
-      implied_by: ["CSSContainerQueries"]
-    },
-    {
-      // Support for contain:inline-size
-      name: "CSSContainSize1D",
-      implied_by: ["CSSContainerQueries"]
     },
     {
       // Include custom properties in CSSComputedStyleDeclaration::item/length.
@@ -1167,9 +1137,6 @@
       name: "ExperimentalWebSnapshots",
     },
     {
-      name: "ExposeRenderTimeNonTaoDelayedImage",
-    },
-    {
       name: "ExtendedTextMetrics",
       status: "experimental",
     },
@@ -1441,11 +1408,6 @@
         "default": "experimental",
       },
     },
-    {
-      name: "HidDeviceForget",
-      depends_on: ["WebHID"],
-      status: {"Android": "", "default": "stable"},
-    },
     // HighlightAPI's custom highlights use HighlightInheritance's behavior even
     // if the HighlightInheritance feature is not enabled.
     {
@@ -1504,6 +1466,11 @@
       status: "stable",
     },
     {
+      name: "ImeVerticalFlag",
+      status: "stable",
+      base_feature: "ImeVerticalFlag",
+    },
+    {
       name: "ImplicitRootScroller",
       public: true,
       settable_from_internals: true,
@@ -1549,7 +1516,7 @@
       name: "LayoutMediaNGContainer",
       // This feature doesn't work in the legacy layout.
       depends_on: ["LayoutNGPrinting"],
-      status: "test",
+      status: "stable",
       base_feature: "LayoutMediaNGContainer",
     },
     {
@@ -1621,6 +1588,15 @@
       name: "LayoutNGTableFragmentation",
       depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
       status: "stable",
+    },
+    {
+      // Merge UpdateAfterLayout() calls for LayoutReplaced into one in
+      // CopyFragmentDataToLayoutBox(). crbug.com/1353190
+      name: "LayoutNGUnifyUpdateAfterLayout",
+      // This feature doesn't work in the legacy layout.
+      depends_on: ["LayoutNGPrinting"],
+      status: "stable",
+      base_feature: "LayoutNGUnifyUpdateAfterLayout",
     },
     {
       name: "LazyFrameLoading",
@@ -1741,10 +1717,6 @@
       status: "stable",
     },
     {
-      name: "MediaSessionWebRTC",
-      public: true,
-    },
-    {
       name: "MediaSourceExperimental",
       status: "experimental",
     },
@@ -1819,10 +1791,6 @@
       public: true,
     },
     {
-      name: "NavigationApi",
-      status: "stable",
-    },
-    {
       name: "NavigationId",
       status: "experimental",
       base_feature: "NavigationId",
@@ -1891,6 +1859,7 @@
       name: "OffsetParentNewSpecBehavior",
       status: "stable",
       base_feature: "OffsetParentNewSpecBehavior",
+      public: true,
     },
     {
       name: "OnDeviceChange",
@@ -2047,6 +2016,12 @@
       status: "experimental",
     },
     {
+      name: "PaymentInstruments",
+      depends_on: ["PaymentApp"],
+      public: true,
+      status: "stable",
+    },
+    {
       name: "PaymentMethodChangeEvent",
       depends_on: ["PaymentRequest"],
       status: "stable",
@@ -2173,7 +2148,7 @@
     {
       name: "PrefixedStorageInfo",
       public: true,
-      status: "stable",
+      status: "test",
       base_feature: "PrefixedStorageInfo",
       base_feature_status: "disabled",
     },
@@ -2470,6 +2445,7 @@
       name: "SendMouseEventsDisabledFormControls",
       base_feature: "SendMouseEventsDisabledFormControls",
       status: "experimental",
+      public: true,
     },
     {
       name: "SensorExtraClasses",
@@ -2478,10 +2454,6 @@
     },
     {
       name: "Serial",
-      status: {"Android": "", "default": "stable"},
-    },
-    {
-      name: "SerialPortForget",
       status: {"Android": "", "default": "stable"},
     },
     {
@@ -2968,7 +2940,7 @@
     {
       name: "WebAppLaunchHandler",
       origin_trial_feature_name: "Launch Handler",
-      status: "experimental",
+      status: {"Android": "experimental", "default": "stable"},
       base_feature: "WebAppEnableLaunchHandler",
     },
     {
@@ -3128,10 +3100,6 @@
       status: {"Android": "", "default": "stable"},
     },
     {
-      name: "WebHIDExclusionFiltersOption",
-      status: "stable",
-    },
-    {
       // It is only enabled in extension environment for now.
       name: "WebHIDOnServiceWorkers",
       depends_on: ["WebHID"],
@@ -3146,11 +3114,6 @@
     {
       name: "WebNFC",
       public: true,
-      status: {"Android": "stable", "default": "test"},
-    },
-    {
-      name: "WebNFCMakeReadOnly",
-      depends_on: ["WebNFC"],
       status: {"Android": "stable", "default": "test"},
     },
     {
@@ -3188,10 +3151,6 @@
     {
       name: "WebUSB",
       public: true,
-      status: "stable",
-    },
-    {
-      name: "WebUsbDeviceForget",
       status: "stable",
     },
     {
@@ -3261,6 +3220,12 @@
       depends_on: ["WebXRARModule"],
       public: true,
       status: "experimental",
+    },
+    {
+      name: "WebXRLayers",
+      depends_on: ["WebXR"],
+      public: true,
+      status: "experimental"
     },
     {
       name: "WebXRLightEstimation",

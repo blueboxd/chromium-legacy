@@ -24,16 +24,11 @@ const PasswordManagerBrowserTest = class extends PolymerTest {
   }
 };
 
-// TODO(crbug.com/1383449): Failing on Mac.
-GEN('#if BUILDFLAG(IS_MAC)');
-GEN('#define MAYBE_PasswordManagerUIPasswordsSectionTest DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_PasswordManagerUIPasswordsSectionTest All');
-GEN('#endif');
 [['App', 'password_manager_app_test.js'],
  ['SideBar', 'password_manager_side_bar_test.js'],
  ['Settings', 'settings_section_test.js'],
  ['Routing', 'password_manager_routing_test.js'],
+ ['PasswordDetails', 'password_details_section_test.js'],
  ['Checkup', 'checkup_section_test.js'],
  ['PasswordsSection', 'passwords_section_test.js'],
 ].forEach(test => registerTest(...test));

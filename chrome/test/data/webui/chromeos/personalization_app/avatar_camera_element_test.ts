@@ -40,7 +40,6 @@ class MockWebcamUtils extends TestBrowserProxy implements WebcamUtilsInterface {
 
   convertFramesToPng(_: HTMLCanvasElement[]): string {
     assertNotReached('This function should never be called');
-    return '';
   }
 
   async captureFrames(
@@ -56,8 +55,8 @@ class MockWebcamUtils extends TestBrowserProxy implements WebcamUtilsInterface {
   }
 }
 
-class MockGetUserMediaProxy extends
-    TestBrowserProxy<GetUserMediaProxy> implements GetUserMediaProxy {
+class MockGetUserMediaProxy extends TestBrowserProxy implements
+    GetUserMediaProxy {
   mediaStream = new MediaStream();
 
   constructor() {

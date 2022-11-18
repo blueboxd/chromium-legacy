@@ -439,12 +439,6 @@ builder.
   Location filters:
   * [`//chrome/updater/.+`](https://cs.chromium.org/chromium/src/chrome/updater/)
 
-* [win7-rel](https://ci.chromium.org/p/chromium/builders/try/win7-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win7-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""win7-rel""))
-
-  Location filters:
-  * [`//sandbox/win/.+`](https://cs.chromium.org/chromium/src/sandbox/win/)
-  * [`//sandbox/policy/win/.+`](https://cs.chromium.org/chromium/src/sandbox/policy/win/)
-
 * [win_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/try/win_optional_gpu_tests_rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win_optional_gpu_tests_rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""win_optional_gpu_tests_rel""))
 
   Location filters:
@@ -489,13 +483,16 @@ as required builders.
   * Experiment percentage: 60.0
 
 * [android-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-arm64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-arm64-rel""))
-  * Experiment percentage: 5.0
+  * Experiment percentage: 50.0
 
 * [android-pie-arm64-coverage-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-coverage-experimental-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""android-pie-arm64-coverage-experimental-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-pie-arm64-coverage-experimental-rel""))
   * Experiment percentage: 3.0
 
 * [linux-1mbu-compile-fyi-rel](https://ci.chromium.org/p/chromium/builders/try/linux-1mbu-compile-fyi-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-1mbu-compile-fyi-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-1mbu-compile-fyi-rel""))
   * Experiment percentage: 5.0
+
+* [linux-chromeos-rel-reclient](https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-reclient) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-chromeos-rel-reclient"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-chromeos-rel-reclient""))
+  * Experiment percentage: 3.0
 
 * [linux-chromeos-rel-rts](https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-rts) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""linux-chromeos-rel-rts"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""linux-chromeos-rel-rts""))
   * Experiment percentage: 5.0
@@ -505,7 +502,4 @@ as required builders.
 
 * [mac12-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/mac12-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac12-arm64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""mac12-arm64-rel""))
   * Experiment percentage: 100.0
-
-* [win10_chromium_x64_rel_ng-reclient](https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng-reclient) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win10_chromium_x64_rel_ng-reclient"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""win10_chromium_x64_rel_ng-reclient""))
-  * Experiment percentage: 3.0
 

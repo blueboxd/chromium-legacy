@@ -264,6 +264,16 @@ const char kHardwareVideoDecodeFrameRate[] = "hardware-video-decode-framerate";
 // Out-of-Process video decoding.
 const char kMaxChromeOSDecoderThreads[] = "max-chromeos-decoder-threads";
 #endif
+
+const char kCastStreamingForceDisableHardwareH264[] =
+    "cast-streaming-force-disable-hardware-h264";
+const char kCastStreamingForceDisableHardwareVp8[] =
+    "cast-streaming-force-disable-hardware-vp8";
+const char kCastStreamingForceEnableHardwareH264[] =
+    "cast-streaming-force-enable-hardware-h264";
+const char kCastStreamingForceEnableHardwareVp8[] =
+    "cast-streaming-force-enable-hardware-vp8";
+
 }  // namespace switches
 
 namespace media {
@@ -485,11 +495,6 @@ BASE_FEATURE(kD3D11VideoDecoderUseSharedHandle,
 BASE_FEATURE(kFallbackAfterDecodeError,
              "FallbackAfterDecodeError",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Use Gav1VideoDecoder to decode AV1 streams.
-BASE_FEATURE(kGav1VideoDecoder,
-             "Gav1VideoDecoder",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Show toolbar button that opens dialog for controlling media sessions.
 BASE_FEATURE(kGlobalMediaControls,
@@ -907,7 +912,12 @@ BASE_FEATURE(kUseRealColorSpaceForAndroidVideo,
 // Enable hardware AV1 decoder on ChromeOS.
 BASE_FEATURE(kChromeOSHWAV1Decoder,
              "ChromeOSHWAV1Decoder",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+#if defined(ARCH_CPU_X86_FAMILY)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(ARCH_CPU_X86_FAMILY)
+);
 
 // Enable Variable Bitrate encoding with hardware accelerated encoders on
 // ChromeOS.
@@ -972,20 +982,6 @@ BASE_FEATURE(kDirectShowGetPhotoState,
 BASE_FEATURE(kIncludeIRCamerasInDeviceEnumeration,
              "IncludeIRCamerasInDeviceEnumeration",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables AV1 encode acceleration for Windows.
-const base::Feature MEDIA_EXPORT kMediaFoundationAV1Encoding{
-    "MediaFoundationAV1Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables H.264 CBP encode acceleration for Windows.
-// For feature check of kMediaFoundationH264CbpEncoding at runtime,
-// please use IsMediaFoundationH264CbpEncodingEnabled() instead.
-const base::Feature MEDIA_EXPORT kMediaFoundationH264CbpEncoding{
-    "MediaFoundationH264CbpEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables VP9 encode acceleration for Windows.
-const base::Feature MEDIA_EXPORT kMediaFoundationVP9Encoding{
-    "MediaFoundationVP9Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables MediaFoundation based video capture
 BASE_FEATURE(kMediaFoundationVideoCapture,
@@ -1179,11 +1175,6 @@ BASE_FEATURE(kMediaPowerExperiment,
              "MediaPowerExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable WebRTC actions for the Media Session API.
-BASE_FEATURE(kMediaSessionWebRTC,
-             "MediaSessionWebRTC",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables flash to be ducked by audio focus. This is enabled on Chrome OS which
 // has audio focus enabled.
 BASE_FEATURE(kAudioFocusDuckFlash,
@@ -1231,6 +1222,31 @@ BASE_FEATURE(kBresenhamCadence,
              "BresenhamCadence",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether mirroring negotiations will include the AV1 codec for video
+// encoding.
+//
+// NOTE: currently only software AV1 encoding is supported.
+// TODO(https://crbug.com/1383333): hardware AV1 encoding should be added.
+BASE_FEATURE(kCastStreamingAv1,
+             "CastStreamingAv1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether mirroring negotiations will include the VP9 codec for video
+// encoding.
+//
+// NOTE: currently only software VP9 encoding is supported.
+// TODO(https://crbug.com/1311770): hardware VP9 encoding should be added.
+BASE_FEATURE(kCastStreamingVp9,
+             "CastStreamingVp9",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_FUCHSIA)
+// Enables use of Fuchsia's Mediacodec service for encoding.
+BASE_FEATURE(kFuchsiaMediacodecVideoEncoder,
+             "FuchsiaMediacodecVideoEncoder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_FUCHSIA)
+
 bool IsChromeWideEchoCancellationEnabled() {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
   return base::FeatureList::IsEnabled(kChromeWideEchoCancellation);
@@ -1261,10 +1277,6 @@ bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
 }
 
 #if BUILDFLAG(IS_WIN)
-bool IsMediaFoundationH264CbpEncodingEnabled() {
-  return base::FeatureList::IsEnabled(kMediaFoundationH264CbpEncoding);
-}
-
 bool IsMediaFoundationD3D11VideoCaptureEnabled() {
   return base::FeatureList::IsEnabled(kMediaFoundationD3D11VideoCapture);
 }

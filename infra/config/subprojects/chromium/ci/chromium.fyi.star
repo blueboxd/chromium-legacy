@@ -108,9 +108,6 @@ ci.builder(
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
     console_view_entry = consoles.console_view_entry(
@@ -257,9 +254,6 @@ ci.builder(
         skylab_upload_location = builder_config.skylab_upload_location(
             gs_bucket = "lacros-amd64-generic-rel-skylab-try",
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
 )
@@ -293,9 +287,6 @@ ci.builder(
         ),
         skylab_upload_location = builder_config.skylab_upload_location(
             gs_bucket = "lacros-arm64-generic-rel-skylab-try",
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
@@ -331,9 +322,6 @@ ci.builder(
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
     console_view_entry = consoles.console_view_entry(
@@ -343,47 +331,6 @@ ci.builder(
     execution_timeout = 3 * time.hour,
     os = os.LINUX_DEFAULT,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-)
-
-ci.builder(
-    name = "linux-ash-chromium-builder-fyi-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "lcr",
-    ),
-    os = os.LINUX_DEFAULT,
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "archive_datas": [
-                {
-                    "files": [
-                        "chrome",
-                        "chrome_100_percent.pak",
-                        "chrome_200_percent.pak",
-                        "chrome_crashpad_handler",
-                        "headless_lib_data.pak",
-                        "headless_lib_strings.pak",
-                        "icudtl.dat",
-                        "libminigbm.so",
-                        "nacl_helper",
-                        "nacl_irt_x86_64.nexe",
-                        "resources.pak",
-                        "snapshot_blob.bin",
-                        "test_ash_chrome",
-                    ],
-                    "dirs": ["locales", "swiftshader"],
-                    "gcs_bucket": "ash-chromium-on-linux-prebuilts",
-                    "gcs_path": "x86_64/{%position%}/ash-chromium.zip",
-                    "archive_type": "ARCHIVE_TYPE_ZIP",
-                    "latest_upload": {
-                        "gcs_path": "x86_64/latest/ash-chromium.txt",
-                        "gcs_file_content": "{%position%}",
-                    },
-                },
-            ],
-        },
-    },
 )
 
 ci.builder(
@@ -468,27 +415,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-blink-v8-sandbox-future-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|blink",
-        short_name = "SB",
-    ),
-    notifies = ["v8-sandbox-fyi-bots"],
-    os = os.LINUX_DEFAULT,
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-    ),
-)
-
-ci.builder(
     name = "linux-example-builder",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -506,13 +432,13 @@ ci.builder(
     os = os.LINUX_DEFAULT,
 )
 
-ci.builder(
-    name = "mac-fieldtrial-rel",
-    builderless = False,
+ci.thin_tester(
+    name = "mac-fieldtrial-tester",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
     ),
     builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
         chromium_config = builder_config.chromium_config(
             config = "chromium",
             apply_configs = ["mb"],
@@ -524,7 +450,7 @@ ci.builder(
         ),
     ),
     cores = None,
-    os = os.MAC_DEFAULT,
+    triggered_by = ["ci/mac-arm64-rel"],
 )
 
 ci.builder(
@@ -633,13 +559,18 @@ ci.builder(
     ),
     builder_spec = builder_config.builder_spec(
         chromium_config = builder_config.chromium_config(
-            config = "chromium",
+            config = "android",
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
         ),
         gclient_config = builder_config.gclient_config(
             config = "chromium",
+            apply_configs = ["android"],
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder",
         ),
     ),
     builderless = True,
@@ -770,9 +701,6 @@ ci.thin_tester(
             target_bits = 64,
             target_platform = builder_config.target_platform.MAC,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
     console_view_entry = consoles.console_view_entry(
@@ -833,9 +761,6 @@ ci.builder(
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
             target_platform = builder_config.target_platform.MAC,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),

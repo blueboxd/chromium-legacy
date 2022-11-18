@@ -21,6 +21,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -123,7 +124,7 @@ void FakeSkiaOutputSurface::MakePromiseSkImage(ImageContext* image_context) {
   }
 
   auto sk_color_type = ResourceFormatToClosestSkColorType(
-      true /* gpu_compositing */, image_context->resource_format());
+      true /* gpu_compositing */, image_context->format());
   image_context->SetImage(
       SkImage::MakeFromTexture(gr_context(), backend_texture,
                                kTopLeft_GrSurfaceOrigin, sk_color_type,
@@ -151,7 +152,7 @@ std::unique_ptr<ExternalUseClient::ImageContext>
 FakeSkiaOutputSurface::CreateImageContext(
     const gpu::MailboxHolder& holder,
     const gfx::Size& size,
-    ResourceFormat format,
+    SharedImageFormat format,
     bool concurrent_reads,
     const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
     sk_sp<SkColorSpace> color_space,
@@ -351,8 +352,8 @@ bool FakeSkiaOutputSurface::GetGrBackendTexture(
       image_context.mailbox_holder().sync_token.GetConstData());
   auto texture_id = gl->CreateAndTexStorage2DSharedImageCHROMIUM(
       image_context.mailbox_holder().mailbox.name);
-  auto gl_format = TextureStorageFormat(
-      image_context.resource_format(),
+  auto gl_format = gpu::TextureStorageFormat(
+      image_context.format(),
       context_provider()->ContextCapabilities().angle_rgbx_internal_format);
   GrGLTextureInfo gl_texture_info = {
       image_context.mailbox_holder().texture_target, texture_id, gl_format};

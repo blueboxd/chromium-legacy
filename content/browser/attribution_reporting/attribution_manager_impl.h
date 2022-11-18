@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -30,6 +31,10 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 
+namespace attribution_reporting {
+class SuitableOrigin;
+}  // namespace attribution_reporting
+
 namespace base {
 class FilePath;
 class TimeDelta;
@@ -38,10 +43,6 @@ class TimeDelta;
 namespace storage {
 class SpecialStoragePolicy;
 }  // namespace storage
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace content {
 
@@ -52,11 +53,12 @@ class AttributionDataHostManager;
 class AttributionStorage;
 class AttributionStorageDelegate;
 class CreateReportResult;
-class OsLevelAttributionManager;
 class StoragePartitionImpl;
 class StoredSource;
 
 struct SendResult;
+
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kAttributionVerboseDebugReporting);
 
 // UI thread class that manages the lifetime of the underlying attribution
 // storage and coordinates sending attribution reports. Owned by the storage
@@ -135,7 +137,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void AddObserver(AttributionObserver* observer) override;
   void RemoveObserver(AttributionObserver* observer) override;
   AttributionDataHostManager* GetDataHostManager() override;
-  OsLevelAttributionManager* GetOsLevelManager() override;
   void HandleSource(StorableSource source) override;
   void HandleTrigger(AttributionTrigger trigger) override;
   void GetActiveSourcesForWebUI(
@@ -155,7 +156,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
                  base::OnceClosure done) override;
   void NotifyFailedSourceRegistration(
       const std::string& header_value,
-      const url::Origin& reporting_origin,
+      const attribution_reporting::SuitableOrigin& reporting_origin,
       attribution_reporting::mojom::SourceRegistrationError) override;
 
  private:
@@ -179,8 +180,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       std::unique_ptr<AttributionStorageDelegate> storage_delegate,
       std::unique_ptr<AttributionCookieChecker> cookie_checker,
       std::unique_ptr<AttributionReportSender> report_sender,
-      std::unique_ptr<AttributionDataHostManager> data_host_manager,
-      std::unique_ptr<OsLevelAttributionManager> os_level_manager);
+      std::unique_ptr<AttributionDataHostManager> data_host_manager);
 
   void MaybeEnqueueEvent(SourceOrTrigger event);
   void ProcessEvents();
@@ -197,8 +197,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void OnGetReportsToSendFromWebUI(base::OnceClosure done,
                                    std::vector<AttributionReport> reports);
 
-  void SendReports(bool log_metrics,
-                   base::RepeatingClosure done,
+  void SendReports(base::RepeatingClosure web_ui_callback,
                    std::vector<AttributionReport> reports);
   void PrepareToSendReport(AttributionReport report,
                            bool is_debug_report,
@@ -265,8 +264,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   ReportSchedulerTimer scheduler_timer_;
 
   std::unique_ptr<AttributionDataHostManager> data_host_manager_;
-
-  std::unique_ptr<OsLevelAttributionManager> os_level_manager_;
 
   // Storage policy for the browser context |this| is in. May be nullptr.
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

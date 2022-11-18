@@ -35,6 +35,7 @@
 #include "third_party/blink/public/common/frame/fullscreen_request_token.h"
 #include "third_party/blink/public/common/frame/payment_request_token.h"
 #include "third_party/blink/public/common/metrics/post_message_counter.h"
+#include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -79,6 +80,7 @@ class LocalFrame;
 class MediaQueryList;
 class MessageEvent;
 class Modulator;
+class NavigationApi;
 class Navigator;
 class Screen;
 class ScriptController;
@@ -414,7 +416,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void EnqueueDocumentEvent(Event&, TaskType);
   void EnqueueNonPersistedPageshowEvent();
   void EnqueueHashchangeEvent(const String& old_url, const String& new_url);
-  void DispatchPopstateEvent(scoped_refptr<SerializedScriptValue>);
+  void DispatchPopstateEvent(scoped_refptr<SerializedScriptValue>,
+                             absl::optional<scheduler::TaskAttributionId>
+                                 soft_navigation_heuristics_task_id);
   void DispatchWindowLoadEvent();
   void DocumentWasClosed();
 
@@ -498,6 +502,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void IncrementNavigationId() { navigation_id_++; }
   uint32_t GetNavigationId() const { return navigation_id_; }
 
+  NavigationApi* navigation();
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -548,6 +554,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<StyleMedia> media_;
   mutable Member<CustomElementRegistry> custom_elements_;
   Member<External> external_;
+
+  Member<NavigationApi> navigation_;
 
   String status_;
   String default_status_;

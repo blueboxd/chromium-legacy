@@ -21,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -326,13 +325,7 @@ TEST(WinUtils, GetPathAndTypeFromHandle) {
 }
 
 TEST(WinUtils, GetCurrentProcessHandles) {
-  if (base::win::GetVersion() < base::win::Version::WIN8) {
-    ASSERT_FALSE(GetCurrentProcessHandles());
-    EXPECT_EQ(DWORD{ERROR_INVALID_PARAMETER}, ::GetLastError());
-  } else {
-    TestCurrentProcessHandles(GetCurrentProcessHandles);
-  }
-  TestCurrentProcessHandles(GetCurrentProcessHandlesWin7);
+  TestCurrentProcessHandles(GetCurrentProcessHandles);
 }
 
 }  // namespace sandbox

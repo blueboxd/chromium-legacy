@@ -156,6 +156,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Launch.WebAppLaunchHandlerClientMode"
+    enum="WebAppLaunchHandlerClientMode" expires_after="2023-05-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the launch_handler.client_mode used when a web app is launched.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.AddToHomescreenDialog.Timeout" units="ms"
     expires_after="2023-03-19">
   <owner>dominickn@chromium.org</owner>
@@ -678,7 +687,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Install.Result" enum="BooleanSuccess"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -744,6 +753,52 @@ chromium-metrics-reviews@google.com.
   <owner>ortuno@chromium.org</owner>
   <owner>qjw@chromium.org</owner>
   <summary>Records the result code of Web App installs.</summary>
+</histogram>
+
+<histogram name="WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus"
+    enum="IsolatedWebAppReadIntegrityBlockAndMetadataStatus"
+    expires_after="2023-11-08">
+  <owner>cmfcmf@chromium.org</owner>
+  <owner>peletskyi@chromium.org</owner>
+  <summary>
+    Records whether reading integrity block and metadata from a Signed Web
+    Bundle via the isolated-app: scheme was successful or resulted in an error.
+    This is logged every time the integrity block and metadata of an Isolated
+    Web App are parsed, which happens whenever the reader for an Isolated Web
+    App is not yet cached. Readers are evicted from the cache after
+    approximately 10 minutes of not reading any responses from their
+    corresponding Signed Web Bundle. Isolated Web Apps are parsed for any
+    resources loading for the web app, so any usage could trigger this UMA.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Isolated.ResponseReaderCacheState"
+    enum="IsolatedWebAppResponseReaderCacheState" expires_after="2023-11-08">
+  <owner>cmfcmf@chromium.org</owner>
+  <owner>peletskyi@chromium.org</owner>
+  <summary>
+    This histogram is logged whenever an HTTP request to read a response from a
+    Signed Web Bundle used for Isolated Web Apps is made through the
+    isolated-app: scheme and handled by the corresponding URLLoader. This
+    happens both during installation of an Isolated Web App, and when users
+    browse an installed Isolated Web App. The histogram records whether a cached
+    reader was used to read the response. A cached reader is able to directly
+    read a response from the Signed Web Bundle, whereas an uncached reader first
+    needs to parse the Signed Web Bundle's Integrity Block and metadata, and
+    possibly verify signatures.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.Isolated.SignatureVerificationDuration" units="ms"
+    expires_after="2023-11-08">
+  <owner>cmfcmf@chromium.org</owner>
+  <owner>peletskyi@chromium.org</owner>
+  <summary>
+    Records how long it takes to verify signatures of Signed Web Bundles used
+    for Isolated Web Apps every time their signatures are verified. Signatures
+    are verified during installation (all platforms) and when an Isolated Web
+    App is first accessed during a Chrome session (non-ChromeOS platforms only).
+  </summary>
 </histogram>
 
 <histogram name="WebApp.Launcher.LaunchResult"
@@ -1064,6 +1119,17 @@ chromium-metrics-reviews@google.com.
     all the installation results. This intentionally excludes the scenario where
     we don't request to install all the apps for consistency. Recorded in
     milliseconds, from 1 millisecond to 3 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Webapp.SystemApps.IconsAreHealthyInSession"
+    enum="BooleanSuccess" expires_after="2023-06-30">
+  <owner>qjw@chromium.org</owner>
+  <owner>dominicschulz@chromium.org</owner>
+  <summary>
+    Records whether system web app icons are healthy for each user session that
+    has system web apps installed. Failure indicates that at least one app has
+    missing or fallback icons.
   </summary>
 </histogram>
 

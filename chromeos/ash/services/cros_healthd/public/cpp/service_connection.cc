@@ -44,39 +44,9 @@ class ServiceConnectionImpl : public ServiceConnection {
 
  private:
   // ServiceConnection overrides:
-  void AddBluetoothObserver(
-      mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_observer)
-      override;
-  void AddLidObserver(mojo::PendingRemote<mojom::CrosHealthdLidObserver>
-                          pending_observer) override;
-  void AddPowerObserver(mojo::PendingRemote<mojom::CrosHealthdPowerObserver>
-                            pending_observer) override;
-  void AddNetworkObserver(
-      mojo::PendingRemote<
-          chromeos::network_health::mojom::NetworkEventsObserver>
-          pending_observer) override;
-  void AddAudioObserver(mojo::PendingRemote<mojom::CrosHealthdAudioObserver>
-                            pending_observer) override;
-  void AddThunderboltObserver(
-      mojo::PendingRemote<mojom::CrosHealthdThunderboltObserver>
-          pending_observer) override;
-  void AddUsbObserver(mojo::PendingRemote<mojom::CrosHealthdUsbObserver>
-                          pending_observer) override;
-  void ProbeTelemetryInfo(
-      const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
-      mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
-      override;
-  void ProbeProcessInfo(pid_t process_id,
-                        mojom::CrosHealthdProbeService::ProbeProcessInfoCallback
-                            callback) override;
-  void ProbeMultipleProcessInfo(
-      const absl::optional<std::vector<uint32_t>>& process_ids,
-      bool ignore_single_process_info,
-      mojom::CrosHealthdProbeService::ProbeMultipleProcessInfoCallback callback)
-      override;
-
   mojom::CrosHealthdDiagnosticsService* GetDiagnosticsService() override;
   mojom::CrosHealthdProbeService* GetProbeService() override;
+  mojom::CrosHealthdEventService* GetEventService() override;
   void BindDiagnosticsService(
       mojo::PendingReceiver<mojom::CrosHealthdDiagnosticsService> service)
       override;
@@ -147,88 +117,6 @@ class ServiceConnectionImpl : public ServiceConnection {
   base::WeakPtrFactory<ServiceConnectionImpl> weak_factory_{this};
 };
 
-void ServiceConnectionImpl::AddBluetoothObserver(
-    mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdEventServiceIfNeeded();
-  cros_healthd_event_service_->AddBluetoothObserver(
-      std::move(pending_observer));
-}
-
-void ServiceConnectionImpl::AddLidObserver(
-    mojo::PendingRemote<mojom::CrosHealthdLidObserver> pending_observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdEventServiceIfNeeded();
-  cros_healthd_event_service_->AddLidObserver(std::move(pending_observer));
-}
-
-void ServiceConnectionImpl::AddPowerObserver(
-    mojo::PendingRemote<mojom::CrosHealthdPowerObserver> pending_observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdEventServiceIfNeeded();
-  cros_healthd_event_service_->AddPowerObserver(std::move(pending_observer));
-}
-
-void ServiceConnectionImpl::AddNetworkObserver(
-    mojo::PendingRemote<chromeos::network_health::mojom::NetworkEventsObserver>
-        pending_observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdEventServiceIfNeeded();
-  cros_healthd_event_service_->AddNetworkObserver(std::move(pending_observer));
-}
-
-void ServiceConnectionImpl::AddAudioObserver(
-    mojo::PendingRemote<mojom::CrosHealthdAudioObserver> pending_observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdEventServiceIfNeeded();
-  cros_healthd_event_service_->AddAudioObserver(std::move(pending_observer));
-}
-
-void ServiceConnectionImpl::AddThunderboltObserver(
-    mojo::PendingRemote<mojom::CrosHealthdThunderboltObserver>
-        pending_observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdEventServiceIfNeeded();
-  cros_healthd_event_service_->AddThunderboltObserver(
-      std::move(pending_observer));
-}
-
-void ServiceConnectionImpl::AddUsbObserver(
-    mojo::PendingRemote<mojom::CrosHealthdUsbObserver> pending_observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdEventServiceIfNeeded();
-  cros_healthd_event_service_->AddUsbObserver(std::move(pending_observer));
-}
-
-void ServiceConnectionImpl::ProbeTelemetryInfo(
-    const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
-    mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdProbeServiceIfNeeded();
-  cros_healthd_probe_service_->ProbeTelemetryInfo(categories_to_test,
-                                                  std::move(callback));
-}
-
-void ServiceConnectionImpl::ProbeProcessInfo(
-    pid_t process_id,
-    mojom::CrosHealthdProbeService::ProbeProcessInfoCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(process_id > 0);
-  BindCrosHealthdProbeServiceIfNeeded();
-  cros_healthd_probe_service_->ProbeProcessInfo(
-      static_cast<uint32_t>(process_id), std::move(callback));
-}
-
-void ServiceConnectionImpl::ProbeMultipleProcessInfo(
-    const absl::optional<std::vector<uint32_t>>& process_ids,
-    bool ignore_single_process_info,
-    mojom::CrosHealthdProbeService::ProbeMultipleProcessInfoCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdProbeServiceIfNeeded();
-  cros_healthd_probe_service_->ProbeMultipleProcessInfo(
-      process_ids, ignore_single_process_info, std::move(callback));
-}
-
 mojom::CrosHealthdDiagnosticsService*
 ServiceConnectionImpl::GetDiagnosticsService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -240,6 +128,12 @@ mojom::CrosHealthdProbeService* ServiceConnectionImpl::GetProbeService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindCrosHealthdProbeServiceIfNeeded();
   return cros_healthd_probe_service_.get();
+}
+
+mojom::CrosHealthdEventService* ServiceConnectionImpl::GetEventService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdEventServiceIfNeeded();
+  return cros_healthd_event_service_.get();
 }
 
 void ServiceConnectionImpl::BindDiagnosticsService(

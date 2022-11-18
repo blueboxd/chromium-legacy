@@ -683,10 +683,8 @@ void RenderThreadImpl::Init() {
   variations_observer_ = std::make_unique<VariationsRenderThreadObserver>();
   AddObserver(variations_observer_.get());
 
-  if (base::FeatureList::IsEnabled(features::kFontManagerEarlyInit)) {
-    base::ThreadPool::PostTask(FROM_HERE,
-                               base::BindOnce([] { SkFontMgr::RefDefault(); }));
-  }
+  base::ThreadPool::PostTask(FROM_HERE,
+                             base::BindOnce([] { SkFontMgr::RefDefault(); }));
 
   bool should_actively_sample_fonts =
       command_line.HasSwitch(kFirstRendererProcess) &&
@@ -942,6 +940,12 @@ void RenderThreadImpl::RegisterSchemes() {
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_scheme);
   WebSecurityPolicy::RegisterURLSchemeAsWebUI(chrome_scheme);
+
+  // Service workers for chrome://
+  if (base::FeatureList::IsEnabled(
+          features::kEnableServiceWorkersForChromeScheme)) {
+    WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(chrome_scheme);
+  }
 
   WebString chrome_untrusted_scheme(
       WebString::FromASCII(kChromeUIUntrustedScheme));

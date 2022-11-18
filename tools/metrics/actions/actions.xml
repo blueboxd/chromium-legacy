@@ -564,6 +564,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Cycle_Same_App">
+  <owner>benbecker@chromium.org</owner>
+  <owner>andp@chromium.org</owner>
+  <owner>nupurjain@chromium.org</owner>
+  <description>
+    Starting a same app window selection cycle by pressing alt-backtick. Only
+    counts the initial alt-backtick, not each step in the cycle.
+  </description>
+</action>
+
 <action name="Accel_Desks_ActivateLeft">
   <owner>afakhry@chromium.org</owner>
   <description>
@@ -17240,6 +17250,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Mobile.OmniboxContextMenu.LensCopiedImage">
+  <owner>hujasonx@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <description>
+    User pressed 'Lens Copied Image' in the omnibox context menu (iOS only).
+  </description>
+</action>
+
 <action name="Mobile.OmniboxContextMenu.SearchCopiedImage">
   <owner>rkgibson@google.com</owner>
   <owner>stkhapugin@google.com</owner>
@@ -18880,6 +18898,12 @@ should be able to be added at any place in this file.
     The user tapped the &quot;Incognito Search&quot; button in the mobile menu
     displayed when long pressing the New Tab button.
   </description>
+</action>
+
+<action name="MobileMenuLensCopiedImage">
+  <owner>hujasonx@google.com</owner>
+  <owner>schechter@google.com</owner>
+  <description>User pressed 'Lens Copied Image' in the app menu.</description>
 </action>
 
 <action name="MobileMenuMoveToOtherWindow">
@@ -21418,10 +21442,10 @@ should be able to be added at any place in this file.
   <description>An NTP tile was blacklisted. iOS only.</description>
 </action>
 
-<action name="MostVisited_UrlBlacklisted_Omnibox">
+<action name="MostVisited_UrlBlocklisted_Omnibox">
   <owner>christianxu@chromium.org</owner>
   <owner>stkhapugin@chromium.org</owner>
-  <description>An omnibox MV tile was blacklisted. iOS only.</description>
+  <description>An omnibox MV tile was blocklisted. iOS only.</description>
 </action>
 
 <action name="MostVisited_UrlPinned">
@@ -21611,6 +21635,40 @@ should be able to be added at any place in this file.
 <action name="MoveWordRight">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MultiWindowResizerClick">
+  <owner>michelefan@chromium.org</owner>
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the multi window resize widget is clicked on.
+  </description>
+</action>
+
+<action name="MultiWindowResizerClick_TwoWindowsSnapped">
+  <owner>michelefan@chromium.org</owner>
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the multi window resize widget is clicked on when two windows
+    are snapped.
+  </description>
+</action>
+
+<action name="MultiWindowResizerShow">
+  <owner>michelefan@chromium.org</owner>
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the resize widget shows on mouse hover on the ResizeWindows.
+  </description>
+</action>
+
+<action name="MultiWindowResizerShow_TwoWindowsSnapped">
+  <owner>michelefan@chromium.org</owner>
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the resize widget shows on mouse hover on the ResizeWindows
+    and the two windows of the ResizeWindows are snapped.
+  </description>
 </action>
 
 <action name="NativeFileSystemAPI.OpenedBubble">

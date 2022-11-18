@@ -40,6 +40,7 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
+#include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -684,7 +685,10 @@ void LocalFrameClientImpl::DidStopLoading() {
     web_frame_->Client()->DidStopLoading();
 }
 
-bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
+bool LocalFrameClientImpl::NavigateBackForward(
+    int offset,
+    absl::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
   DCHECK(webview->Client());
   DCHECK(web_frame_->Client());
@@ -698,7 +702,7 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
   bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
   web_frame_->GetFrame()->GetLocalFrameHostRemote().GoToEntryAtOffset(
-      offset, has_user_gesture);
+      offset, has_user_gesture, soft_navigation_heuristics_task_id);
   return true;
 }
 
@@ -734,6 +738,16 @@ void LocalFrameClientImpl::DidObserveLoadingBehavior(
     LoadingBehaviorFlag behavior) {
   if (web_frame_->Client())
     web_frame_->Client()->DidObserveLoadingBehavior(behavior);
+}
+
+void LocalFrameClientImpl::DidObserveSubresourceLoad(
+    uint32_t number_of_subresources_loaded,
+    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+  if (web_frame_->Client()) {
+    web_frame_->Client()->DidObserveSubresourceLoad(
+        number_of_subresources_loaded,
+        number_of_subresource_loads_handled_by_service_worker);
+  }
 }
 
 void LocalFrameClientImpl::DidObserveNewFeatureUsage(
@@ -1131,11 +1145,6 @@ void LocalFrameClientImpl::UpdateSubresourceFactory(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factory) {
   DCHECK(web_frame_->Client());
   web_frame_->Client()->UpdateSubresourceFactory(std::move(pending_factory));
-}
-
-void LocalFrameClientImpl::DidChangeMobileFriendliness(
-    const MobileFriendliness& mf) {
-  web_frame_->DidChangeMobileFriendliness(mf);
 }
 
 }  // namespace blink

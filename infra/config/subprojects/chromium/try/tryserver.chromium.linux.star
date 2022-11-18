@@ -94,17 +94,13 @@ try_.builder(
         "ci/linux-bfcache-rel",
     ],
     goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "linux-blink-heap-verification-try",
     goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
-    name = "linux-blink-v8-sandbox-future-rel",
-    mirrors = ["ci/linux-blink-v8-sandbox-future-rel"],
 )
 
 try_.builder(
@@ -180,9 +176,6 @@ try_.builder(
     executable = "recipe:chromium_libfuzzer_trybot",
     main_list_view = "try",
     tryjob = try_.job(),
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
 )
 
 try_.builder(
@@ -204,8 +197,7 @@ try_.orchestrator_builder(
     name = "linux-rel",
     compilator = "linux-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
-    # Disabling due to crbug.com/1359208
-    # check_for_flakiness = True,
+    check_for_flakiness = True,
     mirrors = [
         "ci/Linux Builder",
         "ci/Linux Tests",
@@ -222,15 +214,11 @@ try_.orchestrator_builder(
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
     experiments = {
-        # TODO (crbug.com/1382577): Reenable after cq active is reliable
-        "chromium_rts.inverted_rts": 0,
+        "chromium_rts.inverted_rts": 100,
     },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
 )
 
 try_.compilator_builder(
@@ -240,8 +228,9 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "linux-wayland-rel-inverse-fyi",
+    compilator = "linux-wayland-rel-compilator",
     mirrors = [
         "ci/Linux Builder (Wayland)",
         "ci/Linux Tests (Wayland)",
@@ -251,14 +240,11 @@ try_.builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    builderless = True,
     experiments = {
         "chromium_rts.inverted_rts": 100,
         "chromium_rts.inverted_rts_bail_early": 100,
     },
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
+    use_orchestrator_pool = True,
 )
 
 try_.orchestrator_builder(
@@ -276,9 +262,9 @@ try_.orchestrator_builder(
     ),
     main_list_view = "try",
     tryjob = try_.job(),
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -336,9 +322,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
 )
 
 try_.builder(
@@ -386,12 +369,12 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+    },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
 )
 
 try_.orchestrator_builder(
@@ -410,7 +393,6 @@ try_.orchestrator_builder(
         "chromium_rts.inverted_rts": 100,
         "chromium_rts.inverted_rts_bail_early": 100,
     },
-    omit_python2 = False,
     use_orchestrator_pool = True,
 )
 
@@ -501,9 +483,6 @@ try_.builder(
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     main_list_view = "try",
     tryjob = try_.job(),
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
 )
 
 try_.builder(
@@ -579,12 +558,12 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+    },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
-
-    # TODO(crbug.com/1366987): remove this.
-    omit_python2 = False,
 )
 
 try_.orchestrator_builder(
@@ -604,7 +583,6 @@ try_.orchestrator_builder(
         "chromium_rts.inverted_rts_bail_early": 100,
     },
     use_orchestrator_pool = True,
-    omit_python2 = False,
 )
 
 try_.compilator_builder(
@@ -628,6 +606,8 @@ try_.builder(
         "ci/linux-lacros-asan-lsan-rel",
     ],
     goma_jobs = goma.jobs.J150,
+    cores = 16,
+    ssd = True,
 )
 
 try_.builder(
@@ -644,9 +624,6 @@ try_.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
     ),
     main_list_view = "try",
@@ -771,8 +748,7 @@ try_.gpu.optional_tests_builder(
 try_.orchestrator_builder(
     name = "linux-rel-inverse-fyi",
     compilator = "linux-rel-compilator",
-    # Disabling due to crbug.com/1359208
-    # check_for_flakiness = True,
+    check_for_flakiness = True,
     mirrors = [
         "ci/Linux Builder",
         "ci/Linux Tests",

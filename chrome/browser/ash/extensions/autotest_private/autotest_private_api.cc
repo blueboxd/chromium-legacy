@@ -11,6 +11,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/app_list/app_list_public_test_util.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/components/arc/mojom/system_ui.mojom-shared.h"
@@ -179,6 +180,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/variations/pref_names.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -199,6 +201,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/filename_util.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -1004,6 +1007,20 @@ std::string ResolutionToString(
 
   // Not reachable here.
   DCHECK(false);
+}
+
+std::string CompositorFrameSinkTypeToString(
+    viz::mojom::CompositorFrameSinkType type) {
+  switch (type) {
+    case viz::mojom::CompositorFrameSinkType::kUnspecified:
+      return "unspecified";
+    case viz::mojom::CompositorFrameSinkType::kVideo:
+      return "video";
+    case viz::mojom::CompositorFrameSinkType::kMediaStream:
+      return "media-stream";
+    case viz::mojom::CompositorFrameSinkType::kLayerTree:
+      return "layer-tree";
+  }
 }
 
 }  // namespace
@@ -2291,31 +2308,6 @@ void AutotestPrivateIsSystemWebAppOpenFunction::OnSystemWebAppsInstalled() {
 
   Respond(WithArguments(ash::FindSystemWebAppBrowser(profile, *app_type) !=
                         nullptr));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateLaunchArcIntentFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateLaunchArcAppFunction::~AutotestPrivateLaunchArcAppFunction() =
-    default;
-
-ExtensionFunction::ResponseAction AutotestPrivateLaunchArcAppFunction::Run() {
-  std::unique_ptr<api::autotest_private::LaunchArcApp::Params> params(
-      api::autotest_private::LaunchArcApp::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  DVLOG(1) << "AutotestPrivateLaunchArcIntentFunction " << params->app_id << "/"
-           << params->intent;
-
-  absl::optional<std::string> launch_intent;
-  if (!params->intent.empty())
-    launch_intent = params->intent;
-  const bool result = arc::LaunchAppWithIntent(
-      Profile::FromBrowserContext(browser_context()), params->app_id,
-      launch_intent, 0 /* event_flags */,
-      arc::UserInteractionType::APP_STARTED_FROM_EXTENSION_API,
-      nullptr /* window_info */);
-  return RespondNow(WithArguments(result));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3864,6 +3856,26 @@ ExtensionFunction::ResponseAction AutotestPrivateGetShelfItemsFunction::Run() {
 
   return RespondNow(ArgumentList(
       api::autotest_private::GetShelfItems::Results::Create(result_items)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetLauncherSearchBoxStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetLauncherSearchBoxStateFunction::
+    AutotestPrivateGetLauncherSearchBoxStateFunction() = default;
+
+AutotestPrivateGetLauncherSearchBoxStateFunction::
+    ~AutotestPrivateGetLauncherSearchBoxStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetLauncherSearchBoxStateFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetLauncherSearchBoxStateFunction";
+
+  api::autotest_private::LauncherSearchBoxState launcher_search_box_state;
+  launcher_search_box_state.ghost_text = ash::GetSearchBoxGhostTextForTest();
+
+  return RespondNow(WithArguments(launcher_search_box_state.ToValue()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6267,6 +6279,85 @@ AutotestPrivateRemoveComponentExtensionFunction::Run() {
   extension_service->component_loader()->Remove(params->extension_id);
 
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStartFrameCountingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStartFrameCountingFunction::
+    AutotestPrivateStartFrameCountingFunction() = default;
+
+AutotestPrivateStartFrameCountingFunction::
+    ~AutotestPrivateStartFrameCountingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStartFrameCountingFunction::Run() {
+  std::unique_ptr<api::autotest_private::StartFrameCounting::Params> params(
+      api::autotest_private::StartFrameCounting::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (params->bucket_size_in_seconds <= 0) {
+    return RespondNow(
+        Error("Param bucketSizeInSeconds must be greater than 0s"));
+  }
+
+  // "viz.mojom.FrameCountingPerSinkData" uses uint16 to store frame counts.
+  // Limit the max bucket size so that the max frame count does not go beyond
+  // uint16 max. 500s is safe even for a 120fps system.
+  constexpr int kMaxBucketSizeInSeconds = 500;
+  if (params->bucket_size_in_seconds > kMaxBucketSizeInSeconds) {
+    return RespondNow(
+        Error("Param bucketSizeInSeconds must be less than 500s"));
+  }
+
+  aura::Env::GetInstance()
+      ->context_factory()
+      ->GetHostFrameSinkManager()
+      ->StartFrameCountingForTest(  // IN-TEST
+          base::Seconds(params->bucket_size_in_seconds));
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStopFrameCountingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStopFrameCountingFunction::
+    AutotestPrivateStopFrameCountingFunction() = default;
+
+AutotestPrivateStopFrameCountingFunction::
+    ~AutotestPrivateStopFrameCountingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStopFrameCountingFunction::Run() {
+  auto callback = base::BindOnce(
+      &AutotestPrivateStopFrameCountingFunction::OnDataReceived, this);
+  aura::Env::GetInstance()
+      ->context_factory()
+      ->GetHostFrameSinkManager()
+      ->StopFrameCountingForTest(std::move(callback));  // IN-TEST
+  return RespondLater();
+}
+
+void AutotestPrivateStopFrameCountingFunction::OnDataReceived(
+    viz::mojom::FrameCountingDataPtr data_ptr) {
+  std::vector<api::autotest_private::FrameCountingPerSinkData> result;
+  for (const auto& per_sink_data : data_ptr->per_sink_data) {
+    api::autotest_private::FrameCountingPerSinkData result_per_sink_data;
+    result_per_sink_data.sink_type =
+        CompositorFrameSinkTypeToString(per_sink_data->type);
+    result_per_sink_data.is_root = per_sink_data->is_root;
+
+    std::copy(per_sink_data->presented_frames.begin(),
+              per_sink_data->presented_frames.end(),
+              std::back_inserter(result_per_sink_data.presented_frames));
+
+    result.emplace_back(std::move(result_per_sink_data));
+  }
+
+  Respond(ArgumentList(
+      api::autotest_private::StopFrameCounting::Results::Create(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

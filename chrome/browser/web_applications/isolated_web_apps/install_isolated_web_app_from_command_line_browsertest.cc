@@ -2,24 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_from_command_line.h"
+
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/one_shot_event.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
@@ -30,6 +35,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace web_app {
 namespace {
@@ -47,7 +53,8 @@ class InstallIsolatedWebAppFromCommandLineBrowserTest
     : public InProcessBrowserTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
     InProcessBrowserTest::SetUp();
   }
 
@@ -129,22 +136,19 @@ class InstallIsolatedWebAppFromCommandLineFromFileBrowserTest
   }
 
   std::vector<uint8_t> BuildBundle() {
-    web_package::WebBundleSigner::KeyPair key_pair =
-        web_package::WebBundleSigner::KeyPair::CreateRandom();
-    base::expected<web_package::Ed25519PublicKey, std::string> public_key =
-        web_package::Ed25519PublicKey::Create(key_pair.public_key);
-    DCHECK(public_key.has_value());
-    web_package::SignedWebBundleId bundle_id =
-        web_package::SignedWebBundleId::CreateForEd25519PublicKey(
-            public_key.value());
     web_package::WebBundleBuilder builder;
+    std::string primary_url =
+        base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
+                      kTestEd25519WebBundleId});
 
-    builder.AddPrimaryURL("isolated-app://" + bundle_id.id());
-    builder.AddExchange("isolated-app://" + bundle_id.id(),
+    builder.AddPrimaryURL(primary_url);
+    builder.AddExchange(primary_url,
                         {{":status", "200"}, {"content-type", "text/plain"}},
                         "payload");
 
     auto unsigned_bundle = builder.CreateBundle();
+    web_package::WebBundleSigner::KeyPair key_pair(kTestPublicKey,
+                                                   kTestPrivateKey);
     return web_package::WebBundleSigner::SignBundle(unsigned_bundle,
                                                     {key_pair});
   }

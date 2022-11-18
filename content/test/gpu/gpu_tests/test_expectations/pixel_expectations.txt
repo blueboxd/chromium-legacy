@@ -298,7 +298,6 @@ crbug.com/1176918 [ android android-pixel-4 android-webview-instrumentation rend
 crbug.com/1338173 [ chromeos chromeos-board-amd64-generic ] Pixel_PrecisionRoundedCorner [ Failure ]
 
 # Flaky hang.
-crbug.com/1218288 [ fuchsia fuchsia-board-astro ] Pixel_PrecisionRoundedCorner [ Failure ]
 
 # Flaky on Fuchsia.
 crbug.com/1368748 [ fuchsia ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
@@ -310,6 +309,7 @@ crbug.com/1302427 [ fuchsia fuchsia-board-qemu-x64 ] Pixel_CanvasLowLatencyWebGL
 
 # WebGPU pixel tests flakily hang in the metal shader compiler on Mac.
 crbug.com/1268120 [ mac asan ] Pixel_WebGPUToDataURL [ Failure ]
+crbug.com/1268120 [ mac asan ] Pixel_WebGPUDisplayP3 [ Failure ]
 
 crbug.com/1297636 [ mac ] Pixel_WebGPUImportUnaccelerated2DCanvas [ Failure ]
 
@@ -325,7 +325,6 @@ crbug.com/1213542 [ renderer-skia-gl linux nvidia-0x2184 passthrough ] Pixel_Vid
 crbug.com/1288134 [ win10 amd-0x7340 renderer-skia-gl ] Pixel_DirectComposition_Video_VP9_YUY2 [ Failure ]
 
 # Pixel 4 Flaky Failures - Passthrough, WebView and Validating
-crbug.com/1273033 [ android android-pixel-4 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
 # Pixel 4 Flaky Failures - Passthrough and Validating on Chromium
 
@@ -366,6 +365,16 @@ crbug.com/1372141 [ android android-sm-a235m ] Pixel_CanvasLowLatencyWebGLAlphaF
 crbug.com/1373965 [ fuchsia ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ Failure ]
 
 crbug.com/1376927 [ win10 target-cpu-32 nvidia-0x2184 ] Pixel_MediaFoundationClearDirectComposition [ Failure ]
+
+# Pixel_MediaRecorderFromVideoElement fails on several FYI bots
+crbug.com/1382332 [ win10 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ win10 ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+crbug.com/1382332 [ mac ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ mac ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+crbug.com/1382332 [ chromeos ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ chromeos ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+crbug.com/1382332 [ android ] Pixel_MediaRecorderFromVideoElement [ Failure ]
+crbug.com/1382332 [ android ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

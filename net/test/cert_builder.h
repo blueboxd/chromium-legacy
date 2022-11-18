@@ -84,15 +84,12 @@ class CertBuilder {
   // Creates a simple leaf->intermediate->root chain of CertBuilders with no AIA
   // or CrlDistributionPoint extensions, and leaf having a subjectAltName of
   // www.example.com.
-  static void CreateSimpleChain(std::unique_ptr<CertBuilder>* out_leaf,
-                                std::unique_ptr<CertBuilder>* out_intermediate,
-                                std::unique_ptr<CertBuilder>* out_root);
+  static std::array<std::unique_ptr<CertBuilder>, 3> CreateSimpleChain3();
 
   // Creates a simple leaf->root chain of CertBuilders with no AIA or
   // CrlDistributionPoint extensions, and leaf having a subjectAltName of
   // www.example.com.
-  static void CreateSimpleChain(std::unique_ptr<CertBuilder>* out_leaf,
-                                std::unique_ptr<CertBuilder>* out_root);
+  static std::array<std::unique_ptr<CertBuilder>, 2> CreateSimpleChain2();
 
   // Returns a compatible signature algorithm for |key|.
   static absl::optional<SignatureAlgorithm> DefaultSignatureAlgorithmForKey(
@@ -198,6 +195,9 @@ class CertBuilder {
   // will removed.
   void SetPolicyConstraints(absl::optional<uint64_t> require_explicit_policy,
                             absl::optional<uint64_t> inhibit_policy_mapping);
+
+  // Sets the inhibitAnyPolicy extension.
+  void SetInhibitAnyPolicy(uint64_t skip_certs);
 
   void SetValidity(base::Time not_before, base::Time not_after);
 

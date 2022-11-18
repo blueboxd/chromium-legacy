@@ -1142,7 +1142,7 @@ export class FileManager extends EventTarget {
 
     // Create search controller.
     this.searchController_ = new SearchController(
-        this.ui_.searchBox,
+        this.ui_.searchContainer,
         this.directoryModel_,
         this.volumeManager_,
         assert(this.taskController_),
@@ -1444,6 +1444,16 @@ export class FileManager extends EventTarget {
       }
     }
 
+    // If the resolved directory to be changed is blocked by DLP, we should
+    // fallback to the default display root.
+    if (nextCurrentDirEntry && util.isDlpEnabled()) {
+      const volumeInfo = this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
+      if (volumeInfo && this.volumeManager_.isDisabled(volumeInfo.volumeType)) {
+        console.warn('Target directory is DLP blocked, redirecting to MyFiles');
+        nextCurrentDirEntry = null;
+      }
+    }
+
     // If the directory to be changed to is still not resolved, then fallback to
     // the default display root.
     if (!nextCurrentDirEntry) {
@@ -1681,7 +1691,7 @@ export class FileManager extends EventTarget {
       if (!this.fakeTrashItem_) {
         this.fakeTrashItem_ = new NavigationModelFakeItem(
             str('TRASH_ROOT_LABEL'), NavigationModelItemType.TRASH,
-            new TrashRootEntry(this.volumeManager_));
+            new TrashRootEntry());
       }
       this.directoryTree.dataModel.fakeTrashItem = this.fakeTrashItem_;
       return;

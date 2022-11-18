@@ -116,6 +116,7 @@
 #include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
@@ -127,6 +128,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
@@ -809,11 +811,6 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   document_ = init.CreateDocument();
   document_->Initialize();
 
-  // If early body loading is turned on, UpdateDocument() will be called right
-  // after the body starts loading.
-  if (!base::FeatureList::IsEnabled(features::kEarlyBodyLoad))
-    GetScriptController().UpdateDocument();
-
   document_->GetViewportData().UpdateViewportDescription();
 
   auto* frame_scheduler = GetFrame()->GetFrameScheduler();
@@ -919,14 +916,38 @@ void LocalDOMWindow::DispatchPagehideEvent(
 
 void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
                                             const String& new_url) {
+  DCHECK(GetFrame());
+  if (GetFrame()->IsMainFrame()) {
+    auto* script_state = ToScriptStateForMainWorld(GetFrame());
+    DCHECK(script_state);
+    SoftNavigationHeuristics* heuristics =
+        SoftNavigationHeuristics::From(*this);
+    heuristics->SawURLChange(script_state, new_url);
+  }
   // https://html.spec.whatwg.org/C/#history-traversal
   EnqueueWindowEvent(*HashChangeEvent::Create(old_url, new_url),
                      TaskType::kDOMManipulation);
 }
 
 void LocalDOMWindow::DispatchPopstateEvent(
-    scoped_refptr<SerializedScriptValue> state_object) {
+    scoped_refptr<SerializedScriptValue> state_object,
+    absl::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   DCHECK(GetFrame());
+  // This unique_ptr maintains the TaskScope alive for the lifetime of the
+  // method.
+  std::unique_ptr<scheduler::TaskAttributionTracker::TaskScope>
+      task_attribution_scope;
+  if (soft_navigation_heuristics_task_id) {
+    ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
+    DCHECK(ThreadScheduler::Current());
+    auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+    if (script_state && tracker) {
+      task_attribution_scope = tracker->CreateTaskScope(
+          script_state, soft_navigation_heuristics_task_id,
+          scheduler::TaskAttributionTracker::TaskScopeType::kPopState);
+    }
+  }
   DispatchEvent(*PopStateEvent::Create(std::move(state_object), history()));
 }
 
@@ -1122,6 +1143,12 @@ Navigator* LocalDOMWindow::navigator() {
   return navigator_.Get();
 }
 
+NavigationApi* LocalDOMWindow::navigation() {
+  if (!navigation_)
+    navigation_ = MakeGarbageCollected<NavigationApi>(this);
+  return navigation_.Get();
+}
+
 void LocalDOMWindow::SchedulePostMessage(PostedMessage* posted_message) {
   LocalDOMWindow* source = posted_message->source;
 
@@ -1290,11 +1317,7 @@ Element* LocalDOMWindow::frameElement() const {
   if (!GetFrame())
     return nullptr;
 
-  FrameOwner* owner = GetFrame()->Owner();
-  if (owner && owner->GetFramePolicy().is_fenced)
-    return nullptr;
-
-  return DynamicTo<HTMLFrameOwnerElement>(owner);
+  return DynamicTo<HTMLFrameOwnerElement>(GetFrame()->Owner());
 }
 
 void LocalDOMWindow::print(ScriptState* script_state) {
@@ -2318,6 +2341,7 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   visitor->Trace(media_);
   visitor->Trace(custom_elements_);
   visitor->Trace(external_);
+  visitor->Trace(navigation_);
   visitor->Trace(visualViewport_);
   visitor->Trace(event_listener_observers_);
   visitor->Trace(current_event_);

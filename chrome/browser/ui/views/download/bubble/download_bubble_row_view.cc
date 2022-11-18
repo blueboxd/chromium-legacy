@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
+#include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/download/drag_download_item.h"
@@ -556,6 +557,9 @@ void DownloadBubbleRowView::Layout() {
 
 void DownloadBubbleRowView::OnMainButtonPressed() {
   if (ui_info_.has_subpage) {
+    DownloadItemWarningData::AddWarningActionEvent(
+        model_->GetDownloadItem(), DownloadItemWarningData::BUBBLE_MAINPAGE,
+        DownloadItemWarningData::OPEN_SUBPAGE);
     navigation_handler_->OpenSecurityDialog(this);
   } else {
     RecordDownloadOpenButtonPressed(model_->IsDone());
@@ -653,6 +657,11 @@ void DownloadBubbleRowView::RecordMetricsOnUpdate() {
 }
 
 void DownloadBubbleRowView::RecordDownloadDisplayed() {
+  if (model_->IsDangerous()) {
+    DownloadItemWarningData::AddWarningActionEvent(
+        model_->GetDownloadItem(), DownloadItemWarningData::BUBBLE_MAINPAGE,
+        DownloadItemWarningData::SHOWN);
+  }
   if (!model_->GetEphemeralWarningUiShownTime().has_value() &&
       model_->IsEphemeralWarning()) {
     model_->SetEphemeralWarningUiShownTime(base::Time::Now());
@@ -697,7 +706,7 @@ views::MdTextButton* DownloadBubbleRowView::AddMainPageButton(
           base::BindRepeating(
               &DownloadBubbleUIController::ProcessDownloadButtonPress,
               base::Unretained(bubble_controller_),
-              base::Unretained(model_.get()), command),
+              base::Unretained(model_.get()), command, /*is_main_view=*/true),
           button_string));
   button->SetMaxSize(gfx::Size(0, kDownloadButtonHeight));
   button->SetProperty(views::kMarginsKey, kRowInterElementPadding);
@@ -711,7 +720,7 @@ views::ImageButton* DownloadBubbleRowView::AddQuickAction(
       views::CreateVectorImageButton(base::BindRepeating(
           &DownloadBubbleUIController::ProcessDownloadButtonPress,
           base::Unretained(bubble_controller_), base::Unretained(model_.get()),
-          command)));
+          command, /*is_main_view=*/true)));
   InstallCircleHighlightPathGenerator(quick_action);
   quick_action->SetBorder(
       views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ICON)));

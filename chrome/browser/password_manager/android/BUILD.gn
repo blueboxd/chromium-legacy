@@ -70,7 +70,6 @@ source_set("backend") {
   deps = [
     ":jni_headers",
     "//components/autofill/core/browser:browser",
-    "//components/crash/core/common:crash_key",
     "//components/password_manager/core/browser:browser",
     "//components/password_manager/core/browser:password_form",
     "//components/password_manager/core/browser:unified_password_manager_proto",
@@ -113,7 +112,6 @@ android_library("java") {
     "//components/sync/protocol:protocol_java",
     "//components/user_prefs/android:java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:guava_android_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
@@ -224,7 +222,6 @@ robolectric_binary("password_manager_junit_tests") {
     "//components/sync/android:sync_java",
     "//components/sync/protocol:protocol_java",
     "//components/user_prefs/android:java",
-    "//third_party/android_deps:guava_android_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
@@ -350,7 +347,6 @@ android_library("test_support_java") {
     "//components/password_manager/core/browser:unified_password_manager_proto_java",
     "//components/sync/protocol:protocol_java",
     "//content/public/android:content_main_dex_java",
-    "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 

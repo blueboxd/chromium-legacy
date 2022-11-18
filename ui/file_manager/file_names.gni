@@ -35,7 +35,6 @@ static_js_files = [
   "file_manager/background/js/runtime_loaded_test_util.js",
   "file_manager/background/js/test_util.js",
   "file_manager/background/js/test_util_base.js",
-  "file_manager/background/js/trash.js",
   "file_manager/background/js/volume_info_impl.js",
   "file_manager/background/js/volume_info_list_impl.js",
   "file_manager/background/js/volume_manager_factory.js",
@@ -65,7 +64,6 @@ static_js_files = [
   "file_manager/common/js/recent_date_bucket.js",
   "file_manager/common/js/storage_adapter.js",
   "file_manager/common/js/test_error_reporting.js",
-  "file_manager/common/js/trash.js",
   "file_manager/common/js/ui.js",
   "file_manager/common/js/unittest_util.js",
   "file_manager/common/js/url_constants.js",
@@ -227,7 +225,6 @@ static_js_files = [
   "file_manager/foreground/js/ui/position_util.js",
   "file_manager/foreground/js/ui/progress_center_panel.js",
   "file_manager/foreground/js/ui/providers_menu.js",
-  "file_manager/foreground/js/ui/search_box.js",
   "file_manager/foreground/js/ui/splitter.js",
   "file_manager/foreground/js/ui/table/table.js",
   "file_manager/foreground/js/ui/table/table_column.js",
@@ -244,6 +241,8 @@ ts_files = [
   # Common.
   "file_manager/common/js/dom_utils.ts",
   "file_manager/common/js/tslib_shim.ts",
+  "file_manager/common/js/trash.ts",
+  "file_manager/common/js/entry_utils.ts",
 
   # Lib.
   "file_manager/lib/actions_producer.ts",
@@ -262,6 +261,7 @@ ts_files = [
   # Containers.
   "file_manager/containers/breadcrumb_container.ts",
   "file_manager/containers/nudge_container.ts",
+  "file_manager/containers/search_container.ts",
 
   # Widgets.
   "file_manager/widgets/xf_base.ts",
@@ -269,7 +269,9 @@ ts_files = [
   "file_manager/widgets/xf_conflict_dialog.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.ts",
   "file_manager/widgets/xf_nudge.ts",
+  "file_manager/widgets/xf_search_options.ts",
   "file_manager/widgets/xf_select.ts",
+  "file_manager/foreground/js/ui/search_autocomplete_list.ts",
 
   # Foreground.
   "file_manager/foreground/js/file_tasks.ts",
@@ -286,6 +288,7 @@ ts_templates = [
   "file_manager/widgets/xf_conflict_dialog.html",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.html",
   "file_manager/widgets/xf_nudge.html",
+  "file_manager/widgets/xf_search_options.html",
   "file_manager/widgets/xf_select.html",
 ]
 
@@ -306,11 +309,13 @@ ts_test_files = [
   "file_manager/widgets/xf_conflict_dialog_unittest.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog_unittest.ts",
   "file_manager/widgets/xf_nudge_unittest.ts",
+  "file_manager/widgets/xf_search_options_unittest.ts",
   "file_manager/widgets/xf_select_unittest.ts",
 
   # Foreground:
   "file_manager/foreground/js/file_tasks_unittest.ts",
   "file_manager/foreground/js/task_controller_unittest.ts",
+  "file_manager/foreground/js/metadata/dlp_metadata_provider_unittest.ts",
 ]
 
 ts_generated_templates = []
@@ -330,13 +335,17 @@ generate_definitions_js_files = [
   "file_manager/externs/volume_info.js",
   "file_manager/externs/volume_info_list.js",
   "file_manager/externs/volume_manager.js",
+  "file_manager/externs/search_item.js",
 ]
 
 # d.ts. files that are manually created and checked-in in the repo.
 checked_in_dts_files = [
   "file_manager/definitions/file_error.d.ts",
   "file_manager/definitions/file_manager.d.ts",
+  "file_manager/foreground/js/ui/autocomplete_list.d.ts",
   "file_manager/foreground/js/ui/command.d.ts",
+  "file_manager/foreground/js/ui/list.d.ts",
+  "file_manager/foreground/js/ui/list_item.d.ts",
   "file_manager/foreground/js/ui/multi_menu_button.d.ts",
 ]
 
@@ -395,7 +404,6 @@ unittest_files = [
   "file_manager/background/js/drive_sync_handler_unittest.js",
   "file_manager/background/js/file_operation_handler_unittest.js",
   "file_manager/background/js/file_operation_manager_unittest.js",
-  "file_manager/background/js/trash_unittest.js",
   "file_manager/background/js/volume_manager_unittest.js",
   "file_manager/background/js/crostini_unittest.js",
 

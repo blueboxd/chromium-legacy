@@ -9,8 +9,6 @@ import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/request_priority.mojom";
 import "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom";
-import
-  "third_party/blink/public/mojom/mobile_metrics/mobile_friendliness.mojom";
 import "third_party/blink/public/mojom/use_counter/use_counter_feature.mojom";
 
 // TimeDeltas below relative to navigation start.
@@ -216,6 +214,16 @@ struct FrameMetadata {
   gfx.mojom.Rect? main_frame_viewport_rect;
 };
 
+struct SubresourceLoadMetrics {
+  // Number of subresources loads for the frame.
+  // Note that this include subresources where a service worker responded.
+  uint32 number_of_subresources_loaded;
+
+  // Number of subresources loads that is responded by the service worker.
+  // i.e. `respondWith` was called.
+  uint32 number_of_subresource_loads_handled_by_service_worker;
+};
+
 // Enumeration of distinct cache types.
 enum CacheType {
   kNotCached, // Resource came from network.
@@ -370,6 +378,8 @@ interface PageLoadMetrics {
   // UpdateTiming calls are buffered, and contain all updates that have been
   // received in the last buffer window. Some of the update data may be empty.
   // Only called when at least one change has been observed within the frame.
+  // Note that counts in `subresource_load_metrics` are cumulative and not a
+  // delta.
   UpdateTiming(PageLoadTiming page_load_timing,
                FrameMetadata frame_metadata,
                // `new_features` will not contain any previously seen values.
@@ -378,7 +388,7 @@ interface PageLoadMetrics {
                FrameRenderDataUpdate render_data,
                CpuTiming cpu_load_timing,
                InputTiming input_timing_delta,
-               blink.mojom.MobileFriendliness? mobile_friendliness,
+               SubresourceLoadMetrics? subresource_load_metrics,
                uint32 soft_navigation_count);
 
   // Set up a shared memory used to transfer smoothness data from the renderer

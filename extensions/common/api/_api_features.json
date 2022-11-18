@@ -346,6 +346,7 @@
       "chrome://history/*",
       "chrome://new-tab-page/*",
       "chrome://os-settings/*",
+      "chrome://password-manager/*",
       "chrome://personalization/*",
       "chrome://profile-picker/*",
       "chrome://read-later.top-chrome/*",
@@ -563,6 +564,13 @@
       "content_script"
     ]
   },
+  "runtime.onConnectExternal": {
+    "contexts": [
+      "blessed_extension",
+      "lock_screen_extension",
+      "offscreen_extension"
+    ]
+  },
   "runtime.onConnectNative": {
     "dependencies": ["permission:nativeMessaging"],
     "contexts": ["blessed_extension"]
@@ -574,6 +582,13 @@
       "offscreen_extension",
       "unblessed_extension",
       "content_script"
+    ]
+  },
+  "runtime.onMessageExternal": {
+    "contexts": [
+      "blessed_extension",
+      "lock_screen_extension",
+      "offscreen_extension"
     ]
   },
   "runtime.sendMessage": [{

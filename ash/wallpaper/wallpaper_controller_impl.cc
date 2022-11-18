@@ -904,11 +904,13 @@ bool WallpaperControllerImpl::ShouldApplyShield() const {
     needs_shield = true;
   }
 
-  return needs_shield && !IsOneShotWallpaper();
+  return needs_shield &&
+         (!IsOneShotWallpaper() || allow_blur_or_shield_for_testing_);
 }
 
 bool WallpaperControllerImpl::IsBlurAllowedForLockState() const {
-  return !IsDevicePolicyWallpaper() && !IsOneShotWallpaper();
+  return !IsDevicePolicyWallpaper() &&
+         (!IsOneShotWallpaper() || allow_blur_or_shield_for_testing_);
 }
 
 bool WallpaperControllerImpl::SetUserWallpaperInfo(const AccountId& account_id,
@@ -1221,14 +1223,17 @@ void WallpaperControllerImpl::SetGooglePhotosDailyRefreshAlbumId(
     info.type = WallpaperType::kOnceGooglePhotos;
   }
   SetUserWallpaperInfo(account_id, info);
+  StartDailyRefreshTimer();
 }
 
 std::string WallpaperControllerImpl::GetGooglePhotosDailyRefreshAlbumId(
     const AccountId& account_id) const {
-  absl::optional<WallpaperInfo> info = GetActiveUserWallpaperInfo();
-  if (!info || info->type != WallpaperType::kDailyGooglePhotos)
+  WallpaperInfo info;
+  if (!GetUserWallpaperInfo(account_id, &info))
     return std::string();
-  return info->collection_id;
+  if (info.type != WallpaperType::kDailyGooglePhotos)
+    return std::string();
+  return info.collection_id;
 }
 
 bool WallpaperControllerImpl::SetDailyGooglePhotosWallpaperIdCache(
@@ -3011,6 +3016,7 @@ void WallpaperControllerImpl::SetDailyRefreshCollectionId(
     info.type = WallpaperType::kOnline;
   }
   SetUserWallpaperInfo(account_id, info);
+  StartDailyRefreshTimer();
 }
 
 std::string WallpaperControllerImpl::GetDailyRefreshCollectionId(

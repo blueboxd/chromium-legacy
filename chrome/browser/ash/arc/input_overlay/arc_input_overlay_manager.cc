@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/session/connection_holder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -15,7 +17,11 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/scoped_blocking_call.h"
+#include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/input_overlay/input_overlay_resources_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
@@ -25,7 +31,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/manager/display_manager.h"
 
-namespace arc {
+namespace arc::input_overlay {
 namespace {
 
 // Singleton factory for ArcInputOverlayManager.
@@ -95,7 +101,7 @@ ArcInputOverlayManager* ArcInputOverlayManager::GetForBrowserContext(
 
 ArcInputOverlayManager::ArcInputOverlayManager(
     content::BrowserContext* browser_context,
-    ArcBridgeService* arc_bridge_service)
+    ::arc::ArcBridgeService* arc_bridge_service)
     : input_method_observer_(std::make_unique<InputMethodObserver>(this)) {
   if (aura::Env::HasInstance())
     env_observation_.Observe(aura::Env::GetInstance());
@@ -119,16 +125,17 @@ ArcInputOverlayManager::ArcInputOverlayManager(
   // For test. The unittest is based on ExoTestBase which must run on
   // Chrome_UIThread. While TestingProfileManager::CreateTestingProfile runs on
   // MainThread.
-  if (browser_context)
-    data_controller_ = std::make_unique<input_overlay::DataController>(
-        *browser_context, task_runner_);
+  if (browser_context) {
+    data_controller_ =
+        std::make_unique<DataController>(*browser_context, task_runner_);
+  }
 }
 
 ArcInputOverlayManager::~ArcInputOverlayManager() = default;
 
 void ArcInputOverlayManager::ReadData(const std::string& package_name,
                                       aura::Window* top_level_window) {
-  auto touch_injector = std::make_unique<input_overlay::TouchInjector>(
+  auto touch_injector = std::make_unique<TouchInjector>(
       top_level_window,
       base::BindRepeating(&ArcInputOverlayManager::OnSaveProtoFile,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -138,55 +145,97 @@ void ArcInputOverlayManager::ReadData(const std::string& package_name,
       FROM_HERE,
       base::BindOnce(&ArcInputOverlayManager::ReadDefaultData, Unretained(this),
                      package_name, std::move(touch_injector)),
-      base::BindOnce(&ArcInputOverlayManager::ReadCustomizedData,
+      base::BindOnce(&ArcInputOverlayManager::OnFinishReadDefaultData,
                      Unretained(this), package_name));
 }
 
-std::unique_ptr<input_overlay::TouchInjector>
-ArcInputOverlayManager::ReadDefaultData(
+std::unique_ptr<TouchInjector> ArcInputOverlayManager::ReadDefaultData(
     const std::string& package_name,
-    std::unique_ptr<input_overlay::TouchInjector> touch_injector) {
+    std::unique_ptr<TouchInjector> touch_injector) {
   DCHECK(touch_injector);
 
   auto resource_id = GetInputOverlayResourceId(package_name);
-  if (!resource_id) {
-    ResetForPendingTouchInjector(std::move(touch_injector));
-    return nullptr;
-  }
+  if (!resource_id)
+    return touch_injector;
+
   auto json_file = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
       resource_id.value());
   if (json_file.empty()) {
     LOG(WARNING) << "No content for: " << package_name;
-    ResetForPendingTouchInjector(std::move(touch_injector));
-    return nullptr;
+    return touch_injector;
   }
   auto result = base::JSONReader::ReadAndReturnValueWithError(json_file);
   DCHECK(result.has_value())
       << "Could not load input overlay data file: " << result.error().message;
-  if (!result.has_value()) {
-    ResetForPendingTouchInjector(std::move(touch_injector));
-    return nullptr;
-  }
+  if (!result.has_value())
+    return touch_injector;
 
   touch_injector->ParseActions(*result);
   return touch_injector;
 }
 
-void ArcInputOverlayManager::ReadCustomizedData(
+void ArcInputOverlayManager::OnFinishReadDefaultData(
     const std::string& package_name,
-    std::unique_ptr<input_overlay::TouchInjector> touch_injector) {
-  if (!touch_injector)
-    return;
+    std::unique_ptr<TouchInjector> touch_injector) {
+  DCHECK(touch_injector);
 
-  task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&ArcInputOverlayManager::GetProto, Unretained(this),
-                     package_name),
-      base::BindOnce(&ArcInputOverlayManager::OnProtoDataAvailable,
-                     Unretained(this), std::move(touch_injector)));
+  if (touch_injector->actions().empty()) {
+    if (!beta_) {
+      ResetForPendingTouchInjector(std::move(touch_injector));
+      return;
+    }
+
+    // ARC is only allowed for the primary user.
+    auto* profile = ProfileManager::GetPrimaryUserProfile();
+    DCHECK(arc::IsArcAllowedForProfile(profile));
+    connection_ = ArcAppListPrefs::Get(profile)->app_connection_holder();
+    if (!connection_) {
+      LOG(ERROR) << "Unable to get access to GetAppCategory for nullptr "
+                    "|connection_|.";
+      return;
+    }
+    auto* app_instance =
+        ARC_GET_INSTANCE_FOR_METHOD(connection_, GetAppCategory);
+    if (!app_instance) {
+      LOG(ERROR) << "GetTaskInfo method for ARC is not available";
+      return;
+    }
+    VLOG(2) << "Fetch app category of package: " << package_name;
+    app_instance->GetAppCategory(
+        package_name,
+        base::BindOnce(&ArcInputOverlayManager::OnReceiveAppCategory,
+                       Unretained(this), std::move(touch_injector)));
+  } else {
+    task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&ArcInputOverlayManager::GetProto, Unretained(this),
+                       package_name),
+        base::BindOnce(&ArcInputOverlayManager::OnProtoDataAvailable,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(touch_injector)));
+  }
 }
 
-std::unique_ptr<input_overlay::AppDataProto> ArcInputOverlayManager::GetProto(
+void ArcInputOverlayManager::OnReceiveAppCategory(
+    std::unique_ptr<TouchInjector> touch_injector,
+    arc::mojom::AppCategory category) {
+  VLOG(2) << "ARC app category is: " << category;
+  if (category != arc::mojom::AppCategory::kGame) {
+    ResetForPendingTouchInjector(std::move(touch_injector));
+    return;
+  }
+
+  auto* window = touch_injector->window();
+  DCHECK(window);
+  if (!loading_data_windows_.contains(window) || window->is_destroying())
+    return;
+
+  input_overlay_enabled_windows_.emplace(window, std::move(touch_injector));
+  loading_data_windows_.erase(window);
+  RegisterFocusedWindow();
+}
+
+std::unique_ptr<AppDataProto> ArcInputOverlayManager::GetProto(
     const std::string& package_name) {
   // |data_controller_| is null for test.
   return data_controller_ ? data_controller_->ReadProtoFromFile(package_name)
@@ -194,8 +243,8 @@ std::unique_ptr<input_overlay::AppDataProto> ArcInputOverlayManager::GetProto(
 }
 
 void ArcInputOverlayManager::OnProtoDataAvailable(
-    std::unique_ptr<input_overlay::TouchInjector> touch_injector,
-    std::unique_ptr<input_overlay::AppDataProto> proto) {
+    std::unique_ptr<TouchInjector> touch_injector,
+    std::unique_ptr<AppDataProto> proto) {
   DCHECK(touch_injector);
 
   if (proto) {
@@ -221,7 +270,7 @@ void ArcInputOverlayManager::OnProtoDataAvailable(
 }
 
 void ArcInputOverlayManager::OnSaveProtoFile(
-    std::unique_ptr<input_overlay::AppDataProto> proto,
+    std::unique_ptr<AppDataProto> proto,
     const std::string& package_name) {
   task_runner_->PostTask(
       FROM_HERE,
@@ -229,9 +278,8 @@ void ArcInputOverlayManager::OnSaveProtoFile(
                      std::move(proto), package_name));
 }
 
-void ArcInputOverlayManager::SaveFile(
-    std::unique_ptr<input_overlay::AppDataProto> proto,
-    const std::string& package_name) {
+void ArcInputOverlayManager::SaveFile(std::unique_ptr<AppDataProto> proto,
+                                      const std::string& package_name) {
   if (data_controller_)
     data_controller_->WriteProtoToFile(std::move(proto), package_name);
 }
@@ -313,16 +361,15 @@ void ArcInputOverlayManager::RegisterFocusedWindow() {
 }
 
 void ArcInputOverlayManager::AddDisplayOverlayController(
-    input_overlay::TouchInjector* touch_injector) {
+    TouchInjector* touch_injector) {
   DCHECK(registered_top_level_window_);
   DCHECK(touch_injector);
   if (!registered_top_level_window_ || !touch_injector)
     return;
   DCHECK(!display_overlay_controller_);
 
-  display_overlay_controller_ =
-      std::make_unique<input_overlay::DisplayOverlayController>(
-          touch_injector, touch_injector->first_launch());
+  display_overlay_controller_ = std::make_unique<DisplayOverlayController>(
+      touch_injector, touch_injector->first_launch());
 }
 
 void ArcInputOverlayManager::RemoveDisplayOverlayController() {
@@ -473,9 +520,9 @@ void ArcInputOverlayManager::OnDisplayMetricsChanged(
 }
 
 void ArcInputOverlayManager::ResetForPendingTouchInjector(
-    std::unique_ptr<input_overlay::TouchInjector> touch_injector) {
+    std::unique_ptr<TouchInjector> touch_injector) {
   loading_data_windows_.erase(touch_injector->window());
   touch_injector.reset();
 }
 
-}  // namespace arc
+}  // namespace arc::input_overlay

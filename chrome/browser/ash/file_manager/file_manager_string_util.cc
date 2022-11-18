@@ -1056,8 +1056,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("FILES_SINGLE_PARTITION_FORMAT_ENABLED",
             base::FeatureList::IsEnabled(
                 chromeos::features::kFilesSinglePartitionFormat));
-  dict->Set("EXTRACT_ARCHIVE", base::FeatureList::IsEnabled(
-                                   chromeos::features::kFilesExtractArchive));
   dict->Set(
       "FILES_APP_EXPERIMENTAL",
       base::FeatureList::IsEnabled(chromeos::features::kFilesAppExperimental));
@@ -1071,8 +1069,9 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("INLINE_SYNC_STATUS",
             chromeos::features::IsInlineSyncStatusEnabled());
 
-  dict->Set("GUEST_OS",
-            base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles));
+  dict->Set("GUEST_OS", true);
+
+  dict->Set("JELLY", base::FeatureList::IsEnabled(chromeos::features::kJelly));
 
   if (base::FeatureList::IsEnabled(features::kDataLeakPreventionPolicy) &&
       base::FeatureList::IsEnabled(

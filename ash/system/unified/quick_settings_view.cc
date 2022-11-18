@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
+#include "ash/system/unified/feature_tile.h"
 #include "ash/system/unified/feature_tiles_container_view.h"
 #include "ash/system/unified/page_indicator_view.h"
 #include "ash/system/unified/quick_settings_footer.h"
@@ -163,6 +164,11 @@ void QuickSettingsView::SetMaxHeight(int max_height) {
       CalculateHeightForFeatureTilesContainer());
 }
 
+void QuickSettingsView::AddTiles(
+    std::vector<std::unique_ptr<FeatureTile>> tiles) {
+  feature_tiles_container_->AddTiles(std::move(tiles));
+}
+
 void QuickSettingsView::AddSliderView(views::View* slider_view) {
   sliders_container_->AddChildView(slider_view);
 }
@@ -186,9 +192,10 @@ void QuickSettingsView::ShowMediaControls() {
     PreferredSizeChanged();
 }
 
-void QuickSettingsView::SetDetailedView(views::View* detailed_view) {
+void QuickSettingsView::SetDetailedView(
+    std::unique_ptr<views::View> detailed_view) {
   detailed_view_container_->RemoveAllChildViews();
-  detailed_view_container_->AddChildView(detailed_view);
+  detailed_view_container_->AddChildView(std::move(detailed_view));
   system_tray_container_->SetVisible(false);
   detailed_view_container_->SetVisible(true);
 

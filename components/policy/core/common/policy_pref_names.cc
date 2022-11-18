@@ -80,11 +80,6 @@ const char kIntensiveWakeUpThrottlingEnabled[] =
     "policy.intensive_wake_up_throttling_enabled";
 
 // Boolean policy preference for force enabling or disabling the
-// SetTimeoutWithoutClamp web feature.
-const char kSetTimeoutWithout1MsClampEnabled[] =
-    "policy.set_timeout_without_1ms_clamp";
-
-// Boolean policy preference for force enabling or disabling the
 // MaxUnthrottledTimeoutNestingLevel web feature.
 const char kUnthrottledNestedTimeoutEnabled[] =
     "policy.unthrottled_nested_timeout";
@@ -120,6 +115,16 @@ const char kUserPolicyNotificationWasShown[] =
 // should eventually be disabled and removed.
 // https://chromestatus.com/feature/5726124632965120
 const char kEventPathEnabled[] = "policy.event_path_enabled";
+
+// A boolean indicating whether the newly specified behavior for
+// Element.offsetParent is in effect.
+const char kOffsetParentNewSpecBehaviorEnabled[] =
+    "policy.offset_parent_new_spec_behavior_enabled";
+
+// A boolean indicating whether the new behavior for event dispatching on
+// disabled form controls is in effect.
+const char kSendMouseEventsDisabledFormControlsEnabled[] =
+    "policy.send_mouse_events_disabled_form_controls_enabled";
 
 }  // namespace policy_prefs
 }  // namespace policy

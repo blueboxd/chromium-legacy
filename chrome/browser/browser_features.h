@@ -55,6 +55,10 @@ BASE_DECLARE_FEATURE(kSandboxExternalProtocolBlocked);
 BASE_DECLARE_FEATURE(kSandboxExternalProtocolBlockedWarning);
 BASE_DECLARE_FEATURE(kTriggerNetworkDataMigration);
 
+#if BUILDFLAG(IS_CHROMEOS)
+BASE_DECLARE_FEATURE(kTabCaptureBlueBorderCrOS);
+#endif
+
 BASE_DECLARE_FEATURE(kWebUsbDeviceDetection);
 
 #if BUILDFLAG(IS_ANDROID)
@@ -75,6 +79,8 @@ BASE_DECLARE_FEATURE(kAppBoundEncryptionMetrics);
 #endif
 
 BASE_DECLARE_FEATURE(kFlexOrgManagementDisclosure);
+
+BASE_DECLARE_FEATURE(kFedCmWithoutThirdPartyCookies);
 
 }  // namespace features
 

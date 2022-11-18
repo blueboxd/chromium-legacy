@@ -27,7 +27,6 @@ import org.chromium.base.CallbackController;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneShotCallback;
@@ -177,6 +176,7 @@ import org.chromium.url.GURL;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /**
@@ -1501,10 +1501,9 @@ public class RootUiCoordinator
     }
 
     private void initDirectActionInitializer() {
-        mDirectActionInitializer = new DirectActionInitializer(mActivity, mActivityType,
+        mDirectActionInitializer = new DirectActionInitializer(mActivityType,
                 mMenuOrKeyboardActionController, mActivity::onBackPressed,
-                mTabModelSelectorSupplier.get(), mFindToolbarManager, getBottomSheetController(),
-                mBrowserControlsManager, mCompositorViewHolderSupplier.get(), mActivityTabProvider);
+                mTabModelSelectorSupplier.get(), mFindToolbarManager);
         mActivityLifecycleDispatcher.register(mDirectActionInitializer);
     }
 

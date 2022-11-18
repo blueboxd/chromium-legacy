@@ -184,7 +184,8 @@ void ChipController::InitializePermissionPrompt(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ChipController::InitializePermissionPrompt,
-                       weak_factory_.GetWeakPtr(), web_contents, delegate,
+                       weak_factory_.GetWeakPtr(), web_contents,
+                       base::UnsafeDanglingUntriaged(delegate),
                        std::move(callback)),
         collapse_timer_.GetCurrentDelay());
     return;
@@ -314,7 +315,7 @@ void ChipController::ShowPageInfoDialog() {
     return;
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  if (!entry || entry->IsInitialEntry())
+  if (entry->IsInitialEntry())
     return;
 
   // prevent chip from collapsing while prompt bubble is open

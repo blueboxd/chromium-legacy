@@ -20,6 +20,7 @@
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
@@ -48,6 +49,7 @@ namespace content {
 
 namespace {
 
+using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceRegistrationError;
 
 using AttributionFilters = ::attribution_reporting::Filters;
@@ -382,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
 
   manager()->NotifySourceRegistrationFailure(
-      "!", url::Origin::Create(GURL("https://a.test")),
+      "!", *SuitableOrigin::Deserialize("https://a.test"),
       SourceRegistrationError::kInvalidJson);
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
@@ -1017,13 +1019,13 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   const base::Time now = base::Time::Now();
 
   const AttributionTrigger trigger(
-      *attribution_reporting::TriggerRegistration::Create(
-          url::Origin::Create(GURL("https://r.test")),
+      attribution_reporting::TriggerRegistration(
+          *SuitableOrigin::Deserialize("https://r.test"),
           /*filters=*/*AttributionFilters::Create({{"a", {"b"}}}),
           /*not_filters=*/*AttributionFilters::Create({{"g", {"h"}}}),
           /*debug_key=*/1,
           /*aggregatable_dedup_key=*/18,
-          {
+          *attribution_reporting::EventTriggerDataList::Create({
               attribution_reporting::EventTriggerData(
                   /*data=*/2,
                   /*priority=*/3,
@@ -1038,24 +1040,25 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                   /*filters=*/AttributionFilters(),
                   /*not_filters=*/
                   *AttributionFilters::Create({{"e", {"f"}}})),
-          },
-          {*attribution_reporting::AggregatableTriggerData::Create(
-               /*key_piece=*/345,
-               /*source_keys=*/{"a"},
-               /*filters=*/
-               *AttributionFilters::Create({{"c", {"d"}}}),
-               /*not_filters=*/AttributionFilters()),
-           *attribution_reporting::AggregatableTriggerData::Create(
-               /*key_piece=*/678,
-               /*source_keys=*/{"b"},
-               /*filters=*/AttributionFilters(),
-               /*not_filters=*/
-               *AttributionFilters::Create({{"e", {"f"}}}))},
+          }),
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              {*attribution_reporting::AggregatableTriggerData::Create(
+                   /*key_piece=*/345,
+                   /*source_keys=*/{"a"},
+                   /*filters=*/
+                   *AttributionFilters::Create({{"c", {"d"}}}),
+                   /*not_filters=*/AttributionFilters()),
+               *attribution_reporting::AggregatableTriggerData::Create(
+                   /*key_piece=*/678,
+                   /*source_keys=*/{"b"},
+                   /*filters=*/AttributionFilters(),
+                   /*not_filters=*/
+                   *AttributionFilters::Create({{"e", {"f"}}}))}),
           /*aggregatable_values=*/
           *attribution_reporting::AggregatableValues::Create(
               {{"a", 123}, {"b", 456}}),
           /*debug_reporting=*/false),
-      url::Origin::Create(GURL("https://d.test")),
+      *SuitableOrigin::Deserialize("https://d.test"),
       /*is_within_fenced_frame=*/false);
 
   static constexpr char kWantEventTriggerJSON[] =

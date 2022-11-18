@@ -65,23 +65,38 @@ void PowerBookmarkService::GetPowerOverviewsForType(
 
 void PowerBookmarkService::CreatePower(std::unique_ptr<Power> power,
                                        SuccessCallback callback) {
+  // Accept existing guids if they're explicitly set.
+  if (!power->guid().is_valid())
+    power->set_guid(base::GUID::GenerateRandomV4());
+  base::Time now = base::Time::Now();
+  if (power->time_added().is_null())
+    power->set_time_added(now);
+  if (power->time_modified().is_null())
+    power->set_time_modified(now);
   backend_.AsyncCall(&PowerBookmarkBackend::CreatePower)
       .WithArgs(std::move(power))
-      .Then(std::move(callback));
+      .Then(base::BindOnce(&PowerBookmarkService::NotifyPowersChanged,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(callback)));
 }
 
 void PowerBookmarkService::UpdatePower(std::unique_ptr<Power> power,
                                        SuccessCallback callback) {
+  power->set_time_modified(base::Time::Now());
   backend_.AsyncCall(&PowerBookmarkBackend::UpdatePower)
       .WithArgs(std::move(power))
-      .Then(std::move(callback));
+      .Then(base::BindOnce(&PowerBookmarkService::NotifyPowersChanged,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(callback)));
 }
 
 void PowerBookmarkService::DeletePower(const base::GUID& guid,
                                        SuccessCallback callback) {
   backend_.AsyncCall(&PowerBookmarkBackend::DeletePower)
       .WithArgs(guid)
-      .Then(std::move(callback));
+      .Then(base::BindOnce(&PowerBookmarkService::NotifyPowersChanged,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(callback)));
 }
 
 void PowerBookmarkService::DeletePowersForURL(const GURL& url,
@@ -89,7 +104,30 @@ void PowerBookmarkService::DeletePowersForURL(const GURL& url,
                                               SuccessCallback callback) {
   backend_.AsyncCall(&PowerBookmarkBackend::DeletePowersForURL)
       .WithArgs(url, power_type)
-      .Then(std::move(callback));
+      .Then(base::BindOnce(&PowerBookmarkService::NotifyPowersChanged,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(callback)));
+}
+
+void PowerBookmarkService::NotifyPowersChanged(SuccessCallback callback,
+                                               bool success) {
+  std::move(callback).Run(success);
+
+  // If the create/update/delete call wasn't successful, then there was no
+  // functional change to the backend. In this case, skip notifying observers.
+  if (!success)
+    return;
+
+  for (auto& observer : observers_)
+    observer.OnPowersChanged();
+}
+
+void PowerBookmarkService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PowerBookmarkService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void PowerBookmarkService::AddDataProvider(

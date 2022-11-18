@@ -74,7 +74,6 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
        IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
       {"shoppingListUntrackPriceButtonDescription",
        IDS_PRICE_TRACKING_UNTRACK_PRODUCT_ACCESSIBILITY},
-      {"folderSort", IDS_BOOKMARKS_FOLDER_SORT},
       {"sortByType", IDS_BOOKMARKS_SORT_BY_TYPE},
       {"allBookmarks", IDS_BOOKMARKS_ALL_BOOKMARKS},
       {"priceTrackingLabel", IDS_BOOKMARKS_LABEL_TRACKED_PRODUCTS},
@@ -82,7 +81,14 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       {"sortOldest", IDS_BOOKMARKS_SORT_OLDEST},
       {"sortAlphabetically", IDS_BOOKMARKS_SORT_ALPHABETICALLY},
       {"sortReverseAlphabetically", IDS_BOOKMARKS_SORT_REVERSE_ALPHABETICALLY},
+      {"visualView", IDS_BOOKMARKS_VISUAL_VIEW},
+      {"compactView", IDS_BOOKMARKS_COMPACT_VIEW},
       {"sortMenuA11yLabel", IDS_BOOKMARKS_SORT_MENU_A11Y_LABEL},
+      {"createNewFolderA11yLabel", IDS_BOOKMARKS_CREATE_NEW_FOLDER_A11Y_LABEL},
+      {"editBookmarkListA11yLabel",
+       IDS_BOOKMARKS_EDIT_BOOKMARK_LIST_A11Y_LABEL},
+      {"emptyTitle", IDS_BOOKMARKS_EMPTY_STATE_TITLE},
+      {"emptyBody", IDS_BOOKMARKS_EMPTY_STATE_BODY},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -126,6 +132,7 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(
       source, base::make_span(kSidePanelResources, kSidePanelResourcesSize),
       resource);
+  webui::EnableTrustedTypesCSP(source);
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 source);
   content::URLDataSource::Add(profile,

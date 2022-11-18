@@ -74,10 +74,6 @@ extern uint32_t GetLoaderChunkSize();
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kCorsNonWildcardRequestHeadersSupport);
 
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kURLLoaderSyncClient);
-
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kFasterSetCookie);
-
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kBatchSimpleURLLoader);
 
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kNetworkServiceMemoryCache);
@@ -110,6 +106,15 @@ BASE_DECLARE_FEATURE(kOutOfProcessSystemDnsResolution);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant);
+
+// If enabled, then navigation requests should check the match responses in the
+// prefetch cache by using the No-Vary-Search rules if No-Vary-Search header
+// is specified in prefetched responses.
+// Feature Meta bug: crbug.com/1378072.
+// No-Vary-Search explainer:
+//   https://github.com/WICG/nav-speculation/blob/main/no-vary-search.md
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kPrefetchNoVarySearch);
 
 }  // namespace features
 }  // namespace network

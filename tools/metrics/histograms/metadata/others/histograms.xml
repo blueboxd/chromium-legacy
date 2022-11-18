@@ -187,7 +187,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="AccessCodeCast.Discovery.AddSinkResult.New"
-    enum="AccessCodeCastAddSinkResult" expires_after="2023-03-12">
+    enum="AccessCodeCastAddSinkResult" expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -210,7 +210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Discovery.CastModeOnSuccess"
-    enum="AccessCodeCastCastMode" expires_after="2023-03-12">
+    enum="AccessCodeCastCastMode" expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -232,7 +232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.AccessCodeInputTime" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -256,7 +256,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.CastAttemptLength" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -268,7 +268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.DialogCloseReason"
-    enum="AccessCodeCastDialogCloseReason" expires_after="2023-03-12">
+    enum="AccessCodeCastDialogCloseReason" expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -278,7 +278,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.DialogLoadTime" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -289,7 +289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.DialogOpenLocation"
-    enum="AccessCodeCastDialogOpenLocation" expires_after="2023-03-12">
+    enum="AccessCodeCastDialogOpenLocation" expires_after="2023-05-14">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -1889,67 +1889,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cast.Sender.CastTimeRemainingPercentage" units="%"
-    expires_after="2021-07-01">
-  <obsolete>
-    Deprecated as of 2021/02 as it's not been collected for a while due to
-    refactoring. A new metrics,
-    &quot;Cast.Sender.Clank.CastTimeRemainingPercentage&quot; now collects the
-    same data but at a different location.
-  </obsolete>
-  <owner>mfoltz@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Records the percentage of the video left at the time the remote playback is
-    stopped. This will be recorded when the playback is stopped by the user, or
-    when it's stopped by the cast device.
-  </summary>
-</histogram>
-
-<histogram name="Cast.Sender.Clank.CastTimeRemainingPercentage" units="count"
-    expires_after="2022-12-11">
-  <owner>muyaoxu@google.com</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Records the percentage of the video left at the time the remote playback is
-    stopped. This will be recorded when the playback is stopped by the user, or
-    when it's stopped by the cast device. To reduce the number of empty buckets,
-    the result is rounded and a value of 1 means 10%.
-  </summary>
-</histogram>
-
-<histogram name="Cast.Sender.Clank.FullscreenControlsAction"
-    enum="MediaCommand" expires_after="2023-02-19">
-  <owner>muyaoxu@google.com</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Record each interaction with the fullscreen remote playback controls on
-    Clank.
-  </summary>
-</histogram>
-
-<histogram name="Cast.Sender.Clank.NotificationControlsAction"
-    enum="CastNotificationControls" expires_after="2023-04-23">
-  <owner>muyaoxu@google.com</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Record each interaction with the cast notification controls on Clank.
-  </summary>
-</histogram>
-
-<histogram name="Cast.Sender.Clank.SessionTimeWithoutMediaElementPercentage"
-    units="count" expires_after="2022-12-11">
-  <owner>muyaoxu@google.com</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Records the ratio of the time the media element was detached from the remote
-    playback session to the total duration of the session (as from when the
-    element has been attached till when the session stopped or disconnected). To
-    reduce the number of empty buckets, the result is rounded and a value of 1
-    means 10%.
-  </summary>
-</histogram>
-
 <histogram name="Cast.Sender.DeviceType" enum="RemotePlaybackDeviceType"
     expires_after="2021-06-01">
   <obsolete>
@@ -2008,7 +1947,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cast.Sender.RemotePlayback.InitiationLocation"
-    enum="RemotePlaybackInitiationLocation" expires_after="2023-04-16">
+    enum="RemotePlaybackInitiationLocation" expires_after="2023-05-11">
   <owner>muyaoxu@google.com</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -3428,7 +3367,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.AggregatableReport.CreateReportStatus2"
+<histogram name="Conversions.AggregatableReport.CreateReportStatus3"
     enum="ConversionCreateAggregatableReportStatus" expires_after="M117">
   <owner>linnan@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -3694,7 +3633,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.CreateReportStatus5"
+<histogram name="Conversions.CreateReportStatus6"
     enum="ConversionStorageCreateReportStatus" expires_after="M117">
   <owner>apaseltiner@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -4365,6 +4304,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Conversions.Storage.GetNextReportTimeSucceeded"
+    units="BooleanSuccess" expires_after="M117">
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records whether each GetNextReportTime SQL statement succeeded, regardless
+    of whether it returned any data.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.Storage.MigrationTime" units="ms"
     expires_after="M117">
   <owner>johnidel@chromium.org</owner>
@@ -4596,6 +4546,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.CrashReportPending" enum="CrashpadReportPending"
     expires_after="M85">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>
@@ -4604,6 +4557,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crashpad.CrashReportSize" units="bytes" expires_after="M85">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>The size of a crash report minidump on disk when captured.</summary>
@@ -4611,6 +4567,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.CrashUpload.AttemptSuccessful"
     enum="CrashpadUploadAttemptStatus" expires_after="M85">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>Logs whether a crash uploaded succeeded or failed.</summary>
@@ -4618,6 +4577,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.CrashUpload.Skipped"
     enum="CrashpadUploadSkippedReason" expires_after="M85">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>The reason that a crash report upload was skipped.</summary>
@@ -4625,6 +4587,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.ExceptionCaptureResult"
     enum="CrashpadExceptionCaptureResult" expires_after="M90">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>The outcome of execution of the Crashpad exception handler.</summary>
@@ -4632,6 +4597,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.ExceptionCode.Mac" enum="CrashpadMacExceptionCodes"
     expires_after="M90">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>mark@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>The exception code encountered in a crash on Mac OS X.</summary>
@@ -4639,6 +4607,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.ExceptionCode.Win" enum="CrashpadWinExceptionCodes"
     expires_after="M90">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>The exception code encountered in a crash on Windows.</summary>
@@ -4646,6 +4617,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.ExceptionEncountered"
     enum="CrashpadExceptionProcessingState" expires_after="2021-08-22">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>
@@ -4656,6 +4630,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.HandlerCrash.ExceptionCode.Mac"
     enum="CrashpadMacExceptionCodes" expires_after="M90">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>mark@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>
@@ -4666,6 +4643,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.HandlerCrash.ExceptionCode.Win"
     enum="CrashpadWinExceptionCodes" expires_after="M90">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>
@@ -4676,6 +4656,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Crashpad.HandlerLifetimeMilestone"
     enum="CrashpadLifetimeMilestone" expires_after="M90">
+  <expired_intentionally>
+    Kept as a diagnostic metric.
+  </expired_intentionally>
   <owner>jperaza@chromium.org</owner>
   <owner>crashpad-dev@chromium.org</owner>
   <summary>Handler start/crash/exit events.</summary>
@@ -4699,6 +4682,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="CrashReport.BreakpadIOSUploadOutcome"
     enum="FoundationPopularErrorCode" expires_after="2022-12-25">
+  <obsolete>
+    Removed 11/2022.
+  </obsolete>
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -5802,6 +5788,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Eche.AppStream.LaunchAttempt" enum="AppStreamLaunchEntryPoint"
+    expires_after="2023-05-18">
+  <owner>crisrael@google.com</owner>
+  <owner>jonmann@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    This metric logs where the Eche app was launched from. The metric is emmited
+    when the eche app is launched.
+  </summary>
+</histogram>
+
 <histogram name="Eche.Connection.Duration" units="ms"
     expires_after="2022-10-04">
   <owner>samchiu@chromium.org</owner>
@@ -5848,6 +5845,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Eche.NotificationClicked" enum="EcheNotificationInteraction"
     expires_after="2023-04-16">
+  <obsolete>
+    Deprecated as of 11/2022. Replaced with Eche.AppStream.LaunchAttempt
+  </obsolete>
   <owner>samchiu@chromium.org</owner>
   <owner>andychou@chromium.org</owner>
   <summary>
@@ -6662,7 +6662,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.GoogleAppsInteraction"
-    enum="NuxGoogleAppsInteractions" expires_after="2023-03-12">
+    enum="NuxGoogleAppsInteractions" expires_after="2023-05-14">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -6676,7 +6676,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.GoogleAppsSelection"
-    enum="NuxGoogleAppsSelections" expires_after="2023-03-12">
+    enum="NuxGoogleAppsSelections" expires_after="2023-05-14">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -6740,7 +6740,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.SignInInterstitialInteraction"
-    enum="NuxSignInInterstitialInteractions" expires_after="2023-03-12">
+    enum="NuxSignInInterstitialInteractions" expires_after="2023-05-14">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -6753,7 +6753,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.Sentinel.Created" enum="FirstRunSentinelResult"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>Result of sentinel file has been written.</summary>
@@ -6778,7 +6778,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.Stage" enum="FirstRunStageResult"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>tinazwang@chromium.org</owner>
   <owner>bling-get-started@google.com</owner>
   <summary>
@@ -8412,7 +8412,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LoadingPredictor.PreconnectHitsPercentage" units="%"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -8424,7 +8424,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="LoadingPredictor.PreconnectLearningCount"
-    units="origins" expires_after="2023-03-12">
+    units="origins" expires_after="2023-05-14">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -8446,7 +8446,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="LoadingPredictor.PreconnectLearningRecall"
-    units="%" expires_after="2023-03-12">
+    units="%" expires_after="2023-05-14">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -8889,7 +8889,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mojo.Channel.WriteQueuePendingMessages" units="count"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>amistry@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>rockot@google.com</owner>
@@ -9095,7 +9095,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NativeSmbFileShare.AuthenticationMethod"
-    enum="NativeSmbFileShare_AuthMethod" expires_after="2023-04-23">
+    enum="NativeSmbFileShare_AuthMethod" expires_after="2023-12-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/chrome/browser/ash/smb_client/OWNERS</owner>
   <summary>
@@ -9105,7 +9105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NativeSmbFileShare.GetSharesResult"
-    enum="NativeSmbFileShare_MountResult" expires_after="2022-12-01">
+    enum="NativeSmbFileShare_MountResult" expires_after="2023-12-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/chrome/browser/ash/smb_client/OWNERS</owner>
   <summary>
@@ -9115,7 +9115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NativeSmbFileShare.MountCount" units="Active Mounts"
-    expires_after="2023-04-30">
+    expires_after="2023-12-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/chrome/browser/ash/smb_client/OWNERS</owner>
   <summary>
@@ -9125,7 +9125,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NativeSmbFileShare.MountResult"
-    enum="NativeSmbFileShare_MountResult" expires_after="2023-04-16">
+    enum="NativeSmbFileShare_MountResult" expires_after="2023-12-01">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/chrome/browser/ash/smb_client/OWNERS</owner>
   <summary>
@@ -9746,7 +9746,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OSCrypt.BackendUsage" enum="LinuxPasswordStoreUsage"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>cfroussios@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -11309,7 +11309,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Read.Number" units="count"
-    expires_after="2023-03-15">
+    expires_after="2023-05-14">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of read entries in reading list.</summary>
@@ -11335,7 +11335,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Unread.Number" units="count"
-    expires_after="2023-03-15">
+    expires_after="2023-05-14">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of unread entries in reading list.</summary>
@@ -11735,16 +11735,6 @@ chromium-metrics-reviews@google.com.
     The outcome of initializing the SQLite database. This is recorded upon the
     first load request after startup, which will typically occur upon the first
     network request.
-  </summary>
-</histogram>
-
-<histogram name="ReportingAndNEL.KillDatabaseResult" enum="BooleanSuccess"
-    expires_after="2020-09-09">
-  <owner>yhirano@chromium.org</owner>
-  <owner>src/net/reporting/OWNERS</owner>
-  <summary>
-    Whether killing the database because it was corrupted beyond repair
-    succeeded. This is recorded when a fatal SQLite error is detected.
   </summary>
 </histogram>
 
@@ -12204,7 +12194,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SB2.RemoteCall.CheckDelta" units="microseconds"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>vakh@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -13361,7 +13351,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Skia.SubmitRenderPasses" units="renderpasses"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>egdaniel@google.com</owner>
   <owner>bsalomon@google.com</owner>
   <summary>
@@ -13626,7 +13616,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram base="true" name="Spellcheck.Windows.ChromeLocalesSupport"
-    units="locales" expires_after="2023-03-05">
+    units="locales" expires_after="2023-05-14">
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -13740,6 +13730,25 @@ should be kept until we remove incident reporting. -->
     whenever a TLS connection does not have valid Certificate Transparency
     information associated with it. This metric fires whenever Chrome attempts
     to send an Expect CT report.
+  </summary>
+</histogram>
+
+<histogram name="SSL.Experimental.SubresourceResponse"
+    enum="SSLSubresourceResponseType" expires_after="2023-02-03">
+  <owner>amanvr@chromium.org</owner>
+  <owner>carlscab@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    The histogram is being used to track the number of messages
+    (content::mojom::FrameHost::SubresourceResponseStarted IPCs) resulting in
+    no-op (i.e. returning without doing anything) but requiring an IPC vs
+    messages which revoke exceptions after seeing a good certificate when
+    calling SSLManager::DidStartResourceResponse() from
+    RenderFrameHostImpl::SubresourceResponseStarted(). We are not interested in
+    calls to SSLManager::DidStartResourceResponse() from ReadyToCommitNavigation
+    since they don't involve mojo messages. From local benchmarks, we observe
+    this request causes significant IPC chatter, and this histogram will help us
+    understand it better.
   </summary>
 </histogram>
 
@@ -15507,7 +15516,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceResultConfidenceValue" units="%"
-    expires_after="2023-05-07">
+    expires_after="2023-05-14">
   <owner>basiaz@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>

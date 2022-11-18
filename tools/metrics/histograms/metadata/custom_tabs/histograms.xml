@@ -122,7 +122,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ClientAppId.Incognito" enum="ClientAppId"
-    expires_after="M110">
+    expires_after="M114">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <owner>cct-team@google.com</owner>
@@ -242,7 +242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ImmersiveModeConfirmationsSettingConfirmed"
-    enum="Boolean" expires_after="2023-03-15">
+    enum="Boolean" expires_after="2023-05-14">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -265,7 +265,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.IncognitoCCTCallerId" enum="IncognitoCCTCallerId"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <owner>cct-team@google.com</owner>
@@ -385,7 +385,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ResizeType" enum="CustomTabsResizeType"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
+  <obsolete>
+    Deprecated 2022-11. Replaced by CustomTabs.ResizeType2
+  </obsolete>
+  <owner>kgrosu@google.com</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    When a Partial Custom Tab has been resized by the user log if it is an
+    expansion or a minimization of the tab.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.ResizeType2" enum="CustomTabsResizeType2"
+    expires_after="2023-05-14">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -436,7 +449,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.SessionDisconnectStatus"
-    enum="CustomTabsSessionDisconnectStatus" expires_after="2023-03-15">
+    enum="CustomTabsSessionDisconnectStatus" expires_after="2023-05-14">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -476,31 +489,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the location of the share option in the Custom Tab. Recorded when
     the share option is added while the Custom Tab is being constructed.
-  </summary>
-</histogram>
-
-<histogram name="CustomTabs.SpareWebContents.Status2"
-    enum="SpareWebContentsStatus2" expires_after="2020-12-20">
-  <owner>lizeb@chromium.org</owner>
-  <owner>mthiesse@chromium.org</owner>
-  <summary>
-    Android: When a spare WebContents is created from Custom Tabs, record
-    creation, and whether it was used by CCT, stolen by another Chrome Activity,
-    killed or destroyed. Creation is recorded to get the &quot;abandoned&quot;
-    case, that is when Chrome is killed before the renderer. Starting with M84
-    this is is also recorded for webapps/WebAPKs. Filter the platform for just
-    CCT/TWA data.
-  </summary>
-</histogram>
-
-<histogram name="CustomTabs.SpareWebContents.TimeBeforeDeath" units="ms"
-    expires_after="2020-05-10">
-  <owner>lizeb@chromium.org</owner>
-  <summary>
-    Android: When a spare WebContents is created from Custom Tabs, record how
-    long is took before the render process was killed. Starting with M84 this is
-    is also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
-    data.
   </summary>
 </histogram>
 

@@ -296,6 +296,7 @@ test("gl_tests") {
   use_xvfb = use_xvfb_in_this_config
 
   sources = [
+    "command_buffer/service/gles2_external_framebuffer_unittest.cc",
     "command_buffer/service/shared_image/gl_texture_image_backing_factory_unittest.cc",
     "command_buffer/service/shared_image/shared_image_factory_unittest.cc",
     "command_buffer/service/shared_image/shared_image_manager_unittest.cc",
@@ -382,6 +383,7 @@ test("gl_tests") {
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//cc:test_support",
     "//cc/paint",
     "//components/viz/test:test_support",
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -661,6 +663,7 @@ test("gpu_unittests") {
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
+    "//cc:test_support",
     "//cc/paint",
     "//components/viz/common:resource_format",
     "//gpu/command_buffer/client:gles2_c_lib",

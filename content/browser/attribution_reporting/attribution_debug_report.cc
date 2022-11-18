@@ -61,6 +61,7 @@ absl::optional<DebugDataType> GetReportDataType(EventLevelResult result,
     case EventLevelResult::kSuccess:
     case EventLevelResult::kProhibitedByBrowserPolicy:
     case EventLevelResult::kSuccessDroppedLowerPriority:
+    case EventLevelResult::kReportWindowPassed:
       return absl::nullopt;
     case EventLevelResult::kInternalError:
       return DataTypeIfCookieSet(DebugDataType::kTriggerUnknownError,
@@ -107,6 +108,7 @@ absl::optional<DebugDataType> GetReportDataType(AggregatableResult result,
     case AggregatableResult::kSuccess:
     case AggregatableResult::kNotRegistered:
     case AggregatableResult::kProhibitedByBrowserPolicy:
+    case AggregatableResult::kReportWindowPassed:
       return absl::nullopt;
     case AggregatableResult::kInternalError:
       return DataTypeIfCookieSet(DebugDataType::kTriggerUnknownError,
@@ -255,7 +257,7 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
   base::Value::Dict data_body;
   SetAttributionDestination(data_body,
                             net::SchemefulSite(trigger.destination_origin()));
-  if (absl::optional<uint64_t> debug_key = trigger.registration().debug_key())
+  if (absl::optional<uint64_t> debug_key = trigger.registration().debug_key)
     data_body.Set("trigger_debug_key", base::NumberToString(*debug_key));
 
   if (result.source())
@@ -367,7 +369,7 @@ absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     const AttributionTrigger& trigger,
     bool is_debug_cookie_set,
     const CreateReportResult& result) {
-  if (!trigger.registration().debug_reporting() ||
+  if (!trigger.registration().debug_reporting ||
       trigger.is_within_fenced_frame()) {
     return absl::nullopt;
   }
@@ -395,16 +397,15 @@ absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     return absl::nullopt;
 
   return AttributionDebugReport(std::move(report_data),
-                                trigger.registration().reporting_origin());
+                                trigger.registration().reporting_origin);
 }
 
 AttributionDebugReport::AttributionDebugReport(
     std::vector<ReportData> report_data,
-    url::Origin reporting_origin)
+    attribution_reporting::SuitableOrigin reporting_origin)
     : report_data_(std::move(report_data)),
       reporting_origin_(std::move(reporting_origin)) {
   DCHECK(!report_data_.empty());
-  DCHECK(attribution_reporting::SuitableOrigin::IsSuitable(reporting_origin_));
 }
 
 AttributionDebugReport::~AttributionDebugReport() = default;
@@ -429,7 +430,7 @@ GURL AttributionDebugReport::ReportURL() const {
 
   GURL::Replacements replacements;
   replacements.SetPathStr(kPath);
-  return reporting_origin_.GetURL().ReplaceComponents(replacements);
+  return reporting_origin_->GetURL().ReplaceComponents(replacements);
 }
 
 }  // namespace content

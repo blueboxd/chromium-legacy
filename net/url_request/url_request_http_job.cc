@@ -703,6 +703,11 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     for (auto it = partition_it; it < maybe_included_cookies.end(); ++it) {
       it->access_result.status.AddExclusionReason(
           CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      if (first_party_set_metadata_.AreSitesInSameFirstPartySet()) {
+        it->access_result.status.AddExclusionReason(
+            CookieInclusionStatus::
+                EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET);
+      }
     }
     excluded_cookies.insert(
         excluded_cookies.end(), std::make_move_iterator(partition_it),
@@ -715,7 +720,6 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     if (!maybe_included_cookies.empty()) {
       std::string cookie_line =
           CanonicalCookie::BuildCookieLine(maybe_included_cookies);
-      UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
       request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
                                             cookie_line);
 

@@ -162,8 +162,6 @@ class PaymentsClientTest : public testing::Test {
     test_personal_data_.SetAccountInfoForPayments(
         identity_test_env_.MakePrimaryAccountAvailable(
             "example@gmail.com", signin::ConsentLevel::kSync));
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillEnableSendingBcnInGetUploadDetails);
   }
 
   void TearDown() override { client_.reset(); }
@@ -253,8 +251,6 @@ class PaymentsClientTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   // Issue a GetUnmaskDetails request. This requires an OAuth token before
   // starting the request.
   void StartGettingUnmaskDetails() {
@@ -946,10 +942,6 @@ TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
 }
 
 TEST_F(PaymentsClientTest, UnmaskIncludesLegacyAndNonLegacyId) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableUnmaskCardRequestSetInstrumentId);
-
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
@@ -962,10 +954,6 @@ TEST_F(PaymentsClientTest, UnmaskIncludesLegacyAndNonLegacyId) {
 }
 
 TEST_F(PaymentsClientTest, UnmaskIncludesOnlyLegacyId) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableUnmaskCardRequestSetInstrumentId);
-
   StartUnmasking(CardUnmaskOptions().with_only_legacy_id());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
@@ -977,10 +965,6 @@ TEST_F(PaymentsClientTest, UnmaskIncludesOnlyLegacyId) {
 }
 
 TEST_F(PaymentsClientTest, UnmaskIncludesOnlyNonLegacyId) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableUnmaskCardRequestSetInstrumentId);
-
   StartUnmasking(CardUnmaskOptions().with_only_non_legacy_id());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
@@ -989,21 +973,6 @@ TEST_F(PaymentsClientTest, UnmaskIncludesOnlyNonLegacyId) {
   EXPECT_TRUE(GetUploadData().find("%22instrument_id%22:%221%22") !=
               std::string::npos);
   EXPECT_TRUE(GetUploadData().find("credit_card_id") == std::string::npos);
-}
-
-TEST_F(PaymentsClientTest, UnmaskDoesNotIncludeInstrumentIdIfFlagDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnableUnmaskCardRequestSetInstrumentId);
-
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{}");
-
-  // Instrument id is not set if flag is disabled.
-  EXPECT_TRUE(GetUploadData().find("instrument_id") == std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("%22credit_card_id%22:%22a123%22") !=
-              std::string::npos);
 }
 
 TEST_F(PaymentsClientTest,
@@ -1308,10 +1277,6 @@ TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {
 }
 
 TEST_F(PaymentsClientTest, GetDetailsIncludeBillingCustomerNumber) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillEnableSendingBcnInGetUploadDetails);
-
   StartGettingUploadDetails();
 
   // Verify that the billing customer number is included in the request if flag
@@ -1323,29 +1288,11 @@ TEST_F(PaymentsClientTest, GetDetailsIncludeBillingCustomerNumber) {
 
 TEST_F(PaymentsClientTest,
        GetDetailsExcludesBillingCustomerNumberIfNoBcnExists) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillEnableSendingBcnInGetUploadDetails);
-
   StartGettingUploadDetails(
       PaymentsClient::UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE, 0L);
+
   // Verify that the billing customer number is not included in the request if
   // billing customer number is 0.
-  EXPECT_TRUE(GetUploadData().find("\"external_customer_id\"") ==
-              std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("\"customer_context\"") ==
-              std::string::npos);
-}
-
-TEST_F(PaymentsClientTest,
-       GetDetailsExcludesBillingCustomerNumberIfFlagDisabled) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillEnableSendingBcnInGetUploadDetails);
-
-  StartGettingUploadDetails();
-  // Verify that the billing customer number is not included in the request if
-  // flag is disabled.
   EXPECT_TRUE(GetUploadData().find("\"external_customer_id\"") ==
               std::string::npos);
   EXPECT_TRUE(GetUploadData().find("\"customer_context\"") ==
@@ -1511,8 +1458,8 @@ TEST_F(PaymentsClientTest, UploadSuccessVirtualCardEnrollmentStatePresent) {
 
 TEST_F(PaymentsClientTest,
        UploadSuccessGetDetailsForEnrollmentResponseDetailsPresent) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
       features::kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse);
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();

@@ -319,12 +319,11 @@ class ChromePrintContext : public PrintContext {
 
     // The page rect gets scaled and translated, so specify the entire
     // print content area here as the recording rect.
-    gfx::RectF bounds(0, 0, printed_page_height_, printed_page_width_);
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
     GraphicsContext& context = builder->Context();
     context.SetPrintingMetafile(canvas->GetPrintingMetafile());
     context.SetPrinting(true);
-    context.BeginRecording(bounds);
+    context.BeginRecording();
     float scale = SpoolPage(context, page_number);
     canvas->drawPicture(context.EndRecording());
     return scale;
@@ -353,7 +352,7 @@ class ChromePrintContext : public PrintContext {
     GraphicsContext& context = builder->Context();
     context.SetPrintingMetafile(canvas->GetPrintingMetafile());
     context.SetPrinting(true);
-    context.BeginRecording(all_pages_rect);
+    context.BeginRecording();
 
     // Fill the whole background by white.
     context.FillRect(all_pages_rect, Color::kWhite, AutoDarkMode::Disabled());
@@ -2002,10 +2001,11 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
     const LocalFrameToken& frame_token,
     WebFrame* previous_frame,
     const FramePolicy& frame_policy,
-    const WebString& name) {
+    const WebString& name,
+    WebView* web_view) {
   return WebLocalFrameImpl::CreateProvisional(client, interface_registry,
                                               frame_token, previous_frame,
-                                              frame_policy, name);
+                                              frame_policy, name, web_view);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
@@ -2045,7 +2045,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     const LocalFrameToken& frame_token,
     WebFrame* previous_web_frame,
     const FramePolicy& frame_policy,
-    const WebString& name) {
+    const WebString& name,
+    WebView* web_view) {
   DCHECK(client);
   Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   DCHECK(name.IsEmpty() || name.Equals(previous_frame->Tree().GetName()));
@@ -2064,6 +2065,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     // passed via frame_policy.
     sandbox_flags = frame_policy.sandbox_flags;
   }
+
   // Note: this *always* temporarily sets a frame owner, even for main frames!
   // When a core Frame is created with no owner, it attempts to set itself as
   // the main frame of the Page. However, this is a provisional frame, and may
@@ -2081,15 +2083,45 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   // through from //content. The fact that provisional frames have an initial
   // document is a weird implementation detail and this is an attempt to
   // minimize its visibility/usefulness.
+  Page* page_for_provisional_frame = To<WebViewImpl>(web_view)->GetPage();
   web_frame->InitializeCoreFrame(
-      *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(),
+      *page_for_provisional_frame, MakeGarbageCollected<DummyFrameOwner>(),
       previous_web_frame->Parent(), nullptr, FrameInsertType::kInsertLater,
       name, &ToCoreFrame(*previous_web_frame)->window_agent_factory(),
       previous_web_frame->Opener(), DocumentToken(),
       /*policy_container=*/nullptr, StorageKey(), sandbox_flags);
 
   LocalFrame* new_frame = web_frame->GetFrame();
-  previous_frame->SetProvisionalFrame(new_frame);
+
+  if (previous_frame->GetPage() != page_for_provisional_frame) {
+    // The previous frame's Page is different from the new frame's page. This
+    // can only be true when creating a provisional LocalFrame that will do a
+    // local main frame swap when its navigation commits. To be able to do the
+    // swap, the provisional frame must have a pointer to the previous Page's
+    // local main frame, and also be set as the provisional frame of the
+    // placeholder RemoteFrame of the new Page.
+    // Note that the new provisional frame is not set as the provisional frame
+    // of the previous Page's main frame, to avoid triggering the deletion of
+    // the new Page's provisional frame if/when the previous Page's main frame
+    // gets deleted. With that, the new Page's provisional main frame's deletion
+    // can only be triggered by deleting the new Page (when its WebView gets
+    // deleted).
+    CHECK(!previous_web_frame->Parent());
+    CHECK(previous_web_frame->IsWebLocalFrame());
+    CHECK(page_for_provisional_frame->MainFrame()->IsRemoteFrame());
+    CHECK(!DynamicTo<RemoteFrame>(page_for_provisional_frame->MainFrame())
+               ->IsRemoteFrameHostRemoteBound());
+    page_for_provisional_frame->SetPreviousMainFrameForLocalSwap(
+        DynamicTo<LocalFrame>(ToCoreFrame(*previous_web_frame)));
+    page_for_provisional_frame->MainFrame()->SetProvisionalFrame(new_frame);
+  } else {
+    // This is a normal provisional frame, which will either replace a
+    // RemoteFrame or a non-main-frame LocalFrame. This makes it possible to
+    // find the provisional owner frame (the previous frame) when swapping in
+    // the new frame. This also ensures that detaching the previous frame also
+    // disposes of the provisional frame.
+    previous_frame->SetProvisionalFrame(new_frame);
+  }
 
   new_frame->SetOwner(previous_frame->Owner());
   if (auto* remote_frame_owner =
@@ -2627,7 +2659,9 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
     bool is_client_redirect,
     bool has_transient_user_activation,
     const WebSecurityOrigin& initiator_origin,
-    bool is_browser_initiated) {
+    bool is_browser_initiated,
+    absl::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   DCHECK(GetFrame());
   DCHECK(!url.ProtocolIs("javascript"));
 
@@ -2638,7 +2672,8 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
                          : ClientRedirectPolicy::kNotClientRedirect,
       has_transient_user_activation, initiator_origin.Get(),
       /*is_synchronously_committed=*/false,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, is_browser_initiated);
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, is_browser_initiated,
+      soft_navigation_heuristics_task_id);
 }
 
 bool WebLocalFrameImpl::IsLoading() const {
@@ -3060,10 +3095,6 @@ void WebLocalFrameImpl::SetNotRestoredReasons(
       ConvertNotRestoredReasons(not_restored_reasons));
 }
 
-bool WebLocalFrameImpl::HasBlockingReasons() {
-  return GetFrame()->HasBlockingReasons();
-}
-
 const mojom::blink::BackForwardCacheNotRestoredReasonsPtr&
 WebLocalFrameImpl::GetNotRestoredReasons() {
   return GetFrame()->GetNotRestoredReasons();
@@ -3155,12 +3186,6 @@ void WebLocalFrameImpl::RemoveObserver(WebLocalFrameObserver* observer) {
 void WebLocalFrameImpl::WillSendSubmitEvent(const WebFormElement& form) {
   for (auto& observer : observers_)
     observer.WillSendSubmitEvent(form);
-}
-
-void WebLocalFrameImpl::DidChangeMobileFriendliness(
-    const MobileFriendliness& mf) {
-  for (auto& observer : observers_)
-    observer.DidChangeMobileFriendliness(mf);
 }
 
 }  // namespace blink

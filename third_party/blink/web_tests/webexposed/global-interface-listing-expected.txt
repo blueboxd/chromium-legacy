@@ -1340,7 +1340,7 @@ interface ContentIndex
     method constructor
     method delete
     method getAll
-interface ContentVisibilityAutoStateChangedEvent : Event
+interface ContentVisibilityAutoStateChangeEvent : Event
     attribute @@toStringTag
     getter skipped
     method constructor
@@ -1824,7 +1824,7 @@ interface Document : Node
     getter onchange
     getter onclick
     getter onclose
-    getter oncontentvisibilityautostatechanged
+    getter oncontentvisibilityautostatechange
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -2039,7 +2039,7 @@ interface Document : Node
     setter onchange
     setter onclick
     setter onclose
-    setter oncontentvisibilityautostatechanged
+    setter oncontentvisibilityautostatechange
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -3221,7 +3221,6 @@ interface HTMLElement : Element
     getter autofocus
     getter contentEditable
     getter dataset
-    getter defaultOpen
     getter dir
     getter draggable
     getter editContext
@@ -3254,7 +3253,7 @@ interface HTMLElement : Element
     getter onchange
     getter onclick
     getter onclose
-    getter oncontentvisibilityautostatechanged
+    getter oncontentvisibilityautostatechange
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -3363,7 +3362,6 @@ interface HTMLElement : Element
     setter autocapitalize
     setter autofocus
     setter contentEditable
-    setter defaultOpen
     setter dir
     setter draggable
     setter editContext
@@ -3390,7 +3388,7 @@ interface HTMLElement : Element
     setter onchange
     setter onclick
     setter onclose
-    setter oncontentvisibilityautostatechanged
+    setter oncontentvisibilityautostatechange
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -5221,7 +5219,7 @@ interface MathMLElement : Element
     getter onchange
     getter onclick
     getter onclose
-    getter oncontentvisibilityautostatechanged
+    getter oncontentvisibilityautostatechange
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -5333,7 +5331,7 @@ interface MathMLElement : Element
     setter onchange
     setter onclick
     setter onclose
-    setter oncontentvisibilityautostatechanged
+    setter oncontentvisibilityautostatechange
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -7483,7 +7481,7 @@ interface SVGElement : Element
     getter onchange
     getter onclick
     getter onclose
-    getter oncontentvisibilityautostatechanged
+    getter oncontentvisibilityautostatechange
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -7597,7 +7595,7 @@ interface SVGElement : Element
     setter onchange
     setter onclick
     setter onclose
-    setter oncontentvisibilityautostatechanged
+    setter oncontentvisibilityautostatechange
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored
@@ -8546,7 +8544,7 @@ interface ScriptProcessorNode : AudioNode
     setter onaudioprocess
 interface ScrollTimeline : AnimationTimeline
     attribute @@toStringTag
-    getter orientation
+    getter axis
     getter source
     method constructor
 interface SecurityPolicyViolationEvent : Event
@@ -9531,6 +9529,8 @@ interface VideoTrackList : EventTarget
     setter onremovetrack
 interface ViewTimeline : ScrollTimeline
     attribute @@toStringTag
+    getter endOffset
+    getter startOffset
     getter subject
     method constructor
 interface VirtualKeyboard : EventTarget
@@ -11207,6 +11207,21 @@ interface XRCamera
     getter height
     getter width
     method constructor
+interface XRCompositionLayer : XRLayer
+    attribute @@toStringTag
+    getter blendTextureSourceAlpha
+    getter chromaticAberrationCorrection
+    getter forceMonoPresentation
+    getter layout
+    getter mipLevels
+    getter needsRedraw
+    getter opacity
+    method constructor
+    method destroy
+    setter blendTextureSourceAlpha
+    setter chromaticAberrationCorrection
+    setter forceMonoPresentation
+    setter opacity
 interface XRDOMOverlayState
     attribute @@toStringTag
     getter type
@@ -11336,6 +11351,17 @@ interface XRPose
     getter emulatedPosition
     getter transform
     method constructor
+interface XRProjectionLayer : XRCompositionLayer
+    attribute @@toStringTag
+    getter deltaPose
+    getter fixedFoveation
+    getter ignoreDepthValues
+    getter textureArrayLength
+    getter textureHeight
+    getter textureWidth
+    method constructor
+    setter deltaPose
+    setter fixedFoveation
 interface XRRay
     attribute @@toStringTag
     getter direction
@@ -11359,6 +11385,7 @@ interface XRRenderState
     getter depthFar
     getter depthNear
     getter inlineVerticalFieldOfView
+    getter layers
     method constructor
 interface XRRigidTransform
     attribute @@toStringTag
@@ -11413,6 +11440,10 @@ interface XRSessionEvent : Event
 interface XRSpace : EventTarget
     attribute @@toStringTag
     method constructor
+interface XRSubImage
+    attribute @@toStringTag
+    getter viewport
+    method constructor
 interface XRSystem : EventTarget
     attribute @@toStringTag
     getter ondevicechange
@@ -11453,10 +11484,14 @@ interface XRViewport
     method constructor
 interface XRWebGLBinding
     attribute @@toStringTag
+    getter nativeProjectionScaleFactor
+    getter usesDepthValues
     method constructor
+    method createProjectionLayer
     method getCameraImage
     method getDepthInformation
     method getReflectionCubeMap
+    method getViewSubImage
 interface XRWebGLDepthInformation : XRDepthInformation
     attribute @@toStringTag
     getter texture
@@ -11471,6 +11506,19 @@ interface XRWebGLLayer : XRLayer
     getter ignoreDepthValues
     method constructor
     method getViewport
+interface XRWebGLSubImage : XRSubImage
+    attribute @@toStringTag
+    getter colorTexture
+    getter colorTextureHeight
+    getter colorTextureWidth
+    getter depthStencilTexture
+    getter depthStencilTextureHeight
+    getter depthStencilTextureWidth
+    getter imageIndex
+    getter motionVectorTexture
+    getter motionVectorTextureHeight
+    getter motionVectorTextureWidth
+    method constructor
 interface XSLTProcessor
     attribute @@toStringTag
     method clearParameters
@@ -11776,7 +11824,7 @@ namespace CSS
     getter onchange
     getter onclick
     getter onclose
-    getter oncontentvisibilityautostatechanged
+    getter oncontentvisibilityautostatechange
     getter oncontextlost
     getter oncontextmenu
     getter oncontextrestored
@@ -11999,7 +12047,7 @@ namespace CSS
     setter onchange
     setter onclick
     setter onclose
-    setter oncontentvisibilityautostatechanged
+    setter oncontentvisibilityautostatechange
     setter oncontextlost
     setter oncontextmenu
     setter oncontextrestored

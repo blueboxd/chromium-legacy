@@ -10,10 +10,23 @@ members = ["autocxx_gen/v0_23/crate"]
 
 [dependencies]
 autocxx = "0.23.1"
+bitflags = "1"
+cargo-platform = "0.1"
+cargo_metadata = "0.14"
+clap = "3"
 cxx = "1"
 cxxbridge-cmd = "1"
+lazy_static = "1"
+once_cell = "1"
+proc-macro2 = "1"
+quote = "1"
+rstest = "0.12"
+semver = "1"
 serde = "1"
+serde_json = "1"
+small_ctor = "0.1"
 static_assertions = "1"
+tempfile = "3"
 
 [dependencies.autocxx-bindgen]
 version = "0.62"
@@ -41,27 +54,17 @@ build-script-outputs = ["version.rs"]
 version = "0.1"
 features = ["unbounded_depth", "float_roundtrip"]
 
-[dependencies.unicode-linebreak]
-version = "0.1"
-build-script-outputs = ["tables.rs"]
-
-[dev-dependencies]
-cargo-platform = "0.1"
-cargo_metadata = "0.14"
-clap = "3"
-once_cell = "1"
-rstest = "0.12"
-semver = "1"
-small_ctor = "0.1"
-tempfile = "3"
-
-[dev-dependencies.syn]
+[dependencies.syn]
 version = "1"
 features = ["full"]
 
-[dev-dependencies.toml]
+[dependencies.toml]
 version = "0.5"
 features = ["preserve_order"]
+
+[dependencies.unicode-linebreak]
+version = "0.1"
+build-script-outputs = ["tables.rs"]
 [patch.crates-io.addr2line_v0_17]
 path = "addr2line/v0_17/crate"
 package = "addr2line"
@@ -169,10 +172,6 @@ package = "cxx"
 [patch.crates-io.cxxbridge-cmd_v1]
 path = "cxxbridge_cmd/v1/crate"
 package = "cxxbridge-cmd"
-
-[patch.crates-io.cxxbridge-flags_v1]
-path = "cxxbridge_flags/v1/crate"
-package = "cxxbridge-flags"
 
 [patch.crates-io.cxxbridge-macro_v1]
 path = "cxxbridge_macro/v1/crate"

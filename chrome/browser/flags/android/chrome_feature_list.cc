@@ -123,7 +123,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
     &shared_highlighting::kSharedHighlightingAmp,
     &features::kElasticOverscroll,
-    &features::kElidePrioritizationOfPreNativeBootstrapTasks,
     &features::kPrivacyGuideAndroid,
     &features::kPushMessagingDisallowSenderIDs,
     &features::kPwaUpdateDialogForIcon,
@@ -169,6 +168,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &history_clusters::internal::kJourneys,
     &kAdaptiveButtonInTopToolbar,
     &kAdaptiveButtonInTopToolbarCustomizationV2,
+    &kAddEduAccountFromAccountSettingsForSupervisedUsers,
     &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
     &kAndroidScrollOptimizations,
@@ -197,6 +197,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTNewDownloadTab,
     &kCCTPackageNameRecording,
     &kCCTPostMessageAPI,
+    &kCCTPrefetchDelayShowOnStart,
     &kCCTRealTimeEngagementSignals,
     &kCCTRedirectPreconnect,
     &kCCTRemoveRemoteViewIds,
@@ -239,7 +240,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDownloadNotificationBadge,
     &kDownloadRename,
     &kDuetTabStripIntegrationAndroid,
-    &kEnableFamilyInfoFeedback,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFixedUmaSessionResumeOrder,
@@ -370,6 +370,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxRemoveExcessiveRecycledViewClearCalls,
     &omnibox::kOmniboxRemoveSuggestionHeaderCapitalization,
     &omnibox::kOmniboxRemoveSuggestionHeaderChevron,
+    &omnibox::kOmniboxMostVisitedTilesAddRecycledViewPool,
     &omnibox::kOmniboxMostVisitedTilesFadingOnTablet,
     &omnibox::kOmniboxMostVisitedTilesOnSrp,
     &omnibox::kOmniboxOnClobberFocusTypeOnContent,
@@ -384,7 +385,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kLeakDetectionUnauthenticated,
     &password_manager::features::kPasswordDomainCapabilitiesFetching,
     &password_manager::features::kPasswordChange,
-    &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &password_manager::features::kTouchToFillPasswordSubmission,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
@@ -460,6 +460,10 @@ BASE_FEATURE(kAdaptiveButtonInTopToolbar,
 BASE_FEATURE(kAdaptiveButtonInTopToolbarCustomizationV2,
              "AdaptiveButtonInTopToolbarCustomizationV2",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAddEduAccountFromAccountSettingsForSupervisedUsers,
+             "AddEduAccountFromAccountSettingsForSupervisedUsers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAddToHomescreenIPH,
              "AddToHomescreenIPH",
@@ -576,6 +580,10 @@ BASE_FEATURE(kCCTPackageNameRecording,
 
 BASE_FEATURE(kCCTPostMessageAPI,
              "CCTPostMessageAPI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTPrefetchDelayShowOnStart,
+             "CCTPrefetchDelayShowOnStart",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTRealTimeEngagementSignals,
@@ -716,7 +724,7 @@ BASE_FEATURE(kContextualSearchDisableOnlineDetection,
 
 BASE_FEATURE(kContextualSearchForceCaption,
              "ContextualSearchForceCaption",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kContextualSearchSuppressShortView,
              "ContextualSearchSuppressShortView",

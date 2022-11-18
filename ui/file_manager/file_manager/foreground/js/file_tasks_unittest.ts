@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 import {createCrostiniForTest} from '../../background/js/mock_crostini.js';
 import {MockProgressCenter} from '../../background/js/mock_progress_center.js';
@@ -663,7 +663,7 @@ testMountArchiveAndChangeDirectoryNotificationInvalidArchive(done: () => void) {
       fileManager.taskController);
 
   fileManager.volumeManager.mountArchive = function(_url, _password) {
-    return Promise.reject(VolumeManagerCommon.VolumeError.INTERNAL);
+    return Promise.reject(VolumeManagerCommon.VolumeError.INTERNAL_ERROR);
   };
 
   // Mount archive.

@@ -319,8 +319,7 @@ HistoryURLProvider::VisitClassifier::VisitClassifier(
   // match below if the user has visited "site".
   if ((input.type() == metrics::OmniboxInputType::UNKNOWN) &&
       input.parts().username.is_nonempty() &&
-      !input.parts().password.is_nonempty() &&
-      !input.parts().path.is_nonempty())
+      input.parts().password.is_empty() && input.parts().path.is_empty())
     return;
 
   // If the input can be canonicalized to a valid URL, look up all
@@ -920,7 +919,7 @@ GURL HistoryURLProvider::AsKnownIntranetURL(
   // paranoid and check.
   if ((input.type() != metrics::OmniboxInputType::UNKNOWN) ||
       !base::EqualsCaseInsensitiveASCII(input.scheme(), url::kHttpScheme) ||
-      !input.parts().host.is_nonempty())
+      input.parts().host.is_empty())
     return GURL();
 
   const std::string host(base::UTF16ToUTF8(
@@ -1128,7 +1127,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
 
   const auto format_types = AutocompleteMatch::GetFormatTypes(
-      params.input.parts().scheme.len > 0 || !params.trim_http ||
+      params.input.parts().scheme.is_nonempty() || !params.trim_http ||
           history_match.match_in_scheme,
       history_match.match_in_subdomain);
   match.contents = url_formatter::FormatUrl(info.url(), format_types,

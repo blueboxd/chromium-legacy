@@ -26,7 +26,9 @@ namespace os.diagnostics {
     lan_connectivity,
     signal_strength,
     dns_resolver_present,
-    gateway_can_be_pinged
+    gateway_can_be_pinged,
+    sensitive_sensor,
+    nvme_self_test
   };
 
   enum RoutineStatus {
@@ -115,6 +117,15 @@ namespace os.diagnostics {
     long file_size_mb;
   };
 
+  enum NvmeSelfTestType {
+    short_test,
+    long_test
+  };
+
+  dictionary RunNvmeSelfTestRequest {
+    NvmeSelfTestType test_type;
+  };
+
   dictionary RunNvmeWearLevelRequest {
     long wear_level_threshold;
   };
@@ -175,8 +186,12 @@ namespace os.diagnostics {
 
     [supportsPromises] static void runMemoryRoutine(RunRoutineCallback callback);
 
+    [supportsPromises] static void runNvmeSelfTestRoutine(RunNvmeSelfTestRequest request, RunRoutineCallback callback);
+
     [supportsPromises] static void runNvmeWearLevelRoutine(RunNvmeWearLevelRequest request,
                                                            RunRoutineCallback callback);
+
+    [supportsPromises] static void runSensitiveSensorRoutine(RunRoutineCallback callback);
 
     [supportsPromises] static void runSignalStrengthRoutine(RunRoutineCallback callback);
 

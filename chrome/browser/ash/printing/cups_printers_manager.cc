@@ -18,6 +18,7 @@
 #include "chrome/browser/ash/printing/automatic_usb_printer_configurer.h"
 #include "chrome/browser/ash/printing/cups_printer_status_creator.h"
 #include "chrome/browser/ash/printing/enterprise_printers_provider.h"
+#include "chrome/browser/ash/printing/oauth2/client_ids_database.h"
 #include "chrome/browser/ash/printing/ppd_provider_factory.h"
 #include "chrome/browser/ash/printing/ppd_resolution_tracker.h"
 #include "chrome/browser/ash/printing/print_servers_policy_provider.h"
@@ -75,7 +76,7 @@ using ::chromeos::CupsPrinterStatus;
 using ::chromeos::PpdProvider;
 using ::chromeos::Printer;
 using ::chromeos::PrinterClass;
-using printing::PrinterQueryResult;
+using ::printing::PrinterQueryResult;
 
 class CupsPrintersManagerImpl
     : public CupsPrintersManager,
@@ -419,16 +420,18 @@ class CupsPrintersManagerImpl
       const std::string& make_and_model,
       const std::vector<std::string>& document_formats,
       bool ipp_everywhere,
-      const chromeos::PrinterAuthenticationInfo& auth_info) {
+      const chromeos::PrinterAuthenticationInfo& auth_info,
+      bool client_info_supported) {
     SendPrinterStatus(printer_id, std::move(cb), result, printer_status,
-                      auth_info);
+                      auth_info, client_info_supported);
   }
 
   void SendPrinterStatus(const std::string& printer_id,
                          PrinterStatusCallback cb,
                          PrinterQueryResult result,
                          const ::printing::PrinterStatus& printer_status,
-                         const chromeos::PrinterAuthenticationInfo& auth_info) {
+                         const chromeos::PrinterAuthenticationInfo& auth_info,
+                         bool client_info_supported) {
     base::UmaHistogramEnumeration("Printing.CUPS.PrinterStatusQueryResult",
                                   result);
     switch (result) {
@@ -468,7 +471,7 @@ class CupsPrintersManagerImpl
         // Convert printing::PrinterStatus to printing::CupsPrinterStatus
         CupsPrinterStatus cups_printers_status =
             PrinterStatusToCupsPrinterStatus(printer_id, printer_status,
-                                             auth_info);
+                                             auth_info, client_info_supported);
 
         // Save the PrinterStatus so it can be attached along side future
         // Printer retrievals.
@@ -850,6 +853,7 @@ void CupsPrintersManager::RegisterLocalStatePrefs(
   registry->RegisterStringPref(prefs::kPrintingClientNameTemplate,
                                std::string());
   PrintServersProvider::RegisterLocalStatePrefs(registry);
+  printing::oauth2::ClientIdsDatabase::RegisterLocalStatePrefs(registry);
 }
 
 }  // namespace ash

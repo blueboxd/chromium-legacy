@@ -15,21 +15,31 @@ js_type_check("closure_compile_local") {
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
   deps = [
+    ":chai_assert",
     ":fake_network_config_mojom",
     ":mock_controller.m",
+    ":test_browser_proxy",
     ":test_util",
   ]
 }
 
+js_library("chai_assert") {
+  externs_list = [ "//third_party/chaijs/externs/chai-3.5.js" ]
+}
+
 js_library("fake_network_config_mojom") {
   deps = [
+    "//ash/webui/common/resources:promise_resolver",
     "//ash/webui/common/resources/network:onc_mojo",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:promise_resolver",
   ]
 }
 
 js_library("mock_controller.m") {
+}
+
+js_library("test_browser_proxy") {
+  deps = [ "//ash/webui/common/resources:promise_resolver" ]
 }
 
 js_library("test_util") {

@@ -163,24 +163,22 @@ TEST_F(PageTimingMetricsSenderTest, SendInputEvents) {
   validator_.VerifyExpectedInputTiming();
 }
 
-TEST_F(PageTimingMetricsSenderTest, SendMobileFriendlinessEvents) {
+TEST_F(PageTimingMetricsSenderTest, SendSubresourceLoadMetrics) {
   mojom::PageLoadTiming timing;
-  blink::MobileFriendliness mobile_friendliness;
-  mobile_friendliness.viewport_hardcoded_width = 480;
-  mobile_friendliness.allow_user_zoom = true;
   InitPageLoadTimingForTest(&timing);
   metrics_sender_->Update(timing.Clone(),
                           PageTimingMetadataRecorder::MonotonicTiming());
   validator_.ExpectPageLoadTiming(timing);
 
-  metrics_sender_->DidObserveMobileFriendlinessChanged(mobile_friendliness);
+  metrics_sender_->DidObserveSubresourceLoad(5, 2);
 
-  blink::MobileFriendliness expected_mf;
-  expected_mf.viewport_hardcoded_width = 480;
-  expected_mf.allow_user_zoom = true;
-  validator_.UpdateExpectedMobileFriendliness(expected_mf);
+  mojom::SubresourceLoadMetricsPtr expected =
+      mojom::SubresourceLoadMetrics::New();
+  expected->number_of_subresources_loaded = 5;
+  expected->number_of_subresource_loads_handled_by_service_worker = 2;
+  validator_.UpdateExpectedSubresourceLoadMetrics(*expected);
   metrics_sender_->mock_timer()->Fire();
-  validator_.VerifyExpectedMobileFriendliness();
+  validator_.VerifyExpectedSubresourceLoadMetrics();
 }
 
 TEST_F(PageTimingMetricsSenderTest, SendSingleFeature) {

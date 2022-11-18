@@ -352,6 +352,7 @@ mojom("url_loader_base") {
     "network_change_manager.mojom",
     "network_interface.mojom",
     "network_types.mojom",
+    "no_vary_search.mojom",
     "parsed_headers.mojom",
     "referrer_policy.mojom",
     "request_priority.mojom",
@@ -938,6 +939,7 @@ mojom("cookies_mojom") {
     ":mojom_schemeful_site",
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",
+    "//sandbox/policy/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -1052,6 +1054,10 @@ mojom("cookies_mojom") {
         {
           mojom = "network.mojom.CookieSourceScheme"
           cpp = "::net::CookieSourceScheme"
+        },
+        {
+          mojom = "network.mojom.HttpMethod"
+          cpp = "::net::CookieOptions::SameSiteCookieContext::ContextMetadata::HttpMethod"
         },
       ]
       traits_headers =

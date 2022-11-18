@@ -165,7 +165,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.BackgroundTokenizer.AverageTokensAvailablePerCall"
-    units="Average number of tokens" expires_after="2023-03-12">
+    units="Average number of tokens" expires_after="2023-05-14">
   <owner>sky@chromium.org</owner>
   <owner>swarm-team@chromium.org</owner>
   <summary>
@@ -192,7 +192,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.BackgroundTokenizer.DidCompleteSuccessfully"
-    units="Boolean" expires_after="2023-03-12">
+    units="Boolean" expires_after="2023-05-14">
   <owner>sky@chromium.org</owner>
   <owner>swarm-team@chromium.org</owner>
   <summary>
@@ -287,6 +287,18 @@ chromium-metrics-reviews@google.com.
     Reports the maximum number or canvas resources used at any one time by a
     canvas resource provider. Logged in the destructor of
     CanvasResourceProvider.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Canvas.MaximumStateStackDepth" units="stack depth"
+    expires_after="2023-11-01">
+  <owner>junov@chromium.org</owner>
+  <owner>fserb@chromium.org</owner>
+  <summary>
+    Reports the maximum depth of the state stack over the lifetime of a 2d
+    rendering context. Metric is recorded once per instance of
+    CanvasRenderingContext2D, OffscreenRenderingContext2D, and
+    PaintRenderingContext2D; at context destruction time.
   </summary>
 </histogram>
 
@@ -890,7 +902,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.ApprovedClientsExistence" enum="Boolean"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -900,7 +912,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.ApprovedClientsSize" units="clients"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1017,7 +1029,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Status.RequestIdToken"
-    enum="FedCmRequestIdTokenStatus" expires_after="2023-03-12">
+    enum="FedCmRequestIdTokenStatus" expires_after="2023-05-14">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1082,7 +1094,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Timing.ShowAccountsDialog" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1103,7 +1115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.WebContentsVisible" enum="Boolean"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1992,6 +2004,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.LocalFrameRoot.DidReachFirstContentfulPaint.MainFrame"
+    units="Boolean" expires_after="2023-03-19">
+  <owner>pdr@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Reports if the main frame ever receives a FirstContentfulPaint signal. Only
+    recorded for main frame local frame roots that run at least one main frame
+    update.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Blink.MainFrame.UpdateTime" units="microseconds"
     expires_after="2023-03-19">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
@@ -2040,6 +2063,20 @@ chromium-metrics-reviews@google.com.
     Note: The histograms with PreFCP/PostFCP/AggregatedPreFCP suffixes before
     105.0.5175.0 were impacted by https://crbug.com/1330675. Be careful when
     aggregating or comparing these histograms across the version.
+  </summary>
+</histogram>
+
+<histogram name="Blink.MemoryCache.CrossDocumentCachedResource"
+    enum="ResourceType" expires_after="2023-04-01">
+  <owner>gjc@chromium.org</owner>
+  <owner>blink-network-dev@chromium.org</owner>
+  <summary>
+    Type of cached resources reused across Documents when loading a new document
+    in the same renderer. Recorded by the ResourceFetcher when a resource is
+    requested for a new document. If the resource is available from the memory
+    cache and previously loaded by a different document, the resource will be
+    considered as reused. Repetitive requests to the same url in a document will
+    be counted only once.
   </summary>
 </histogram>
 
@@ -3380,7 +3417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.WebCodecs.ImageDecoder.Success" enum="BooleanSuccess"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -3390,7 +3427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.WebCodecs.ImageDecoder.Type" enum="DecodedImageType"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>dalecurtis@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>

@@ -510,17 +510,6 @@
           'shards': 20,
         },
       },
-      'webview_instrumentation_test_apk_persistent_shell': {
-        'args': [
-          '--use-persistent-shell',
-        ],
-        'ci_only': True,
-        'test': 'webview_instrumentation_test_apk',
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 9,
-        },
-      },
     },
 
     'chrome_public_tests': {
@@ -601,7 +590,6 @@
           'flame',
           'marshmallow',
           'mdarcy',
-          'nougat_generic',
           'oreo_fleet',
           'pie_fleet',
           'walleye',
@@ -1609,7 +1597,6 @@
           'flame',
           'marshmallow',
           'mdarcy',
-          'nougat_generic',
           'oreo_fleet',
           'pie_fleet',
           'walleye',
@@ -3535,6 +3522,9 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
           '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
         'android_args': [
           '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
         ],
@@ -3543,6 +3533,9 @@
         ],
         'swarming': {
           'shards': 6,
+        },
+        'chromeos_swarming': {
+          'shards': 20,
         },
       },
     },
@@ -4296,7 +4289,6 @@
           'flame',
           'marshmallow',
           'mdarcy',
-          'nougat_generic',
           'oreo_fleet',
           'pie_fleet',
           'walleye',
@@ -4859,6 +4851,7 @@
     'updater_gtests_mac': {
       'updater_tests': {
         'args': [
+          '--gtest_shuffle',
           # Timeouts based on empirical observations of test runtimes, 2021-07.
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
@@ -4867,6 +4860,7 @@
       },
       'updater_tests_system': {
         'args': [
+          '--gtest_shuffle',
           # Timeouts based on empirical observations of test runtimes, 2021-07.
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
@@ -4886,6 +4880,7 @@
     'updater_gtests_win': {
       'updater_tests': {
         'args': [
+          '--gtest_shuffle',
           # Timeouts based on empirical observations of test runtimes, 2021-07.
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
@@ -4894,6 +4889,7 @@
       },
       'updater_tests_system': {
         'args': [
+          '--gtest_shuffle',
           # Timeouts based on empirical observations of test runtimes, 2021-07.
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
@@ -4912,6 +4908,7 @@
     'updater_gtests_win_uac': {
       'updater_tests_system': {
         'args': [
+          '--gtest_shuffle',
           # Timeouts based on empirical observations of test runtimes, 2021-07.
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
@@ -4928,6 +4925,7 @@
       },
       'updater_tests_win_uac': {
         'args': [
+          '--gtest_shuffle',
           # Timeouts based on empirical observations of test runtimes, 2021-07.
           '--test-launcher-timeout=90000',
           '--ui-test-action-max-timeout=45000',
@@ -5219,26 +5217,6 @@
       },
     },
 
-    'win7_32_bit_gtests': {
-      'base_unittests': {},
-      'browser_tests': {
-        'swarming': {
-          'shards': 10,
-        },
-      },
-      'sbox_integration_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ],
-        },
-      },
-      'sbox_unittests': {},
-      'sbox_validation_tests': {},
-    },
-
     'win_specific_chromium_gtests': {
       'chrome_cleaner_unittests': {},
       'chrome_elf_unittests': {},
@@ -5487,6 +5465,30 @@
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
+    'wpt_web_tests_not_site_per_process': {
+      'wpt_tests_suite_not_site_per_process': {
+        'args': [
+          '--child-processes=8',
+          '--log-wptreport',
+          '--xvfb',
+          '--flag-specific',
+          'disable-site-isolation-trials',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 10,
         },
         'experiment_percentage': 100,
       },
@@ -5958,6 +5960,8 @@
     ],
 
     'gpu_chromeos_telemetry_tests': [
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
@@ -6404,6 +6408,7 @@
 
     'wpt_web_tests_content_shell_multiple_flags': [
       'wpt_web_tests_content_shell',
+      'wpt_web_tests_not_site_per_process',
       'wpt_web_tests_layout_ng_disabled',
       'wpt_web_tests_highdpi',
     ],

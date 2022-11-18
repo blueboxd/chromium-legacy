@@ -818,7 +818,7 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
   UpdateForSameDocumentNavigation(
       new_url, history_item, same_document_navigation_type, std::move(data),
       type, frame_->DomWindow()->GetSecurityOrigin(), is_browser_initiated,
-      is_synchronously_committed);
+      is_synchronously_committed, absl::nullopt);
 }
 
 void DocumentLoader::UpdateForSameDocumentNavigation(
@@ -829,7 +829,9 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     WebFrameLoadType type,
     const SecurityOrigin* initiator_origin,
     bool is_browser_initiated,
-    bool is_synchronously_committed) {
+    bool is_synchronously_committed,
+    absl::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   DCHECK_EQ(IsBackForwardLoadType(type), !!history_item);
 
   if (frame_->IsMainFrame() && type == WebFrameLoadType::kBackForward) {
@@ -927,8 +929,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   if (should_send_stop_notification)
     GetFrameLoader().Progress().ProgressCompleted();
 
-  if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow()))
-    navigation_api->UpdateForNavigation(*history_item_, type);
+  frame_->DomWindow()->navigation()->UpdateForNavigation(*history_item_, type);
   if (!frame_)
     return;
 
@@ -946,7 +947,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       scoped_refptr<SerializedScriptValue> state_object =
           history_item ? history_item->StateObject()
                        : SerializedScriptValue::NullValue();
-      frame_->DomWindow()->DispatchPopstateEvent(std::move(state_object));
+      frame_->DomWindow()->DispatchPopstateEvent(
+          std::move(state_object), soft_navigation_heuristics_task_id);
     }
   }
 }
@@ -1394,7 +1396,9 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     const SecurityOrigin* initiator_origin,
     bool is_synchronously_committed,
     mojom::blink::TriggeringEventInfo triggering_event_info,
-    bool is_browser_initiated) {
+    bool is_browser_initiated,
+    absl::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   DCHECK(!IsReloadLoadType(frame_load_type));
   DCHECK(frame_->GetDocument());
   DCHECK(!is_browser_initiated || !is_synchronously_committed);
@@ -1443,25 +1447,23 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
 
   mojom::blink::SameDocumentNavigationType same_document_navigation_type =
       mojom::blink::SameDocumentNavigationType::kFragment;
-  if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow())) {
-    auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
-        url, NavigateEventType::kFragment, frame_load_type);
-    if (is_browser_initiated) {
-      params->involvement = UserNavigationInvolvement::kBrowserUI;
-    } else if (triggering_event_info ==
-               mojom::blink::TriggeringEventInfo::kFromTrustedEvent) {
-      params->involvement = UserNavigationInvolvement::kActivation;
-    }
-    params->destination_item = history_item;
-    params->is_browser_initiated = is_browser_initiated;
-    params->is_synchronously_committed_same_document =
-        is_synchronously_committed;
-    auto dispatch_result = navigation_api->DispatchNavigateEvent(params);
-    if (dispatch_result == NavigationApi::DispatchResult::kAbort)
-      return mojom::blink::CommitResult::Aborted;
-    if (dispatch_result == NavigationApi::DispatchResult::kIntercept)
-      return mojom::blink::CommitResult::Ok;
+  auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
+      url, NavigateEventType::kFragment, frame_load_type);
+  if (is_browser_initiated) {
+    params->involvement = UserNavigationInvolvement::kBrowserUI;
+  } else if (triggering_event_info ==
+             mojom::blink::TriggeringEventInfo::kFromTrustedEvent) {
+    params->involvement = UserNavigationInvolvement::kActivation;
   }
+  params->destination_item = history_item;
+  params->is_browser_initiated = is_browser_initiated;
+  params->is_synchronously_committed_same_document = is_synchronously_committed;
+  auto dispatch_result =
+      frame_->DomWindow()->navigation()->DispatchNavigateEvent(params);
+  if (dispatch_result == NavigationApi::DispatchResult::kAbort)
+    return mojom::blink::CommitResult::Aborted;
+  if (dispatch_result == NavigationApi::DispatchResult::kIntercept)
+    return mojom::blink::CommitResult::Ok;
 
   // If the requesting document is cross-origin, perform the navigation
   // asynchronously to minimize the navigator's ability to execute timing
@@ -1479,7 +1481,8 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
                 WrapPersistent(history_item), same_document_navigation_type,
                 client_redirect_policy, has_transient_user_activation,
                 WTF::RetainedRef(initiator_origin), is_browser_initiated,
-                is_synchronously_committed, triggering_event_info));
+                is_synchronously_committed, triggering_event_info,
+                soft_navigation_heuristics_task_id));
   } else {
     // Treat a navigation to the same url as replacing only if it did not
     // originate from a cross-origin iframe. If |is_synchronously_committed| is
@@ -1491,8 +1494,8 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     CommitSameDocumentNavigationInternal(
         url, frame_load_type, history_item, same_document_navigation_type,
         client_redirect_policy, has_transient_user_activation, initiator_origin,
-        is_browser_initiated, is_synchronously_committed,
-        triggering_event_info);
+        is_browser_initiated, is_synchronously_committed, triggering_event_info,
+        soft_navigation_heuristics_task_id);
   }
   return mojom::CommitResult::Ok;
 }
@@ -1507,7 +1510,9 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     const SecurityOrigin* initiator_origin,
     bool is_browser_initiated,
     bool is_synchronously_committed,
-    mojom::blink::TriggeringEventInfo triggering_event_info) {
+    mojom::blink::TriggeringEventInfo triggering_event_info,
+    absl::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   // If this function was scheduled to run asynchronously, this DocumentLoader
   // might have been detached before the task ran.
   if (!frame_)
@@ -1561,7 +1566,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   UpdateForSameDocumentNavigation(
       url, history_item, same_document_navigation_type, nullptr,
       frame_load_type, initiator_origin, is_browser_initiated,
-      is_synchronously_committed);
+      is_synchronously_committed, soft_navigation_heuristics_task_id);
   if (!frame_)
     return;
 
@@ -2565,11 +2570,10 @@ void DocumentLoader::CommitNavigation() {
   // or opaque-origin documents.
   if (commit_reason_ != CommitReason::kInitialization &&
       !frame_->DomWindow()->GetSecurityOrigin()->IsOpaque()) {
-    NavigationApi::From(*frame_->DomWindow())
-        ->InitializeForNewWindow(*history_item_, load_type_, commit_reason_,
-                                 NavigationApi::navigation(*previous_window),
-                                 navigation_api_back_entries_,
-                                 navigation_api_forward_entries_);
+    frame_->DomWindow()->navigation()->InitializeForNewWindow(
+        *history_item_, load_type_, commit_reason_,
+        previous_window->navigation(), navigation_api_back_entries_,
+        navigation_api_forward_entries_);
     // Now that the navigation API's entries array is initialized, we don't need
     // to retain the state from which it was initialized.
     navigation_api_back_entries_.Clear();
@@ -2693,6 +2697,11 @@ void DocumentLoader::CreateParserPostCommit() {
           loading_behavior |
           kLoadingBehaviorServiceWorkerFetchHandlerSkippable);
     }
+    if (!response_.WasFetchedViaServiceWorker()) {
+      loading_behavior = static_cast<LoadingBehaviorFlag>(
+          loading_behavior |
+          kLoadingBehaviorServiceWorkerMainResourceFetchFallback);
+    }
     GetLocalFrameClient().DidObserveLoadingBehavior(loading_behavior);
   }
 
@@ -2742,20 +2751,18 @@ void DocumentLoader::CreateParserPostCommit() {
     document->SetEncodingData(data);
   }
 
-  if (base::FeatureList::IsEnabled(features::kEarlyBodyLoad)) {
-    if (frame_ && body_loader_ && !loading_main_document_from_mhtml_archive_ &&
-        !loading_url_as_empty_document_ && url_.ProtocolIsInHTTPFamily() &&
-        !is_static_data_ && frame_->IsMainFrame() &&
-        !document->IsPrefetchOnly() && MimeType() == "text/html") {
-      parser_->SetIsPreloading(true);
-      body_loader_->StartLoadingBody(this);
+  if (frame_ && body_loader_ && !loading_main_document_from_mhtml_archive_ &&
+      !loading_url_as_empty_document_ && url_.ProtocolIsInHTTPFamily() &&
+      !is_static_data_ && frame_->IsMainFrame() &&
+      !document->IsPrefetchOnly() && MimeType() == "text/html") {
+    parser_->SetIsPreloading(true);
+    body_loader_->StartLoadingBody(this);
 
-      if (!frame_ || !body_loader_)
-        return;
-    }
-
-    frame_->DomWindow()->GetScriptController().UpdateDocument();
+    if (!frame_ || !body_loader_)
+      return;
   }
+
+  frame_->DomWindow()->GetScriptController().UpdateDocument();
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 
@@ -3203,6 +3210,14 @@ WebArchiveInfo DocumentLoader::GetArchiveInfo() const {
 // static
 void DocumentLoader::DisableCodeCacheForTesting() {
   GetDisableCodeCacheForTesting() = true;
+}
+
+void DocumentLoader::UpdateSubresourceLoadMetrics(
+    uint32_t number_of_subresources_loaded,
+    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+  GetLocalFrameClient().DidObserveSubresourceLoad(
+      number_of_subresources_loaded,
+      number_of_subresource_loads_handled_by_service_worker);
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)

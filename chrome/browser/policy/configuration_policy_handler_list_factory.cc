@@ -154,6 +154,7 @@
 #include "chrome/browser/ash/app_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_handler.h"
 #include "chrome/browser/ash/borealis/borealis_prefs.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_policy_handler.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_policy_handler.h"
@@ -687,9 +688,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kForceYouTubeRestrict,
     prefs::kForceYouTubeRestrict,
     base::Value::Type::INTEGER },
-  { key::kSetTimeoutWithout1MsClampEnabled,
-    policy_prefs::kSetTimeoutWithout1MsClampEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kDefaultCookiesSetting,
     prefs::kManagedDefaultCookiesSetting,
     base::Value::Type::INTEGER },
@@ -1748,6 +1746,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEventPathEnabled,
     policy_prefs::kEventPathEnabled,
     base::Value::Type::BOOLEAN},
+  { key::kOffsetParentNewSpecBehaviorEnabled,
+    policy_prefs::kOffsetParentNewSpecBehaviorEnabled,
+    base::Value::Type::BOOLEAN},
+  { key::kSendMouseEventsDisabledFormControlsEnabled,
+    policy_prefs::kSendMouseEventsDisabledFormControlsEnabled,
+    base::Value::Type::BOOLEAN},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kDeviceAutofillSAMLUsername,
     ash::prefs::kUrlParameterToAutofillSAMLUsername,
@@ -2372,6 +2376,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kSystemTerminalSshAllowed,
       crostini::prefs::kTerminalSshAllowedByPolicy));
   handlers->AddHandler(std::make_unique<OsColorModePolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<bruschetta::BruschettaPolicyHandler>(chrome_schema));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // On most platforms, there is a legacy policy

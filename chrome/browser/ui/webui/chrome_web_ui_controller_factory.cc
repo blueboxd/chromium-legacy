@@ -84,6 +84,7 @@
 #include "components/history_clusters/history_clusters_internals/webui/url_constants.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/optimization_guide/optimization_guide_internals/webui/url_constants.h"
+#include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/buildflags.h"
@@ -480,8 +481,8 @@ WebUIController* NewWebUI<HistoryClustersInternalsUI>(WebUI* web_ui,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 template <>
-WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
-  return new chromeos::OobeUI(web_ui, url);
+WebUIController* NewWebUI<ash::OobeUI>(WebUI* web_ui, const GURL& url) {
+  return new ash::OobeUI(web_ui, url);
 }
 
 template <>
@@ -861,7 +862,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
        url.host_piece() == chrome::kChromeUIExtensionsHost ||
        url.host_piece() == chrome::kChromeUINewTabPageHost ||
        url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost ||
-       url.host_piece() == chrome::kChromeUIPasswordManagerHost)) {
+       url.host_piece() == password_manager::kChromeUIPasswordManagerHost)) {
     return &NewWebUI<PageNotAvailableForGuestUI>;
   }
   if (url.host_piece() == chrome::kChromeUIAppServiceInternalsHost)
@@ -869,7 +870,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Bookmarks are part of NTP on Android.
   if (url.host_piece() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
-  if (url.host_piece() == chrome::kChromeUIPasswordManagerHost &&
+  if (url.host_piece() == password_manager::kChromeUIPasswordManagerHost &&
       base::FeatureList::IsEnabled(
           password_manager::features::kPasswordManagerRedesign))
     return &NewWebUI<PasswordManagerUI>;
@@ -967,7 +968,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ash::cellular_setup::MobileSetupUI>;
   if (url.host_piece() == chrome::kChromeUIOobeHost) {
     if (ash::ProfileHelper::IsSigninProfile(profile)) {
-      return &NewWebUI<chromeos::OobeUI>;
+      return &NewWebUI<ash::OobeUI>;
     }
     return nullptr;
   }
@@ -1001,19 +1002,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       ash::features::IsProjectorAnnotatorEnabled() &&
       IsProjectorAppEnabled(profile)) {
     return &NewWebUI<ash::TrustedProjectorAnnotatorUI>;
-  }
-  if (arc::IsArcAllowedForProfile(profile)) {
-    if (url.host_piece() == chrome::kChromeUIArcGraphicsTracingHost) {
-      return &NewWebUI<
-          ash::ArcGraphicsTracingUI<ash::ArcGraphicsTracingMode::kFull>>;
-    }
-    if (url.host_piece() == chrome::kChromeUIArcOverviewTracingHost) {
-      return &NewWebUI<
-          ash::ArcGraphicsTracingUI<ash::ArcGraphicsTracingMode::kOverview>>;
-    }
-    if (url.host_piece() == chrome::kChromeUIArcPowerControlHost) {
-      return &NewWebUI<ash::ArcPowerControlUI>;
-    }
   }
   if (url.host_piece() == ash::eche_app::kChromeUIEcheAppHost &&
       base::FeatureList::IsEnabled(ash::features::kEcheSWA)) {
@@ -1409,7 +1397,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes(scale_factor);
 
-  if (page_url.host_piece() == chrome::kChromeUIPasswordManagerHost)
+  if (page_url.host_piece() == password_manager::kChromeUIPasswordManagerHost)
     return PasswordManagerUI::GetFaviconResourceBytes(scale_factor);
 
   // Android uses the native download manager.

@@ -81,6 +81,10 @@ BASE_FEATURE(kServiceWorkerStorageControlOnIOThread,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
+BASE_FEATURE(kServiceWorkerStorageControlOnThreadPool,
+             "ServiceWorkerStorageControlOnThreadPool",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 void DidFindRegistrationForStartActiveWorker(
     ServiceWorkerContextWrapper::StatusCallback callback,
     blink::ServiceWorkerStatusCode status,
@@ -1554,6 +1558,24 @@ void ServiceWorkerContextWrapper::BindStorageControl(
 
   if (storage_control_binder_for_test_) {
     storage_control_binder_for_test_.Run(std::move(receiver));
+  } else if (base::FeatureList::IsEnabled(
+                 kServiceWorkerStorageControlOnThreadPool)) {
+    // The database task runner is BLOCK_SHUTDOWN in order to support
+    // ClearSessionOnlyOrigins() (called due to the "clear on browser exit"
+    // content setting).
+    // The ServiceWorkerStorageControl receiver runs on thread pool by using
+    // |database_task_runner| SequencedTaskRunner.
+    // TODO(falken): Only block shutdown for that particular task, when someday
+    // task runners support mixing task shutdown behaviors.
+    scoped_refptr<base::SequencedTaskRunner> database_task_runner =
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+    database_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(
+                           &storage::ServiceWorkerStorageControlImpl::Create),
+                       std::move(receiver), user_data_directory_,
+                       database_task_runner));
   } else if (run_storage_control_on_ui_thread) {
     // TODO(crbug.com/1055677): Use storage_partition() to bind the control when
     // ServiceWorkerStorageControl is sandboxed in the Storage Service.
@@ -1690,26 +1712,35 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
       loader_factory_bundle_info =
           context()->loader_factory_bundle_for_update_check()->Clone();
 
-  if (base::FeatureList::IsEnabled(
-          features::kEnableServiceWorkersForChromeUntrusted) &&
-      scope.scheme_piece() == kChromeUIUntrustedScheme) {
-    // If this is a Service Worker for a WebUI, the WebUI's URLDataSource needs
-    // to be registered. Registering a URLDataSource allows the
+  if (auto* config = content::WebUIConfigMap::GetInstance().GetConfig(
+          browser_context(), scope_origin)) {
+    // If this is a Service Worker for a WebUI, the WebUI's URLDataSource
+    // needs to be registered. Registering a URLDataSource allows the
     // WebUIURLLoaderFactory below to serve the resources for the WebUI. We
-    // register the URLDataSource here because the WebUI's resources are needed
-    // for the Service Worker update check to be performed which fetches the
-    // service worker script.
+    // register the URLDataSource here because the WebUI's resources are
+    // needed for the Service Worker update check to be performed which
+    // fetches the service worker script.
     //
     // This is similar to how we create a `WebUI` object in
     // RenderFrameHostManager::GetFrameHostForNavigation(). Creating a `WebUI`
-    // also creates a `WebUIController` which register the URLDataSource for the
-    // WebUI which allows the navigation to be served correctly. We don't create
-    // a `WebUI` or a `WebUIController` for WebUI Service Workers so we
+    // also creates a `WebUIController` which register the URLDataSource for
+    // the WebUI which allows the navigation to be served correctly. We don't
+    // create a `WebUI` or a `WebUIController` for WebUI Service Workers so we
     // register the URLDataSource directly.
-    if (auto* config = content::WebUIConfigMap::GetInstance().GetConfig(
-            browser_context(), scope_origin)) {
+    if (base::FeatureList::IsEnabled(
+            features::kEnableServiceWorkersForChromeScheme) &&
+        scope.scheme_piece() == kChromeUIScheme) {
       config->RegisterURLDataSource(browser_context());
-
+      static_cast<blink::PendingURLLoaderFactoryBundle*>(
+          loader_factory_bundle_info.get())
+          ->pending_scheme_specific_factories()
+          .emplace(kChromeUIScheme, CreateWebUIServiceWorkerLoaderFactory(
+                                        browser_context(), kChromeUIScheme,
+                                        base::flat_set<std::string>()));
+    } else if (base::FeatureList::IsEnabled(
+                   features::kEnableServiceWorkersForChromeUntrusted) &&
+               scope.scheme_piece() == kChromeUIUntrustedScheme) {
+      config->RegisterURLDataSource(browser_context());
       static_cast<blink::PendingURLLoaderFactoryBundle*>(
           loader_factory_bundle_info.get())
           ->pending_scheme_specific_factories()

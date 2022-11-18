@@ -5,21 +5,23 @@
 #include "chrome/browser/apps/app_preload_service/app_preload_server_connector.h"
 
 #include "base/callback.h"
-#include "base/json/json_writer.h"
+#include "base/strings/strcat.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_preload_service/almanac_api_util.h"
 #include "chrome/browser/apps/app_preload_service/device_info_manager.h"
 #include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 #include "chrome/browser/apps/app_preload_service/proto/app_provisioning.pb.h"
 #include "chrome/browser/apps/user_type_filter.h"
+#include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 
-// TODO(b/249427934): Temporary test data.
-static constexpr char kServerUrl[] =
-    "http://localhost:9876/v1/app_provisioning/apps?alt=proto";
+// Endpoint for requesting app preload data on the ChromeOS Almanac API.
+constexpr char kAppPreloadAlmanacEndpoint[] =
+    "/v1/app_provisioning/apps?alt=proto";
 
 // Maximum accepted size of an APS Response. 1MB.
 constexpr int kMaxResponseSizeInBytes = 1024 * 1024;
@@ -61,22 +63,20 @@ apps::proto::AppProvisioningRequest::UserType ConvertStringUserTypeToProto(
 }
 
 std::string BuildGetAppsForFirstLoginRequestBody(const apps::DeviceInfo& info) {
-  base::Value::Dict request;
-  request.Set("board", info.board);
-  request.Set("model", info.model);
-  request.Set("language", info.locale);
-  request.Set("user_type", ConvertStringUserTypeToProto(info.user_type));
+  apps::proto::AppProvisioningRequest request_proto;
+  request_proto.set_board(info.board);
+  request_proto.set_model(info.model);
+  request_proto.set_language(info.locale);
+  request_proto.set_user_type(ConvertStringUserTypeToProto(info.user_type));
   // TODO(b/258566986): Load the device's real SKU ID.
-  request.Set("sku_id", "unknown");
+  request_proto.set_sku_id("unknown");
 
-  base::Value::Dict versions;
-  versions.Set("ash_chrome", info.version_info.ash_chrome);
-  versions.Set("platform", info.version_info.platform);
-  request.Set("chrome_os_version", std::move(versions));
+  request_proto.mutable_chrome_os_version()->set_ash_chrome(
+      info.version_info.ash_chrome);
+  request_proto.mutable_chrome_os_version()->set_platform(
+      info.version_info.platform);
 
-  std::string request_body;
-  base::JSONWriter::Write(request, &request_body);
-  return request_body;
+  return request_proto.SerializeAsString();
 }
 
 }  // namespace
@@ -93,24 +93,32 @@ void AppPreloadServerConnector::GetAppsForFirstLogin(
     GetInitialAppsCallback callback) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
 
-  resource_request->url = GURL(kServerUrl);
+  resource_request->url = GetServerUrl();
   DCHECK(resource_request->url.is_valid());
 
   // A POST request is sent with an override to GET due to server requirements.
   resource_request->method = "POST";
   resource_request->headers.SetHeader("X-HTTP-Method-Override", "GET");
+  resource_request->headers.SetHeader("X-Goog-Api-Key",
+                                      google_apis::GetAPIKey());
 
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                              kTrafficAnnotation);
   loader_->AttachStringForUpload(
-      BuildGetAppsForFirstLoginRequestBody(device_info), "application/json");
+      BuildGetAppsForFirstLoginRequestBody(device_info),
+      "application/x-protobuf");
   loader_->DownloadToString(
       url_loader_factory.get(),
       base::BindOnce(&AppPreloadServerConnector::OnGetAppsForFirstLoginResponse,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       kMaxResponseSizeInBytes);
+}
+
+// static
+GURL AppPreloadServerConnector::GetServerUrl() {
+  return GURL(base::StrCat({GetAlmanacApiUrl(), kAppPreloadAlmanacEndpoint}));
 }
 
 void AppPreloadServerConnector::OnGetAppsForFirstLoginResponse(

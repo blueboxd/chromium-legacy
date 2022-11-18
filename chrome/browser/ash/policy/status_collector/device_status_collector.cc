@@ -2159,11 +2159,13 @@ void DeviceStatusCollector::FetchCrosHealthdData(
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
 
-  ash::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
-      probe_categories,
-      base::BindOnce(&DeviceStatusCollector::SampleProbeData,
-                     weak_factory_.GetWeakPtr(), std::move(sample),
-                     std::move(completion_callback)));
+  ash::cros_healthd::ServiceConnection::GetInstance()
+      ->GetProbeService()
+      ->ProbeTelemetryInfo(
+          probe_categories,
+          base::BindOnce(&DeviceStatusCollector::SampleProbeData,
+                         weak_factory_.GetWeakPtr(), std::move(sample),
+                         std::move(completion_callback)));
 }
 
 void DeviceStatusCollector::OnProbeDataFetched(
@@ -2282,10 +2284,10 @@ bool DeviceStatusCollector::GetVersionInfo(
 
 bool DeviceStatusCollector::GetWriteProtectSwitch(
     em::DeviceStatusReportRequest* status) {
-  std::string firmware_write_protect;
-  if (!statistics_provider_->GetMachineStatistic(
-          chromeos::system::kFirmwareWriteProtectCurrentKey,
-          &firmware_write_protect)) {
+  const absl::optional<base::StringPiece> firmware_write_protect =
+      statistics_provider_->GetMachineStatistic(
+          chromeos::system::kFirmwareWriteProtectCurrentKey);
+  if (!firmware_write_protect) {
     return false;
   }
 

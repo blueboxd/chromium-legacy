@@ -51,7 +51,7 @@
 #include "chrome/updater/win/win_constants.h"
 #endif  // BUILDFLAG(IS_WIN)
 
-// TODO(noahrose): Enable tests once updater is implemented for Linux
+// TODO(1367437): Enable tests once updater is implemented for Linux
 #if !BUILDFLAG(IS_LINUX)
 
 namespace updater::test {
@@ -96,6 +96,8 @@ class IntegrationTest : public ::testing::Test {
                          true,    // enable_thread_id
                          true,    // enable_timestamp
                          false);  // enable_tickcount
+    CleanProcesses();
+    EXPECT_TRUE(WaitForUpdaterExit());
     Clean();
     ExpectClean();
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
@@ -108,11 +110,16 @@ class IntegrationTest : public ::testing::Test {
     if (!HasFatalFailure())
       ExpectClean();
     PrintLog();
+
     // TODO(crbug.com/1159189): Use a specific test output directory
     // because Uninstall() deletes the files under GetDataDirPath().
     CopyLog();
+
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // TearDownTestService();
+
+    // Updater process must not be running for `Clean()` to succeed.
+    EXPECT_TRUE(WaitForUpdaterExit());
     Clean();
   }
 

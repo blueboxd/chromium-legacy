@@ -14,6 +14,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -22,8 +23,7 @@ namespace ash {
 
 namespace {
 
-constexpr auto kBetweenKeyItemSpace = 10;
-constexpr auto kPadding = gfx::Insets::VH(8, 6);
+constexpr auto kBetweenKeyItemSpace = 8;
 
 std::vector<ui::KeyboardCode> DecodeModifiers(int modifiers) {
   std::vector<ui::KeyboardCode> modifier_vector;
@@ -42,7 +42,7 @@ std::vector<ui::KeyboardCode> DecodeModifiers(int modifiers) {
   return modifier_vector;
 }
 
-std::unique_ptr<views::View> CreateKeyItemView(ui::KeyboardCode key_code) {
+std::unique_ptr<KeyItemView> CreateKeyItemView(ui::KeyboardCode key_code) {
   std::unique_ptr key_item_view = std::make_unique<KeyItemView>();
   const gfx::VectorIcon* vector_icon = GetVectorIconForKeyboardCode(key_code);
   if (vector_icon) {
@@ -103,7 +103,7 @@ END_METADATA
 
 KeyComboView::KeyComboView() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, kPadding,
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kBetweenKeyItemSpace));
 }
 

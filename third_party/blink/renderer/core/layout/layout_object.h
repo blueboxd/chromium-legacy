@@ -1912,8 +1912,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Returns true if this object is a proper descendant of any list marker.
   bool IsInListMarker() const;
 
-  bool IsTextDecorationBoundary(NGStyleVariant) const;
-
   // The pseudo element style can be cached or uncached. Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
   // has no concept of changing state). The cached pseudo style always inherits
@@ -2149,6 +2147,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   virtual void InvalidateSubtreeLayoutForFontUpdates();
 
   void InvalidateIntersectionObserverCachedRects();
+
+  // Mark elements with a principal box and a computed position-fallback
+  // different from 'none' for layout when @position-fallback rules are removed
+  // or added. mark_style_dirty is true if the element should be marked dirty as
+  // well. mark_style_dirty is typically set to false if we are inside a subtree
+  // which is already marked for subtree recalc.
+  void InvalidateSubtreePositionFallback(bool mark_style_dirty);
 
  private:
   enum PositionedState {

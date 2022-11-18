@@ -12,6 +12,7 @@
 #include "base/bits.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
@@ -28,25 +29,11 @@ namespace {
 constexpr size_t kKFPeriod = 3000;
 
 // Quantization parameter. They are vp9 ac/dc indices and their ranges are
-// 0-255. Based on WebRTC's defaults.
-constexpr uint8_t kMinQP = 4;
-constexpr uint8_t kMaxQP = 112;
-// The upper limitation of the quantization parameter for the software rate
-// controller. This is larger than |kMaxQP| because a driver might ignore the
-// specified maximum quantization parameter when the driver determines the
-// value, but it doesn't ignore the quantization parameter by the software rate
-// controller.
-constexpr uint8_t kMaxQPForSoftwareRateCtrl = 224;
-
-// This stands for 31 as a real ac value (see rfc 8.6.1 table
-// ac_qlookup[3][256]). Note: This needs to be revisited once we have 10&12 bit
-// encoder support.
-constexpr uint8_t kDefaultQP = 24;
-
-// filter level may affect on quality at lower bitrates; for now,
-// we set a constant value (== 10) which is what other VA-API
-// implementations like libyami and gstreamer-vaapi are using.
-constexpr uint8_t kDefaultLfLevel = 10;
+// 0-255. These are based on WebRTC's defaults.
+constexpr uint8_t kMinQP = 8;
+constexpr uint8_t kMaxQP = 208;
+constexpr uint8_t kScreenMinQP = 32;
+constexpr uint8_t kScreenMaxQP = kMaxQP;
 
 // Convert Qindex, whose range is 0-255, to the quantizer parameter used in
 // libvpx vp9 rate control, whose range is 0-63.
@@ -194,6 +181,12 @@ bool VP9VaapiVideoEncoderDelegate::Initialize(
   coded_size_ = gfx::Size(base::bits::AlignUp(visible_size_.width(), 16),
                           base::bits::AlignUp(visible_size_.height(), 16));
   current_params_ = EncodeParams();
+  if (config.content_type ==
+      VideoEncodeAccelerator::Config::ContentType::kDisplay) {
+    current_params_.min_qp = kScreenMinQP;
+    current_params_.max_qp = kScreenMaxQP;
+  }
+
   reference_frames_.Clear();
   frame_num_ = 0;
 
@@ -238,7 +231,6 @@ bool VP9VaapiVideoEncoderDelegate::Initialize(
     }
     svc_layers_ = std::make_unique<VP9SVCLayers>(config.spatial_layers);
   }
-  current_params_.max_qp = kMaxQPForSoftwareRateCtrl;
 
   // Store layer size for vp9 simple stream.
   if (spatial_layer_resolutions.empty())
@@ -352,8 +344,8 @@ bool VP9VaapiVideoEncoderDelegate::ApplyPendingUpdateRates() {
   if (!pending_update_rates_)
     return true;
 
-  VLOGF(2) << "New bitrate: " << pending_update_rates_->first.ToString()
-           << ", New framerate: " << pending_update_rates_->second;
+  DVLOGF(2) << "New bitrate: " << pending_update_rates_->first.ToString()
+            << ", new framerate: " << pending_update_rates_->second;
 
   current_params_.bitrate_allocation = pending_update_rates_->first;
   current_params_.framerate = pending_update_rates_->second;
@@ -418,8 +410,6 @@ Vp9FrameHeader VP9VaapiVideoEncoderDelegate::GetDefaultFrameHeader(
   hdr.frame_height = visible_size_.height();
   hdr.render_width = visible_size_.width();
   hdr.render_height = visible_size_.height();
-  hdr.quant_params.base_q_idx = kDefaultQP;
-  hdr.loop_filter.level = kDefaultLfLevel;
   hdr.show_frame = true;
   hdr.frame_type =
       keyframe ? Vp9FrameHeader::KEYFRAME : Vp9FrameHeader::INTERFRAME;
@@ -475,10 +465,13 @@ void VP9VaapiVideoEncoderDelegate::SetFrameHeader(
             << static_cast<int>(picture->frame_hdr->quant_params.base_q_idx)
             << ", filter_level="
             << static_cast<int>(picture->frame_hdr->loop_filter.level)
-            << ", frame_params.temporal_layer_id:"
-            << frame_params.temporal_layer_id
-            << ", frame_params.spatial_layer_id:"
-            << frame_params.spatial_layer_id;
+            << (keyframe ? " (keyframe)" : "")
+            << (picture->metadata_for_encoding
+                    ? (" spatial_id=" +
+                       base::NumberToString(frame_params.spatial_layer_id) +
+                       ", temporal_id=" +
+                       base::NumberToString(frame_params.temporal_layer_id))
+                    : "");
 }
 
 void VP9VaapiVideoEncoderDelegate::UpdateReferenceFrames(

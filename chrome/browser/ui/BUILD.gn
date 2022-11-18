@@ -406,6 +406,7 @@ static_library("ui") {
     "//chrome/browser:resource_prefetch_predictor_proto",
     "//chrome/browser/autofill",
     "//chrome/browser/breadcrumbs",
+    "//chrome/browser/chrome_for_testing:buildflags",
     "//chrome/browser/devtools",
     "//chrome/browser/favicon",
     "//chrome/browser/google",
@@ -533,6 +534,7 @@ static_library("ui") {
     "//components/optimization_guide/optimization_guide_internals/webui",
     "//components/optimization_guide/optimization_guide_internals/webui:mojo_bindings",
     "//components/password_manager/content/browser",
+    "//components/password_manager/content/common",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/browser:import_results",
@@ -896,6 +898,7 @@ static_library("ui") {
         "webui/feed_internals/feedv2_internals_page_handler.cc",
         "webui/feed_internals/feedv2_internals_page_handler.h",
       ]
+      deps += [ "//chrome/browser/resources/feed_internals:resources" ]
     }
 
     deps += [
@@ -1769,6 +1772,13 @@ static_library("ui") {
       ]
     }
 
+    if (is_chrome_for_testing_branded) {
+      sources += [
+        "startup/chrome_for_testing_infobar_delegate.cc",
+        "startup/chrome_for_testing_infobar_delegate.h",
+      ]
+    }
+
     deps += [
       "//base",
       "//build:chromeos_buildflags",
@@ -1838,6 +1848,7 @@ static_library("ui") {
       "//components/network_session_configurator/common",
       "//components/page_load_metrics/browser",
       "//components/paint_preview/buildflags",
+      "//components/password_manager/content/common",
       "//components/performance_manager:site_data_proto",
       "//components/reading_list/features:flags",
       "//components/safe_browsing/core/common:safe_browsing_policy_handler",
@@ -2044,10 +2055,6 @@ static_library("ui") {
       "app_list/internal_app/internal_app_metadata.h",
       "app_list/md_icon_normalizer.cc",
       "app_list/md_icon_normalizer.h",
-      "app_list/page_break_app_item.cc",
-      "app_list/page_break_app_item.h",
-      "app_list/page_break_constants.cc",
-      "app_list/page_break_constants.h",
       "app_list/reorder/app_list_reorder_core.cc",
       "app_list/reorder/app_list_reorder_core.h",
       "app_list/reorder/app_list_reorder_delegate.h",
@@ -2092,8 +2099,6 @@ static_library("ui") {
       "app_list/search/common/string_util.h",
       "app_list/search/common/types_util.cc",
       "app_list/search/common/types_util.h",
-      "app_list/search/common/url_icon_source.cc",
-      "app_list/search/common/url_icon_source.h",
       "app_list/search/cros_action_history/cros_action_recorder.cc",
       "app_list/search/cros_action_history/cros_action_recorder.h",
       "app_list/search/cros_action_history/cros_action_recorder_tab_tracker.cc",
@@ -2198,8 +2203,6 @@ static_library("ui") {
       "app_list/search/search_metrics_manager.h",
       "app_list/search/search_provider.cc",
       "app_list/search/search_provider.h",
-      "app_list/search/search_tags_util.cc",
-      "app_list/search/search_tags_util.h",
       "app_list/search/util/ftrl_optimizer.cc",
       "app_list/search/util/ftrl_optimizer.h",
       "app_list/search/util/mrfu_cache.cc",
@@ -4704,8 +4707,6 @@ static_library("ui") {
       "views/omnibox/remove_suggestion_bubble.h",
       "views/omnibox/rounded_omnibox_results_frame.cc",
       "views/omnibox/rounded_omnibox_results_frame.h",
-      "views/overlay/back_to_tab_image_button.cc",
-      "views/overlay/back_to_tab_image_button.h",
       "views/overlay/back_to_tab_label_button.cc",
       "views/overlay/back_to_tab_label_button.h",
       "views/overlay/close_image_button.cc",
@@ -5328,6 +5329,8 @@ static_library("ui") {
         "views/frame/browser_frame_view_linux.h",
         "views/frame/browser_frame_view_linux_native.cc",
         "views/frame/browser_frame_view_linux_native.h",
+        "views/frame/browser_frame_view_paint_utils_linux.cc",
+        "views/frame/browser_frame_view_paint_utils_linux.h",
       ]
     }
 
@@ -5912,6 +5915,7 @@ static_library("test_support") {
   if (toolkit_views) {
     deps += [
       "//components/constrained_window:constrained_window",
+      "//components/webauthn/content/browser",
       "//ui/views:test_support",
     ]
     sources += [

@@ -50,6 +50,9 @@ BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
 // Feature flag that toggles the SwiftUI omnibox popup implementation.
 BASE_DECLARE_FEATURE(kIOSOmniboxUpdatedPopupUI);
 
+// Feature flag that removes the crash infobar.
+BASE_DECLARE_FEATURE(kRemoveCrashInfobar);
+
 // Parameter name for the parameter controlling which UI variation to use for
 // the SwiftUI omnibox popup.
 extern const char kIOSOmniboxUpdatedPopupUIVariationName[];
@@ -82,6 +85,9 @@ BASE_DECLARE_FEATURE(kEnableLensInKeyboard);
 
 // Feature flag to enable the Lens entrypoint in the new tab page.
 BASE_DECLARE_FEATURE(kEnableLensInNTP);
+
+// Feature flag to enable the Lens "Search copied image" omnibox entrypoint.
+BASE_DECLARE_FEATURE(kEnableLensInOmniboxCopiedImage);
 
 // Feature flag to enable duplicate NTP cleanup.
 BASE_DECLARE_FEATURE(kRemoveExcessNTPs);

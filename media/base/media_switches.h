@@ -112,6 +112,32 @@ MEDIA_EXPORT extern const char kHardwareVideoDecodeFrameRate[];
 MEDIA_EXPORT extern const char kMaxChromeOSDecoderThreads[];
 #endif
 
+// NOTE: callers should always use the free functions in
+// /media/cast/encoding/encoding_support.h instead of accessing these features
+// directly.
+//
+// If enabled, completely disables use of H264 hardware encoding for Cast
+// Streaming sessions. Takes precedence over
+// kCastStreamingForceEnableHardwareH264.
+MEDIA_EXPORT extern const char kCastStreamingForceDisableHardwareH264[];
+
+// If enabled, completely disables use of VP8 hardware encoding for Cast
+// Streaming sessions. Takes precedence over
+// kCastStreamingForceEnableHardwareVp8.
+MEDIA_EXPORT extern const char kCastStreamingForceDisableHardwareVp8[];
+
+// If enabled, allows use of H264 hardware encoding for Cast Streaming sessions,
+// even on platforms where it is disabled due to performance and reliability
+// issues. kCastStreamingForceDisableHardwareH264 must be disabled for this flag
+// to take effect.
+MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareH264[];
+
+// If enabled, allows use of VP8 hardware encoding for Cast Streaming sessions,
+// even on platforms where it is disabled due to performance and reliability
+// issues. kCastStreamingForceDisableHardwareVp8 must be disabled for this flag
+// to take effect.
+MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareVp8[];
+
 }  // namespace switches
 
 namespace media {
@@ -124,6 +150,13 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kAudioFocusLossSuspendMediaSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayIgnoreWebAudio);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayDisableSettings);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kBresenhamCadence);
+
+// NOTE: callers should always use the free functions in
+// /media/cast/encoding/encoding_support.h instead of accessing these features
+// directly.
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingAv1);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingVp9);
+
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCdmHostVerification);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCdmProcessSiteIsolation);
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
@@ -144,7 +177,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kExternalClearKeyForTesting);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kFFmpegDecodeOpaqueVP8);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kFailUrlProvisionFetcherForTesting);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kFallbackAfterDecodeError);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kGav1VideoDecoder);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControls);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControlsAutoDismiss);
 #if BUILDFLAG(IS_CHROMEOS)
@@ -183,7 +215,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaLearningFramework);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaLearningSmoothnessExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaOptimizer);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaPowerExperiment);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaSessionWebRTC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOpenscreenCastStreamingSession);
@@ -275,14 +306,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseAlternateVideoDecoderImplementation);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kDelayCopyNV12Textures);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kDirectShowGetPhotoState);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kIncludeIRCamerasInDeviceEnumeration);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaFoundationAV1Encoding);
-
-// For feature check of kMediaFoundationH264CbpEncoding at runtime,
-// please use IsMediaFoundationH264CbpEncodingEnabled() instead.
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaFoundationH264CbpEncoding);
-
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaFoundationVP9Encoding);
-
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaFoundationVideoCapture);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaFoundationVP8Decoding);
 
@@ -333,6 +356,10 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseOutOfProcessVideoEncoding);
 
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMojoVideoDecoderForPepper);
 
+#if BUILDFLAG(IS_FUCHSIA)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kFuchsiaMediacodecVideoEncoder);
+#endif  // BUILDFLAG(IS_FUCHSIA)
+
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy
 // if none is specified via the command line and options passed for testing.
@@ -346,7 +373,6 @@ MEDIA_EXPORT bool IsHardwareSecureDecryptionEnabled();
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 
 #if BUILDFLAG(IS_WIN)
-MEDIA_EXPORT bool IsMediaFoundationH264CbpEncodingEnabled();
 MEDIA_EXPORT bool IsMediaFoundationD3D11VideoCaptureEnabled();
 #endif
 

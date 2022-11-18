@@ -7,15 +7,23 @@ import("//chrome/browser/resources/tools/build_webui.gni")
 build_webui("build") {
   grd_prefix = "cloud_upload"
 
-  static_files = [ "main.html" ]
+  static_files = [
+    "icons/check.svg",
+    "icons/download.svg",
+    "main.html",
+  ]
   web_component_files = [
     "base_setup_page.ts",
-    "welcome_page.ts",
+    "drive_upload_page.ts",
+    "file_handler_page.ts",
+    "office_pwa_install_page.ts",
     "one_drive_upload_page.ts",
+    "welcome_page.ts",
   ]
   non_web_component_files = [
     "cloud_upload_browser_proxy.ts",
     "cloud_upload_dialog.ts",
+    "main.ts",
   ]
   mojo_files = [ "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom-webui.js" ]
   mojo_files_deps =

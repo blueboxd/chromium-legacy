@@ -54,6 +54,7 @@
 #include "cc/trees/ukm_manager.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/debug_utils.h"
 #include "content/common/features.h"
 #include "content/common/frame.mojom.h"
@@ -1558,6 +1559,7 @@ void RenderFrameImpl::CreateFrame(
         browser_interface_broker,
     mojo::PendingAssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
         associated_interface_provider,
+    blink::WebView* web_view,
     const absl::optional<blink::FrameToken>& previous_frame_token,
     const absl::optional<blink::FrameToken>& opener_frame_token,
     const absl::optional<blink::FrameToken>& parent_frame_token,
@@ -1573,12 +1575,11 @@ void RenderFrameImpl::CreateFrame(
   // TODO(danakj): Split this method into two pieces. The first block makes a
   // WebLocalFrame and collects the `blink::WebView` and RenderFrame for it. The
   // second block uses that to make a RenderWidget, if needed.
-  blink::WebView* web_view = nullptr;
   RenderFrameImpl* render_frame = nullptr;
   blink::WebLocalFrame* web_frame = nullptr;
   if (!previous_frame_token) {
     // TODO(alexmos): This path is currently used only:
-    // 1) When recreating a RenderFrame after a crash.
+    // 1) When recreating a non-main RenderFrame after a crash.
     // 2) In tests that issue this IPC directly.
     // These two cases should be cleaned up to also pass a previous_frame_token,
     // which would allow removing this branch altogether.  See
@@ -1599,7 +1600,13 @@ void RenderFrameImpl::CreateFrame(
           blink::WebFrame::FromFrameToken(previous_sibling_frame_token.value());
     }
 
+    // `web_view` would only be set by the function caller when creating a
+    // provisional local main frame for a new WebView, which is handled in the
+    // other branch of this if clause. Meanwhile, this branch handles subframe
+    // creation case only, and we should use the parent's WebView in that case.
+    CHECK(!web_view);
     web_view = parent_web_frame->View();
+
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame = RenderFrameImpl::Create(
         agent_scheduling_group, routing_id, std::move(frame_receiver),
@@ -1632,10 +1639,21 @@ void RenderFrameImpl::CreateFrame(
     if (!previous_web_frame)
       return;
 
-    web_view = previous_web_frame->View();
     // This path is creating a local frame. It may or may not be a local root,
-    // depending if the frame's parent is local or remote. It may also be the
-    // main frame, as in the case where a navigation to the current process'
+    // depending on whether the frame's parent is local or remote. It may also
+    // be the main frame, which will be a provisional frame that can either
+    // replace a remote main frame in the same WebView or a local main frame in
+    // a different WebView.
+    if (web_view) {
+      // When a `web_view` is set by the caller, it must be for a provisional
+      // main frame that will do a local frame swap. In this case, the WebView
+      // must be different from the previous frame's WebView.
+      CHECK(!previous_web_frame->Parent());
+      CHECK_NE(web_view, previous_web_frame->View());
+    } else {
+      // When not set explicitly, reuse the previous frame's WebView.
+      web_view = previous_web_frame->View();
+    }
     render_frame = RenderFrameImpl::Create(
         agent_scheduling_group, routing_id, std::move(frame_receiver),
         std::move(browser_interface_broker),
@@ -1643,7 +1661,7 @@ void RenderFrameImpl::CreateFrame(
     web_frame = blink::WebLocalFrame::CreateProvisional(
         render_frame, render_frame->blink_interface_registry_.get(),
         frame_token, previous_web_frame, replicated_state->frame_policy,
-        WebString::FromUTF8(replicated_state->name));
+        WebString::FromUTF8(replicated_state->name), web_view);
     // The new |web_frame| is a main frame iff the previous frame was.
     DCHECK_EQ(!previous_web_frame->Parent(), !web_frame->Parent());
     // Clone the current unique name so web tests that log frame unique names
@@ -2770,9 +2788,6 @@ void RenderFrameImpl::CommitNavigationWithParams(
     // Save the Back/Forward Cache NotRestoredReasons struct to WebLocalFrame to
     // report for PerformanceNavigationTiming API.
     frame_->SetNotRestoredReasons(std::move(not_restored_reasons));
-    // For cross-document main frame history navigations, |not_restored_reasons|
-    // should be populated and has blocking reasons.
-    DCHECK(frame_->HasBlockingReasons());
   }
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If
@@ -3081,6 +3096,9 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
         !!(common_params->transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
     bool started_with_transient_activation = common_params->has_user_gesture;
     bool is_browser_initiated = commit_params->is_browser_initiated;
+    absl::optional<blink::scheduler::TaskAttributionId>
+        soft_navigation_heuristic_task_id =
+            commit_params->soft_navigation_heuristic_task_id;
 
     WebSecurityOrigin initiator_origin;
     if (common_params->initiator_origin)
@@ -3101,7 +3119,7 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     commit_status = frame_->CommitSameDocumentNavigation(
         url, load_type, item_for_history_navigation, is_client_redirect,
         started_with_transient_activation, initiator_origin,
-        is_browser_initiated);
+        is_browser_initiated, soft_navigation_heuristic_task_id);
 
     // The load of the URL can result in this frame being removed. Use a
     // WeakPtr as an easy way to detect whether this has occured. If so, this
@@ -3632,11 +3650,9 @@ void RenderFrameImpl::DidCreateDocumentLoader(
         ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance());
   }
 
-  // Set the code cache host earlier if the kEarlyCodeCache feature is enabled
-  // to allow fetching the code cache as soon as possible.
-  if (base::FeatureList::IsEnabled(blink::features::kEarlyCodeCache)) {
-    document_loader->SetCodeCacheHost(std::move(pending_code_cache_host_));
-  }
+  // Set the code cache host earlier to allow fetching the code cache as soon as
+  // possible.
+  document_loader->SetCodeCacheHost(std::move(pending_code_cache_host_));
 }
 
 void RenderFrameImpl::DidCommitNavigation(
@@ -3689,6 +3705,13 @@ void RenderFrameImpl::DidCommitNavigation(
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_, "url",
                GetLoadingUrl().possibly_invalid_spec());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWaitForDebuggerOnNavigation)) {
+    std::string renderer =
+        base::StrCat({"Renderer url=\"",
+                      TrimURL(GetLoadingUrl().possibly_invalid_spec()), "\""});
+    content::WaitForDebugger(renderer);
+  }
 
   // Generate a new embedding token on each document change.
   GetWebFrame()->SetEmbeddingToken(base::UnguessableToken::Create());
@@ -3747,17 +3770,6 @@ void RenderFrameImpl::DidCommitNavigation(
   ui::PageTransition transition =
       GetTransitionType(frame_->GetDocumentLoader(), IsMainFrame(),
                         GetWebView()->IsFencedFrameRoot());
-
-  // When NavigationThreadingOptimizations feature is not enabled
-  // pending_code_cache_host_ could be nullptr. In such cases the code cache
-  // host interface is requested lazily via BrowserInterfaceBroker when
-  // required. When pending_code_cache_host_ is nullptr this method just resets
-  // any earlier code cache host interface. Since we are committing a new
-  // navigation any interfaces requested prior to this point should not be used.
-  if (!base::FeatureList::IsEnabled(blink::features::kEarlyCodeCache)) {
-    frame_->GetDocumentLoader()->SetCodeCacheHost(
-        std::move(pending_code_cache_host_));
-  }
 
   // TODO(crbug.com/888079): Turn this into a DCHECK for origin equality when
   // the linked bug is fixed. Currently sometimes the browser and renderer
@@ -4315,6 +4327,15 @@ void RenderFrameImpl::DidObserveLoadingBehavior(
     observer.DidObserveLoadingBehavior(behavior);
 }
 
+void RenderFrameImpl::DidObserveSubresourceLoad(
+    uint32_t number_of_subresources_loaded,
+    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+  for (auto& observer : observers_)
+    observer.DidObserveSubresourceLoad(
+        number_of_subresources_loaded,
+        number_of_subresource_loads_handled_by_service_worker);
+}
+
 void RenderFrameImpl::DidObserveNewFeatureUsage(
     const blink::UseCounterFeature& feature) {
   for (auto& observer : observers_)
@@ -4470,6 +4491,14 @@ void RenderFrameImpl::NotifyWebAXObjectMarkedDirty(
 
   render_accessibility_manager_->GetRenderAccessibilityImpl()
       ->NotifyWebAXObjectMarkedDirty(obj);
+}
+
+void RenderFrameImpl::AXReadyCallback() {
+  if (!IsAccessibilityEnabled())
+    return;
+
+  render_accessibility_manager_->GetRenderAccessibilityImpl()
+      ->AXReadyCallback();
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {

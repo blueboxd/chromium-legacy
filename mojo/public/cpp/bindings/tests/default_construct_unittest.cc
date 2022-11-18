@@ -40,9 +40,20 @@ TEST_F(DefaultConstructTest, Echo) {
   base::RunLoop run_loop;
   remote->TestMethod(TestStruct(42),
                      base::BindLambdaForTesting([&](const TestStruct& out) {
-                       EXPECT_EQ(out.value, 42);
+                       EXPECT_EQ(out.value(), 42);
                        run_loop.Quit();
                      }));
+  run_loop.Run();
+}
+
+// Ensures that a non-typemapped type with a field typemapped to a type without
+// a public default constructor initializes that field using
+// `mojo::DefaultConstructTraits::CreateInstance()` (crbug.com/1385587). Note
+// that the generated Mojo code wouldn't even compile without the accompanying
+// fix, so this test just covers the runtime behavior.
+TEST_F(DefaultConstructTest, TypeWithPrivatelyDefaultConstructibleField) {
+  mojom::TestStructContainer container;
+  EXPECT_EQ(container.test_struct.value(), 0);
 }
 
 }  // namespace mojo::test::default_construct

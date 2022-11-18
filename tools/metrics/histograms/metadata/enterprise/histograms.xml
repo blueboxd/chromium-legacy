@@ -1511,6 +1511,17 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Enterprise.EncryptedReportingPipelineEnqueue"
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-11-17">
+  <owner>lbaraz@chromium.org</owner>
+  <owner>xuhong@chromium.org</owner>
+  <owner>src/components/reporting/OWNERS</owner>
+  <summary>
+    Recorded when ReportQueue::Enqueue is called. It indicates whether the event
+    has been enqueued successfully or returned an error Status.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.EnrolledDevicePolicyPresent" enum="Boolean"
     expires_after="2023-04-01">
   <owner>igorcov@chromium.org</owner>
@@ -2300,7 +2311,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.ProfileSeparation.DasherPolicyFetch.HttpResponse"
-    enum="HttpResponseCode" expires_after="2022-12-08">
+    enum="HttpResponseCode" expires_after="2023-05-01">
   <owner>ydago@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2312,7 +2323,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.ProfileSeparation.DasherPolicyFetch.NetworkError"
-    enum="NetErrorCodes" expires_after="2022-12-08">
+    enum="NetErrorCodes" expires_after="2023-04-01">
   <owner>ydago@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2586,7 +2597,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.UserRemoteCommandInvalidations"
-    enum="EnterprisePolicyInvalidations" expires_after="2023-03-01">
+    enum="EnterprisePolicyInvalidations" expires_after="2023-05-14">
   <owner>asumaneev@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>

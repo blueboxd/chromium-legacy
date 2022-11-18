@@ -16,7 +16,7 @@ from common import register_common_args, register_device_args, \
                    set_ffx_isolate_dir
 from compatible_utils import running_unattended
 from ffx_integration import ScopedFfxConfig, test_connection
-from flash_device import flash, register_flash_args
+from flash_device import register_update_args, update
 from log_manager import LogManager, start_system_log
 from publish_package import publish_packages, register_package_args
 from run_blink_test import BlinkTestRunner
@@ -26,6 +26,7 @@ from run_telemetry_test import TelemetryTestRunner
 from serve_repo import register_serve_args, serve_repository
 from start_emulator import create_emulator_from_args, register_emulator_args
 from test_runner import TestRunner
+from ermine_ctl import ErmineCtl
 
 
 def _get_test_runner(runner_args: argparse.Namespace,
@@ -59,7 +60,7 @@ def main():
     register_device_args(parser)
     register_emulator_args(parser)
     register_executable_test_args(parser)
-    register_flash_args(parser, default_os_check='ignore')
+    register_update_args(parser, default_os_check='ignore', default_pave=True)
     register_log_args(parser)
     register_package_args(parser, allow_temp_repo=True)
     register_serve_args(parser)
@@ -81,8 +82,9 @@ def main():
             ScopedFfxConfig('repository.server.listen', '"[::]:0"'))
         log_manager = stack.enter_context(LogManager(runner_args.logs_dir))
         if runner_args.device:
-            flash(runner_args.system_image_dir, runner_args.os_check,
-                  runner_args.target_id, runner_args.serial_num)
+            update(runner_args.system_image_dir, runner_args.os_check,
+                   runner_args.target_id, runner_args.serial_num,
+                   runner_args.pave)
         else:
             runner_args.target_id = stack.enter_context(
                 create_emulator_from_args(runner_args))
@@ -106,6 +108,10 @@ def main():
         # so that logging will not be interrupted.
         start_system_log(log_manager, False, package_paths, ('--since', 'now'),
                          runner_args.target_id)
+
+        ermine = ErmineCtl(runner_args.target_id)
+        if ermine.exists:
+            ermine.take_to_shell()
 
         if test_runner.is_cfv2():
             resolve_packages(test_runner.packages, runner_args.target_id)

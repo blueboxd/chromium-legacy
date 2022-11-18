@@ -320,9 +320,10 @@ void LayoutShiftTrackerNavigationTest::RunTest(bool is_browser_initiated) {
   main_frame->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr /* initiator_origin */,
-      false /* is_synchronously_committed */,
-      mojom::blink::TriggeringEventInfo::kNotFromEvent, is_browser_initiated);
+      /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
+      /*is_synchronously_committed=*/false,
+      mojom::blink::TriggeringEventInfo::kNotFromEvent, is_browser_initiated,
+      /*soft_navigation_heuristics_task_id=*/absl::nullopt);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -1278,6 +1279,45 @@ TEST_F(LayoutShiftTrackerTest, NeedsToTrack) {
   EXPECT_TRUE(tracker.NeedsToTrack(*GetLayoutObjectByElementId("progress")));
   EXPECT_TRUE(tracker.NeedsToTrack(*GetLayoutObjectByElementId("li")));
   EXPECT_TRUE(tracker.NeedsToTrack(*GetLayoutObjectByElementId("hr")));
+}
+
+TEST_F(LayoutShiftTrackerTest, AnimatingTransformCreatesLayoutShiftRoot) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @keyframes move {
+        to { translate: 10px; }
+      }
+      #animation {
+        animation: move 10s infinite;
+        position: absolute;
+        width: 0;
+        height: 0;
+        top: 0;
+      }
+      #child {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        background: blue;
+      }
+    </style>
+    <div id="animation">
+      <div id="child"></div>
+    </div>
+  )HTML");
+
+  EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
+
+  GetDocument()
+      .getElementById("animation")
+      ->setAttribute(html_names::kStyleAttr, "top: 400px");
+  // `animation` creates a layout shift root, so `child`'s shift doesn't
+  // include the shift of `animation`. The 2px shift is below the threshold of
+  // reporting a layout shift.
+  GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
+                                                      "top: 2px");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
 }
 
 }  // namespace blink

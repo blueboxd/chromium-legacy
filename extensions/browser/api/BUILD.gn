@@ -10,11 +10,13 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 assert(enable_extensions,
        "Cannot depend on extensions because enable_extensions=false.")
 
-# The set of all targets needed to build out the extension API implementations.
+# The set of all targets needed to build out the extension API implementations
+# and any necessary steps to register or instantiate them.
 # Embedders should usually depend on this.
 group("api") {
   public_deps = [
     "//extensions/browser/api:api_implementations",
+    "//extensions/browser/api:api_provider",
     "//extensions/browser/api:api_registration",
   ]
 }
@@ -63,32 +65,9 @@ source_set("bulk_api_implementation") {
       "//ui/base/clipboard",
     ]
   }
-
-  if (is_chromeos_ash) {
-    sources += [
-      "media_perception_private/conversion_utils.cc",
-      "media_perception_private/conversion_utils.h",
-      "media_perception_private/media_perception_api_delegate.h",
-      "media_perception_private/media_perception_api_manager.cc",
-      "media_perception_private/media_perception_api_manager.h",
-      "media_perception_private/media_perception_private_api.cc",
-      "media_perception_private/media_perception_private_api.h",
-    ]
-
-    deps += [
-      "//chromeos",
-      "//chromeos/ash/components/dbus",
-      "//chromeos/ash/components/dbus/media_analytics",
-      "//chromeos/ash/components/dbus/media_analytics:media_perception_proto",
-      "//chromeos/ash/components/dbus/upstart",
-      "//chromeos/login/login_state",
-      "//chromeos/services/media_perception/public/mojom",
-      "//chromeos/services/media_perception/public/mojom:mojom_js_data_deps",
-      "//extensions/browser/api/storage",
-    ]
-  }
 }
 
+# The collection of API implementations.
 group("api_implementations") {
   public_deps = [
     "//extensions/browser:browser_sources",
@@ -134,7 +113,10 @@ group("api_implementations") {
   ]
 
   if (is_chromeos) {
-    public_deps += [ "//extensions/browser/api/virtual_keyboard" ]
+    public_deps += [
+      "//extensions/browser/api/virtual_keyboard",
+      "//extensions/browser/api/webcam_private",
+    ]
   }
 
   if (is_chromeos_ash) {
@@ -142,11 +124,13 @@ group("api_implementations") {
       "//extensions/browser/api/cec_private",
       "//extensions/browser/api/diagnostics",
       "//extensions/browser/api/lock_screen_data",
-      "//extensions/browser/api/webcam_private",
+      "//extensions/browser/api/media_perception_private",
     ]
   }
 }
 
+# A helper to instantiate all keyed service factories needed for any extension
+# APIs.
 source_set("api_keyed_service_factories") {
   sources = [
     "api_browser_context_keyed_service_factories.cc",
@@ -162,6 +146,22 @@ source_set("api_keyed_service_factories") {
   ]
 }
 
+# The "glue" layer that adds relevant API registrations to the extensions
+# client.
+source_set("api_provider") {
+  sources = [
+    "core_extensions_browser_api_provider.cc",
+    "core_extensions_browser_api_provider.h",
+  ]
+  deps = [
+    "//extensions/browser:browser_sources",
+    "//extensions/browser/api:api_registration",
+  ]
+}
+
+# The step necessary to generate the code to register the corresponding
+# ExtensionFunctions in order to map the function string name with their
+# implementation.
 function_registration("api_registration") {
   sources = extensions_api_schema_files + extensions_api_uncompiled_sources
   impl_dir = "//extensions/browser/api"

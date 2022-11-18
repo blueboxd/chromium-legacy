@@ -13,7 +13,7 @@ import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {fakeMetricsPrivate, MetricsTracker} from './../metrics_test_support.js';
 import {assertNotStyle, assertStyle, installMock, keydown} from './test_support.js';
@@ -73,7 +73,7 @@ let mockSpeechRecognition: MockSpeechRecognition;
 
 suite('NewTabPageVoiceSearchOverlayTest', () => {
   let voiceSearchOverlay: VoiceSearchOverlayElement;
-  let windowProxy: TestBrowserProxy;
+  let windowProxy: TestBrowserProxy<WindowProxy>;
   let metrics: MetricsTracker;
 
   setup(async () => {

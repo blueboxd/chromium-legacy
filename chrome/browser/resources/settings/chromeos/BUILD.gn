@@ -292,10 +292,7 @@ generate_grd("build_grd") {
 }
 
 html_to_js("web_components") {
-  js_files = [
-    "os_icons.js",
-    "os_settings_icons_css.js",
-  ]
+  js_files = [ "os_settings_icons_css.js" ]
 }
 
 group("generate_web_components") {
@@ -322,7 +319,6 @@ group("generate_web_components") {
 group("closure_compile_module") {
   deps = [
     ":closure_compile_local_module",
-    "device_page:closure_compile_module",
     "internet_page:closure_compile_module",
     "multidevice_page:closure_compile_module",
     "os_a11y_page:closure_compile_module",
@@ -349,7 +345,6 @@ js_type_check("closure_compile_local_module") {
     ":lazy_load",
     ":main_page_behavior",
     ":metrics_recorder",
-    ":os_icons",
     ":os_page_visibility",
     ":os_route",
     ":os_settings",
@@ -390,7 +385,7 @@ js_library("global_scroll_target_behavior") {
   deps = [
     ":route_observer_behavior",
     "..:router",
-    "//ui/webui/resources/js:promise_resolver",
+    "//ash/webui/common/resources:promise_resolver",
   ]
 }
 
@@ -407,12 +402,6 @@ js_library("metrics_recorder") {
   deps = [
     "//chrome/browser/ui/webui/settings/ash/search:mojo_bindings_webui_js",
     "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_webui_js",
-  ]
-}
-
-js_library("os_icons") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 

@@ -135,12 +135,6 @@ BASE_FEATURE(kBackgroundModeAllowRestart,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#if !BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kBlockMigratedDefaultChromeAppSync,
-             "BlockMigratedDefaultChromeAppSync",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
 BASE_FEATURE(kBorealis, "Borealis", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -399,15 +393,6 @@ BASE_FEATURE(kDnsProxyEnableDOH,
 // Enable loading native libraries earlier in startup on Android.
 BASE_FEATURE(kEarlyLibraryLoad,
              "EarlyLibraryLoad",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-// Under this flag Java bootstrap (aka startup) tasks that are run before native
-// initialization will not be specially prioritized by being posted at the front
-// of the Looper's queue.
-BASE_FEATURE(kElidePrioritizationOfPreNativeBootstrapTasks,
-             "ElidePrioritizationOfPreNativeBootstrapTasks",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
@@ -693,6 +678,12 @@ BASE_FEATURE(kIncognitoNtpRevamp,
              "IncognitoNtpRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables Isolated Web App Developer Mode, which allows developers to
+// install untrusted Isolated Web Apps.
+BASE_FEATURE(kIsolatedWebAppDevMode,
+             "IsolatedWebAppDevMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kKioskEnableAppService,
              "KioskEnableAppService",
@@ -956,10 +947,6 @@ BASE_FEATURE(kRecordWebAppDebugInfo,
 // Enables notification permission revocation for abusive origins.
 BASE_FEATURE(kAbusiveNotificationPermissionRevocation,
              "AbusiveOriginNotificationPermissionRevocation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kRemoveStatusBarInWebApps,
-             "RemoveStatusBarInWebApps",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1231,7 +1218,7 @@ const base::FeatureParam<base::TimeDelta>
 // Enables the second version of the sentiment survey for users of Trust &
 // Safety features, using HaTS.
 BASE_FEATURE(kTrustSafetySentimentSurveyV2,
-             "kTrustSafetySentimentSurveyV2",
+             "TrustSafetySentimentSurveyV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 // The minimum and maximum time after a user has interacted with a Trust and
 // Safety feature that they are eligible to be surveyed.
@@ -1249,6 +1236,30 @@ const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMinRange{
     &kTrustSafetySentimentSurveyV2, "ntp-visits-min-range", 2};
 const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMaxRange{
     &kTrustSafetySentimentSurveyV2, "ntp-visits-max-range", 4};
+// The feature area probabilities for each feature area considered as part of
+// the Trust & Safety sentiment survey.
+// TODO(crbug.com/1382134): Calculate initial probabilities and remove 0.0
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2SafetyCheckProbability{
+        &kTrustSafetySentimentSurveyV2, "safety-check-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2TrustedSurfaceProbability{
+        &kTrustSafetySentimentSurveyV2, "trusted-surface-probability", 0.0};
+// The HaTS trigger IDs, which determine which survey is delivered from the HaTS
+// backend.
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2SafetyCheckTriggerId{
+        &kTrustSafetySentimentSurveyV2, "safety-check-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2TrustedSurfaceTriggerId{
+        &kTrustSafetySentimentSurveyV2, "trusted-surface-trigger-id", ""};
+// The time the user must have the Trusted Surface bubble open to be considered.
+// Alternatively the user can interact with the bubble, in which case this time
+// is irrelevant.
+const base::FeatureParam<base::TimeDelta>
+    kTrustSafetySentimentSurveyV2TrustedSurfaceTime{
+        &kTrustSafetySentimentSurveyV2, "trusted-surface-time",
+        base::Seconds(5)};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

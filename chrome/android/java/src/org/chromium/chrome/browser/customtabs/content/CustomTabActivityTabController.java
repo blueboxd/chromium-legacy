@@ -383,8 +383,8 @@ public class CustomTabActivityTabController implements InflationObserver {
             return webContents;
         }
 
-        webContents = mWarmupManager.takeSpareWebContents(mIntentDataProvider.isIncognito(),
-                false /*initiallyHidden*/, WarmupManager.FOR_CCT);
+        webContents = mWarmupManager.takeSpareWebContents(
+                mIntentDataProvider.isIncognito(), false /*initiallyHidden*/);
         if (webContents != null) {
             recordWebContentsStateOnLaunch(WebContentsState.SPARE_WEBCONTENTS);
             return webContents;
@@ -432,7 +432,7 @@ public class CustomTabActivityTabController implements InflationObserver {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
             mRealtimeEngagementSignalObserver = new RealtimeEngagementSignalObserver(
-                    mTabObserverRegistrar, tab, mConnection, mSession);
+                    mTabObserverRegistrar, mConnection, mSession);
         }
 
         // TODO(pshmakov): invert these dependencies.

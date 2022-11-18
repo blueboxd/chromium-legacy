@@ -109,8 +109,11 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 5,
+        experiment_percentage = 50,
     ),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+    },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -318,8 +321,7 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        # TODO (crbug.com/1382577): Reenable after cq active is reliable
-        "chromium_rts.inverted_rts": 0,
+        "chromium_rts.inverted_rts": 100,
     },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -428,6 +430,9 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+    },
     compilator = "android-pie-arm64-rel-compilator",
     check_for_flakiness = True,
     branch_selector = branches.STANDARD_MILESTONE,
@@ -591,6 +596,7 @@ try_.builder(
 try_.builder(
     name = "android_compile_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    cores = 16,
     mirrors = [
         "ci/Android arm Builder (dbg)",
     ],
@@ -601,7 +607,7 @@ try_.builder(
     builderless = not settings.is_main,
     goma_backend = None,
     main_list_view = "try",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 

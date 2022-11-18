@@ -92,10 +92,10 @@ content::WebContents* WebAppLaunchProcess::Run() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_url_in_system_web_app_sccope =
       ash::GetSystemWebAppTypeForAppId(&*profile_, params_->app_id) &&
-      ash::SystemWebAppManager::GetForLocalAppsUnchecked(&*profile_)
+      ash::SystemWebAppManager::Get(&*profile_)
           ->GetSystemApp(
               *ash::GetSystemWebAppTypeForAppId(&*profile_, params_->app_id)) &&
-      ash::SystemWebAppManager::GetForLocalAppsUnchecked(&*profile_)
+      ash::SystemWebAppManager::Get(&*profile_)
           ->GetSystemApp(
               *ash::GetSystemWebAppTypeForAppId(&*profile_, params_->app_id))
           ->IsUrlInSystemAppScope(launch_url);
@@ -277,7 +277,10 @@ Browser* WebAppLaunchProcess::MaybeFindBrowserForLaunch() const {
     return nullptr;
   }
 
-  for (Browser* browser : *BrowserList::GetInstance()) {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (auto it = browser_list->begin_browsers_ordered_by_activation();
+       it != browser_list->end_browsers_ordered_by_activation(); ++it) {
+    Browser* browser = *it;
     if (browser->profile() == &*profile_ &&
         AppBrowserController::IsForWebApp(browser, params_->app_id)) {
       return browser;

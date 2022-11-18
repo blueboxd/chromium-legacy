@@ -15,6 +15,7 @@
 #include "chrome/grit/password_manager_resources.h"
 #include "chrome/grit/password_manager_resources_map.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/password_manager/content/common/web_ui_constants.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -23,13 +24,14 @@
 namespace {
 
 content::WebUIDataSource* CreatePasswordsUIHTMLSource(Profile* profile) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIPasswordManagerHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::Create(
+      password_manager::kChromeUIPasswordManagerHost);
 
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kPasswordManagerResources, kPasswordManagerResourcesSize),
       IDR_PASSWORD_MANAGER_PASSWORD_MANAGER_HTML);
+  webui::EnableTrustedTypesCSP(source);
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"addPassword", IDS_PASSWORD_MANAGER_UI_ADD_PASSWORD_BUTTON},

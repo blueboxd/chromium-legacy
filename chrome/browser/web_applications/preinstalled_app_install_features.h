@@ -18,11 +18,7 @@ BASE_DECLARE_FEATURE(kMigrateDefaultChromeAppToWebAppsGSuite);
 
 BASE_DECLARE_FEATURE(kMigrateDefaultChromeAppToWebAppsNonGSuite);
 
-BASE_DECLARE_FEATURE(kDefaultCalculatorWebApp);
-
 #if BUILDFLAG(IS_CHROMEOS)
-BASE_DECLARE_FEATURE(kAllowDefaultWebAppMigrationForChromeOsManagedUsers);
-
 BASE_DECLARE_FEATURE(kCursiveManagedStylusPreinstall);
 
 BASE_DECLARE_FEATURE(kMessagesPreinstall);

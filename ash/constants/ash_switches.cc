@@ -45,6 +45,11 @@ const char kAllowOsInstall[] = "allow-os-install";
 // mode. This can be enabled by this flag.
 const char kAllowRAInDevMode[] = "allow-ra-in-dev-mode";
 
+// Override for the URL used for the ChromeOS Almanac API. Used for local
+// testing with a non-production server (e.g.
+// "--almanac-api-url=http://localhost:8000").
+const char kAlmanacApiUrl[] = "almanac-api-url";
+
 // Causes HDCP of the specified type to always be enabled when an external
 // display is connected. Used for HDCP compliance testing on ChromeOS.
 const char kAlwaysEnableHdcp[] = "always-enable-hdcp";
@@ -768,6 +773,11 @@ const char kOobeTimezoneOverrideForTests[] = "oobe-timezone-override-for-tests";
 // Trigger sync engine initialization timeout in OOBE for testing.
 const char kOobeTriggerSyncTimeoutForTests[] =
     "oobe-trigger-sync-timeout-for-tests";
+
+// Removes the condition that a network has had to existed for at least two
+// weeks and increase the frequency at which the HiddenNetworkHandler class
+// checks for and removes wrongly hidden networks.
+const char kForceHiddenNetworkMigration[] = "force-hidden-network-migration";
 
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).

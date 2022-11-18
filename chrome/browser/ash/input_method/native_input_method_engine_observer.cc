@@ -57,6 +57,11 @@ enum class NonAutocorrectDiacriticStatus {
   kMaxValue = kWithDiacritics,
 };
 
+bool ShouldRouteToFirstPartyVietnameseInput(const std::string& engine_id) {
+  return base::FeatureList::IsEnabled(features::kFirstPartyVietnameseInput) &&
+         (engine_id == "vkd_vi_vni" || engine_id == "vkd_vi_telex");
+}
+
 bool IsRuleBasedEngine(const std::string& engine_id) {
   return base::StartsWith(engine_id, "vkd_", base::CompareCase::SENSITIVE);
 }
@@ -166,12 +171,13 @@ mojom::InputFieldType TextInputTypeToMojoType(ui::TextInputType type) {
   }
 }
 
-mojom::AutocorrectMode AutocorrectFlagsToMojoType(int flags) {
-  if (((flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF) ||
-       (flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF))) {
-    return mojom::AutocorrectMode::kDisabled;
-  }
-  return mojom::AutocorrectMode::kEnabled;
+mojom::AutocorrectMode GetAutocorrectMode(
+    ui::AutocorrectionMode autocorrection_mode,
+    ui::SpellcheckMode spellcheck_mode) {
+  return autocorrection_mode == ui::AutocorrectionMode::kDisabled ||
+                 spellcheck_mode == ui::SpellcheckMode::kDisabled
+             ? mojom::AutocorrectMode::kDisabled
+             : mojom::AutocorrectMode::kEnabled;
 }
 
 enum class ImeServiceEvent {
@@ -508,7 +514,7 @@ mojom::InputFieldInfoPtr CreateInputFieldInfo(
 
   return mojom::InputFieldInfo::New(
       TextInputTypeToMojoType(context.type),
-      AutocorrectFlagsToMojoType(context.flags),
+      GetAutocorrectMode(context.autocorrection_mode, context.spellcheck_mode),
       GetPersonalizationMode(context.personalization_mode),
       GetTextPredictionMode(engine_id, input_field_context, prefs));
 }
@@ -680,7 +686,11 @@ void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
     return;
   }
 
-  if (ShouldRouteToRuleBasedEngine(engine_id)) {
+  if (ShouldRouteToFirstPartyVietnameseInput(engine_id)) {
+    // TODO(b/251679480): Make this part of ShouldRouteToNativeMojoEngine logic
+    // once flag is baked in.
+    ConnectToImeService(mojom::ConnectionTarget::kImeServiceLib, engine_id);
+  } else if (ShouldRouteToRuleBasedEngine(engine_id)) {
     const auto new_engine_id = NormalizeRuleBasedEngineId(engine_id);
     ConnectToImeService(mojom::ConnectionTarget::kRulebasedEngine,
                         new_engine_id);
@@ -717,7 +727,7 @@ void NativeInputMethodEngineObserver::OnFocus(
   }
   autocorrect_manager_->OnFocus(context_id);
   if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
-    grammar_manager_->OnFocus(context_id, context.flags);
+    grammar_manager_->OnFocus(context_id, context.spellcheck_mode);
   }
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
     if (IsInputMethodBound()) {

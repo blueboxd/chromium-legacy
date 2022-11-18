@@ -11,13 +11,19 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/task/thread_pool.h"
+#include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_constants.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace {
 constexpr size_t kMaxUpdateManifestLength = 5 * 1024 * 1024;
@@ -159,19 +165,13 @@ void IsolatedWebAppPolicyManager::OnUpdateManifestDownloaded(
     return;
   }
 
-  LOG(ERROR) << "We will parse the update manifest for the app "
-             << current_app_->web_bundle_id().id()
-             << " after the feature is complete.";
-  // Even though the app is not installed because the feature is not yet
-  // implemented, let's set the result to kSuccess as for nothing went wrong for
-  // the current app.
-  SetResultForCurrentEphemeralApp(EphemeralAppInstallResult::kSuccess);
-  ContinueWithTheNextApp();
+  ParseUpdateManifest(*update_manifest_string);
 }
 
 void IsolatedWebAppPolicyManager::ContinueWithTheNextApp() {
   ++current_app_;
   if (current_app_ == ephemeral_iwa_install_options_.end()) {
+    json_parser_.reset();
     std::move(ephemeral_install_cb_).Run(result_vector_);
     return;
   }
@@ -189,6 +189,211 @@ void IsolatedWebAppPolicyManager::SetResultForCurrentEphemeralApp(
 void IsolatedWebAppPolicyManager::SetResultForAllEphemeralApps(
     EphemeralAppInstallResult result) {
   base::ranges::fill(result_vector_, result);
+}
+
+void IsolatedWebAppPolicyManager::ParseUpdateManifest(
+    const std::string& manifest_content) {
+  auto* json_parser_ptr = GetJsonParserPtr();
+  json_parser_ptr->Parse(
+      manifest_content, base::JSON_PARSE_RFC,
+      base::BindOnce(&IsolatedWebAppPolicyManager::OnUpdateManifestParsed,
+                     base::Unretained(this)));
+}
+
+void IsolatedWebAppPolicyManager::OnUpdateManifestParsed(
+    absl::optional<base::Value> result,
+    const absl::optional<std::string>& error) {
+  if (!result.has_value()) {
+    SetResultForCurrentEphemeralApp(
+        EphemeralAppInstallResult::kErrorUpdateManifestParsingFailed);
+    ContinueWithTheNextApp();
+    return;
+  }
+  absl::optional<GURL> web_bundle_url = ExtractWebBundleURL(result.value());
+  if (!web_bundle_url.has_value()) {
+    SetResultForCurrentEphemeralApp(
+        EphemeralAppInstallResult::kErrorWebBundleUrlCantBeDetermined);
+    ContinueWithTheNextApp();
+    return;
+  }
+
+  current_app_->set_web_bundle_url(web_bundle_url.value());
+  CreateIwaDirectory();
+}
+
+void IsolatedWebAppPolicyManager::CreateIwaDirectory() {
+  base::FilePath iwa_dir =
+      installation_dir_.Append(current_app_->web_bundle_id().id());
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(&CreateNonExistingDirectory, iwa_dir),
+      base::BindOnce(&IsolatedWebAppPolicyManager::OnIwaDirectoryCreated,
+                     weak_factory_.GetWeakPtr(), iwa_dir));
+}
+
+void IsolatedWebAppPolicyManager::OnIwaDirectoryCreated(
+    const base::FilePath& iwa_dir,
+    base::File::Error error) {
+  if (error != base::File::FILE_OK) {
+    SetResultForCurrentEphemeralApp(
+        EphemeralAppInstallResult::kErrorCantCreateIwaDirectory);
+    ContinueWithTheNextApp();
+    return;
+  }
+
+  current_app_->set_app_directory(iwa_dir);
+  DownloadWebBundle();
+}
+
+void IsolatedWebAppPolicyManager::DownloadWebBundle() {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("iwa_policy_signed_web_bundle", R"(
+  semantics {
+    sender: "Isolated Web App Signed Web Bundle Downloader"
+    description:
+      "Downloads the Signed Web Bundle of the Isolated Web App (IWA) "
+      "by the URL taken form the Update Manifest."
+    trigger:
+      "Installing/update of every IWA (including policy-based installs) "
+      "require in a Signed Web Bundle that we download here."
+    data:
+      "This request does not send any data. It just downloads a Web Bundle."
+    destination: OTHER
+    contacts {
+      email: "peletskyi@google.com"
+    }
+  }
+  policy {
+    cookies_allowed: NO
+    setting: "This feature cannot be disabled in settings."
+    chrome_policy {
+      IsolatedWebAppInstallForceList {
+        IsolatedWebAppInstallForceList: ""
+      }
+    }
+  })");
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = current_app_->web_bundle_url();
+  // Cookies are not allowed.
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       std::move(traffic_annotation));
+
+  simple_loader->SetRetryOptions(
+      /* max_retries=*/3,
+      network::SimpleURLLoader::RETRY_ON_5XX |
+          network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+
+  network::SimpleURLLoader* const simple_loader_ptr = simple_loader.get();
+  base::OnceCallback<void(base::FilePath path)> cb =
+      base::BindOnce(&IsolatedWebAppPolicyManager::OnWebBundleDownloaded,
+                     weak_factory_.GetWeakPtr(), std::move(simple_loader));
+
+  base::FilePath swbn_path =
+      current_app_->app_directory().Append(kMainSignedWebBundleFileName);
+  simple_loader_ptr->DownloadToFile(url_loader_factory_.get(), std::move(cb),
+                                    swbn_path);
+}
+
+void IsolatedWebAppPolicyManager::OnWebBundleDownloaded(
+    std::unique_ptr<network::SimpleURLLoader> simple_loader,
+    base::FilePath path) {
+  if (path.empty()) {
+    // Delete the app directory as we don't need it any more.
+    const base::FilePath iwa_path_to_delete(current_app_->app_directory());
+    current_app_->reset_app_directory();
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::GetDeleteFileCallback(iwa_path_to_delete));
+
+    SetResultForCurrentEphemeralApp(
+        EphemeralAppInstallResult::kErrorCantDownloadWebBundle);
+    ContinueWithTheNextApp();
+    return;
+  }
+
+  LOG(ERROR) << "We downloaded the signed Web Bundle for the app "
+             << current_app_->web_bundle_id().id()
+             << ". Further installation steps will be executed after "
+                "the feature is complete.";
+
+  SetResultForCurrentEphemeralApp(EphemeralAppInstallResult::kSuccess);
+  ContinueWithTheNextApp();
+}
+
+data_decoder::mojom::JsonParser*
+IsolatedWebAppPolicyManager::GetJsonParserPtr() {
+  if (!json_parser_) {
+    data_decoder_.GetService()->BindJsonParser(
+        json_parser_.BindNewPipeAndPassReceiver());
+    json_parser_.set_disconnect_handler(
+        base::BindOnce(&IsolatedWebAppPolicyManager::OnUpdateManifestParsed,
+                       base::Unretained(this), absl::nullopt,
+                       "Data Decoder terminated unexpectedly"));
+  }
+
+  return json_parser_.get();
+}
+
+// static
+absl::optional<GURL> IsolatedWebAppPolicyManager::ExtractWebBundleURL(
+    const base::Value& parsed_update_manifest) {
+  if (!parsed_update_manifest.is_dict()) {
+    return absl::nullopt;
+  }
+
+  const base::Value::List* versions =
+      parsed_update_manifest.GetDict().FindList(kUpdateManifestAllVersionsKey);
+  if (!versions) {
+    return absl::nullopt;
+  }
+
+  base::Version latest_version;
+  const std::string* latest_url_string = nullptr;
+  for (const auto& version_entry : *versions) {
+    if (!version_entry.is_dict()) {
+      return absl::nullopt;
+    }
+
+    const std::string* const version_string =
+        version_entry.FindStringKey(kUpdateManifestVersionKey);
+    const std::string* const url_string =
+        version_entry.FindStringKey(kUpdateManifestSrcKey);
+    if (!version_string || !url_string) {
+      // No version or Web Bundle URL. Let's return error as this update
+      // manifest looks strange.
+      return absl::nullopt;
+    }
+
+    base::Version version(*version_string);
+    if (!version.IsValid()) {
+      // We can't parse the version. It might be that exactly this version was
+      // meant to be the latest but there was a typo. It is better not to
+      // install any version of the app than install old and potentially
+      // compromised one.
+      return absl::nullopt;
+    }
+
+    if (!latest_version.IsValid() || version > latest_version) {
+      latest_version = version;
+      latest_url_string = url_string;
+    } else if (version == latest_version) {
+      // Several apps of the same version is definitely an error case
+      return absl::nullopt;
+    }
+  }
+
+  if (!latest_version.IsValid() || !latest_url_string) {
+    return absl::nullopt;
+  }
+
+  GURL url(*latest_url_string);
+  if (url.is_valid()) {
+    return url;
+  }
+  return absl::nullopt;
 }
 
 }  // namespace web_app

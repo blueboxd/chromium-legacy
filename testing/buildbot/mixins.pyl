@@ -360,7 +360,7 @@
   },
   'chromeos-kevin-skylab': {
     'cros_board': 'kevin',
-    'cros_img': 'kevin-public/R105-14988.0.0',
+    'cros_img': 'kevin-public/R109-15237.0.0',
     'bucket': 'chromiumos-image-archive',
   },
   'chromeos-octopus': {
@@ -460,7 +460,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd',
-        'machine_type': 'n1-standard-4|e2-standard-4|n2-standard-4',
+        'cores': '4',
       },
     },
   },
@@ -470,7 +470,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd',
-        'machine_type': 'e2-standard-8|n2-standard-8',
+        'cores': '8',
       },
     },
   },
@@ -508,7 +508,7 @@
   'fuchsia-test-workstation': {
     '$mixin_append': {
       'args': [
-        '--custom-image=workstation_eng.qemu-x64-release',
+        '--custom-image=workstation_eng.qemu-x64',
       ],
     }
   },
@@ -865,7 +865,7 @@
       'dimensions': {
         'cpu': 'arm64',
         'mac_model': 'Macmini9,1',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-12.5',
         'pool': 'chromium.tests',
         'display_attached': '1',
       },
@@ -902,7 +902,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-12.4|Mac-12.5',
+        'os': 'Mac-12.5',
         'display_attached': '1',
       },
     },
@@ -1064,13 +1064,6 @@
           'path': '.android_emulator/generic_android24',
         },
       ]
-    },
-  },
-  'nougat_generic': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'N',
-      },
     },
   },
   'oreo-x86-emulator': {
@@ -1302,15 +1295,6 @@
       },
     },
   },
-  'win10_intel_hd_630_experimental': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
-        'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
   'win10_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {
@@ -1332,6 +1316,15 @@
           'pool': 'chromium.tests.gpu',
         },
       ],
+    },
+  },
+  'win10_intel_uhd_630_experimental': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:9bc5-31.0.101.2111',
+        'os': 'Windows-10',
+        'pool': 'chromium.tests.gpu',
+      },
     },
   },
   'win10_nvidia_gtx_1660_experimental': {

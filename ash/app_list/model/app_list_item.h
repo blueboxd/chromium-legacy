@@ -111,8 +111,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
   bool is_folder() const { return metadata_->is_folder; }
 
-  bool is_page_break() const { return metadata_->is_page_break; }
-
   bool has_notification_badge() const { return has_notification_badge_; }
 
   bool is_new_install() const { return metadata_->is_new_install; }
@@ -137,6 +135,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   friend class AppListBadgeController;
   friend class AppListItemList;
   friend class AppListItemListTest;
+  friend class AppListItemViewPixelTest;
   friend class AppListItemViewTest;
   friend class AppListModel;
 

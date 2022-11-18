@@ -6,14 +6,91 @@
 
 #include <utility>
 
+#include "base/types/expected.h"
+#include "base/values.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/parsing_utils.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom.h"
 
 namespace attribution_reporting {
 
-TriggerRegistration::TriggerRegistration() = default;
+namespace {
+
+using ::attribution_reporting::mojom::TriggerRegistrationError;
+
+}  // namespace
+
+// static
+base::expected<TriggerRegistration, TriggerRegistrationError>
+TriggerRegistration::Parse(base::Value::Dict registration,
+                           SuitableOrigin reporting_origin) {
+  auto filters = Filters::FromJSON(registration.Find("filters"));
+  if (!filters.has_value())
+    return base::unexpected(filters.error());
+
+  auto not_filters = Filters::FromJSON(registration.Find("not_filters"));
+  if (!not_filters.has_value())
+    return base::unexpected(not_filters.error());
+
+  auto event_triggers = EventTriggerDataList::Build(
+      registration.Find("event_trigger_data"),
+      TriggerRegistrationError::kEventTriggerDataListWrongType,
+      TriggerRegistrationError::kEventTriggerDataListTooLong,
+      &EventTriggerData::FromJSON);
+  if (!event_triggers.has_value())
+    return base::unexpected(event_triggers.error());
+
+  auto aggregatable_trigger_data = AggregatableTriggerDataList::Build(
+      registration.Find("aggregatable_trigger_data"),
+      TriggerRegistrationError::kAggregatableTriggerDataListWrongType,
+      TriggerRegistrationError::kAggregatableTriggerDataListTooLong,
+      &AggregatableTriggerData::FromJSON);
+  if (!aggregatable_trigger_data.has_value())
+    return base::unexpected(aggregatable_trigger_data.error());
+
+  auto aggregatable_values =
+      AggregatableValues::FromJSON(registration.Find("aggregatable_values"));
+  if (!aggregatable_values.has_value())
+    return base::unexpected(aggregatable_values.error());
+
+  absl::optional<uint64_t> debug_key = ParseDebugKey(registration);
+  absl::optional<uint64_t> aggregatable_dedup_key =
+      ParseUint64(registration, "aggregatable_deduplication_key");
+  bool debug_reporting = ParseDebugReporting(registration);
+
+  return TriggerRegistration(std::move(reporting_origin), std::move(*filters),
+                             std::move(*not_filters), debug_key,
+                             aggregatable_dedup_key, std::move(*event_triggers),
+                             std::move(*aggregatable_trigger_data),
+                             std::move(*aggregatable_values), debug_reporting);
+}
+
+TriggerRegistration::TriggerRegistration(SuitableOrigin reporting_origin)
+    : reporting_origin(std::move(reporting_origin)) {}
+
+TriggerRegistration::TriggerRegistration(
+    SuitableOrigin reporting_origin,
+    Filters filters,
+    Filters not_filters,
+    absl::optional<uint64_t> debug_key,
+    absl::optional<uint64_t> aggregatable_dedup_key,
+    EventTriggerDataList event_triggers,
+    AggregatableTriggerDataList aggregatable_trigger_data,
+    AggregatableValues aggregatable_values,
+    bool debug_reporting)
+    : reporting_origin(std::move(reporting_origin)),
+      filters(std::move(filters)),
+      not_filters(std::move(not_filters)),
+      debug_key(debug_key),
+      aggregatable_dedup_key(aggregatable_dedup_key),
+      event_triggers(std::move(event_triggers)),
+      aggregatable_trigger_data(aggregatable_trigger_data),
+      aggregatable_values(std::move(aggregatable_values)),
+      debug_reporting(debug_reporting) {}
 
 TriggerRegistration::~TriggerRegistration() = default;
 
@@ -26,32 +103,5 @@ TriggerRegistration::TriggerRegistration(TriggerRegistration&&) = default;
 
 TriggerRegistration& TriggerRegistration::operator=(TriggerRegistration&&) =
     default;
-
-// static
-absl::optional<TriggerRegistration> TriggerRegistration::Create(
-    url::Origin reporting_origin,
-    Filters filters,
-    Filters not_filters,
-    absl::optional<uint64_t> debug_key,
-    absl::optional<uint64_t> aggregatable_dedup_key,
-    std::vector<EventTriggerData> event_triggers,
-    std::vector<AggregatableTriggerData> aggregatable_trigger_data,
-    AggregatableValues aggregatable_values,
-    bool debug_reporting) {
-  if (!SuitableOrigin::IsSuitable(reporting_origin))
-    return absl::nullopt;
-
-  TriggerRegistration result;
-  result.reporting_origin_ = std::move(reporting_origin);
-  result.filters_ = std::move(filters);
-  result.not_filters_ = std::move(not_filters);
-  result.debug_key_ = debug_key;
-  result.aggregatable_dedup_key_ = aggregatable_dedup_key;
-  result.event_triggers_ = std::move(event_triggers);
-  result.aggregatable_trigger_data_ = std::move(aggregatable_trigger_data);
-  result.aggregatable_values_ = std::move(aggregatable_values);
-  result.debug_reporting_ = debug_reporting;
-  return result;
-}
 
 }  // namespace attribution_reporting

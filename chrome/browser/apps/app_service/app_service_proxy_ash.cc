@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
-#include "chrome/browser/web_applications/app_service/web_apps.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
@@ -715,8 +715,7 @@ void AppServiceProxyAsh::ReadIcons(const std::string& app_id,
                                    IconType icon_type,
                                    LoadIconCallback callback) {
   icon_reader.ReadIcons(
-      app_id, size_hint_in_dip, static_cast<IconEffects>(icon_key.icon_effects),
-      icon_type,
+      app_id, size_hint_in_dip, icon_key, icon_type,
       base::BindOnce(&AppServiceProxyAsh::OnIconRead,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

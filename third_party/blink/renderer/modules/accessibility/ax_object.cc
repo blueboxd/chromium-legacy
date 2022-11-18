@@ -2840,6 +2840,9 @@ AXObjectInclusion AXObject::DefaultObjectInclusion(
   return kDefaultBehavior;
 }
 
+// Note: do not rely on the value of this inside of display:none.
+// In practice, it does not matter because nodes in display:none subtrees are
+// marked ignored either way.
 bool AXObject::IsInert() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_inert_;
@@ -3507,6 +3510,10 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
   if (are_cached_attributes_up_to_date ? cached_is_inert_ : ComputeIsInert())
     return false;
 
+  // NOT focusable: disabled child tree owners (no content area).
+  if (IsChildTreeOwner())
+    return !IsDisabled();
+
   // NOT focusable: disabled form controls.
   if (IsDisabledFormControl(elem))
     return false;
@@ -3820,6 +3827,14 @@ const ComputedStyle* AXObject::GetComputedStyle() const {
   if (!node)
     return nullptr;
 
+#if DCHECK_IS_ON()
+  DCHECK(GetDocument());
+  DCHECK(GetDocument()->Lifecycle().GetState() >=
+         DocumentLifecycle::kLayoutClean)
+      << "Unclean document at lifecycle "
+      << GetDocument()->Lifecycle().ToString();
+#endif
+
   // content-visibility:hidden or content-visibility: auto.
   if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(node))
     return nullptr;
@@ -3828,8 +3843,13 @@ const ComputedStyle* AXObject::GetComputedStyle() const {
   if (GetLayoutObject())
     return GetLayoutObject()->Style();
 
-  // No layout object: must ensure computed style.
-  return node->EnsureComputedStyle();
+  // No layout object: if possible, use EnsureComputedStyle().
+  // Cannot call EnsureComputedStyle() here because we may be in post lifecycle
+  // steps, and EnsureComputedStyle() can cause a style recalc which is not
+  // allowed at that time (enforced by DCHECK).
+  // TODO(szager) Figure out how to make this code cleaner.
+  return GetDocument()->InPostLifecycleSteps() ? node->GetComputedStyle()
+                                               : node->EnsureComputedStyle();
 }
 
 // There are 4 ways to use CSS to hide something:
@@ -6769,7 +6789,7 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
       // ax_enum, and a ToString() in ax_enum_utils, as well as move out of
       // String IgnoredReasonName(AXIgnoredReason reason) in
       // inspector_type_builder_helper.cc.
-      if (!cached_values_only) {
+      if (!cached_values_only && !IsDetached()) {
         AXObject::IgnoredReasons reasons;
         ComputeAccessibilityIsIgnored(&reasons);
         string_builder = string_builder + GetIgnoredReasonsDebugString(reasons);

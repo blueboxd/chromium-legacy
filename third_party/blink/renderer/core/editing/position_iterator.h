@@ -44,7 +44,6 @@ class PositionIteratorAlgorithm {
 
  public:
   explicit PositionIteratorAlgorithm(const PositionTemplate<Strategy>&);
-  PositionIteratorAlgorithm();
 
   // Since |deprecatedComputePosition()| is slow, new code should use
   // |computePosition()| instead.
@@ -63,9 +62,6 @@ class PositionIteratorAlgorithm {
 
   Node* GetNode() const { return anchor_node_; }
 
-  // Returns true if current position is before `node`.
-  bool IsBeforeNode(const Node& node) const;
-
   int OffsetInTextNode() const {
     DCHECK(anchor_node_->IsTextNode());
     return offset_in_anchor_;
@@ -77,8 +73,6 @@ class PositionIteratorAlgorithm {
   bool AtEndOfNode() const;
 
  private:
-  PositionIteratorAlgorithm(Node* anchor_node, int offset_in_anchor_node);
-
   bool IsValid() const {
     return !anchor_node_ ||
            dom_tree_version_ == anchor_node_->GetDocument().DomTreeVersion();
@@ -89,13 +83,13 @@ class PositionIteratorAlgorithm {
   // anchor_node_;
   Node* node_after_position_in_anchor_ = nullptr;
   // In `Decrement()` `offset_in_anchor_` may not be valid.
-  int offset_in_anchor_;
-  wtf_size_t depth_to_anchor_node_;
+  int offset_in_anchor_ = 0;
+  wtf_size_t depth_to_anchor_node_ = 0;
   // If |node_after_position_in_anchor_| is not null,
   // offsets_in_anchor_node_[depth_to_anchor_node_] ==
   //    Strategy::Index(node_after_position_in_anchor_).
   Vector<int> offsets_in_anchor_node_;
-  uint64_t dom_tree_version_;
+  uint64_t dom_tree_version_ = 0;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

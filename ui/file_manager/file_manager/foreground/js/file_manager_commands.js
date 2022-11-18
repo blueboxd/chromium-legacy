@@ -13,7 +13,7 @@ import {DialogType, isModal} from '../../common/js/dialog_type.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
-import {RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, TrashEntry} from '../../common/js/trash.js';
+import {RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, shouldMoveToTrash, TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {xfm} from '../../common/js/xfm.js';
@@ -1157,8 +1157,7 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
 
     // Hide 'move-to-trash' if trash will not be used. E.g. drive or removable.
     if (event.command.id === 'move-to-trash' &&
-        (!fileManager.fileOperationManager.willUseTrash(
-             fileManager.volumeManager, entries) ||
+        (!shouldMoveToTrash(entries, fileManager.volumeManager) ||
          !fileManager.trashEnabled)) {
       event.canExecute = false;
       event.command.setHidden(true);
@@ -1184,10 +1183,10 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
       return;
     }
 
-    // We show undo toast rather than dialog for entries which will use trash.
+    // Trashing an item shows an "Undo" visual signal instead of a confirmation
+    // dialog.
     if (!permanentlyDelete &&
-        fileManager.fileOperationManager.willUseTrash(
-            fileManager.volumeManager, entries) &&
+        shouldMoveToTrash(entries, fileManager.volumeManager) &&
         fileManager.trashEnabled) {
       fileManager.ui.nudgeContainer.showNudge(NudgeType['TRASH_NUDGE']);
 
@@ -2280,22 +2279,15 @@ CommandHandler.COMMANDS_['extract-all'] = new (class extends FilesCommand {
     }
 
     const selectionEntries = fileManager.getSelection().entries;
-    if (util.isExtractArchiveEnabled()) {
-      if (fileManager.directoryModel.isReadOnly()) {
-        dirEntry = fileManager.directoryModel.getMyFiles();
-      }
-      fileManager.taskController.startExtractIOTask(
-          selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
+    if (fileManager.directoryModel.isReadOnly()) {
+      dirEntry = fileManager.directoryModel.getMyFiles();
     }
+    fileManager.taskController.startExtractIOTask(
+        selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
   }
 
   /** @override */
   canExecute(event, fileManager) {
-    if (!util.isExtractArchiveEnabled()) {
-      event.command.setHidden(true);
-      event.canExecute = false;
-      return;
-    }
     const dirEntry = fileManager.getCurrentDirectoryEntry();
     const selection = fileManager.getSelection();
 
@@ -2343,13 +2335,11 @@ CommandHandler.COMMANDS_['zip-selection'] = new (class extends FilesCommand {
     const selection = fileManager.getSelection();
 
     // Hide ZIP selection for single ZIP file selected.
-    if (util.isExtractArchiveEnabled()) {
-      if (selection.entries.length === 1 &&
-          FileType.getExtension(selection.entries[0]) === '.zip') {
-        event.command.setHidden(true);
-        event.canExecute = false;
-        return;
-      }
+    if (selection.entries.length === 1 &&
+        FileType.getExtension(selection.entries[0]) === '.zip') {
+      event.command.setHidden(true);
+      event.canExecute = false;
+      return;
     }
 
     if (!selection.entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(

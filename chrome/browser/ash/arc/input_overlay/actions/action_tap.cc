@@ -16,8 +16,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace arc {
-namespace input_overlay {
+namespace arc::input_overlay {
 namespace {
 // UI specs.
 constexpr int kLabelPositionToSide = 36;
@@ -27,7 +26,7 @@ constexpr int kLabelMargin = 2;
 std::unique_ptr<ActionLabel> CreateActionLabel(InputElement& input_element) {
   std::unique_ptr<ActionLabel> label;
   if (IsKeyboardBound(input_element)) {
-    DCHECK(input_element.keys().size() == 1);
+    DCHECK_EQ(1u, input_element.keys().size());
     label = ActionLabel::CreateTextActionLabel(
         GetDisplayText(input_element.keys()[0]));
   } else if (IsMouseBound(input_element)) {
@@ -141,7 +140,7 @@ class ActionTap::ActionTapView : public ActionView {
   }
 
   void ChildPreferredSizeChanged(View* child) override {
-    DCHECK(labels_.size() == 1);
+    DCHECK_EQ(1u, labels_.size());
     if (static_cast<ActionLabel*>(child) != labels_[0])
       return;
 
@@ -369,5 +368,4 @@ std::unique_ptr<ActionProto> ActionTap::ConvertToProtoIfCustomized() const {
   return action_proto;
 }
 
-}  // namespace input_overlay
-}  // namespace arc
+}  // namespace arc::input_overlay

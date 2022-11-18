@@ -306,6 +306,7 @@
 <translation id="4044093238444069296">Não é possível contactar o gateway</translation>
 <translation id="4046123991198612571">Faixa seguinte</translation>
 <translation id="404928562651467259">AVISO</translation>
+<translation id="4060260348856573701">Novo APN</translation>
 <translation id="4093865285251893588">Imagem do perfil</translation>
 <translation id="409427325554347132">Guardar detalhes do teste</translation>
 <translation id="4110686435123617899">Selecionar o álbum <ph name="TITLE" /> <ph name="DESC" /></translation>
@@ -472,6 +473,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="5499114900554609492">Não foi possível concluir a digitalização</translation>
 <translation id="5499762266711462226">A cor do teclado baseia-se na imagem de fundo</translation>
 <translation id="5502931783115429516">O Android não está a funcionar</translation>
+<translation id="551689408806449779">O dispositivo foi desligado. Tente restabelecer a ligação para testar</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">Mude automaticamente para o tema escuro ao pôr do sol</translation>
@@ -501,6 +503,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5860491529813859533">Ativar</translation>
 <translation id="5866840822086176774">Muito forte</translation>
+<translation id="5876385649737594562">Ative para selecionar opções</translation>
 <translation id="588258955323874662">Ecrã inteiro</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901630391730855834">Amarelo</translation>
@@ -609,6 +612,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="6766275201586212568">Resoluções de DNS com falhas</translation>
 <translation id="6768237774506518020">Taxa de falhas de resolução de DNS elevada</translation>
 <translation id="6791471867139427246">cor da luz do teclado</translation>
+<translation id="6793680441750437230">Prima qualquer tecla do teclado. Pode premir até 4 teclas ao mesmo tempo. Prima Alt + Esc para fechar a caixa de diálogo.</translation>
 <translation id="680983167891198932">Chave</translation>
 <translation id="6816797338148849397">Informações disponíveis relacionadas com a sua seleção. Utilize a tecla da seta para cima para aceder.</translation>
 <translation id="6853312040151791195">Velocidade de descarregamento</translation>
@@ -711,6 +715,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="7882358943899516840">Tipo de fornecedor</translation>
 <translation id="7882501334836096755">Chave pública</translation>
 <translation id="7890841768028788197">Ecrã tátil interno</translation>
+<translation id="7915220255123750251">Faça a gestão das definições do APN (Nome do Ponto de Acesso) da rede. Os APNs estabelecem uma ligação entre uma rede móvel e a Internet.</translation>
 <translation id="7936303884198020182">Não foram encontrados servidores de nomes.</translation>
 <translation id="7942349550061667556">Vermelho</translation>
 <translation id="7943235353293548836">Intervalo keep-alive persistente</translation>

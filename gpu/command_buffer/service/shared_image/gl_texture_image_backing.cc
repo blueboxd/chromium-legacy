@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
@@ -24,10 +23,11 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image/gl_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/gl_repack_utils.h"
+#include "gpu/command_buffer/service/shared_image/gl_texture_common_representations.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -42,7 +42,6 @@
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image_native_pixmap.h"
-#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
@@ -70,13 +69,14 @@ using InitializeGLTextureParams =
     GLTextureImageBackingHelper::InitializeGLTextureParams;
 
 int BytesPerPixel(viz::SharedImageFormat format) {
-  int bits = viz::BitsPerPixel(format);
+  int bits = BitsPerPixel(format);
   DCHECK_GE(bits, 8);
   return bits / 8;
 }
 
-bool HasFourByteAlignment(size_t stride) {
-  return (stride & 3) == 0;
+bool HasExpectedAlignment(size_t stride, viz::ResourceFormat format) {
+  const size_t alignment = format == viz::RGBA_F16 ? 7 : 3;
+  return (stride & alignment) == 0;
 }
 
 // This value can't be cached as it may change for different contexts.
@@ -85,15 +85,47 @@ bool SupportsUnpackSubimage() {
          gl::g_current_gl_driver->ext.b_GL_EXT_unpack_subimage;
 }
 
+// This value can't be cached as it may change for different contexts.
+bool SupportsPackSubimage() {
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86_FAMILY)
+  // GL_PACK_ROW_LENGTH is broken in the Android emulator. glReadPixels()
+  // modifies bytes between the last pixel in a row and the end of the stride
+  // for that row.
+  return false;
+#else
+  return gl::g_current_gl_version->is_es3_capable;
+#endif
+}
+
 }  // anonymous namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLTextureImageBacking
 
+bool GLTextureImageBacking::SupportsPixelReadbackWithFormat(
+    viz::SharedImageFormat format) {
+  if (!format.is_single_plane())
+    return false;
+
+  switch (format.resource_format()) {
+    case viz::ResourceFormat::RGBA_8888:
+    case viz::ResourceFormat::BGRA_8888:
+    case viz::ResourceFormat::RED_8:
+    case viz::ResourceFormat::RG_88:
+    case viz::ResourceFormat::RGBX_8888:
+    case viz::ResourceFormat::BGRX_8888:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool GLTextureImageBacking::SupportsPixelUploadWithFormat(
     viz::SharedImageFormat format) {
-  auto resource_format = format.resource_format();
-  switch (resource_format) {
+  if (!format.is_single_plane())
+    return false;
+
+  switch (format.resource_format()) {
     case viz::ResourceFormat::RGBA_8888:
     case viz::ResourceFormat::RGBA_4444:
     case viz::ResourceFormat::BGRA_8888:
@@ -211,22 +243,23 @@ bool GLTextureImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   DCHECK(SupportsPixelUploadWithFormat(format()));
   DCHECK(gl::GLContext::GetCurrent());
 
+  auto resource_format = format().resource_format();
+
   const GLuint texture_id = GetGLServiceId();
   const GLenum gl_format = texture_params_.format;
   const GLenum gl_type = texture_params_.type;
   const GLenum gl_target = texture_params_.target;
 
   size_t pixmap_stride = pixmap.rowBytes();
-  DCHECK(HasFourByteAlignment(pixmap_stride));
+  DCHECK(HasExpectedAlignment(pixmap_stride, resource_format));
 
   size_t expected_stride = gfx::RowSizeForBufferFormat(
-      size().width(), viz::BufferFormat(format()), /*plane=*/0);
-  DCHECK(HasFourByteAlignment(expected_stride));
+      size().width(), ToBufferFormat(format()), /*plane=*/0);
+  DCHECK(HasExpectedAlignment(expected_stride, resource_format));
   DCHECK_GE(pixmap_stride, expected_stride);
 
   GLuint gl_unpack_row_length = 0;
   std::vector<uint8_t> repacked_data;
-  auto resource_format = format().resource_format();
   if (resource_format == viz::BGRX_8888 || resource_format == viz::RGBX_8888) {
     DCHECK_EQ(gl_format, static_cast<GLenum>(GL_RGB));
 
@@ -257,6 +290,115 @@ bool GLTextureImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   api->glTexSubImage2DFn(gl_target, /*level=*/0, 0, 0, size().width(),
                          size().height(), gl_format, gl_type, pixels);
   DCHECK_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+  return true;
+}
+
+bool GLTextureImageBacking::ReadbackToMemory(SkPixmap& pixmap) {
+  DCHECK(gl::GLContext::GetCurrent());
+
+  // TODO(kylechar): Ideally there would be a usage that stated readback was
+  // required so support could be verified at creation time and then asserted
+  // here instead.
+  if (!SupportsPixelReadbackWithFormat(format()))
+    return false;
+
+  viz::ResourceFormat resource_format = format().resource_format();
+
+  const GLuint texture_id = GetGLServiceId();
+  GLenum gl_format = texture_params_.format;
+  GLenum gl_type = texture_params_.type;
+
+  if (resource_format == viz::BGRX_8888 || resource_format == viz::RGBX_8888) {
+    DCHECK_EQ(gl_format, static_cast<GLenum>(GL_RGB));
+    DCHECK_EQ(gl_type, static_cast<GLenum>(GL_UNSIGNED_BYTE));
+
+    // Always readback RGBX/BGRX as RGBA/BGRA instead of RGB to avoid needing a
+    // temporary buffer.
+    gl_format = resource_format == viz::BGRX_8888 ? GL_BGRA_EXT : GL_RGBA;
+  }
+
+  gl::GLApi* api = gl::g_current_gl_context;
+  GLuint framebuffer;
+  api->glGenFramebuffersEXTFn(1, &framebuffer);
+  gl::ScopedFramebufferBinder scoped_framebuffer_binder(framebuffer);
+  // This uses GL_FRAMEBUFFER instead of GL_READ_FRAMEBUFFER as the target for
+  // GLES2 compatibility.
+  api->glFramebufferTexture2DEXTFn(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, texture_id, /*level=*/0);
+  DCHECK_EQ(api->glCheckFramebufferStatusEXTFn(GL_FRAMEBUFFER),
+            static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE));
+
+  bool needs_rb_swizzle = false;
+
+  // GL_RGBA + GL_UNSIGNED_BYTE are always supported. Otherwise there is a
+  // preferred format + type that can be queried and is based on what is bound
+  // to GL_READ_FRAMEBUFFER.
+  if (gl_format != GL_RGBA || gl_type != GL_UNSIGNED_BYTE) {
+    GLint preferred_format = 0;
+    api->glGetIntegervFn(GL_IMPLEMENTATION_COLOR_READ_FORMAT,
+                         &preferred_format);
+    GLint preferred_type = 0;
+    api->glGetIntegervFn(GL_IMPLEMENTATION_COLOR_READ_TYPE, &preferred_type);
+
+    if (gl_format != static_cast<GLenum>(preferred_format) ||
+        gl_type != static_cast<GLenum>(preferred_type)) {
+      if (resource_format == viz::BGRA_8888 ||
+          resource_format == viz::BGRX_8888) {
+        DCHECK_EQ(gl_format, static_cast<GLenum>(GL_BGRA_EXT));
+        DCHECK_EQ(gl_type, static_cast<GLenum>(GL_UNSIGNED_BYTE));
+
+        // If BGRA readback isn't support then use RGBA and swizzle.
+        gl_format = GL_RGBA;
+        needs_rb_swizzle = true;
+      } else {
+        DLOG(ERROR) << format().ToString()
+                    << " is not supported by glReadPixels()";
+        return false;
+      }
+    }
+  }
+
+  size_t pixmap_stride = pixmap.rowBytes();
+  DCHECK(HasExpectedAlignment(pixmap_stride, resource_format));
+
+  size_t expected_stride = gfx::RowSizeForBufferFormat(
+      size().width(), viz::BufferFormat(resource_format), /*plane=*/0);
+  DCHECK(HasExpectedAlignment(expected_stride, resource_format));
+  DCHECK_GE(pixmap_stride, expected_stride);
+
+  std::vector<uint8_t> unpack_buffer;
+  GLuint gl_pack_row_length = 0;
+  if (pixmap_stride > expected_stride) {
+    if (SupportsPackSubimage()) {
+      // Use GL_PACK_ROW_LENGTH to avoid temporary buffer.
+      gl_pack_row_length =
+          base::checked_cast<int>(pixmap_stride) / BytesPerPixel(format());
+    } else {
+      // If GL_PACK_ROW_LENGTH isn't supported then readback to a temporary
+      // buffer with expected stride.
+      unpack_buffer = std::vector<uint8_t>(expected_stride * size().height());
+    }
+  }
+
+  ScopedPackState scoped_pack_state(gl_pack_row_length);
+
+  void* pixels =
+      !unpack_buffer.empty() ? unpack_buffer.data() : pixmap.writable_addr();
+  api->glReadPixelsFn(0, 0, size().width(), size().height(), gl_format, gl_type,
+                      pixels);
+  DCHECK_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+  api->glDeleteFramebuffersEXTFn(1, &framebuffer);
+
+  if (!unpack_buffer.empty()) {
+    DCHECK_GT(pixmap_stride, expected_stride);
+    UnpackPixelDataWithStride(size(), unpack_buffer, expected_stride, pixmap);
+  }
+
+  if (needs_rb_swizzle) {
+    SwizzleRedAndBlue(pixmap);
+  }
 
   return true;
 }
@@ -351,7 +493,7 @@ void GLTextureImageBacking::CreateEGLImage() {
   ui::ScopedMakeCurrent smc(shared_context_state->context(),
                             shared_context_state->surface());
   auto image_np = base::MakeRefCounted<gl::GLImageNativePixmap>(
-      size(), viz::BufferFormat(format()));
+      size(), ToBufferFormat(format()));
   image_np->InitializeFromTexture(GetGLServiceId());
   image_egl_ = image_np;
   if (passthrough_texture_) {

@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/components/phonehub/icon_decoder.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/components/phonehub/phone_model.h"
 #include "ash/constants/ash_features.h"
@@ -13,17 +14,21 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/eche/eche_icon_loading_indicator_view.h"
+#include "ash/system/eche/eche_tray.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/quick_actions_view.h"
 #include "ash/system/phonehub/task_continuation_view.h"
 #include "ash/system/phonehub/ui_constants.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -34,6 +39,7 @@
 #include "base/callback_helpers.h"
 #include "base/task/sequenced_task_runner.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
@@ -90,17 +96,30 @@ PhoneHubTray::PhoneHubTray(Shelf* shelf)
       views::ImageButton::VerticalAlignment::ALIGN_MIDDLE);
   icon->SetImageHorizontalAlignment(
       views::ImageButton::HorizontalAlignment::ALIGN_CENTER);
+  icon->SetImageModel(views::ImageButton::STATE_NORMAL,
+                      ui::ImageModel::FromVectorIcon(
+                          kPhoneHubPhoneIcon, kColorAshIconColorPrimary));
   icon_ = tray_container()->AddChildView(std::move(icon));
 }
 
 PhoneHubTray::~PhoneHubTray() {
   if (bubble_)
     bubble_->bubble_view()->ResetDelegate();
+  if (phone_hub_manager_) {
+    phone_hub_manager_->GetAppStreamManager()->RemoveObserver(this);
+  }
 }
 
 void PhoneHubTray::SetPhoneHubManager(
     phonehub::PhoneHubManager* phone_hub_manager) {
   ui_controller_->SetPhoneHubManager(phone_hub_manager);
+  if (phone_hub_manager_) {
+    phone_hub_manager_->GetAppStreamManager()->RemoveObserver(this);
+  }
+  if (phone_hub_manager) {
+    phone_hub_manager->GetAppStreamManager()->AddObserver(this);
+  }
+  phone_hub_manager_ = phone_hub_manager;
 }
 
 void PhoneHubTray::ClickedOutsideBubble() {
@@ -135,6 +154,7 @@ void PhoneHubTray::HideBubble(const TrayBubbleView* bubble_view) {
 
 void PhoneHubTray::OnPhoneHubUiStateChanged() {
   UpdateVisibility();
+  UpdateHeaderVisibility();
 
   if (!bubble_)
     return;
@@ -166,9 +186,6 @@ void PhoneHubTray::OnPhoneHubUiStateChanged() {
 }
 
 void PhoneHubTray::OnSessionStateChanged(session_manager::SessionState state) {
-  icon_->SetImage(views::ImageButton::STATE_NORMAL,
-                  CreateVectorIcon(kPhoneHubPhoneIcon, TrayIconColor(state)));
-
   TemporarilyDisableAnimation();
 }
 
@@ -220,6 +237,7 @@ void PhoneHubTray::ShowBubble() {
   phone_status_view_ = phone_status.get();
   DCHECK(phone_status_view_);
   bubble_view->AddChildView(std::move(phone_status));
+  UpdateHeaderVisibility();
 
   // Other contents, i.e. the connected view and the interstitial views,
   // will be positioned underneath the phone status view and updated based
@@ -261,16 +279,6 @@ const char* PhoneHubTray::GetClassName() const {
   return "PhoneHubTray";
 }
 
-void PhoneHubTray::OnThemeChanged() {
-  TrayBackgroundView::OnThemeChanged();
-  icon_->SetImage(
-      views::ImageButton::STATE_NORMAL,
-      CreateVectorIcon(
-          kPhoneHubPhoneIcon,
-          TrayIconColor(
-              Shell::Get()->session_controller()->GetSessionState())));
-}
-
 bool PhoneHubTray::CanOpenConnectedDeviceSettings() {
   return TrayPopupUtils::CanOpenWebUISettings();
 }
@@ -290,6 +298,45 @@ void PhoneHubTray::HideStatusHeaderView() {
 
   phone_status_view_->SetVisible(false);
   bubble_->bubble_view()->UpdateBubble();
+}
+
+void PhoneHubTray::OnAppStreamUpdate(
+    const phonehub::proto::AppStreamUpdate app_stream_update) {
+  auto* app = &app_stream_update.foreground_app();
+  // TODO(nayebi): Try to extract this decoding process into a shared code
+  // inside the icon decoder.
+  // Decode the icon
+  std::unique_ptr<std::vector<phonehub::IconDecoder::DecodingData>>
+      decoding_data_list =
+          std::make_unique<std::vector<phonehub::IconDecoder::DecodingData>>();
+  std::hash<std::string> str_hash;
+  std::string key = app->package_name() + base::NumberToString(app->user_id());
+  phonehub::IconDecoder::DecodingData decoding_data =
+      phonehub::IconDecoder::DecodingData(str_hash(key), app->icon());
+  // load with default image
+  decoding_data.result =
+      gfx::Image(CreateVectorIcon(kPhoneHubPhoneIcon, gfx::kGoogleGrey700));
+  decoding_data_list->push_back(decoding_data);
+  phone_hub_manager_->GetIconDecoder()->BatchDecode(
+      std::move(decoding_data_list),
+      base::BindOnce(&PhoneHubTray::OnIconsDecoded, weak_factory_.GetWeakPtr(),
+                     app->visible_name()));
+}
+
+void PhoneHubTray::OnIconsDecoded(
+    std::string visible_name,
+    std::unique_ptr<std::vector<phonehub::IconDecoder::DecodingData>>
+        decoding_data_list) {
+  if (decoding_data_list->empty())
+    return;
+  EcheTray* eche_tray = Shell::GetPrimaryRootWindowController()
+                            ->GetStatusAreaWidget()
+                            ->eche_tray();
+  if (!eche_tray)
+    return;
+
+  eche_tray->SetIcon(decoding_data_list->front().result,
+                     base::UTF8ToUTF16(visible_name));
 }
 
 void PhoneHubTray::SetEcheIconActivationCallback(
@@ -322,6 +369,18 @@ void PhoneHubTray::UpdateVisibility() {
   DCHECK(ui_controller_.get());
   auto ui_state = ui_controller_->ui_state();
   SetVisiblePreferred(ui_state != PhoneHubUiController::UiState::kHidden);
+}
+
+void PhoneHubTray::UpdateHeaderVisibility() {
+  if (!features::IsEcheSWAEnabled())
+    return;
+  if (!phone_status_view_)
+    return;
+
+  DCHECK(ui_controller_.get());
+  auto ui_state = ui_controller_->ui_state();
+  phone_status_view_->SetVisible(ui_state !=
+                                 PhoneHubUiController::UiState::kMiniLauncher);
 }
 
 void PhoneHubTray::TemporarilyDisableAnimation() {

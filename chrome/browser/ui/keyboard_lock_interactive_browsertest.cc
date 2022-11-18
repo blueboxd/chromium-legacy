@@ -196,8 +196,14 @@ bool KeyboardLockInteractiveBrowserTest::DisablePreventDefaultOnTestPage() {
                                          false, false, false);
 }
 
+// https://crbug.com/1382717 Flaky on Linux
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_RequestedButNotActive DISABLED_RequestedButNotActive
+#else
+#define MAYBE_RequestedButNotActive RequestedButNotActive
+#endif
 IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
-                       RequestedButNotActive) {
+                       MAYBE_RequestedButNotActive) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
   ASSERT_TRUE(DisablePreventDefaultOnTestPage());
   ASSERT_TRUE(KeyboardLockApiExists());
@@ -244,8 +250,14 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_NO_FATAL_FAILURE(SendShortcutsAndExpectPrevented());
 }
 
+// https://crbug.com/1382699 Flaky on Linux
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_ActiveWithSomeKeysLocked DISABLED_ActiveWithSomeKeysLocked
+#else
+#define MAYBE_ActiveWithSomeKeysLocked ActiveWithSomeKeysLocked
+#endif
 IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
-                       ActiveWithSomeKeysLocked) {
+                       MAYBE_ActiveWithSomeKeysLocked) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
   ASSERT_TRUE(DisablePreventDefaultOnTestPage());
   ASSERT_TRUE(RequestKeyboardLock(/*lock_all_keys=*/false));

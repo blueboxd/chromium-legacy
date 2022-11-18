@@ -56,7 +56,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen_info.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gfx/presentation_feedback.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "third_party/blink/renderer/platform/widget/compositing/android_webview/synchronous_layer_tree_frame_sink.h"
@@ -85,7 +84,7 @@ static const char kRenderer[] = "Renderer";
 
 void OnDidPresentForceDrawFrame(
     mojom::blink::Widget::ForceRedrawCallback callback,
-    const gfx::PresentationFeedback& feedback) {
+    base::TimeTicks presentation_timestamp) {
   std::move(callback).Run();
 }
 
@@ -334,7 +333,7 @@ scheduler::WidgetScheduler* WidgetBase::WidgetScheduler() {
 
 void WidgetBase::ForceRedraw(
     mojom::blink::Widget::ForceRedrawCallback callback) {
-  LayerTreeHost()->RequestPresentationTimeForNextFrame(
+  LayerTreeHost()->RequestSuccessfulPresentationTimeForNextFrame(
       base::BindOnce(&OnDidPresentForceDrawFrame, std::move(callback)));
   LayerTreeHost()->SetNeedsCommitWithForcedRedraw();
 
@@ -899,8 +898,14 @@ void WidgetBase::BeginMainFrame(base::TimeTicks frame_time) {
   if (ShouldRecordBeginMainFrameMetrics()) {
     raf_aligned_input_start_time = base::TimeTicks::Now();
   }
+
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
   widget_input_handler_manager_->input_event_queue()->DispatchRafAlignedInput(
       frame_time);
+  // DispatchRafAlignedInput could have detached the frame.
+  if (!weak_this)
+    return;
+
   if (ShouldRecordBeginMainFrameMetrics()) {
     client_->RecordDispatchRafAlignedInputTime(raf_aligned_input_start_time);
   }

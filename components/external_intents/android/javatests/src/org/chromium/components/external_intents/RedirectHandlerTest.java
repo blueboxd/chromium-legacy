@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Function;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
@@ -33,6 +32,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * Unittests for tab redirect handler.
@@ -380,6 +380,22 @@ public class RedirectHandlerTest {
                 true /* isRendererInitiated */);
         currentTime.set(RedirectHandler.NAVIGATION_CHAIN_TIMEOUT_MILLIS + 1);
         Assert.assertTrue(handler.isNavigationChainExpired());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"IntentHandling"})
+    public void testCctPrefetch() {
+        RedirectHandler handler = RedirectHandler.create();
+        handler.setIsPrefetchLoadForIntent(true);
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertTrue(handler.getInitialNavigationState().isFromIntent);
+        handler.clear();
+
+        handler.updateNewUrlLoading(
+                TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0, false, false);
+        Assert.assertFalse(handler.getInitialNavigationState().isFromIntent);
     }
 
     private static class TestPackageManager extends MockPackageManager {

@@ -32,14 +32,13 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT MemoryManagedPaintRecorder : public cc::PaintRecorder {
+class PLATFORM_EXPORT MemoryManagedPaintRecorder
+    : public cc::PaintRecorderBase {
  public:
-  MemoryManagedPaintRecorder(MemoryManagedPaintCanvas::Client* client);
+  explicit MemoryManagedPaintRecorder(MemoryManagedPaintCanvas::Client* client);
 
- protected:
-  std::unique_ptr<cc::RecordPaintCanvas> CreateCanvas(
-      cc::DisplayItemList* list,
-      const SkRect& bounds) override;
+  cc::PaintCanvas* beginRecording(const gfx::Size& size);
+  sk_sp<cc::PaintRecord> finishRecordingAsPicture();
 
  private:
   MemoryManagedPaintCanvas::Client* client_;

@@ -5,53 +5,65 @@
 #include "cc/paint/paint_recorder.h"
 
 #include "cc/paint/display_item_list.h"
-#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 
-PaintRecorder::PaintRecorder() {
-  display_item_list_ = base::MakeRefCounted<DisplayItemList>(
-      DisplayItemList::kToBeReleasedAsPaintOpBuffer);
-}
-PaintRecorder::~PaintRecorder() = default;
+PaintRecorderBase::PaintRecorderBase()
+    : display_item_list_(base::MakeRefCounted<DisplayItemList>(
+          DisplayItemList::kToBeReleasedAsPaintOpBuffer)) {}
 
-PaintCanvas* PaintRecorder::beginRecording(const SkRect& bounds) {
+PaintRecorderBase::~PaintRecorderBase() = default;
+
+void PaintRecorderBase::beginRecording() {
+  DCHECK(!is_recording_);
+  is_recording_ = true;
+
+  // The subclass must create canvas_ before calling this method.
+  DCHECK(canvas_);
   display_item_list_->StartPaint();
-  canvas_ = CreateCanvas(display_item_list_.get(), bounds);
-  return getRecordingCanvas();
 }
 
-sk_sp<PaintRecord> PaintRecorder::finishRecordingAsPicture() {
-  // SkPictureRecorder users expect that their saves are automatically
-  // closed for them.
-  //
-  // NOTE: Blink paint in general doesn't appear to need this, but the
-  // RecordingImageBufferSurface::fallBackToRasterCanvas finishing off the
-  // current frame depends on this.  Maybe we could remove this assumption and
-  // just have callers do it.
+sk_sp<PaintRecord> PaintRecorderBase::finishRecordingAsPicture() {
+  DCHECK(canvas_);
+  DCHECK(is_recording_);
+  is_recording_ = false;
+
+  // Some users expect that their saves are automatically closed for them.
+  // Maybe we could remove this assumption and just have callers do it.
+  // canvas_ is not reset in case it can be reused for the next recording.
   canvas_->restoreToCount(1);
 
-  // Some users (e.g. printing) use the existence of the recording canvas
-  // to know if recording is finished, so reset it here.
-  canvas_.reset();
+  if (canvas_->NeedsFlush())
+    canvas_.reset();
 
   // The rect doesn't matter, since we just release the record.
   display_item_list_->EndPaintOfUnpaired(gfx::Rect());
   return display_item_list_->FinalizeAndReleaseAsRecord();
 }
 
-std::unique_ptr<RecordPaintCanvas> PaintRecorder::CreateCanvas(
-    DisplayItemList* list,
-    const SkRect& bounds) {
-  return std::make_unique<RecordPaintCanvas>(list, bounds);
-}
-
-bool PaintRecorder::ListHasDrawOps() const {
+bool PaintRecorderBase::ListHasDrawOps() const {
   return display_item_list_->has_draw_ops();
 }
 
-size_t PaintRecorder::num_paint_ops() const {
+size_t PaintRecorderBase::num_paint_ops() const {
   return display_item_list_->num_paint_ops();
+}
+
+PaintCanvas* PaintRecorder::beginRecording() {
+  if (!canvas_)
+    canvas_ = std::make_unique<RecordPaintCanvas>(display_item_list_.get());
+  PaintRecorderBase::beginRecording();
+  return canvas_.get();
+}
+
+PaintCanvas* InspectablePaintRecorder::beginRecording(const gfx::Size& size) {
+  if (!canvas_ || size != size_) {
+    canvas_ = std::make_unique<InspectableRecordPaintCanvas>(
+        display_item_list_.get(), size);
+  }
+  size_ = size;
+  PaintRecorderBase::beginRecording();
+  return canvas_.get();
 }
 
 }  // namespace cc

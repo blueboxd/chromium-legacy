@@ -21,6 +21,7 @@ source_set("flags") {
     "//components/breadcrumbs/core:feature_flags",
     "//components/commerce/core:feature_list",
     "//components/dom_distiller/core",
+    "//components/download/public/background_service:public",
     "//components/enterprise",
     "//components/feature_engagement/public",
     "//components/feed:feature_list",
@@ -67,6 +68,7 @@ source_set("flags") {
     "//ios/chrome/browser/ui/autofill:features",
     "//ios/chrome/browser/ui/bubble:features",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
+    "//ios/chrome/browser/ui/credential_provider_promo:features",
     "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/download:features",
     "//ios/chrome/browser/ui/first_run:field_trial",
@@ -74,11 +76,13 @@ source_set("flags") {
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/keyboard:features",
     "//ios/chrome/browser/ui/ntp:feature_flags",
+    "//ios/chrome/browser/ui/ntp:field_trial",
     "//ios/chrome/browser/ui/omnibox:features",
     "//ios/chrome/browser/ui/open_in:features",
     "//ios/chrome/browser/ui/popup_menu/overflow_menu:feature_flags",
     "//ios/chrome/browser/ui/post_restore_signin:features",
     "//ios/chrome/browser/ui/start_surface:feature_flags",
+    "//ios/chrome/browser/ui/tab_switcher/pinned_tabs:features",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",
     "//ios/chrome/browser/ui/whats_new:feature_flags",
     "//ios/chrome/browser/web:feature_flags",
@@ -128,6 +132,7 @@ source_set("client_side") {
     "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/paths",
     "//ios/chrome/browser/ui/first_run:field_trial",
+    "//ios/chrome/browser/ui/ntp:field_trial",
   ]
 }
 

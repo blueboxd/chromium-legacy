@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.chromium.base.Consumer;
 import org.chromium.base.Log;
 import org.chromium.chromecast.base.Both;
 import org.chromium.chromecast.base.Controller;
@@ -20,6 +19,8 @@ import org.chromium.chromecast.base.Observers;
 import org.chromium.chromecast.base.Unit;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.function.Consumer;
 
 /**
  * A util class for CastWebContentsActivity to show WebContents on its views.

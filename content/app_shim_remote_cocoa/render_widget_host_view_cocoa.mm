@@ -68,6 +68,9 @@ constexpr NSString* const WebAutomaticDashSubstitutionEnabled =
 constexpr NSString* const WebAutomaticTextReplacementEnabled =
     @"WebAutomaticTextReplacementEnabled";
 
+constexpr NSString* const kGoogleJapaneseInputPrefix =
+    @"com.google.inputmethod.Japanese.";
+
 // A dummy RenderWidgetHostNSViewHostHelper implementation which no-ops all
 // functions.
 class DummyHostHelper : public RenderWidgetHostNSViewHostHelper {
@@ -1868,6 +1871,10 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   return NSUInteger(char_index);
 }
 
+- (BOOL)drawsVerticallyForCharacterAtIndex:(NSUInteger)charIndex {
+  return !!(_textInputFlags & blink::kWebTextInputFlagVertical);
+}
+
 - (NSRect)firstRectForCharacterRange:(NSRange)theRange
                          actualRange:(NSRangePointer)actualRange {
   gfx::Rect gfxRect;
@@ -1894,6 +1901,18 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   // Convert into screen coordinates for return.
   rect = [self convertRect:rect toView:nil];
   rect = [[self window] convertRectToScreen:rect];
+
+  if (_textInputFlags & blink::kWebTextInputFlagVertical) {
+    // Google Japanese Input doesn't use the result of
+    // drawsVerticallyForCharacterAtIndex. So we'd like to ask it to show its
+    // horizontal candidate window at the right side of the caret if the text
+    // is vertical.
+    NSString* inputSourceName =
+        [[self inputContext] selectedKeyboardInputSource];
+    if ([inputSourceName hasPrefix:kGoogleJapaneseInputPrefix])
+      rect.origin.x += rect.size.width;
+  }
+
   return rect;
 }
 

@@ -185,7 +185,7 @@ void RemoteRouterLink::AcceptParcel(const OperationContext& context,
   // Allocate all the arrays in the message. Note that each allocation may
   // relocate the parcel data in memory, so views into these arrays should not
   // be acquired until all allocations are complete.
-  if (parcel.data_fragment().is_null() ||
+  if (!parcel.has_data_fragment() ||
       parcel.data_fragment_memory() != &node_link()->memory()) {
     // Only inline parcel data within the message when we don't have a separate
     // data fragment allocated already, or if the allocated fragment is on the
@@ -301,26 +301,6 @@ void RemoteRouterLink::AcceptRouteClosure(const OperationContext& context,
   route_closed.params().sublink = sublink_;
   route_closed.params().sequence_length = sequence_length;
   node_link()->Transmit(route_closed);
-}
-
-AtomicQueueState* RemoteRouterLink::GetPeerQueueState() {
-  if (auto* state = GetLinkState()) {
-    return &state->GetQueueState(side_.opposite());
-  }
-  return nullptr;
-}
-
-AtomicQueueState* RemoteRouterLink::GetLocalQueueState() {
-  if (auto* state = GetLinkState()) {
-    return &state->GetQueueState(side_);
-  }
-  return nullptr;
-}
-
-void RemoteRouterLink::SnapshotPeerQueueState(const OperationContext& context) {
-  msg::SnapshotPeerQueueState snapshot;
-  snapshot.params().sublink = sublink_;
-  node_link()->Transmit(snapshot);
 }
 
 void RemoteRouterLink::AcceptRouteDisconnected(

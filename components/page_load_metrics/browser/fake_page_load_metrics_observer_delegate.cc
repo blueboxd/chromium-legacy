@@ -144,9 +144,9 @@ FakePageLoadMetricsObserverDelegate::GetPageInputTiming() const {
   return page_input_timing_;
 }
 
-const absl::optional<blink::MobileFriendliness>&
-FakePageLoadMetricsObserverDelegate::GetMobileFriendliness() const {
-  return mobile_friendliness_;
+const absl::optional<mojom::SubresourceLoadMetrics>&
+FakePageLoadMetricsObserverDelegate::GetSubresourceLoadMetrics() const {
+  return subresource_load_metrics_;
 }
 
 const PageRenderData&

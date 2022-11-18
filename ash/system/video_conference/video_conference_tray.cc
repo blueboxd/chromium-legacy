@@ -13,15 +13,19 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/system/video_conference/video_conference_bubble.h"
+#include "ash/system/video_conference/video_conference_tray_controller.h"
 #include "base/functional/bind.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
@@ -30,14 +34,12 @@ namespace ash {
 
 // A toggle icon button in the VC tray, which is used for toggling camera,
 // microphone, and screen sharing.
-// Note that it's safe to use `base::Unretained()` in IconButton since callback
-// is destroyed with `this`.
 class VideoConferenceTrayButton : public IconButton {
  public:
-  VideoConferenceTrayButton(const gfx::VectorIcon* icon,
+  VideoConferenceTrayButton(PressedCallback callback,
+                            const gfx::VectorIcon* icon,
                             const int accessible_name_id)
-      : IconButton(base::BindRepeating(&VideoConferenceTrayButton::ToggleButton,
-                                       base::Unretained(this)),
+      : IconButton(std::move(callback),
                    IconButton::Type::kMedium,
                    icon,
                    accessible_name_id,
@@ -57,14 +59,20 @@ VideoConferenceTray::VideoConferenceTray(Shelf* shelf)
                          TrayBackgroundViewCatalogName::kVideoConferenceTray) {
   audio_icon_ = tray_container()->AddChildView(
       std::make_unique<VideoConferenceTrayButton>(
+          base::BindRepeating(&VideoConferenceTray::OnAudioButtonClicked,
+                              weak_ptr_factory_.GetWeakPtr()),
           &kPrivacyIndicatorsMicrophoneIcon,
           IDS_PRIVACY_NOTIFICATION_TITLE_MIC));
   camera_icon_ = tray_container()->AddChildView(
       std::make_unique<VideoConferenceTrayButton>(
+          base::BindRepeating(&VideoConferenceTray::OnCameraButtonClicked,
+                              weak_ptr_factory_.GetWeakPtr()),
           &kPrivacyIndicatorsCameraIcon,
           IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA));
   screen_share_icon_ = tray_container()->AddChildView(
       std::make_unique<VideoConferenceTrayButton>(
+          base::BindRepeating(&VideoConferenceTray::OnScreenShareButtonClicked,
+                              weak_ptr_factory_.GetWeakPtr()),
           &kPrivacyIndicatorsScreenShareIcon,
           IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE));
   expand_indicator_ =
@@ -86,17 +94,7 @@ void VideoConferenceTray::ShowBubble() {
   init_params.translucent = true;
 
   // Create top-level bubble.
-  TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
-
-  // TODO(b/253088232): Added an icon so that the bubble can show. Will remove
-  // this with the newly created class VcBubbleView.
-  auto icon = std::make_unique<views::ImageView>();
-  icon->SetImage(gfx::CreateVectorIcon(
-      kPrivacyIndicatorsMicrophoneIcon,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary)));
-  bubble_view->AddChildView(std::move(icon));
-
+  TrayBubbleView* bubble_view = new VideoConferenceBubbleView(init_params);
   bubble_ = std::make_unique<TrayBubbleWrapper>(this, bubble_view);
 
   SetIsActive(true);
@@ -158,7 +156,7 @@ void VideoConferenceTray::UpdateAfterLoginStatusChange() {
 void VideoConferenceTray::UpdateExpandIndicator() {
   auto image = gfx::CreateVectorIcon(
       kUnifiedMenuExpandIcon,
-      TrayIconColor(Shell::Get()->session_controller()->GetSessionState()));
+      GetColorProvider()->GetColor(kColorAshIconColorPrimary));
 
   SkBitmapOperations::RotationAmount rotation;
   switch (shelf()->alignment()) {
@@ -184,6 +182,19 @@ void VideoConferenceTray::UpdateExpandIndicator() {
 
   expand_indicator_->SetImage(
       gfx::ImageSkiaOperations::CreateRotatedImage(image, rotation));
+}
+
+void VideoConferenceTray::OnCameraButtonClicked(const ui::Event& event) {
+  Shell::Get()->video_conference_tray_controller()->SetCameraSoftwareMuted(
+      /*mute_camera=*/!camera_icon_->toggled());
+}
+
+void VideoConferenceTray::OnAudioButtonClicked(const ui::Event& event) {
+  // TODO(b/253275993): Implement the callback for `audio_icon_`.
+}
+
+void VideoConferenceTray::OnScreenShareButtonClicked(const ui::Event& event) {
+  // TODO(b/253277644): Implement the callback for `screen_share_icon_`.
 }
 
 BEGIN_METADATA(VideoConferenceTray, TrayBackgroundView)

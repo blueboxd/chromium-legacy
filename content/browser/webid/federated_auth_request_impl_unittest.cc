@@ -729,20 +729,24 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
                    const MockConfiguration& configuration) {
     test_network_request_manager_->SetTestConfig(configuration);
     SetMockExpectations(request_parameters, expectation, configuration);
-    std::vector<blink::mojom::IdentityProviderPtr> identity_provider_ptrs;
+
+    std::vector<blink::mojom::IdentityProviderGetParametersPtr> idp_get_params;
     for (const auto& identity_provider :
          request_parameters.identity_providers) {
-      blink::mojom::IdentityProviderPtr identity_provider_ptr =
+      std::vector<blink::mojom::IdentityProviderPtr> idp_ptrs;
+      blink::mojom::IdentityProviderPtr idp_ptr =
           blink::mojom::IdentityProvider::New(GURL(identity_provider.provider),
                                               identity_provider.client_id,
                                               identity_provider.nonce);
-      identity_provider_ptrs.push_back(std::move(identity_provider_ptr));
+      idp_ptrs.push_back(std::move(idp_ptr));
+      blink::mojom::IdentityProviderGetParametersPtr get_params =
+          blink::mojom::IdentityProviderGetParameters::New(
+              std::move(idp_ptrs), request_parameters.prefer_auto_sign_in);
+      idp_get_params.push_back(std::move(get_params));
     }
 
-    auto auth_response =
-        PerformAuthRequest(std::move(identity_provider_ptrs),
-                           request_parameters.prefer_auto_sign_in,
-                           configuration.wait_for_callback);
+    auto auth_response = PerformAuthRequest(std::move(idp_get_params),
+                                            configuration.wait_for_callback);
     ASSERT_EQ(std::get<0>(auth_response), expectation.return_status);
     if (std::get<0>(auth_response) == RequestTokenStatus::kSuccess) {
       EXPECT_EQ(configuration.token, std::get<2>(auth_response));
@@ -840,12 +844,11 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
   std::tuple<absl::optional<RequestTokenStatus>,
              absl::optional<GURL>,
              absl::optional<std::string>>
-  PerformAuthRequest(
-      std::vector<blink::mojom::IdentityProviderPtr> identity_provider_ptrs,
-      bool prefer_auto_sign_in,
-      bool wait_for_callback) {
-    request_remote_->RequestToken(std::move(identity_provider_ptrs),
-                                  prefer_auto_sign_in, auth_helper_.callback());
+  PerformAuthRequest(std::vector<blink::mojom::IdentityProviderGetParametersPtr>
+                         idp_get_params,
+                     bool wait_for_callback) {
+    request_remote_->RequestToken(std::move(idp_get_params),
+                                  auth_helper_.callback());
 
     if (wait_for_callback)
       request_remote_.set_disconnect_handler(auth_helper_.quit_closure());
@@ -2392,6 +2395,72 @@ TEST_F(FederatedAuthRequestImplTest,
                                       FederatedAuthRequestResult::kError,
                                       /*selected_idp_config_url=*/absl::nullopt,
                                       /*fetched_endpoints=*/0};
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+}
+
+// Test that when IdpSigninStatus API is in the metrics-only mode, that an IDP
+// signed-out status stays signed-out regardless of what is returned by the
+// accounts endpoint.
+TEST_F(FederatedAuthRequestImplTest, IdpSigninStatusMetricsModeStaysSignedout) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeatureWithParameters(
+      features::kFedCm,
+      {{features::kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName,
+        "true"}});
+
+  EXPECT_CALL(*mock_sharing_permission_delegate_, GetIdpSigninStatus(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_sharing_permission_delegate_, SetIdpSigninStatus(_, _))
+      .Times(0);
+
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
+              kConfigurationValid);
+}
+
+// Test that when IdpSigninStatus API does not have any state for an IDP, that
+// the state transitions to sign-in if the accounts endpoint returns a
+// non-empty list of accounts.
+TEST_F(
+    FederatedAuthRequestImplTest,
+    IdpSigninStatusMetricsModeUndefinedTransitionsToSignedinWhenHaveAccounts) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeatureWithParameters(
+      features::kFedCm,
+      {{features::kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName,
+        "true"}});
+
+  EXPECT_CALL(*mock_sharing_permission_delegate_, GetIdpSigninStatus(_))
+      .WillRepeatedly(Return(absl::nullopt));
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              SetIdpSigninStatus(OriginFromString(kProviderUrlFull), true));
+
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
+              kConfigurationValid);
+}
+
+// Test that when IdpSigninStatus API is in metrics-only mode, that IDP sign-in
+// status transitions to signed-out if the accounts endpoint returns no
+// information.
+TEST_F(FederatedAuthRequestImplTest,
+       IdpSigninStatusMetricsModeTransitionsToSignedoutWhenNoAccounts) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeatureWithParameters(
+      features::kFedCm,
+      {{features::kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName,
+        "true"}});
+
+  EXPECT_CALL(*mock_sharing_permission_delegate_, GetIdpSigninStatus(_))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
+              SetIdpSigninStatus(OriginFromString(kProviderUrlFull), false));
+
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.idp_info[kProviderUrlFull].accounts_response.parse_status =
+      ParseStatus::kInvalidResponseError;
+  RequestExpectations expectations = {
+      RequestTokenStatus::kError, absl::nullopt, absl::nullopt,
+      FetchedEndpoint::ACCOUNTS | FetchedEndpoint::MANIFEST |
+          FetchedEndpoint::MANIFEST_LIST};
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);
 }
 

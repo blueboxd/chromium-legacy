@@ -76,9 +76,6 @@ BASE_FEATURE(kAudioServiceSandbox,
 // second is unsafe for Android WebView (and thus entirely disabled via
 // ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync()),
 // because the embedder may trigger reentrancy, which cannot be avoided.
-BASE_FEATURE(kAvoidUnnecessaryBeforeUnloadCheckPostTask,
-             "AvoidUnnecessaryBeforeUnloadCheck",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kAvoidUnnecessaryBeforeUnloadCheckSync,
              "AvoidUnnecessaryBeforeUnloadCheckSync",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -329,6 +326,11 @@ BASE_FEATURE(kEnableServiceWorkersForChromeUntrusted,
              "EnableServiceWorkersForChromeUntrusted",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables service workers on chrome:// urls.
+BASE_FEATURE(kEnableServiceWorkersForChromeScheme,
+             "EnableServiceWorkersForChromeScheme",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If this feature is enabled and device permission is not granted by the user,
 // media-device enumeration will provide at most one device per type and the
 // device IDs will not be available.
@@ -389,6 +391,14 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
 // used in FedCM API.
 const char kFedCmIdpSigninStatusFieldTrialParamName[] = "IdpSigninStatus";
 
+// Alternative to `kFedCmIdpSigninStatusFieldTrialParamName` which runs
+// IdpSigninStatus API in a metrics-only mode. This field trial is default-on
+// and is intended as a kill switch.
+// `kFedCmIdpSigninStatusFieldTrialParamName` takes precedence over
+// `kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName`.
+const char kFedCmIdpSigninStatusMetricsOnlyFieldTrialParamName[] =
+    "IdpSigninStatusMetricsOnly";
+
 // Enables usage of First Party Sets to determine cookie availability.
 BASE_FEATURE(kFirstPartySets,
              "FirstPartySets",
@@ -416,12 +426,6 @@ const base::FeatureParam<base::TimeDelta>
     kFirstPartySetsNavigationThrottleTimeout{
         &kFirstPartySets, "FirstPartySetsNavigationThrottleTimeout",
         base::Seconds(2)};
-
-// Whether to initialize the font manager when the renderer starts on a
-// background thread.
-BASE_FEATURE(kFontManagerEarlyInit,
-             "FontManagerEarlyInit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
@@ -486,21 +490,6 @@ BASE_FEATURE(kIdleDetection, "IdleDetection", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kInMemoryCodeCache,
              "InMemoryCodeCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Historically most navigations required IPC from browser to renderer and
-// from renderer back to browser. This was done to check for before-unload
-// handlers on the current page and occurred regardless of whether a
-// before-unload handler was present. The navigation start time (as used in
-// various metrics) is the time the renderer initiates the IPC back to the
-// browser. If this feature is enabled, the navigation start time takes into
-// account the cost of the IPC from the browser to renderer. More specifically:
-// navigation_start = time_renderer_sends_ipc_to_browser -
-//    (time_renderer_receives_ipc - time_browser_sends_ipc)
-// Note that navigation_start does not take into account the amount of time the
-// renderer spends processing the IPC (that is, executing script).
-BASE_FEATURE(kIncludeIpcOverheadInNavigationStart,
-             "IncludeIpcOverheadInNavigationStart",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Kill switch for the GetInstalledRelatedApps API.
 BASE_FEATURE(kInstalledApp, "InstalledApp", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -681,17 +670,6 @@ BASE_FEATURE(kMouseSubframeNoImplicitCapture,
 BASE_FEATURE(kNavigationNetworkResponseQueue,
              "NavigationNetworkResponseQueue",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Preconnects socket at the construction of NavigationRequest.
-BASE_FEATURE(kNavigationRequestPreconnect,
-             "NavigationRequestPreconnect",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables optimizations for renderer->browser mojo calls to avoid waiting on
-// the UI thread during navigation.
-BASE_FEATURE(kNavigationThreadingOptimizations,
-             "NavigationThreadingOptimizations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If the network service is enabled, runs it in process.
 BASE_FEATURE(kNetworkServiceInProcess,
@@ -919,6 +897,12 @@ const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>
         ServiceWorkerBypassFetchHandlerTarget::kMainResource,
         &service_worker_bypass_fetch_handler_target_options};
 
+// Define origins to bypass ServiceWorker. Origins are expected to be passed as
+// a comma separated string. e.g. https://example1.test,https://example2.test
+const base::FeatureParam<std::string>
+    kServiceWorkerBypassFetchHandlerBypassedOrigins{
+        &kServiceWorkerBypassFetchHandler, "origins_to_bypass", ""};
+
 // Enables skipping the service worker fetch handler if the fetch handler is
 // identified as ignorable.
 BASE_FEATURE(kServiceWorkerSkipIgnorableFetchHandler,
@@ -1025,16 +1009,6 @@ BASE_FEATURE(kSubframeShutdownDelay,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 );
-const base::FeatureParam<SubframeShutdownDelayType>::Option delay_types[] = {
-    {SubframeShutdownDelayType::kConstant, "constant"},
-    {SubframeShutdownDelayType::kConstantLong, "constant-long"},
-    {SubframeShutdownDelayType::kHistoryBased, "history-based"},
-    {SubframeShutdownDelayType::kHistoryBasedLong, "history-based-long"},
-    {SubframeShutdownDelayType::kMemoryBased, "memory-based"}};
-const base::FeatureParam<SubframeShutdownDelayType>
-    kSubframeShutdownDelayTypeParam{&kSubframeShutdownDelay, "type",
-                                    SubframeShutdownDelayType::kConstant,
-                                    &delay_types};
 
 // If enabled, GetUserMedia API will only work when the concerned tab is in
 // focus
@@ -1139,12 +1113,6 @@ BASE_FEATURE(kSyntheticPointerActions,
              "SyntheticPointerActions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Whether optimizations controlled by kNavigationThreadingOptimizations are
-// moved to the IO thread or a separate background thread.
-BASE_FEATURE(kThreadingOptimizationsOnIO,
-             "ThreadingOptimizationsOnIO",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // This feature allows touch dragging and a context menu to occur
 // simultaneously, with the assumption that the menu is non-modal.  Without this
 // feature, a long-press touch gesture can start either a drag or a context-menu
@@ -1233,7 +1201,7 @@ BASE_FEATURE(kWebAssemblyBaseline,
 // Enable memory protection for code JITed for WebAssembly.
 BASE_FEATURE(kWebAssemblyCodeProtection,
              "WebAssemblyCodeProtection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
 // Use memory protection keys in userspace (PKU) (if available) to protect code
@@ -1445,14 +1413,6 @@ BASE_FEATURE(kWebNfc, "WebNFC", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kWebViewThrottleBackgroundBeginFrame,
              "WebViewThrottleBackgroundBeginFrame",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Temporarily pauses the compositor early in navigation.
-BASE_FEATURE(kOptimizeEarlyNavigation,
-             "OptimizeEarlyNavigation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-const base::FeatureParam<base::TimeDelta> kCompositorLockTimeout{
-    &kOptimizeEarlyNavigation, "compositor_lock_timeout",
-    base::Milliseconds(150)};
 
 #endif  // BUILDFLAG(IS_ANDROID)
 

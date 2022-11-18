@@ -76,10 +76,11 @@ TEST_F(NavigationApiTest, BrowserInitiatedSameDocumentBackForwardUncancelable) {
   auto result = frame_loader.GetDocumentLoader()->CommitSameDocumentNavigation(
       item->Url(), WebFrameLoadType::kBackForward, item,
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr /* initiator_origin */,
-      false /* is_synchronously_committed */,
+      /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
+      /*is_synchronously_committed=*/false,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
-      true /* is_browser_initiated */);
+      /*is_browser_initiated=*/true,
+      /*soft_navigation_heuristics_task_id=*/absl::nullopt);
 
   EXPECT_EQ(result, mojom::blink::CommitResult::Ok);
 }
@@ -96,8 +97,8 @@ TEST_F(NavigationApiTest, DispatchNavigateEventAfterPurgeMemory) {
 
   KURL dest_url = url_test_helpers::ToKURL("https://example.com/foo.html#frag");
   // Should not crash.
-  NavigationApi::navigation(*frame->DomWindow())
-      ->DispatchNavigateEvent(MakeGarbageCollected<NavigateEventDispatchParams>(
+  frame->DomWindow()->navigation()->DispatchNavigateEvent(
+      MakeGarbageCollected<NavigateEventDispatchParams>(
           dest_url, NavigateEventType::kFragment, WebFrameLoadType::kStandard));
 }
 
@@ -113,8 +114,8 @@ TEST_F(NavigationApiTest, UpdateForNavigationAfterPurgeMemory) {
 
   HistoryItem* item = frame->Loader().GetDocumentLoader()->GetHistoryItem();
   // Should not crash.
-  NavigationApi::navigation(*frame->DomWindow())
-      ->UpdateForNavigation(*item, WebFrameLoadType::kStandard);
+  frame->DomWindow()->navigation()->UpdateForNavigation(
+      *item, WebFrameLoadType::kStandard);
 }
 
 TEST_F(NavigationApiTest, InformAboutCanceledNavigationAfterPurgeMemory) {
@@ -129,8 +130,8 @@ TEST_F(NavigationApiTest, InformAboutCanceledNavigationAfterPurgeMemory) {
   KURL dest_url = url_test_helpers::ToKURL("https://example.com/foo.html#frag");
   // DispatchNavigateEvent() will ensure NavigationApi::ongoing_navigate_event_
   // is non-null.
-  NavigationApi::navigation(*frame->DomWindow())
-      ->DispatchNavigateEvent(MakeGarbageCollected<NavigateEventDispatchParams>(
+  frame->DomWindow()->navigation()->DispatchNavigateEvent(
+      MakeGarbageCollected<NavigateEventDispatchParams>(
           dest_url, NavigateEventType::kFragment, WebFrameLoadType::kStandard));
   // Purging memory will invalidate the v8::Context then call
   // FrameLoader::StopAllLoaders(), which will in turn call

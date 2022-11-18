@@ -1300,6 +1300,9 @@ base::Value::Dict SerializeDownloadWarningAction(
     case ClientSafeBrowsingReportRequest::DownloadWarningAction::BACK:
       action = "BACK";
       break;
+    case ClientSafeBrowsingReportRequest::DownloadWarningAction::OPEN_SUBPAGE:
+      action = "OPEN_SUBPAGE";
+      break;
   }
   action_dict.Set("action", action);
   action_dict.Set("is_terminal_action",
@@ -1825,6 +1828,9 @@ base::Value::Dict SerializeRTThreatInfo(
     case RTLookupResponse::ThreatInfo::SAFE:
       verdict_type = "SAFE";
       break;
+    case RTLookupResponse::ThreatInfo::SUSPICIOUS:
+      verdict_type = "SUSPICIOUS";
+      break;  
     case RTLookupResponse::ThreatInfo::WARN:
       verdict_type = "WARN";
       break;

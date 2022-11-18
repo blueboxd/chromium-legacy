@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_GL_TEXTURE_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_GL_TEXTURE_IMAGE_BACKING_H_
 
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
 
 namespace gl {
@@ -19,6 +18,7 @@ namespace gpu {
 class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
  public:
   static bool SupportsPixelUploadWithFormat(viz::SharedImageFormat format);
+  static bool SupportsPixelReadbackWithFormat(viz::SharedImageFormat format);
 
   GLTextureImageBacking(const Mailbox& mailbox,
                         viz::SharedImageFormat format,
@@ -68,6 +68,7 @@ class GLTextureImageBacking : public ClearTrackingSharedImageBacking {
       scoped_refptr<SharedContextState> context_state) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool UploadFromMemory(const SkPixmap& pixmap) override;
+  bool ReadbackToMemory(SkPixmap& pixmap) override;
 
   bool IsPassthrough() const { return is_passthrough_; }
 

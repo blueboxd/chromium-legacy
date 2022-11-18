@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/json/json_writer.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -55,9 +56,7 @@ std::string GetUploadDetailsRequest::GetRequestContent() {
   base::Value::Dict context;
   context.Set("language_code", app_locale_);
   context.Set("billable_service", billable_service_number_);
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableSendingBcnInGetUploadDetails) &&
-      billing_customer_number_ != 0) {
+  if (billing_customer_number_ != 0) {
     context.Set("customer_context",
                 BuildCustomerContextDictionary(billing_customer_number_));
   }

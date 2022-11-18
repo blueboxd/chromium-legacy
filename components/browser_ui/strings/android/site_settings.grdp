@@ -30,6 +30,12 @@
   <message name="IDS_CLIPBOARD_PERMISSION_TITLE" desc="Title of the permission to read from clipboard [CHAR_LIMIT=32]">
     Clipboard
   </message>
+  <message name="IDS_THIRD_PARTY_COOKIES_PAGE_TITLE" desc="The label used for the third-party cookies settings controls." translateable="false">
+    Third-party cookies
+  </message>
+  <message name="IDS_SITE_DATA_PAGE_TITLE" desc="The label used for the site data settings controls." translateable="false">
+    On-device site data
+  </message>
   <message name="IDS_WEBSITE_SETTINGS_IDLE_DETECTION" desc="Title of the permission to detect user activity [CHAR_LIMIT=32]">
     Your device use
   </message>
@@ -209,7 +215,7 @@
     Add site exception
   </message>
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DIALOG_TITLE" desc="The title of the dialog to add a website to a list.">
-    Add site
+    Add a site
   </message>
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_ADD_BUTTON" desc="The label for the button to add a website to a list.">
     Add
@@ -220,8 +226,8 @@
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_SITE_URL" desc="The label for the input field where the user can type a website URL.">
     Site URL
   </message>
-  <message name="IDS_EXAMPLE_URL" desc="The hint for a website url field, showing an example url.">
-    www.example.com
+  <message name="IDS_ENTER_WEB_ADDRESS" desc="The hint for a website url field.">
+    Enter web address
   </message>
 
   <!-- Site settings Clear Data Dialog and other ways of resetting permissions -->
@@ -381,11 +387,23 @@
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
     Allow sites to save and read cookie data (recommended)
   </message>
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_SITE_DATA_PAGE_ALLOW_RADIO_LABEL" desc="Summary text explaining that sites are allowed to use cookies." translateable="false">
+    Sites can save data on your device
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_SITE_DATA_PAGE_BLOCK_RADIO_LABEL" desc="Summary text explaining that sites are blocked from using cookies and that it is not a recommended setting." translateable="false">
+    Don't allow sites to save data on your device (not recommended)
+  </message>
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_COOKIES_ALLOW" desc="The description for the allow Cookies for website dialog.">
     Allow cookies for a specific site.
   </message>
   <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_COOKIES_BLOCK" desc="The description for the block Cookies for website dialog.">
-   Block cookies for a specific site.
+    Block cookies for a specific site.
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_SITE_DATA_ALLOW" desc="The description for the allow site data for website dialog." translateable="false">
+    Allow site data for a specific site.
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_SITE_DATA_BLOCK" desc="The description for the block site data for website dialog." translateable="false">
+    Block site data for a specific site.
   </message>
   <message name="IDS_WEBSITE_SETTINGS_COOKIE_INFO" desc="Text describing cookie and third-party cookie settings.">
     A site you visit can embed content from other sites, for example images, ads, and text. Any of these sites can save cookies and other data to personalize your experience.

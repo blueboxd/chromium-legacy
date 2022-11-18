@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "cpu", "goma", "os", "xcode")
+load("//lib/builders.star", "cpu", "goma", "os", "reclient", "xcode")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
@@ -69,9 +69,12 @@ try_.builder(
 )
 
 try_.builder(
-    name = "mac-fieldtrial-rel",
+    name = "mac-fieldtrial-tester",
     os = os.MAC_DEFAULT,
-    mirrors = ["ci/mac-fieldtrial-rel"],
+    mirrors = [
+        "ci/mac-arm64-rel",
+        "ci/mac-fieldtrial-tester",
+    ],
 )
 
 try_.builder(
@@ -111,8 +114,7 @@ try_.orchestrator_builder(
     coverage_test_types = ["overall", "unit"],
     tryjob = try_.job(),
     experiments = {
-        # TODO (crbug.com/1382577): Reenable after cq active is reliable
-        "chromium_rts.inverted_rts": 0,
+        "chromium_rts.inverted_rts": 100,
     },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
@@ -145,6 +147,7 @@ try_.compilator_builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(

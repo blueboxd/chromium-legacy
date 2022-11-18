@@ -21,7 +21,7 @@ import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {ALL_PANEL_MENU_NODE_DATA, PanelNodeMenuData, PanelNodeMenuId, PanelNodeMenuItemData} from '../common/panel_menu_data.js';
-import {QueueMode} from '../common/tts_interface.js';
+import {QueueMode} from '../common/tts_types.js';
 
 import {ISearchUI} from './i_search_ui.js';
 import {PanelInterface} from './panel_interface.js';
@@ -1276,13 +1276,13 @@ window.addEventListener('load', function() {
   }
 }, false);
 
-window.addEventListener('hashchange', function() {
+window.addEventListener('hashchange', async function() {
   const bkgnd = chrome.extension.getBackgroundPage();
 
   // Save the sticky state when a user first focuses the panel.
-  if (bkgnd['ChromeVox'] &&
-      (location.hash === '#fullscreen' || location.hash === '#focus')) {
-    Panel.originalStickyState_ = bkgnd['ChromeVox']['isStickyPrefOn'];
+  if (location.hash === '#fullscreen' || location.hash === '#focus') {
+    Panel.originalStickyState_ =
+        await BackgroundBridge.ChromeVoxPrefs.getStickyPref();
   }
 
   // If the original sticky state was on when we first entered the panel, toggle

@@ -38,18 +38,15 @@ declare_args() {
       use_partition_alloc && use_partition_alloc_as_malloc_default
 }
 
-if (!use_partition_alloc) {
-  assert(
-      !use_partition_alloc_as_malloc,
-      "Can't use PartitionAlloc-Everywhere when PartitionAlloc is wholly disabled")
-}
-
 declare_args() {
   use_freeslot_bitmap = false
 
   # Puts the regular and BRP pools right next to each other, so that we can
   # check "belongs to one of the two pools" with a single bitmask operation.
   glue_core_pools = false
+
+  # Introduces pointer compression support in PA.
+  enable_pointer_compression_support = false
 }
 
 declare_args() {
@@ -67,6 +64,9 @@ declare_args() {
 
 assert(!(enable_backup_ref_ptr_support && enable_mte_checked_ptr_support),
        "MTECheckedPtrSupport conflicts with BRPSupport.")
+
+assert(!enable_pointer_compression_support || glue_core_pools,
+       "Pointer compression relies on core pools being contiguous.")
 
 declare_args() {
   # The supported platforms are supposed to match `_is_brp_supported`, but we
@@ -124,6 +124,7 @@ if (is_nacl) {
   assert(!use_partition_alloc, "PartitionAlloc doesn't build on NaCl")
 }
 if (!use_partition_alloc) {
+  use_partition_alloc_as_malloc = false
   enable_backup_ref_ptr_support = false
   enable_mte_checked_ptr_support = false
   put_ref_count_in_previous_slot = false

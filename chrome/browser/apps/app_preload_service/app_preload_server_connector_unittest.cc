@@ -6,7 +6,6 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
-#include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind.h"
 #include "base/test/test_future.h"
@@ -23,11 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace {
-static constexpr char kServerUrl[] =
-    "http://localhost:9876/v1/app_provisioning/apps?alt=proto";
-}  // namespace
 
 namespace apps {
 
@@ -78,22 +72,18 @@ TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginRequest) {
 
   EXPECT_EQ(method, "POST");
   EXPECT_EQ(method_override_header, "GET");
-  EXPECT_EQ(content_type, "application/json");
+  EXPECT_EQ(content_type, "application/x-protobuf");
 
-  absl::optional<base::Value> request = base::JSONReader::Read(body);
-  ASSERT_TRUE(request.has_value() && request->is_dict());
+  proto::AppProvisioningRequest request;
+  ASSERT_TRUE(request.ParseFromString(body));
 
-  base::Value::Dict& request_dict = request->GetDict();
-  EXPECT_EQ(*request_dict.FindString("board"), "brya");
-  EXPECT_EQ(*request_dict.FindString("language"), "en-US");
-  EXPECT_EQ(*request_dict.FindString("model"), "taniks");
-  EXPECT_EQ(*request_dict.FindInt("user_type"),
+  EXPECT_EQ(request.board(), "brya");
+  EXPECT_EQ(request.language(), "en-US");
+  EXPECT_EQ(request.model(), "taniks");
+  EXPECT_EQ(request.user_type(),
             apps::proto::AppProvisioningRequest::USERTYPE_UNMANAGED);
-  EXPECT_EQ(
-      *request_dict.FindDict("chrome_os_version")->FindString("ash_chrome"),
-      "10.10.10");
-  EXPECT_EQ(*request_dict.FindDict("chrome_os_version")->FindString("platform"),
-            "12345.0.0");
+  EXPECT_EQ(request.chrome_os_version().ash_chrome(), "10.10.10");
+  EXPECT_EQ(request.chrome_os_version().platform(), "12345.0.0");
 }
 
 TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginSuccessfulResponse) {
@@ -101,7 +91,9 @@ TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginSuccessfulResponse) {
   auto* app = response.add_apps_to_install();
   app->set_name("Peanut Types");
 
-  url_loader_factory_.AddResponse(kServerUrl, response.SerializeAsString());
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
 
   base::test::TestFuture<std::vector<PreloadAppDefinition>> test_callback;
   server_connector_.GetAppsForFirstLogin(

@@ -240,6 +240,14 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
             .AddCause(V4L2Status(V4L2Status::Codes::kNoProfile)));
     return;
   }
+  if (VideoCodecProfileToVideoCodec(profile_) == VideoCodec::kAV1 &&
+      !base::FeatureList::IsEnabled(kChromeOSHWAV1Decoder)) {
+    VLOGF(1) << "AV1 hardware video decoding is disabled";
+    std::move(init_cb).Run(
+        DecoderStatus(DecoderStatus::Codes::kNotInitialized)
+            .AddCause(V4L2Status(V4L2Status::Codes::kNoProfile)));
+    return;
+  }
 
   // Call init_cb
   output_cb_ = std::move(output_cb);
@@ -923,15 +931,17 @@ void V4L2VideoDecoder::SetState(State new_state) {
       break;
   }
 
+  // |StopStreamV4L2Queue()| can call |SetState()|.  Update |state_|
+  // before calling so that calls to |SetState()| from
+  // |StopStreamV4L2Queue()| return quickly.
+  state_ = new_state;
+
   if (new_state == State::kError) {
     VLOGF(1) << "Error occurred, stopping queues.";
     StopStreamV4L2Queue(true);
     if (backend_)
       backend_->ClearPendingRequests(DecoderStatus::Codes::kFailed);
-    return;
   }
-  state_ = new_state;
-  return;
 }
 
 void V4L2VideoDecoder::OnBackendError() {

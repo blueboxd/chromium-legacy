@@ -30,6 +30,7 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
@@ -67,6 +68,8 @@ using ::testing::UnorderedElementsAre;
 
 using AttributionFilterData = ::attribution_reporting::FilterData;
 using AttributionFilters = ::attribution_reporting::Filters;
+
+using ::attribution_reporting::SuitableOrigin;
 
 // Default max number of conversions for a single impression for testing.
 const int kMaxConversions = 3;
@@ -136,14 +139,15 @@ class AttributionStorageTest : public testing::Test {
     // TOO(apaseltiner): Replace this logic with explicit setting of expected
     // values.
     auto event_trigger = base::ranges::find_if(
-        conversion.registration().event_triggers(),
+        conversion.registration().event_triggers.vec(),
         [&](const attribution_reporting::EventTriggerData& event_trigger) {
           return AttributionFiltersMatch(source.common_info().filter_data(),
                                          source.common_info().source_type(),
                                          event_trigger.filters,
                                          event_trigger.not_filters);
         });
-    CHECK(event_trigger != conversion.registration().event_triggers().end());
+    CHECK(event_trigger !=
+          conversion.registration().event_triggers.vec().end());
 
     return ReportBuilder(AttributionInfoBuilder(source)
                              .SetTime(base::Time::Now())
@@ -227,6 +231,21 @@ TEST_F(AttributionStorageTest, ImpressionStoredAndRetrieved_ValuesIdentical) {
       ElementsAre(CommonSourceInfoIs(SourceBuilder().BuildCommonInfo())));
 }
 
+TEST_F(AttributionStorageTest, UniqueReportWindowsStored_ValuesIdentical) {
+  storage()->StoreSource(SourceBuilder()
+                             .SetExpiry(base::Days(30))
+                             .SetEventReportWindow(base::Days(15))
+                             .SetAggregatableReportWindow(base::Days(5))
+                             .Build());
+  EXPECT_THAT(storage()->GetActiveSources(),
+              ElementsAre(CommonSourceInfoIs(
+                  SourceBuilder()
+                      .SetExpiry(base::Days(30))
+                      .SetEventReportWindow(base::Days(15))
+                      .SetAggregatableReportWindow(base::Days(5))
+                      .BuildCommonInfo())));
+}
+
 TEST_F(AttributionStorageTest,
        GetWithNoMatchingImpressions_NoImpressionsReturned) {
   EXPECT_THAT(
@@ -288,6 +307,33 @@ TEST_F(AttributionStorageTest, ImpressionExpired_NoConversionsStored) {
 
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kNoMatchingImpressions,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+}
+
+TEST_F(AttributionStorageTest, ImpressionReportWindowPassed_NoReportGenerated) {
+  storage()->StoreSource(
+      SourceBuilder().SetEventReportWindow(base::Milliseconds(2)).Build());
+  task_environment_.FastForwardBy(base::Milliseconds(3));
+
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kReportWindowPassed,
+            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+}
+
+TEST_F(AttributionStorageTest,
+       AggregatableReportWindowPassed_NoReportGenerated) {
+  SourceBuilder source_builder = TestAggregatableSourceProvider().GetBuilder();
+
+  storage()->StoreSource(
+      source_builder.SetAggregatableReportWindow(base::Milliseconds(2))
+          .Build());
+
+  task_environment_.FastForwardBy(base::Milliseconds(3));
+  EXPECT_THAT(
+      storage()->MaybeCreateAndStoreReport(
+          DefaultAggregatableTriggerBuilder().Build()),
+      AllOf(CreateReportEventLevelStatusIs(
+                AttributionTrigger::EventLevelResult::kSuccess),
+            CreateReportAggregatableStatusIs(
+                AttributionTrigger::AggregatableResult::kReportWindowPassed)));
 }
 
 TEST_F(AttributionStorageTest, ImpressionExpired_ConversionsStoredPrior) {
@@ -2616,7 +2662,7 @@ TEST_F(AttributionStorageTest, SourceFilterData_RoundTrips) {
 }
 
 TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
-  const auto origin = url::Origin::Create(GURL("https://r.test"));
+  const auto origin = *SuitableOrigin::Deserialize("https://r.test");
 
   storage()->StoreSource(SourceBuilder()
                              .SetSourceType(AttributionSourceType::kNavigation)
@@ -2626,21 +2672,23 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
 
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kNoMatchingConfigurations,
             MaybeCreateAndStoreEventLevelReport(AttributionTrigger(
-                *attribution_reporting::TriggerRegistration::Create(
+                attribution_reporting::TriggerRegistration(
                     origin,
                     /*filters=*/AttributionFilters(),
                     /*not_filters=*/AttributionFilters(),
                     /*debug_key=*/absl::nullopt,
                     /*aggregatable_dedup_key=*/absl::nullopt,
-                    {attribution_reporting::EventTriggerData(
-                        /*data=*/11,
-                        /*priority=*/12,
-                        /*dedup_key=*/13,
-                        /*filters=*/
-                        AttributionFiltersForSourceType(
-                            AttributionSourceType::kEvent),
-                        /*not_filters=*/AttributionFilters())},
-                    /*aggregatable_trigger_data=*/{},
+                    *attribution_reporting::EventTriggerDataList::Create(
+                        {attribution_reporting::EventTriggerData(
+                            /*data=*/11,
+                            /*priority=*/12,
+                            /*dedup_key=*/13,
+                            /*filters=*/
+                            AttributionFiltersForSourceType(
+                                AttributionSourceType::kEvent),
+                            /*not_filters=*/AttributionFilters())}),
+                    /*aggregatable_trigger_data=*/
+                    attribution_reporting::AggregatableTriggerDataList(),
                     /*aggregatable_values=*/
                     attribution_reporting::AggregatableValues(),
                     /*debug_reporting=*/false),
@@ -2654,7 +2702,7 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
 }
 
 TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
-  const auto origin = url::Origin::Create(GURL("https://r.test"));
+  const auto origin = *SuitableOrigin::Deserialize("https://r.test");
 
   storage()->StoreSource(
       SourceBuilder()
@@ -2722,13 +2770,16 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
 
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
             MaybeCreateAndStoreEventLevelReport(AttributionTrigger(
-                *attribution_reporting::TriggerRegistration::Create(
+                attribution_reporting::TriggerRegistration(
                     /*reporting_origin=*/origin,
                     /*filters=*/AttributionFilters(),
                     /*not_filters=*/AttributionFilters(),
                     /*debug_key=*/absl::nullopt,
-                    /*aggregatable_dedup_key=*/absl::nullopt, event_triggers,
-                    /*aggregatable_trigger_data=*/{},
+                    /*aggregatable_dedup_key=*/absl::nullopt,
+                    *attribution_reporting::EventTriggerDataList::Create(
+                        event_triggers),
+                    /*aggregatable_trigger_data=*/
+                    attribution_reporting::AggregatableTriggerDataList(),
                     /*aggregatable_values=*/
                     attribution_reporting::AggregatableValues(),
                     /*debug_reporting=*/false),
@@ -2744,7 +2795,7 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
 }
 
 TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
-  const auto origin = url::Origin::Create(GURL("https://r.test"));
+  const auto origin = *SuitableOrigin::Deserialize("https://r.test");
 
   std::vector<attribution_reporting::AggregatableTriggerData>
       aggregatable_trigger_data{
@@ -2767,7 +2818,7 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
           .Build());
 
   AttributionTrigger trigger1(
-      *attribution_reporting::TriggerRegistration::Create(
+      attribution_reporting::TriggerRegistration(
           origin,
           /*filters=*/
           *AttributionFilters::Create({
@@ -2776,12 +2827,15 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
           /*not_filters=*/AttributionFilters(),
           /*debug_key=*/absl::nullopt,
           /*aggregatable_dedup_key=*/absl::nullopt,
-          /*event_triggers=*/{}, aggregatable_trigger_data, aggregatable_values,
+          /*event_triggers=*/attribution_reporting::EventTriggerDataList(),
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              aggregatable_trigger_data),
+          aggregatable_values,
           /*debug_reporting=*/false),
       /*destination_origin=*/origin, /*is_within_fenced_frame=*/false);
 
   AttributionTrigger trigger2(
-      *attribution_reporting::TriggerRegistration::Create(
+      attribution_reporting::TriggerRegistration(
           origin,
           /*filters=*/
           *AttributionFilters::Create({
@@ -2790,19 +2844,25 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
           /*not_filters=*/AttributionFilters(),
           /*debug_key=*/absl::nullopt,
           /*aggregatable_dedup_key=*/absl::nullopt,
-          /*event_triggers=*/{}, aggregatable_trigger_data, aggregatable_values,
+          /*event_triggers=*/attribution_reporting::EventTriggerDataList(),
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              aggregatable_trigger_data),
+          aggregatable_values,
           /*debug_reporting=*/false),
       /*destination_origin=*/origin, /*is_within_fenced_frame=*/false);
 
   AttributionTrigger trigger3(
-      *attribution_reporting::TriggerRegistration::Create(
+      attribution_reporting::TriggerRegistration(
           origin,
           /*filters=*/AttributionFilters(),
           /*not_filters=*/
           AttributionFiltersForSourceType(AttributionSourceType::kNavigation),
           /*debug_key=*/absl::nullopt,
           /*aggregatable_dedup_key=*/absl::nullopt,
-          /*event_triggers=*/{}, aggregatable_trigger_data, aggregatable_values,
+          /*event_triggers=*/attribution_reporting::EventTriggerDataList(),
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              aggregatable_trigger_data),
+          aggregatable_values,
           /*debug_reporting=*/false),
       /*destination_origin=*/origin,
       /*is_within_fenced_frame=*/false);

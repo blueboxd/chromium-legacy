@@ -42,6 +42,8 @@ class HelpBubbleView : public views::BubbleDialogDelegateView {
  public:
   METADATA_HEADER(HelpBubbleView);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kHelpBubbleElementIdForTesting);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kDefaultButtonIdForTesting);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kFirstNonDefaultButtonIdForTesting);
 
   HelpBubbleView(const HelpBubbleDelegate* delegate,
                  views::View* anchor_view,
@@ -64,7 +66,6 @@ class HelpBubbleView : public views::BubbleDialogDelegateView {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   std::u16string GetAccessibleWindowTitle() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-  void OnThemeChanged() override;
   gfx::Size CalculatePreferredSize() const override;
   gfx::Rect GetAnchorRect() const override;
 

@@ -39,8 +39,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/page_break_app_item.h"
-#include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/browser/ui/app_list/reorder/app_list_reorder_core.h"
 #include "chrome/browser/ui/app_list/reorder/app_list_reorder_util.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
@@ -158,8 +156,6 @@ sync_pb::AppListSpecifics::AppListItemType GetAppListItemType(
     const ChromeAppListItem* item) {
   if (item->is_folder())
     return sync_pb::AppListSpecifics::TYPE_FOLDER;
-  else if (item->is_page_break())
-    return sync_pb::AppListSpecifics::TYPE_PAGE_BREAK;
   else
     return sync_pb::AppListSpecifics::TYPE_APP;
 }
@@ -221,11 +217,6 @@ bool IsTopLevelAppItem(const AppListSyncableService::SyncItem& sync_item) {
 // Returns true if the sync item is a page break item.
 bool IsPageBreakItem(const AppListSyncableService::SyncItem& sync_item) {
   return sync_item.item_type == sync_pb::AppListSpecifics::TYPE_PAGE_BREAK;
-}
-
-// Returns true if the app is Settings app
-bool IsOsSettingsApp(const std::string& app_id) {
-  return app_id == web_app::kOsSettingsAppId;
 }
 
 bool IsSystemCreatedSyncFolder(
@@ -307,7 +298,7 @@ class AppListSyncableService::ModelUpdaterObserver
       return;
 
     // Only sync folders and page breaks which are added from Ash.
-    if (!item->is_folder() && !item->is_page_break())
+    if (!item->is_folder())
       return;
     DCHECK(adding_item_id_.empty());
     adding_item_id_ = item->id();  // Ignore updates while adding an item.
@@ -529,20 +520,6 @@ void AppListSyncableService::BuildModel() {
 
   if (wait_until_ready_to_sync_cb_)
     std::move(wait_until_ready_to_sync_cb_).Run();
-
-  // Install default page brakes for tablet form factor devices here as
-  // these devices do not have app list sync turned on.
-  if (ash::switches::IsTabletFormFactor() && profile_->IsNewProfile()) {
-    DCHECK(
-        !SyncServiceFactory::GetForProfile(profile_)->GetActiveDataTypes().Has(
-            syncer::APP_LIST));
-    // Create call back to create the default page break items at later time so
-    // that default page break items are not removed by
-    // |PruneRedundantPageBreakItems|
-    install_default_page_breaks_ =
-        base::BindOnce(&AppListSyncableService::InstallDefaultPageBreaks,
-                       weak_ptr_factory_.GetWeakPtr());
-  }
 }
 
 void AppListSyncableService::AddObserverAndStart(Observer* observer) {
@@ -750,7 +727,7 @@ void AppListSyncableService::AddItem(
   if (!sync_item)
     return;  // Item is not valid.
 
-  if (app_item->is_folder() || app_item->is_page_break()) {
+  if (app_item->is_folder()) {
     model_updater_->AddItem(std::move(app_item));
   } else if (AppIsOem(app_item->id())) {
     VLOG(2) << this << ": AddItem to OEM folder: " << sync_item->ToString();
@@ -779,14 +756,7 @@ void AppListSyncableService::AddItem(
                                        is_item_new);
   }
 
-  // Calculate this early since |sync_item| could be deleted in
-  // PruneRedundantPageBreakItems.
-  bool run_install_default_page_breaks =
-      install_default_page_breaks_ && IsOsSettingsApp(sync_item->item_id);
   PruneRedundantPageBreakItems();
-
-  if (run_install_default_page_breaks)
-    std::move(install_default_page_breaks_).Run();
 }
 
 AppListSyncableService::SyncItem* AppListSyncableService::FindOrAddSyncItem(
@@ -1108,10 +1078,6 @@ void AppListSyncableService::PruneEmptySyncFolders() {
   }
 }
 
-void AppListSyncableService::InstallDefaultPageBreaksForTest() {
-  InstallDefaultPageBreaks();
-}
-
 void AppListSyncableService::PopulateSyncItemsForTest(
     std::vector<std::unique_ptr<SyncItem>>&& items) {
   for (auto& sync_item : items) {
@@ -1153,16 +1119,6 @@ AppListSyncableService::MergeDataAndStartSyncing(
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
-
-  const bool first_time_user = initial_sync_data.empty();
-  if (first_time_user) {
-    // Post a task to avoid adding the default page break items which can
-    // cause sync changes during sync startup.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AppListSyncableService::InstallDefaultPageBreaks,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
 
   HandleUpdateStarted();
 
@@ -1449,18 +1405,9 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
           false);                 // It's a folder itself.
       return;
     }
-    case sync_pb::AppListSpecifics::TYPE_OBSOLETE_URL: {
+    case sync_pb::AppListSpecifics::TYPE_OBSOLETE_URL:
+    case sync_pb::AppListSpecifics::TYPE_PAGE_BREAK:
       return;
-    }
-    case sync_pb::AppListSpecifics::TYPE_PAGE_BREAK: {
-      // This is can be either a default page break item that was installed by
-      // default for new users, or a non-default page-break item that was
-      // added by the user. the ctor of PageBreakAppItem will update the
-      // newly-created item from its |sync_item|.
-      model_updater_->AddItem(std::make_unique<PageBreakAppItem>(
-          profile_, model_updater_.get(), sync_item, sync_item->item_id));
-      return;
-    }
   }
   NOTREACHED() << "Unrecognized sync item type: " << sync_item->ToString();
 }
@@ -1681,24 +1628,6 @@ void AppListSyncableService::PruneRedundantPageBreakItems() {
   }
 }
 
-void AppListSyncableService::InstallDefaultPageBreaks() {
-  for (size_t i = 0; i < kDefaultPageBreakAppIdsLength; ++i) {
-    auto* const id = kDefaultPageBreakAppIds[i];
-    auto* sync_item = GetSyncItem(id);
-    if (sync_item) {
-      // The user may have cleared their sync from
-      // https://chrome.google.com/sync, so it may appear here that it's a new
-      // user, while in fact on this device, it's not. We don't want to
-      // recreate and re-add an already existing default page break item.
-      continue;
-    }
-
-    auto page_break_item = std::make_unique<PageBreakAppItem>(
-        profile(), model_updater_.get(), nullptr /* sync_item */, id);
-    AddItem(std::move(page_break_item));
-  }
-}
-
 void AppListSyncableService::UpdateSyncItemFromSync(
     const sync_pb::AppListSpecifics& specifics,
     AppListSyncableService::SyncItem* item) {
@@ -1739,9 +1668,6 @@ bool AppListSyncableService::UpdateSyncItemFromAppItem(
     const ChromeAppListItem* app_item,
     AppListSyncableService::SyncItem* sync_item) {
   DCHECK_EQ(sync_item->item_id, app_item->id());
-
-  // Page breaker should not be added in a folder.
-  DCHECK(!app_item->is_page_break() || app_item->folder_id().empty());
 
   bool changed = false;
   // Allow sync changes for parent only for non OEM app.
@@ -1797,8 +1723,7 @@ void AppListSyncableService::InitNewItemPosition(ChromeAppListItem* new_item) {
   // crostini folder still use the first available position as the initial
   // position due to the concern over the possible regression in OEM folders.
   bool use_first_available_position =
-      (new_item->is_folder() || new_item->is_page_break()) &&
-      new_item->id() != ash::kCrostiniFolderId;
+      new_item->is_folder() && new_item->id() != ash::kCrostiniFolderId;
   if (!ash::features::IsLauncherAppSortEnabled() ||
       use_first_available_position) {
     new_item->SetChromePosition(model_updater_->GetFirstAvailablePosition());

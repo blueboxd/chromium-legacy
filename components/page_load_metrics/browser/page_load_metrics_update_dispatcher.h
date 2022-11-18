@@ -17,10 +17,6 @@
 #include "components/page_load_metrics/browser/responsiveness_metrics_normalization.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 
-namespace blink {
-struct MobileFriendliness;
-}  // namespace blink
-
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;
@@ -134,8 +130,6 @@ class PageLoadMetricsUpdateDispatcher {
     virtual void OnSubFrameRenderDataChanged(
         content::RenderFrameHost* rfh,
         const mojom::FrameRenderDataUpdate& render_data) = 0;
-    virtual void OnSubFrameMobileFriendlinessChanged(
-        const blink::MobileFriendliness& mobile_friendliness) = 0;
     virtual void OnSoftNavigationCountChanged(
         uint32_t soft_navigation_count) = 0;
     virtual void UpdateFeaturesUsage(
@@ -168,17 +162,16 @@ class PageLoadMetricsUpdateDispatcher {
 
   ~PageLoadMetricsUpdateDispatcher();
 
-  void UpdateMetrics(
-      content::RenderFrameHost* render_frame_host,
-      mojom::PageLoadTimingPtr new_timing,
-      mojom::FrameMetadataPtr new_metadata,
-      const std::vector<blink::UseCounterFeature>& new_features,
-      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-      mojom::FrameRenderDataUpdatePtr render_data,
-      mojom::CpuTimingPtr new_cpu_timing,
-      mojom::InputTimingPtr input_timing_delta,
-      const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
-      uint32_t soft_navigation_count);
+  void UpdateMetrics(content::RenderFrameHost* render_frame_host,
+                     mojom::PageLoadTimingPtr new_timing,
+                     mojom::FrameMetadataPtr new_metadata,
+                     const std::vector<blink::UseCounterFeature>& new_features,
+                     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+                     mojom::FrameRenderDataUpdatePtr render_data,
+                     mojom::CpuTimingPtr new_cpu_timing,
+                     mojom::InputTimingPtr input_timing_delta,
+                     mojom::SubresourceLoadMetricsPtr subresource_load_metrics,
+                     uint32_t soft_navigation_count);
 
   void SetUpSharedMemoryForSmoothness(
       content::RenderFrameHost* render_frame_host,
@@ -227,8 +220,9 @@ class PageLoadMetricsUpdateDispatcher {
   const mojom::InputTiming& page_input_timing() const {
     return *page_input_timing_;
   }
-  const absl::optional<blink::MobileFriendliness>& mobile_friendliness() const {
-    return mobile_friendliness_;
+  const absl::optional<mojom::SubresourceLoadMetrics>&
+  subresource_load_metrics() const {
+    return subresource_load_metrics_;
   }
   void UpdateResponsivenessMetricsNormalizationForBfcache() {
     responsiveness_metrics_normalization_.ClearAllUserInteractionLatencies();
@@ -257,10 +251,8 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
                               mojom::FrameMetadataPtr subframe_metadata);
 
-  void UpdateMainFrameMobileFriendliness(
-      const blink::MobileFriendliness& mobile_friendliness);
-  void UpdateSubFrameMobileFriendliness(
-      const blink::MobileFriendliness& mobile_friendliness);
+  void UpdateMainFrameSubresourceLoadMetrics(
+      const mojom::SubresourceLoadMetrics& subresource_load_metrics);
 
   void UpdateSoftNavigationCount(uint32_t soft_navigation_count);
 
@@ -315,8 +307,8 @@ class PageLoadMetricsUpdateDispatcher {
   // InputTiming data accumulated across all frames.
   mojom::InputTimingPtr page_input_timing_;
 
-  // MobileFrienddliness data for current view.
-  absl::optional<blink::MobileFriendliness> mobile_friendliness_;
+  // SubresourceLoadMetrics for the main frame.
+  absl::optional<mojom::SubresourceLoadMetrics> subresource_load_metrics_;
 
   // True if this page load started in prerender.
   const bool is_prerendered_page_load_;

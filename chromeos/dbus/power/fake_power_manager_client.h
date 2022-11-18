@@ -108,9 +108,7 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void IncreaseKeyboardBrightness() override;
   void GetKeyboardBrightnessPercent(
       DBusMethodCallback<double> callback) override;
-  void SetKeyboardBacklightToggledOff(bool toggled_off) override;
-  void GetKeyboardBacklightToggledOff(
-      DBusMethodCallback<bool> callback) override;
+  void ToggleKeyboardBacklight() override;
   const absl::optional<power_manager::PowerSupplyProperties>& GetLastStatus()
       override;
   void RequestStatusUpdate() override;
@@ -136,7 +134,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void BlockSuspend(const base::UnguessableToken& token,
                     const std::string& debug_info) override;
   void UnblockSuspend(const base::UnguessableToken& token) override;
-  bool SupportsAmbientColor() override;
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
@@ -220,10 +217,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
     keyboard_brightness_percent_ = percent;
   }
 
-  void set_supports_ambient_color(bool supports_ambient_color) {
-    supports_ambient_color_ = supports_ambient_color;
-  }
-
   // Sets |tick_clock| to |tick_clock_|.
   void set_tick_clock(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
@@ -289,10 +282,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   // |pending_screen_brightness_changes_|, and will have to be applied
   // explicitly by calling ApplyPendingScreenBrightnessChange().
   bool enqueue_brightness_changes_on_backlights_forced_off_ = false;
-
-  // Whether the device has an ambient color sensor. Can be set via
-  // SetSupportsAmbientColor().
-  bool supports_ambient_color_ = false;
 
   // Pending screen brightness changes caused by SetBacklightsForcedOff().
   // ApplyPendingScreenBrightnessChange() applies the first pending change.

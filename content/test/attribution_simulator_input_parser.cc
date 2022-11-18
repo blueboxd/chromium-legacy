@@ -14,29 +14,23 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/strings/abseil_string_number_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "base/types/optional_util.h"
 #include "base/values.h"
-#include "components/attribution_reporting/aggregatable_trigger_data.h"
-#include "components/attribution_reporting/aggregatable_values.h"
-#include "components/attribution_reporting/constants.h"
-#include "components/attribution_reporting/event_trigger_data.h"
-#include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_header_utils.h"
 #include "content/browser/attribution_reporting/attribution_parser_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "net/cookies/canonical_cookie.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
@@ -45,6 +39,8 @@
 namespace content {
 
 namespace {
+
+using ::attribution_reporting::SuitableOrigin;
 
 constexpr char kTimestampKey[] = "timestamp";
 
@@ -131,15 +127,9 @@ class AttributionSimulatorInputParser {
 
   template <typename T>
   void ParseList(T&& values,
-                 base::RepeatingCallback<void(decltype(values))> callback,
-                 size_t max_size = 0) {
+                 base::RepeatingCallback<void(decltype(values))> callback) {
     if (!values.is_list()) {
       *Error() << "must be a list";
-      return;
-    }
-
-    if (max_size > 0 && values.GetList().size() > max_size) {
-      *Error() << "too many elements";
       return;
     }
 
@@ -246,8 +236,10 @@ class AttributionSimulatorInputParser {
     const base::Value::Dict& source_dict = source.GetDict();
 
     base::Time source_time = ParseTime(source_dict, kTimestampKey);
-    url::Origin source_origin = ParseOrigin(source_dict, "source_origin");
-    url::Origin reporting_origin = ParseOrigin(source_dict, "reporting_origin");
+    absl::optional<SuitableOrigin> source_origin =
+        ParseOrigin(source_dict, "source_origin");
+    absl::optional<SuitableOrigin> reporting_origin =
+        ParseOrigin(source_dict, "reporting_origin");
     absl::optional<AttributionSourceType> source_type =
         ParseSourceType(source_dict);
 
@@ -260,8 +252,8 @@ class AttributionSimulatorInputParser {
           base::expected<StorableSource,
                          attribution_reporting::mojom::SourceRegistrationError>
               storable_source = ParseSourceRegistration(
-                  dict.Clone(), source_time, std::move(reporting_origin),
-                  std::move(source_origin), *source_type,
+                  dict.Clone(), source_time, std::move(*reporting_origin),
+                  std::move(*source_origin), *source_type,
                   /*is_within_fenced_frame=*/false);
 
           if (!storable_source.has_value()) {
@@ -280,108 +272,35 @@ class AttributionSimulatorInputParser {
     const base::Value::Dict& trigger_dict = trigger.GetDict();
 
     base::Time trigger_time = ParseTime(trigger_dict, kTimestampKey);
-    url::Origin reporting_origin =
+    absl::optional<SuitableOrigin> reporting_origin =
         ParseOrigin(trigger_dict, "reporting_origin");
-    url::Origin destination_origin =
+    absl::optional<SuitableOrigin> destination_origin =
         ParseOrigin(trigger_dict, "destination_origin");
-
-    absl::optional<uint64_t> debug_key;
-    attribution_reporting::Filters filters;
-    attribution_reporting::Filters not_filters;
-    std::vector<attribution_reporting::EventTriggerData> event_triggers;
-    std::vector<attribution_reporting::AggregatableTriggerData>
-        aggregatable_trigger_data;
-    attribution_reporting::AggregatableValues aggregatable_values;
-    absl::optional<uint64_t> aggregatable_dedup_key;
-    bool debug_reporting;
-
-    if (!ParseAttributionEvent(
-            trigger_dict,
-            "Attribution-Reporting-Register-Trigger",
-            base::BindLambdaForTesting(
-                [&](const base::Value::Dict& dict) {
-                  debug_key = ParseOptionalUint64(dict, "debug_key");
-                  filters = ParseFilters(dict, "filters");
-                  not_filters = ParseFilters(dict, "not_filters");
-                  event_triggers = ParseEventTriggers(dict);
-
-                  aggregatable_trigger_data =
-                      ParseAggregatableTriggerData(dict);
-
-                  aggregatable_values = ParseAggregatableValues(dict);
-
-                  aggregatable_dedup_key = ParseOptionalUint64(
-                      dict, "aggregatable_deduplication_key");
-
-                  debug_reporting = ParseDebugReporting(dict);
-                }))) {
-      return;
-    }
 
     if (has_error())
       return;
 
-    absl::optional<attribution_reporting::TriggerRegistration> registration =
-        attribution_reporting::TriggerRegistration::Create(
-            std::move(reporting_origin), std::move(filters),
-            std::move(not_filters), debug_key, aggregatable_dedup_key,
-            std::move(event_triggers), std::move(aggregatable_trigger_data),
-            std::move(aggregatable_values), debug_reporting);
-    DCHECK(registration);
-
-    events_.emplace_back(
-        AttributionTriggerAndTime{
-            .trigger = AttributionTrigger(std::move(*registration),
-                                          std::move(destination_origin),
-                                          /*is_within_fenced_frame=*/false),
-            .time = trigger_time,
-        },
-        std::move(trigger));
-  }
-
-  std::vector<attribution_reporting::EventTriggerData> ParseEventTriggers(
-      const base::Value::Dict& cfg) {
-    std::vector<attribution_reporting::EventTriggerData> event_triggers;
-
-    static constexpr char kKey[] = "event_trigger_data";
-
-    const base::Value* values = cfg.Find(kKey);
-    if (!values)
-      return event_triggers;
-
-    auto context = PushContext(kKey);
-    ParseList(
-        *values,
-        base::BindLambdaForTesting([&](const base::Value& event_trigger) {
-          if (!EnsureDictionary(event_trigger))
+    ParseAttributionEvent(
+        trigger_dict, "Attribution-Reporting-Register-Trigger",
+        base::BindLambdaForTesting([&](const base::Value::Dict& dict) {
+          auto trigger_registration =
+              attribution_reporting::TriggerRegistration::Parse(
+                  dict.Clone(), std::move(*reporting_origin));
+          if (!trigger_registration.has_value()) {
+            *Error() << trigger_registration.error();
             return;
+          }
 
-          const base::Value::Dict& dict = event_trigger.GetDict();
-
-          uint64_t trigger_data =
-              ParseOptionalUint64(dict, "trigger_data").value_or(0);
-
-          int64_t priority = ParseOptionalInt64(dict, "priority").value_or(0);
-
-          absl::optional<uint64_t> dedup_key =
-              ParseOptionalUint64(dict, "deduplication_key");
-
-          attribution_reporting::Filters filters =
-              ParseFilters(dict, "filters");
-
-          attribution_reporting::Filters not_filters =
-              ParseFilters(dict, "not_filters");
-
-          if (has_error())
-            return;
-
-          event_triggers.emplace_back(trigger_data, priority, dedup_key,
-                                      std::move(filters),
-                                      std::move(not_filters));
-        }),
-        /*max_size=*/attribution_reporting::kMaxEventTriggerData);
-
-    return event_triggers;
+          events_.emplace_back(
+              AttributionTriggerAndTime{
+                  .trigger =
+                      AttributionTrigger(std::move(*trigger_registration),
+                                         std::move(*destination_origin),
+                                         /*is_within_fenced_frame=*/false),
+                  .time = trigger_time,
+              },
+              std::move(trigger));
+        }));
   }
 
   GURL ParseURL(const base::Value::Dict& dict, base::StringPiece key) const {
@@ -391,13 +310,15 @@ class AttributionSimulatorInputParser {
     return GURL();
   }
 
-  url::Origin ParseOrigin(const base::Value::Dict& dict,
-                          base::StringPiece key) {
+  absl::optional<SuitableOrigin> ParseOrigin(const base::Value::Dict& dict,
+                                             base::StringPiece key) {
     auto context = PushContext(key);
 
-    auto origin = url::Origin::Create(ParseURL(dict, key));
+    absl::optional<SuitableOrigin> origin;
+    if (const std::string* s = dict.FindString(key))
+      origin = SuitableOrigin::Deserialize(*s);
 
-    if (!attribution_reporting::SuitableOrigin::IsSuitable(origin))
+    if (!origin.has_value())
       *Error() << "must be a valid, secure origin";
 
     return origin;
@@ -418,64 +339,6 @@ class AttributionSimulatorInputParser {
     *Error() << "must be an integer number of milliseconds since the Unix "
                 "epoch formatted as a base-10 string";
     return base::Time();
-  }
-
-  uint64_t ParseUint64(const std::string* s, base::StringPiece key) {
-    auto context = PushContext(key);
-
-    uint64_t value = 0;
-
-    if (!s || !base::StringToUint64(*s, &value))
-      *Error() << "must be a uint64 formatted as a base-10 string";
-
-    return value;
-  }
-
-  int64_t ParseInt64(const std::string* s, base::StringPiece key) {
-    auto context = PushContext(key);
-
-    int64_t value = 0;
-
-    if (!s || !base::StringToInt64(*s, &value))
-      *Error() << "must be an int64 formatted as a base-10 string";
-
-    return value;
-  }
-
-  absl::optional<uint64_t> ParseOptionalUint64(const base::Value::Dict& dict,
-                                               base::StringPiece key) {
-    const base::Value* value = dict.Find(key);
-    if (!value)
-      return absl::nullopt;
-
-    return ParseUint64(value->GetIfString(), key);
-  }
-
-  absl::optional<int64_t> ParseOptionalInt64(const base::Value::Dict& dict,
-                                             base::StringPiece key) {
-    const base::Value* value = dict.Find(key);
-    if (!value)
-      return absl::nullopt;
-
-    return ParseInt64(value->GetIfString(), key);
-  }
-
-  bool ParseDebugReporting(const base::Value::Dict& dict) {
-    static constexpr char kKey[] = "debug_reporting";
-
-    auto context = PushContext(kKey);
-
-    const base::Value* value = dict.Find(kKey);
-    if (!value)
-      return false;
-
-    absl::optional<bool> bool_value = value->GetIfBool();
-    if (!bool_value) {
-      *Error() << "must be a boolean";
-      return false;
-    }
-
-    return *bool_value;
   }
 
   absl::optional<AttributionSourceType> ParseSourceType(
@@ -521,176 +384,6 @@ class AttributionSimulatorInputParser {
 
     std::move(callback).Run(dict->GetDict());
     return true;
-  }
-
-  attribution_reporting::Filters ParseFilters(const base::Value::Dict& dict,
-                                              base::StringPiece key) {
-    auto context = PushContext(key);
-
-    const base::Value* value = dict.Find(key);
-    if (!value)
-      return attribution_reporting::Filters();
-
-    if (!EnsureDictionary(*value))
-      return attribution_reporting::Filters();
-
-    attribution_reporting::FilterValues::container_type container;
-    for (auto [filter, values_list] : value->GetDict()) {
-      auto filter_context = PushContext(filter);
-      std::vector<std::string> values;
-
-      ParseList(values_list,
-                base::BindLambdaForTesting([&](const base::Value& value) {
-                  if (!value.is_string()) {
-                    *Error() << "must be a string";
-                  } else {
-                    values.emplace_back(value.GetString());
-                  }
-                }));
-
-      container.emplace_back(filter, std::move(values));
-    }
-
-    absl::optional<attribution_reporting::Filters> filters =
-        attribution_reporting::Filters::Create(std::move(container));
-    // TODO(apaseltiner): Provide more detailed information.
-    if (!filters)
-      *Error() << "invalid";
-
-    return std::move(filters).value_or(attribution_reporting::Filters());
-  }
-
-  absl::uint128 ParseAggregationKey(const base::Value& key_value) {
-    const std::string* s = key_value.GetIfString();
-
-    absl::uint128 value = 0;
-    if (!s ||
-        !base::StartsWith(*s, "0x", base::CompareCase::INSENSITIVE_ASCII) ||
-        !base::HexStringToUInt128(*s, &value)) {
-      *Error() << "must be a uint128 formatted as a base-16 string";
-    }
-
-    return value;
-  }
-
-  base::flat_set<std::string> ParseAggregatableTriggerDataSourceKeys(
-      const base::Value::Dict& dict) {
-    static constexpr char kKey[] = "source_keys";
-
-    base::flat_set<std::string> source_keys;
-
-    auto context = PushContext(kKey);
-
-    const base::Value* values = dict.Find(kKey);
-    if (!values) {
-      *Error() << "must be present";
-      return source_keys;
-    }
-
-    ParseList(*values,
-              base::BindLambdaForTesting([&](const base::Value& value) {
-                if (!value.is_string()) {
-                  *Error() << "must be a string";
-                } else {
-                  source_keys.emplace(value.GetString());
-                }
-              }));
-
-    return source_keys;
-  }
-
-  std::vector<attribution_reporting::AggregatableTriggerData>
-  ParseAggregatableTriggerData(const base::Value::Dict& dict) {
-    static constexpr char kKey[] = "aggregatable_trigger_data";
-
-    std::vector<attribution_reporting::AggregatableTriggerData>
-        aggregatable_triggers;
-
-    const base::Value* values = dict.Find(kKey);
-    if (!values)
-      return aggregatable_triggers;
-
-    auto context = PushContext(kKey);
-    ParseList(
-        *values,
-        base::BindLambdaForTesting(
-            [&](const base::Value& aggregatable_trigger) {
-              if (!EnsureDictionary(aggregatable_trigger))
-                return;
-
-              const base::Value::Dict& trigger_dict =
-                  aggregatable_trigger.GetDict();
-
-              base::flat_set<std::string> source_keys =
-                  ParseAggregatableTriggerDataSourceKeys(trigger_dict);
-
-              absl::uint128 key;
-              {
-                static constexpr char kKeyKeyPiece[] = "key_piece";
-                auto key_context = PushContext(kKeyKeyPiece);
-                const base::Value* key_piece = trigger_dict.Find(kKeyKeyPiece);
-                if (key_piece) {
-                  key = ParseAggregationKey(*key_piece);
-                } else {
-                  *Error() << "must be present";
-                }
-              }
-
-              attribution_reporting::Filters filters =
-                  ParseFilters(trigger_dict, "filters");
-
-              attribution_reporting::Filters not_filters =
-                  ParseFilters(trigger_dict, "not_filters");
-
-              auto trigger_data =
-                  attribution_reporting::AggregatableTriggerData::Create(
-                      key, std::move(source_keys), std::move(filters),
-                      std::move(not_filters));
-              if (!trigger_data)
-                *Error() << "invalid";
-
-              if (has_error())
-                return;
-
-              aggregatable_triggers.push_back(std::move(*trigger_data));
-            }),
-        attribution_reporting::kMaxAggregatableTriggerDataPerTrigger);
-
-    return aggregatable_triggers;
-  }
-
-  attribution_reporting::AggregatableValues ParseAggregatableValues(
-      const base::Value::Dict& dict) {
-    static constexpr char kKey[] = "aggregatable_values";
-
-    const base::Value* value = dict.Find(kKey);
-    if (!value)
-      return attribution_reporting::AggregatableValues();
-
-    auto context = PushContext(kKey);
-
-    if (!EnsureDictionary(*value))
-      return attribution_reporting::AggregatableValues();
-
-    attribution_reporting::AggregatableValues::Values::container_type container;
-
-    for (auto [id, key_value] : value->GetDict()) {
-      auto key_context = PushContext(id);
-      if (!key_value.is_int() || key_value.GetInt() <= 0) {
-        *Error() << "must be a positive integer";
-      } else {
-        container.emplace_back(id, key_value.GetInt());
-      }
-    }
-
-    absl::optional<attribution_reporting::AggregatableValues>
-        aggregatable_values = attribution_reporting::AggregatableValues::Create(
-            std::move(container));
-    if (!aggregatable_values.has_value())
-      *Error() << "invalid";
-
-    return aggregatable_values.value_or(
-        attribution_reporting::AggregatableValues());
   }
 
   bool EnsureDictionary(const base::Value& value) {

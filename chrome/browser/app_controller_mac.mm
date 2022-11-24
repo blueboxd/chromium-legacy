@@ -1089,13 +1089,13 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   for (size_t i = 0; i < profiles.size(); ++i) {
     DownloadCoreService* download_core_service =
-            DownloadCoreServiceFactory::GetForBrowserContext(profile);
+            DownloadCoreServiceFactory::GetForBrowserContext(profiles[i]);
         // `DownloadCoreService` can be nullptr for some irregular profiles, e.g.
         // the System Profile.
         content::DownloadManager* download_manager =
             download_core_service &&
                     download_core_service->HasCreatedDownloadManager()
-                ? profile->GetDownloadManager()
+                ? profiles[i]->GetDownloadManager()
                 : nullptr;
     if (download_manager &&
         download_manager->NonMaliciousInProgressCount() > 0) {

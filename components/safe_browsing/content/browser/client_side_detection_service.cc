@@ -18,8 +18,8 @@
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/client_side_detection_host.h"
 #include "components/safe_browsing/content/browser/client_side_phishing_model.h"
@@ -148,7 +148,7 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientReportPhishingRequestCallback callback,
     const std::string& access_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &ClientSideDetectionService::StartClientReportPhishingRequest,
@@ -391,10 +391,11 @@ void ClientSideDetectionService::AddPhishingReport(base::Time timestamp) {
   if (!delegate_ || !delegate_->GetPrefs())
     return;
 
-  base::ListValue time_list;
+  base::Value::List time_list;
   for (const base::Time& report_time : phishing_report_times_)
     time_list.Append(base::Value(report_time.ToDoubleT()));
-  delegate_->GetPrefs()->Set(prefs::kSafeBrowsingCsdPingTimestamps, time_list);
+  delegate_->GetPrefs()->SetList(prefs::kSafeBrowsingCsdPingTimestamps,
+                                 std::move(time_list));
 }
 
 void ClientSideDetectionService::LoadPhishingReportTimesFromPrefs() {

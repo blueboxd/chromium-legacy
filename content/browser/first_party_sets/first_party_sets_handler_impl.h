@@ -136,9 +136,11 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
       const net::FirstPartySetsContextConfig& config,
       base::OnceCallback<void(net::FirstPartySetMetadata)> callback) override;
 
-  void GetPersistedGlobalSetsForTesting(
+  void GetPersistedSetsForTesting(
       const std::string& browser_context_id,
-      base::OnceCallback<void(absl::optional<net::GlobalFirstPartySets>)>
+      base::OnceCallback<
+          void(absl::optional<std::pair<net::GlobalFirstPartySets,
+                                        net::FirstPartySetsContextConfig>>)>
           callback);
   void HasBrowserContextClearedForTesting(
       const std::string& browser_context_id,
@@ -229,13 +231,6 @@ class CONTENT_EXPORT FirstPartySetsHandlerImpl : public FirstPartySetsHandler {
   // This is nullopt until all of the required inputs have been received.
   absl::optional<net::GlobalFirstPartySets> global_sets_
       GUARDED_BY_CONTEXT(sequence_checker_);
-
-  // The version of the public First-Party Sets. It is invalid until the
-  // `SetPublicFirstPartySets()` is called with a valid version.
-  //
-  // TODO(crbug.com/1384184): move `version_` into GlobalFirstPartySets class to
-  // guarantee that we don't use public sets content if version is invalid.
-  base::Version version_;
 
   bool enabled_ GUARDED_BY_CONTEXT(sequence_checker_);
   bool embedder_will_provide_public_sets_ GUARDED_BY_CONTEXT(sequence_checker_);

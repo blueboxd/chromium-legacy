@@ -358,6 +358,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTest, AbortedSetup) {
   // user action.
   syncer::SyncUserSettings* settings = GetSyncUserSettings();
   EXPECT_TRUE(settings->IsSyncEverythingEnabled());
+  EXPECT_TRUE(settings->IsSyncAllOsTypesEnabled());
 }
 
 // TODO(crbug.com/1312384): Test failed on linux-chromeos-dbg.
@@ -502,7 +503,9 @@ class SyncConsentTestWithReviewParams
 };
 
 // TODO(crbug.com/1311979): Test failed on ChromeOS.
-#if !defined(NDEBUG)
+// TODO(crbug.com/1392782): Test failed on chromium/ci/Linux ChromiumOS.
+#undef MAYBE_Accept
+#if !defined(NDEBUG) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_Accept DISABLED_Accept
 #else
 #define MAYBE_Accept Accept
@@ -674,6 +677,7 @@ class SyncConsentMinorModeTest : public SyncConsentTest {
 };
 
 // TODO(crbug.com/1312384): Test failed on linux-chromeos-dbg.
+#undef MAYBE_Accept
 #if !defined(NDEBUG)
 #define MAYBE_Accept DISABLED_Accept
 #else
@@ -699,6 +703,8 @@ IN_PROC_BROWSER_TEST_F(SyncConsentMinorModeTest, MAYBE_Accept) {
   syncer::SyncUserSettings* settings = GetSyncUserSettings();
   EXPECT_FALSE(settings->IsSyncEverythingEnabled());
   EXPECT_TRUE(settings->GetSelectedTypes().Empty());
+  EXPECT_FALSE(settings->IsSyncAllOsTypesEnabled());
+  EXPECT_TRUE(settings->GetSelectedOsTypes().Empty());
 
   test::OobeJS().TapOnPath(kAcceptButton);
   consent_recorded_waiter.Wait();
@@ -706,6 +712,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentMinorModeTest, MAYBE_Accept) {
 
   // Expect sync everything toggle is on after user accepted sync consent.
   EXPECT_TRUE(settings->IsSyncEverythingEnabled());
+  EXPECT_TRUE(settings->IsSyncAllOsTypesEnabled());
 
   EXPECT_EQ(SyncConsentScreen::CONSENT_GIVEN,
             consent_recorded_waiter.consent_given_);
@@ -763,6 +770,8 @@ IN_PROC_BROWSER_TEST_F(SyncConsentMinorModeTest, MAYBE_Decline) {
   syncer::SyncUserSettings* settings = GetSyncUserSettings();
   EXPECT_FALSE(settings->IsSyncEverythingEnabled());
   EXPECT_TRUE(settings->GetSelectedTypes().Empty());
+  EXPECT_FALSE(settings->IsSyncAllOsTypesEnabled());
+  EXPECT_TRUE(settings->GetSelectedOsTypes().Empty());
 
   test::OobeJS().TapOnPath(kDeclineButton);
   consent_recorded_waiter.Wait();
@@ -771,6 +780,8 @@ IN_PROC_BROWSER_TEST_F(SyncConsentMinorModeTest, MAYBE_Decline) {
   // Expect all data types are still disabled.
   EXPECT_FALSE(settings->IsSyncEverythingEnabled());
   EXPECT_TRUE(settings->GetSelectedTypes().Empty());
+  EXPECT_FALSE(settings->IsSyncAllOsTypesEnabled());
+  EXPECT_TRUE(settings->GetSelectedOsTypes().Empty());
 
   EXPECT_EQ(SyncConsentScreen::CONSENT_NOT_GIVEN,
             consent_recorded_waiter.consent_given_);
@@ -835,6 +846,8 @@ IN_PROC_BROWSER_TEST_F(SyncConsentMinorModeTest, MAYBE_AbortedSetup) {
   ASSERT_NE(settings, nullptr);
   EXPECT_FALSE(settings->IsSyncEverythingEnabled());
   EXPECT_TRUE(settings->GetSelectedTypes().Empty());
+  EXPECT_FALSE(settings->IsSyncAllOsTypesEnabled());
+  EXPECT_TRUE(settings->GetSelectedOsTypes().Empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SyncConsentMinorModeTest,

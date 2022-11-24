@@ -23,6 +23,7 @@
 #include "base/memory/nonscannable_memory.h"
 #include "base/memory/raw_ptr_asan_service.h"
 #include "base/no_destructor.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
@@ -34,7 +35,6 @@
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
-#include "base/threading/thread_task_runner_handle.h"
 #endif
 
 namespace content {
@@ -223,6 +223,7 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
   [[maybe_unused]] bool enable_brp_zapping = false;
   [[maybe_unused]] bool split_main_partition = false;
   [[maybe_unused]] bool use_dedicated_aligned_partition = false;
+  [[maybe_unused]] bool add_dummy_ref_count = false;
   [[maybe_unused]] bool process_affected_by_brp_flag = false;
 
 #if (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
@@ -302,6 +303,14 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
         split_main_partition = true;
         use_dedicated_aligned_partition = true;
         break;
+
+      case base::features::BackupRefPtrMode::kDisabledButAddDummyRefCount:
+        split_main_partition = true;
+        add_dummy_ref_count = true;
+#if !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+        use_dedicated_aligned_partition = true;
+#endif
+        break;
     }
   }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR) &&
@@ -314,6 +323,7 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
       allocator_shim::SplitMainPartition(split_main_partition),
       allocator_shim::UseDedicatedAlignedPartition(
           use_dedicated_aligned_partition),
+      allocator_shim::AddDummyRefCount(add_dummy_ref_count),
       allocator_shim::AlternateBucketDistribution(
           base::features::kPartitionAllocAlternateBucketDistributionParam
               .Get()));
@@ -447,7 +457,8 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
   }
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  base::allocator::StartMemoryReclaimer(base::ThreadTaskRunnerHandle::Get());
+  base::allocator::StartMemoryReclaimer(
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 #endif
 
   if (base::FeatureList::IsEnabled(
@@ -496,7 +507,7 @@ void PartitionAllocSupport::OnBackgrounded() {
   // in the meantime, the worst case is a few more system calls.
   //
   // TODO(lizeb): Remove once/if the behavior of idle tasks changes.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, base::BindOnce([]() {
         ::partition_alloc::MemoryReclaimer::Instance()->ReclaimAll();
       }),

@@ -489,7 +489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionState"
-    enum="PredictionStateAutocompleteStatePair" expires_after="2022-12-31">
+    enum="PredictionStateAutocompleteStatePair" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -502,7 +502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionType.Heuristics"
-    enum="AutofillServerFieldType" expires_after="2022-12-31">
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -513,7 +513,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionType.Server"
-    enum="AutofillServerFieldType" expires_after="2022-12-31">
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -525,7 +525,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.Autocomplete.PredictionCollisionType.ServerOrHeuristics"
-    enum="AutofillServerFieldType" expires_after="2022-12-31">
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
@@ -534,6 +534,30 @@ chromium-metrics-reviews@google.com.
     submitted form. If no server type is available, the heuristics type is
     logged instead. Emitted on form submission.
   </summary>
+</histogram>
+
+<histogram
+    name="Autofill.Autocomplete.PredictionCollisionType2.{PredictionType}.{AutocompleteState}"
+    enum="AutofillServerFieldType" expires_after="2023-10-31">
+  <owner>koerber@google.com</owner>
+  <owner>fleimgruber@google.com</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Records the PredictionType of each field in a submitted form, depending on
+    the field's AutocompleteState. Emitted on form submission.
+  </summary>
+  <token key="PredictionType">
+    <variant name="Heuristics"/>
+    <variant name="Server"/>
+    <variant name="ServerOrHeuristics"
+        summary="If available, the server type. Otherwise the heuristic type."/>
+  </token>
+  <token key="AutocompleteState">
+    <variant name="Garbage"/>
+    <variant name="None"/>
+    <variant name="Off"/>
+    <variant name="Valid"/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.AutocompleteQuery" enum="BooleanCreated"
@@ -1131,6 +1155,42 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.CvcAuth.{CardType}.Attempt" enum="BooleanAttempted"
+    expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when a CVC authentication starts and does not emit any value
+    otherwise. Broken down into sub-histograms based on the type of the card,
+    for example virtual card or server card.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+</histogram>
+
+<histogram name="Autofill.CvcAuth.{CardType}.Result"
+    enum="AutofillCvcAuthEvent" expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the result of the OTP authentication, broken down into sub-histograms
+    by card type. The different possible results can be found in the
+    AutofillCvcAuthEvent enum, with the exception of any retriable failure,
+    which is logged in a separate histogram. This histogram is 1:1 with
+    Autofill.CvcAuth.{CardType}.Attempt
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+</histogram>
+
+<histogram name="Autofill.CvcAuth.{CardType}.RetryableError"
+    enum="AutofillCvcAuthEvent" expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs any retryable failure that occurs during the CVC authentication flow.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+</histogram>
+
 <histogram name="Autofill.DaysSinceLastUse.CreditCard" units="days"
     expires_after="2023-04-16">
   <owner>battre@chromium.org</owner>
@@ -1298,40 +1358,6 @@ chromium-metrics-reviews@google.com.
 
     The metric takes into account every comparison of FormData structs in
     UpdateFormCache().
-  </summary>
-</histogram>
-
-<histogram
-    name="Autofill.FastCheckout.CapabilitiesFetcher.CacheStateForIsTriggerFormSupported"
-    enum="FastCheckoutCacheStateForIsTriggerFormSupported"
-    expires_after="2023-08-15">
-  <owner>bwolfgang@google.com</owner>
-  <owner>jkeitel@google.com</owner>
-  <owner>vizcay@google.com</owner>
-  <summary>
-    The state of the cache of the Fast Checkout capabilities fetcher at the
-    point of checking whether a given form signature on an origin is supported.
-  </summary>
-</histogram>
-
-<histogram name="Autofill.FastCheckout.CapabilitiesFetcher.HttpResponseCode"
-    enum="HttpResponseCode" expires_after="2023-08-15">
-  <owner>bwolfgang@google.com</owner>
-  <owner>jkeitel@google.com</owner>
-  <owner>vizcay@google.com</owner>
-  <summary>
-    HTTP response code of fetching a list of available fast checkout scripts.
-  </summary>
-</histogram>
-
-<histogram name="Autofill.FastCheckout.CapabilitiesFetcher.ResponseTime"
-    units="ms" expires_after="2023-08-15">
-  <owner>bwolfgang@google.com</owner>
-  <owner>jkeitel@google.com</owner>
-  <owner>vizcay@google.com</owner>
-  <summary>
-    Response time for fetching FastCheckout capabilities for a single domain.
-    The time is recorded for both successful and failed fetches.
   </summary>
 </histogram>
 
@@ -3437,6 +3463,29 @@ chromium-metrics-reviews@google.com.
   <owner>jsaul@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>Usage of the &quot;Scan card&quot; control item.</summary>
+</histogram>
+
+<histogram name="Autofill.Sectioning.FieldsPerSection" units="Fields"
+    expires_after="2023-03-31">
+  <owner>fleimgruber@google.com</owner>
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    The number of fields per section after sectioning a form using
+    kAutofillUseParameterizedSectioning. Emitted once per section every time
+    sectioning is done.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Sectioning.NumberOfSections" units="Sections"
+    expires_after="2023-03-31">
+  <owner>fleimgruber@google.com</owner>
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    The number of sections after sectioning a form using
+    kAutofillUseParameterizedSectioning. Emitted every time sectioning is done.
+  </summary>
 </histogram>
 
 <histogram name="Autofill.ServerCardLinkClicked" enum="AutofillSyncState"

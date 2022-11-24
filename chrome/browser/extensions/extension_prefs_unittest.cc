@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/install_tracker.h"
@@ -54,7 +54,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 ExtensionPrefsTest::ExtensionPrefsTest()
-    : prefs_(base::ThreadTaskRunnerHandle::Get()) {}
+    : prefs_(base::SingleThreadTaskRunner::GetCurrentDefault()) {}
 
 ExtensionPrefsTest::~ExtensionPrefsTest() {
 }
@@ -671,6 +671,88 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsOnExtensionInstalled,
        ExtensionPrefsOnExtensionInstalled) {}
 
+class ExtensionPrefsPopulatesInstallTimePrefs : public ExtensionPrefsTest {
+ public:
+  void Initialize() override {
+    extension_ = prefs_.AddExtension("test1");
+    // Cache the first install time.
+    first_install_time_ = prefs()->GetFirstInstallTime(extension_->id());
+    auto last_update_time = prefs()->GetInstallTime(extension_->id());
+    // First time install will result in same value for both first_install_time
+    // and last_update_time prefs.
+    EXPECT_NE(base::Time(), first_install_time_);
+    EXPECT_NE(base::Time(), last_update_time);
+    EXPECT_EQ(first_install_time_, last_update_time);
+
+    // Update the extension.
+    extension_ = prefs_.AddExtension("test1");
+  }
+
+  void Verify() override {
+    auto first_install_time = prefs()->GetFirstInstallTime(extension_->id());
+    auto last_update_time = prefs()->GetInstallTime(extension_->id());
+    EXPECT_NE(base::Time(), first_install_time);
+    EXPECT_NE(base::Time(), last_update_time);
+    // Verify that the first_install_time remains unchanged after the extension
+    // update.
+    EXPECT_EQ(first_install_time, first_install_time_);
+    // Verify that the last_update_time is no longer the same as the
+    // first_install_time after the extension update.
+    EXPECT_NE(first_install_time, last_update_time);
+  }
+
+ private:
+  scoped_refptr<Extension> extension_;
+  base::Time first_install_time_;
+};
+TEST_F(ExtensionPrefsPopulatesInstallTimePrefs,
+       ExtensionPrefsPopulatesInstallTimePrefs) {}
+
+class ExtensionPrefsMigratesToLastUpdateTime : public ExtensionPrefsTest {
+ public:
+  void Initialize() override {
+    extension_ = prefs_.AddExtension("test1");
+    // Re-create migration scenario by removing the new first_install_time,
+    // last_update_time pref keys and adding back the legacy install_time key.
+    prefs()->UpdateExtensionPref(extension_->id(), kLastUpdateTimePrefKey,
+                                 nullptr);
+    prefs()->UpdateExtensionPref(extension_->id(), kFirstInstallTimePrefKey,
+                                 nullptr);
+    time_str_ = base::NumberToString(base::Time::Now().ToInternalValue());
+    prefs()->SetStringPref(extension_->id(), kOldInstallTimePrefMap, time_str_);
+
+    // Run the migration routine.
+    prefs()->BackfillAndMigrateInstallTimePrefs();
+  }
+
+  void Verify() override {
+    auto* dict = prefs()->GetExtensionPref(extension_->id());
+    std::string first_install_time;
+    std::string last_update_time;
+    std::string old_install_time;
+
+    // Verify the legacy install_time key has been removed and replaced by
+    // the last_update_time key. Also verify that the first_install_time key
+    // has been added and has the same value as the last_update_time key.
+    EXPECT_FALSE(dict->GetString(kOldInstallTimePrefKey, &old_install_time));
+    EXPECT_TRUE(dict->GetString(kFirstInstallTimePrefKey, &first_install_time));
+    EXPECT_TRUE(dict->GetString(kLastUpdateTimePrefKey, &last_update_time));
+    EXPECT_EQ(first_install_time, time_str_);
+    EXPECT_EQ(last_update_time, time_str_);
+  }
+
+ private:
+  scoped_refptr<Extension> extension_;
+  std::string time_str_;
+  static constexpr char kFirstInstallTimePrefKey[] = "first_install_time";
+  static constexpr char kLastUpdateTimePrefKey[] = "last_update_time";
+  static constexpr char kOldInstallTimePrefKey[] = "install_time";
+  static constexpr PrefMap kOldInstallTimePrefMap = {
+      kOldInstallTimePrefKey, PrefType::kString, PrefScope::kExtensionSpecific};
+};
+TEST_F(ExtensionPrefsMigratesToLastUpdateTime,
+       ExtensionPrefsMigratesToLastUpdateTime) {}
+
 // Tests that the bit map pref value is cleared if the value matches the default
 // bit.
 class ExtensionPrefsBitMapPrefValueClearedIfEqualsDefaultValue
@@ -1154,7 +1236,7 @@ TEST_F(ExtensionPrefsSimpleTest, OldWithholdingPrefMigration) {
   constexpr char kNewPrefKey[] = "withholding_permissions";
 
   content::BrowserTaskEnvironment task_environment_;
-  TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
+  TestExtensionPrefs prefs(base::SingleThreadTaskRunner::GetCurrentDefault());
 
   std::string previous_false_id = prefs.AddExtensionAndReturnId("Old false");
   std::string previous_true_id = prefs.AddExtensionAndReturnId("Old true");
@@ -1222,7 +1304,7 @@ TEST_F(ExtensionPrefsSimpleTest, OldWithholdingPrefMigration) {
 // TODO(devlin): Remove this when we remove the migration code, circa M84.
 TEST_F(ExtensionPrefsSimpleTest, MigrateToNewExternalUninstallBits) {
   content::BrowserTaskEnvironment task_environment;
-  TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
+  TestExtensionPrefs prefs(base::SingleThreadTaskRunner::GetCurrentDefault());
 
   auto has_extension_pref_entry = [&prefs](const std::string& id) {
     const base::Value::Dict& extensions_dictionary =
@@ -1281,7 +1363,7 @@ TEST_F(ExtensionPrefsSimpleTest, ProfileExtensionPrefsMapTest) {
                                      PrefScope::kProfile};
 
   content::BrowserTaskEnvironment task_environment_;
-  TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
+  TestExtensionPrefs prefs(base::SingleThreadTaskRunner::GetCurrentDefault());
 
   auto* registry = prefs.pref_registry().get();
   registry->RegisterBooleanPref(kTestBooleanPref.name, false);
@@ -1330,7 +1412,7 @@ TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
                                      PrefScope::kExtensionSpecific};
 
   content::BrowserTaskEnvironment task_environment_;
-  TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
+  TestExtensionPrefs prefs(base::SingleThreadTaskRunner::GetCurrentDefault());
 
   std::string extension_id = prefs.AddExtensionAndReturnId("1");
   prefs.prefs()->SetBooleanPref(extension_id, kTestBooleanPref, true);

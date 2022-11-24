@@ -1031,6 +1031,8 @@ experimental domain BackgroundService
       string instanceId
       # A list of event-specific information.
       array of EventMetadata eventMetadata
+      # Storage key this event belongs to.
+      string storageKey
 
   # Called with all existing backgroundServiceEvents when enabled, and all new
   # events afterwards if enabled and recording.
@@ -2099,8 +2101,11 @@ experimental domain CacheStorage
   # Requests cache names.
   command requestCacheNames
     parameters
+      # At least and at most one of securityOrigin, storageKey must be specified.
       # Security origin.
-      string securityOrigin
+      optional string securityOrigin
+      # Storage key.
+      optional string storageKey
     returns
       # Caches for the security origin.
       array of Cache caches
@@ -8121,9 +8126,9 @@ domain Page
     parameters
       enum mode
         none
-        autoaccept
-        autoreject
-        autooptout
+        autoAccept
+        autoReject
+        autoOptOut
 
   # Generates a report for testing.
   experimental command generateTestReport
@@ -9262,6 +9267,12 @@ experimental domain Storage
       # Security origin.
       string origin
 
+  # Registers storage key to be notified when an update occurs to its cache storage list.
+  command trackCacheStorageForStorageKey
+    parameters
+      # Storage key.
+      string storageKey
+
   # Registers origin to be notified when an update occurs to its IndexedDB.
   command trackIndexedDBForOrigin
     parameters
@@ -9279,6 +9290,12 @@ experimental domain Storage
     parameters
       # Security origin.
       string origin
+
+  # Unregisters storage key from receiving notifications for cache storage.
+  command untrackCacheStorageForStorageKey
+    parameters
+      # Storage key.
+      string storageKey
 
   # Unregisters origin from receiving notifications for IndexedDB.
   command untrackIndexedDBForOrigin
@@ -9365,6 +9382,8 @@ experimental domain Storage
     parameters
       # Origin to update.
       string origin
+      # Storage key to update.
+      string storageKey
       # Name of cache in origin.
       string cacheName
 
@@ -9373,6 +9392,8 @@ experimental domain Storage
     parameters
       # Origin to update.
       string origin
+      # Storage key to update.
+      string storageKey
 
   # The origin's IndexedDB object store has been modified.
   event indexedDBContentUpdated

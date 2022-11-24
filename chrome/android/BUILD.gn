@@ -46,10 +46,6 @@ if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
   assert(current_toolchain != android_secondary_abi_toolchain)
 }
 
-chrome_jni_registration_header =
-    "$root_build_dir/gen/chrome/browser/android/chrome_jni_registration.h"
-chrome_jni_for_test_registration_header = "$root_build_dir/gen/chrome/browser/android/chrome_jni_for_test_registration.h"
-
 if (current_toolchain == default_toolchain) {
   _default_package = "org.chromium.chrome"
   if (use_stable_package_name_for_trichrome) {
@@ -410,7 +406,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/android/customtabs/branding:java",
       "//chrome/browser/android/lifecycle:java",
       "//chrome/browser/android/messages:java",
-      "//chrome/browser/android/webapps/launchpad:java",
       "//chrome/browser/back_press/android:java",
       "//chrome/browser/banners/android:java",
       "//chrome/browser/battery/android:java",
@@ -956,6 +951,9 @@ if (current_toolchain == default_toolchain) {
     # Needed by androidx.test.core.app.ActivityScenario
     android_manifest = "//chrome/android/junit/AndroidManifest.xml"
 
+    # This target OOMs with the default 1G (also OOMS with 2G).
+    max_heap_size = "4G"
+
     data_deps = [ "//testing/buildbot/filters:chrome_junit_tests_filters" ]
 
     package_name = chrome_public_manifest_package
@@ -1012,7 +1010,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/android/customtabs/branding:junit",
       "//chrome/browser/android/httpclient:junit_tests",
       "//chrome/browser/android/lifecycle:java",
-      "//chrome/browser/android/webapps/launchpad:junit_tests",
       "//chrome/browser/back_press/android:java",
       "//chrome/browser/back_press/android:junit",
       "//chrome/browser/banners/android:java",
@@ -1092,6 +1089,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/tabmodel/internal:java",
       "//chrome/browser/tabpersistence:junit",
       "//chrome/browser/thumbnail:java",
+      "//chrome/browser/touch_to_fill/payments/android/internal:junit",
       "//chrome/browser/ui/android/appmenu:java",
       "//chrome/browser/ui/android/appmenu/internal:junit",
       "//chrome/browser/ui/android/autofill/internal:junit",
@@ -1551,7 +1549,6 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/android/lifecycle:java",
       "//chrome/browser/android/metrics:ukm_java_test_support",
       "//chrome/browser/android/metrics:ukm_javatests",
-      "//chrome/browser/android/webapps/launchpad:java",
       "//chrome/browser/back_press/android:java",
       "//chrome/browser/banners/android:java",
       "//chrome/browser/browser_controls/android:java",
@@ -2163,7 +2160,7 @@ if (current_toolchain == default_toolchain) {
 
   generate_jni_registration("chrome_jni_registration") {
     targets = [ ":chrome_public_base_module_java" ]
-    header_output = chrome_jni_registration_header
+    manual_jni_registration = true
     sources_exclusions = chrome_jni_sources_exclusions
   }
 
@@ -2172,7 +2169,7 @@ if (current_toolchain == default_toolchain) {
   generate_jni_registration("chrome_jni_for_test_registration") {
     testonly = true
     targets = [ ":chrome_public_base_module_java_for_test" ]
-    header_output = chrome_jni_for_test_registration_header
+    manual_jni_registration = true
     sources_exclusions = chrome_jni_sources_exclusions
   }
 
@@ -2534,13 +2531,13 @@ if (current_toolchain == default_toolchain) {
                                "apk_name",
                                "bundle_target",
                                "is_base_module",
-                               "jni_registration_header",
                                "target_type",
                                "enable_lint",
                                "enable_multidex",
                                "lint_baseline_file",
                                "lint_suppressions_dep",
                                "lint_suppressions_file",
+                               "manual_jni_registration",
                              ])
       deps = _chrome_public_shared_deps
 
@@ -3246,6 +3243,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/password_check/android:test_java",
       "//chrome/browser/subresource_filter:subresource_filter_javatests",
       "//chrome/browser/touch_to_fill/android:test_java",
+      "//chrome/browser/touch_to_fill/payments/android/internal:javatests",
       "//chrome/browser/ui/android/fast_checkout/internal:javatests",
       "//chrome/browser/ui/android/omnibox:javatests",
       "//chrome/browser/ui/android/webid/internal:javatests",
@@ -4082,7 +4080,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/AutofillVirtualCardEnrollmentInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/DuplicateDownloadInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/FramebustBlockInfoBar.java",
-    "java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java",
     "java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java",
     "java/src/org/chromium/chrome/browser/infobar/KnownInterceptionDisclosureInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/NearOomInfoBar.java",
@@ -4090,10 +4087,8 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/ReaderModeInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SafetyTipInfoBar.java",
-    "java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SurveyInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/TranslateCompactInfoBar.java",
-    "java/src/org/chromium/chrome/browser/infobar/UpdatePasswordInfoBar.java",
     "java/src/org/chromium/chrome/browser/init/NativeStartupBridge.java",
     "java/src/org/chromium/chrome/browser/javascript/WebContextFetcher.java",
     "java/src/org/chromium/chrome/browser/lens/LensDebugBridge.java",
@@ -4278,10 +4273,7 @@ group("jni_headers") {
 # Chrome APK's native library.
 template("libchrome_impl") {
   chrome_common_shared_library(target_name) {
-    sources = [
-      "../browser/android/chrome_entry_point.cc",
-      chrome_jni_registration_header,
-    ]
+    sources = [ "../browser/android/chrome_entry_point.cc" ]
     deps = [ ":chrome_jni_registration($default_toolchain)" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -4316,10 +4308,7 @@ chrome_common_shared_library("libchromefortest") {
   testonly = true
   define_unwind_table_target =
       add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
-  sources = [
-    "../browser/android/chrome_entry_point_for_test.cc",
-    chrome_jni_for_test_registration_header,
-  ]
+  sources = [ "../browser/android/chrome_entry_point_for_test.cc" ]
   deps = [
     ":browser_test_support",
     ":chrome_jni_for_test_registration($default_toolchain)",

@@ -44,6 +44,7 @@ TestWaylandOSExchangeDataProvideFactory::CreateProvider() {
 }
 
 WaylandDragDropTest::WaylandDragDropTest() = default;
+
 WaylandDragDropTest::~WaylandDragDropTest() = default;
 
 void WaylandDragDropTest::SendDndEnter(WaylandWindow* window,
@@ -212,7 +213,7 @@ void WaylandDragDropTest::SendTouchMotion(WaylandWindow* window,
 }
 
 void WaylandDragDropTest::SetUp() {
-  WaylandTestSimple::SetUp();
+  WaylandTest::SetUp();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     wl_seat_send_capabilities(server->seat()->resource(),
@@ -241,7 +242,7 @@ void WaylandDragDropTest::MaybeRunScheduledTasks() {
 
   auto next_task = std::move(scheduled_tasks_.front());
   scheduled_tasks_.erase(scheduled_tasks_.begin());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&WaylandDragDropTest::RunTestTask,
                                 base::Unretained(this), std::move(next_task)));
 }

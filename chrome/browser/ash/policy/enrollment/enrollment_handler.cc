@@ -18,7 +18,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/certificate_util.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
@@ -264,7 +263,7 @@ EnrollmentHandler::EnrollmentHandler(
       enrollment_step_(STEP_PENDING) {
   dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
-  CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
+  CHECK_EQ(DM_STATUS_SUCCESS, client_->last_dm_status());
   CHECK_EQ(dm_auth_.empty(), enrollment_config_.is_mode_attestation());
   CHECK(enrollment_config_.auth_mechanism !=
             EnrollmentConfig::AUTH_MECHANISM_ATTESTATION ||
@@ -422,9 +421,10 @@ void EnrollmentHandler::OnClientError(CloudPolicyClient* client) {
   }
 
   if (enrollment_step_ < STEP_POLICY_FETCH) {
-    ReportResult(EnrollmentStatus::ForRegistrationError(client_->status()));
+    ReportResult(
+        EnrollmentStatus::ForRegistrationError(client_->last_dm_status()));
   } else {
-    ReportResult(EnrollmentStatus::ForFetchError(client_->status()));
+    ReportResult(EnrollmentStatus::ForFetchError(client_->last_dm_status()));
   }
 }
 
@@ -782,7 +782,7 @@ void EnrollmentHandler::HandleLockDeviceResult(
         // InstallAttributes not ready yet, retry later.
         LOG(WARNING) << "Install Attributes not ready yet will retry in "
                      << kLockRetryIntervalMs << "ms.";
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(&EnrollmentHandler::StartLockDevice,
                            weak_ptr_factory_.GetWeakPtr()),

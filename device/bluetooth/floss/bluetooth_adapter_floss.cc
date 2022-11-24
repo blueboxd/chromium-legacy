@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
@@ -88,7 +87,7 @@ scoped_refptr<BluetoothAdapterFloss> BluetoothAdapterFloss::CreateAdapter() {
 }
 
 BluetoothAdapterFloss::BluetoothAdapterFloss() {
-  ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  ui_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
   socket_thread_ = device::BluetoothSocketThread::Get();
 }
 
@@ -103,7 +102,7 @@ void BluetoothAdapterFloss::Initialize(base::OnceClosure callback) {
   // Go ahead to Init() if object manager support is already known (e.g. when
   // using fake clients), otherwise find out object manager support first below.
   if (floss::FlossDBusManager::Get()->IsObjectManagerSupportKnown()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&BluetoothAdapterFloss::Init,
                                   weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -111,7 +110,7 @@ void BluetoothAdapterFloss::Initialize(base::OnceClosure callback) {
 
   // Queue a task to check for ObjectManager support and init once the support
   // is known.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&InitWhenObjectManagerKnown,
                      base::BindOnce(&BluetoothAdapterFloss::Init,
@@ -461,6 +460,12 @@ void BluetoothAdapterFloss::OnGetConnectionState(const FlossDeviceId& device_id,
     return;
   }
 
+  if (!ret.has_value()) {
+    LOG(WARNING) << "GetConnectionState returned error: " << ret.error()
+                 << " on device: " << device_id;
+    return;
+  }
+
   // Connected if connection state >= 1:
   // https://android.googlesource.com/platform/packages/modules/Bluetooth/+/84eff3217e552cbb3399e6deecdfce6748ae34ef/system/btif/src/btif_dm.cc#693
   device->SetConnectionState(*ret);
@@ -481,6 +486,12 @@ void BluetoothAdapterFloss::OnGetBondState(const FlossDeviceId& device_id,
   if (!device) {
     LOG(WARNING) << "GetBondState returned for a non-existing device "
                  << device_id;
+    return;
+  }
+
+  if (!ret.has_value()) {
+    LOG(WARNING) << "GetBondState returned error: " << ret.error()
+                 << " on device: " << device_id;
     return;
   }
 
@@ -997,7 +1008,25 @@ void BluetoothAdapterFloss::ConnectDevice(
     const absl::optional<device::BluetoothDevice::AddressType>& address_type,
     ConnectDeviceCallback callback,
     ConnectDeviceErrorCallback error_callback) {
-  NOTIMPLEMENTED();
+  // On Floss, ACL and RFCOMM connection are done with
+  // createRfcommSocketToServiceRecord(UUID). This should be called after
+  // ConnectDevice. Since all that is required on Floss for insecure connection
+  // is an address, this function currently just creates a device pointer.
+  // TODO(b/259725491): This function should actually create an ACL connection.
+  BluetoothDeviceFloss* device_ptr;
+  std::string canonical_address = device::CanonicalizeBluetoothAddress(address);
+
+  if (base::Contains(devices_, canonical_address)) {
+    device_ptr =
+        static_cast<BluetoothDeviceFloss*>(devices_[canonical_address].get());
+  } else {
+    auto device = CreateBluetoothDeviceFloss(
+        FlossDeviceId({.address = address, .name = ""}));
+    device_ptr = device.get();
+    devices_.emplace(canonical_address, std::move(device));
+  }
+
+  std::move(callback).Run(device_ptr);
 }
 
 device::BluetoothLocalGattService* BluetoothAdapterFloss::GetGattService(

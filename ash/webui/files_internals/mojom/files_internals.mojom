@@ -10,4 +10,14 @@ interface PageHandler {
   GetSmbfsEnableVerboseLogging() => (bool enabled);
   // Sets the smbfs.enable_verbose_logging pref.
   SetSmbfsEnableVerboseLogging(bool enabled);
+
+  // Gets the filebrowser.office.setup_complete pref.
+  GetOfficeSetupComplete() => (bool complete);
+  // Sets the filebrowser.office.setup_complete pref.
+  SetOfficeSetupComplete(bool complete);
+
+  // Gets the filebrowser.office.setup_complete pref.
+  GetAlwaysMoveOfficeFiles() => (bool always_move);
+  // Sets the filebrowser.office.setup_complete pref.
+  SetAlwaysMoveOfficeFiles(bool always_move);
 };

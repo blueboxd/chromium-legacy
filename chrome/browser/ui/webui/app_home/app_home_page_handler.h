@@ -65,6 +65,9 @@ class AppHomePageHandler
   // app_home::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;
   void UninstallApp(const std::string& app_id) override;
+  void ShowAppSettings(const std::string& app_id) override;
+  void CreateAppShortcut(const std::string& app_id,
+                         CreateAppShortcutCallback callback) override;
 
  private:
   Browser* GetCurrentBrowser();
@@ -80,6 +83,11 @@ class AppHomePageHandler
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
                                         const std::u16string& error) override;
 
+  void ShowWebAppSettings(const std::string& app_id);
+  void ShowExtensionAppSettings(const extensions::Extension* extension);
+  void CreateWebAppShortcut(const std::string& app_id, base::OnceClosure done);
+  void CreateExtensionAppShortcut(const extensions::Extension* extension,
+                                  base::OnceClosure done);
   void UninstallWebApp(const std::string& web_app_id);
   void UninstallExtensionApp(const extensions::Extension* extension);
   void FillWebAppInfoList(std::vector<app_home::mojom::AppInfoPtr>* result);

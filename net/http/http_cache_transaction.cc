@@ -31,7 +31,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"  // For EqualsCaseInsensitiveASCII.
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
@@ -188,8 +187,9 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
     : trace_id_(GetNextTraceId(cache)),
       priority_(priority),
       cache_(cache->GetWeakPtr()) {
-  TRACE_EVENT1("net", "HttpCacheTransaction::Transaction", "priority",
-               RequestPriorityToString(priority));
+  TRACE_EVENT_WITH_FLOW1("net", "HttpCacheTransaction::Transaction",
+                         TRACE_ID_LOCAL(trace_id_), TRACE_EVENT_FLAG_FLOW_OUT,
+                         "priority", RequestPriorityToString(priority));
   static_assert(HttpCache::Transaction::kNumValidationHeaders ==
                     std::size(kValidationHeaders),
                 "invalid number of validation headers");
@@ -199,7 +199,8 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
 }
 
 HttpCache::Transaction::~Transaction() {
-  TRACE_EVENT0("net", "HttpCacheTransaction::~Transaction");
+  TRACE_EVENT_WITH_FLOW0("net", "HttpCacheTransaction::~Transaction",
+                         TRACE_ID_LOCAL(trace_id_), TRACE_EVENT_FLAG_FLOW_IN);
   RecordHistograms();
 
   // We may have to issue another IO, but we should never invoke the callback_
@@ -239,7 +240,8 @@ int HttpCache::Transaction::Start(const HttpRequestInfo* request,
   DCHECK(request->IsConsistent());
   DCHECK(!callback.is_null());
   TRACE_EVENT_WITH_FLOW1("net", "HttpCacheTransaction::Start",
-                         TRACE_ID_LOCAL(trace_id_), TRACE_EVENT_FLAG_FLOW_OUT,
+                         TRACE_ID_LOCAL(trace_id_),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "url", request->url.spec());
 
   // Ensure that we only have one asynchronous call at a time.
@@ -1419,7 +1421,7 @@ void HttpCache::Transaction::AddCacheLockTimeoutHandler(ActiveEntry* entry) {
   if ((bypass_lock_for_test_ && next_state_ == STATE_ADD_TO_ENTRY_COMPLETE) ||
       (bypass_lock_after_headers_for_test_ &&
        next_state_ == STATE_FINISH_HEADERS_COMPLETE)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&HttpCache::Transaction::OnCacheLockTimeout,
                        weak_factory_.GetWeakPtr(), entry_lock_waiting_since_));
@@ -1446,7 +1448,7 @@ void HttpCache::Transaction::AddCacheLockTimeoutHandler(ActiveEntry* entry) {
       // the cache if at all possible. See http://crbug.com/408765
       timeout_milliseconds = 25;
     }
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HttpCache::Transaction::OnCacheLockTimeout,
                        weak_factory_.GetWeakPtr(), entry_lock_waiting_since_),

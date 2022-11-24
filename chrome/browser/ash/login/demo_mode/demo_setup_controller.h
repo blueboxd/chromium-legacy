@@ -23,6 +23,7 @@ class EnrollmentStatus;
 }
 
 namespace ash {
+
 class DemoComponents;
 
 // Controls enrollment flow for setting up Demo Mode.
@@ -177,7 +178,9 @@ class DemoSetupController
 
   // If the current country requires customization, returns an user email that
   // corresponds to the sub organization the device should be enrolled into.
-  // Otherwise, returns an empty string.
+  // If chrome flag "--demo-mode-enrolling-username" is set for test, it
+  // will override the current country-derived user. If neither of above is
+  // true, returns an empty string.
   static std::string GetSubOrganizationEmail();
 
   // Returns a dictionary mapping setup steps to step indices.
@@ -305,11 +308,5 @@ class DemoSetupController
 };
 
 }  //  namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::DemoSetupController;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_DEMO_MODE_DEMO_SETUP_CONTROLLER_H_

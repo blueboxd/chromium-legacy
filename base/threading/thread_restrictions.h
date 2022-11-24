@@ -132,6 +132,7 @@ bool EnsureBrowserStateDirectoriesCreated(const base::FilePath&,
 namespace android_webview {
 class AwFormDatabaseService;
 class CookieManager;
+class JsSandboxIsolate;
 class ScopedAllowInitGLBindings;
 class VizCompositorThreadRunnerWebView;
 }  // namespace android_webview
@@ -301,6 +302,9 @@ class CoreLibraryInitializer;
 class SyncCallRestrictions;
 namespace core {
 class ScopedIPCSupport;
+namespace ipcz_driver {
+class MojoTrap;
+}
 }
 }  // namespace mojo
 namespace printing {
@@ -435,6 +439,7 @@ class StackTrace;
 }
 
 namespace win {
+class OSInfo;
 class ScopedAllowBlockingForUserAccountControl;
 }
 
@@ -552,6 +557,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class content::
       ScopedAllowBlockingForViewAura;  // http://crbug.com/332579
 #if BUILDFLAG(IS_WIN)
+  friend class base::win::OSInfo;
   friend class content::WebContentsImpl;  // http://crbug.com/1262162
 #endif
   friend class content::WebContentsViewMac;
@@ -678,6 +684,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
 
   // Allowed usage:
   friend class ::ChromeNSSCryptoModuleDelegate;
+  friend class android_webview::JsSandboxIsolate;
   friend class base::internal::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class base::SimpleThread;
   friend class blink::CategorizedWorkerPoolImpl;
@@ -787,6 +794,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class media::AudioOutputDevice;
   friend class media::PaintCanvasVideoRenderer;
   friend class mojo::SyncCallRestrictions;
+  friend class mojo::core::ipcz_driver::MojoTrap;
   friend class net::NetworkConfigWatcherMacThread;
   friend class ui::DrmThreadProxy;
   friend class viz::HostGpuMemoryBufferManager;

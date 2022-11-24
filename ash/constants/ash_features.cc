@@ -257,6 +257,11 @@ BASE_FEATURE(kAutocorrectParamsTuning,
              "AutocorrectParamsTuning",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables using a toggle for enabling autocorrect on ChromeOS.
+BASE_FEATURE(kAutocorrectToggle,
+             "AutocorrectToggle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the autozoom nudge shown prefs will be reset at the start of
 // each new user session.
 BASE_FEATURE(kAutozoomNudgeSessionReset,
@@ -587,6 +592,20 @@ BASE_FEATURE(kDisableLacrosTtsSupport,
 // Enables indicators to hint where displays are connected.
 BASE_FEATURE(kDisplayAlignAssist,
              "DisplayAlignAssist",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable DNS over HTTPS (DoH) with identifiers. Only available on ChromeOS.
+BASE_FEATURE(kDnsOverHttpsWithIdentifiers,
+             "DnsOverHttpsWithIdentifiers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable experiment to support identifiers in the existing policy
+// DnsOverHttpsTemplates. When this option is enabled, a hard-coded salt value
+// is used for hashing the identifiers in the template URI. Only available on
+// ChromeOS.
+// TODO(acostinas, srad, b/233845305) Remove when policy is added to DPanel.
+BASE_FEATURE(kDnsOverHttpsWithIdentifiersReuseOldPolicy,
+             "DnsOverHttpsWithIdentifiersReuseOldPolicy",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
@@ -1176,12 +1195,6 @@ BASE_FEATURE(kImeStylusHandwriting,
 // is already shown in the shelf.
 BASE_FEATURE(kImeTrayHideVoiceButton,
              "ImeTrayHideVoiceButton",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables improved keyboard shortcuts for activating desks at specified indices
-// and toggling whether a window is assigned to all desks.
-BASE_FEATURE(kImprovedDesksKeyboardShortcuts,
-             "ImprovedDesksKeyboardShortcuts",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to show new improved UI for cryptohome errors that happened
@@ -1878,12 +1891,6 @@ BASE_FEATURE(kStylusBatteryStatus,
              "StylusBatteryStatus",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables or disables using the system input engine for physical typing in
-// Chinese.
-BASE_FEATURE(kSystemChinesePhysicalTyping,
-             "SystemChinesePhysicalTyping",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables the System Extensions platform.
 BASE_FEATURE(kSystemExtensions,
              "SystemExtensions",
@@ -1900,14 +1907,14 @@ BASE_FEATURE(kSystemJapanesePhysicalTyping,
              "SystemJapanesePhysicalTyping",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables live captions for sounds produced outside of the browser (e.g. by
+// Android or linux apps).
+BASE_FEATURE(kSystemLiveCaption,
+             "SystemLiveCaption",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the ability to play sounds for system services.
 BASE_FEATURE(kSystemSounds, "SystemSounds", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables or disables using the system input engine for physical typing in
-// transliteration input methods.
-BASE_FEATURE(kSystemTransliterationPhysicalTyping,
-             "SystemTransliterationPhysicalTyping",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the shadows of system tray bubbles.
 BASE_FEATURE(kSystemTrayShadow,
@@ -2055,11 +2062,6 @@ BASE_FEATURE(kWallpaperFastRefresh,
 // Enable full screen wallpaper preview in new wallpaper experience.
 BASE_FEATURE(kWallpaperFullScreenPreview,
              "WallpaperFullScreenPreview",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enable Google Photos integration in the new wallpaper experience.
-BASE_FEATURE(kWallpaperGooglePhotosIntegration,
-             "WallpaperGooglePhotosIntegration",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable different wallpapers per desk.
@@ -2337,6 +2339,15 @@ bool IsClipboardHistoryReorderEnabled() {
 
 bool IsDesksCloseAllEnabled() {
   return base::FeatureList::IsEnabled(kDesksCloseAll);
+}
+
+bool IsDnsOverHttpsWithIdentifiersReuseOldPolicyEnabled() {
+  return base::FeatureList::IsEnabled(
+      kDnsOverHttpsWithIdentifiersReuseOldPolicy);
+}
+
+bool IsDnsOverHttpsWithIdentifiersEnabled() {
+  return base::FeatureList::IsEnabled(kDnsOverHttpsWithIdentifiers);
 }
 
 bool IsLauncherItemColorSyncEnabled() {
@@ -2619,10 +2630,6 @@ bool IsImeTrayHideVoiceButtonEnabled() {
   return base::FeatureList::IsEnabled(kImeTrayHideVoiceButton);
 }
 
-bool IsImprovedDesksKeyboardShortcutsEnabled() {
-  return base::FeatureList::IsEnabled(kImprovedDesksKeyboardShortcuts);
-}
-
 bool IsInputInDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kEnableInputInDiagnosticsApp);
 }
@@ -2733,7 +2740,8 @@ bool IsMinimumChromeVersionEnabled() {
 }
 
 bool IsEcheLauncherEnabled() {
-  return base::FeatureList::IsEnabled(kEcheLauncher);
+  return base::FeatureList::IsEnabled(kEcheLauncher) &&
+         base::FeatureList::IsEnabled(kEcheSWA);
 }
 
 bool IsNearbyKeepAliveFixEnabled() {
@@ -3114,10 +3122,6 @@ bool IsWallpaperFastRefreshEnabled() {
 
 bool IsWallpaperFullScreenPreviewEnabled() {
   return base::FeatureList::IsEnabled(kWallpaperFullScreenPreview);
-}
-
-bool IsWallpaperGooglePhotosIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(kWallpaperGooglePhotosIntegration);
 }
 
 bool IsWallpaperPerDeskEnabled() {

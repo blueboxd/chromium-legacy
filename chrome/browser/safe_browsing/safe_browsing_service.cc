@@ -118,6 +118,9 @@ void PopulateDownloadWarningActions(download::DownloadItem* download,
     report->mutable_download_warning_actions()->Add(
         DownloadItemWarningData::ConstructCsbrrDownloadWarningAction(event));
   }
+  base::UmaHistogramCounts100(
+      "SafeBrowsing.ClientSafeBrowsingReport.DownloadWarningActionSize",
+      report->download_warning_actions_size());
 }
 #endif
 
@@ -354,6 +357,11 @@ void SafeBrowsingService::Stop(bool shutdown) {
 }
 
 void SafeBrowsingService::OnProfileAdded(Profile* profile) {
+  // Some services are disabled by default based on the profile type, e.g. the
+  // System Profile, in which Safe browsing is not needed.
+  if (AreKeyedServicesDisabledForProfileByDefault(profile))
+    return;
+
   // Start following the safe browsing preference on |pref_service|.
   PrefService* pref_service = profile->GetPrefs();
   DCHECK(prefs_map_.find(pref_service) == prefs_map_.end());

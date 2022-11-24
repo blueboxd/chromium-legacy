@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
 #include "chrome/browser/ash/login/screen_manager.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
@@ -250,7 +249,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
 }
 
 void AutoEnrollmentCheckScreen::OnErrorScreenHidden() {
-  error_screen_->SetParentScreen(ash::OOBE_SCREEN_UNKNOWN);
+  error_screen_->SetParentScreen(OOBE_SCREEN_UNKNOWN);
   Show(context());
 }
 
@@ -260,13 +259,13 @@ void AutoEnrollmentCheckScreen::SignalCompletion() {
   if (NetworkHandler::IsInitialized())
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
   error_screen_->SetHideCallback(base::OnceClosure());
-  error_screen_->SetParentScreen(ash::OOBE_SCREEN_UNKNOWN);
+  error_screen_->SetParentScreen(OOBE_SCREEN_UNKNOWN);
   auto_enrollment_progress_subscription_ = {};
   connect_request_subscription_ = {};
 
   // Running exit callback can cause `this` destruction, so let other methods
   // finish their work before.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&AutoEnrollmentCheckScreen::RunExitCallback,
                                 weak_ptr_factory_.GetWeakPtr(), Result::NEXT));
 }

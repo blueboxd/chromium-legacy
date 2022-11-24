@@ -9,15 +9,21 @@ build_webui("build") {
 
   static_files = [
     "icons/check.svg",
+    "icons/docs.svg",
     "icons/download.svg",
+    "icons/office.svg",
+    "icons/sheets.svg",
+    "icons/slides.svg",
     "main.html",
   ]
   web_component_files = [
     "base_setup_page.ts",
     "drive_upload_page.ts",
     "file_handler_page.ts",
+    "move_confirmation_page.ts",
     "office_pwa_install_page.ts",
     "one_drive_upload_page.ts",
+    "sign_in_page.ts",
     "welcome_page.ts",
   ]
   non_web_component_files = [

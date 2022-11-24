@@ -132,7 +132,6 @@ void WaylandToplevelWindow::DispatchHostWindowDragMovement(
     const gfx::Point& pointer_location_in_px) {
   DCHECK(shell_toplevel_);
 
-  connection()->event_source()->ResetPointerFlags();
   if (hittest == HTCAPTION)
     shell_toplevel_->SurfaceMove(connection());
   else
@@ -396,7 +395,9 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   // Store the old state to propagte state changes if Wayland decides to change
   // the state to something else.
   PlatformWindowState old_state = state_;
-  if ((state_ == PlatformWindowState::kMinimized &&
+  if ((!IsSupportedOnAuraSurface(
+           ZAURA_TOPLEVEL_STATE_MINIMIZED_SINCE_VERSION) &&
+       state_ == PlatformWindowState::kMinimized &&
        !window_states.is_activated) ||
       window_states.is_minimized) {
     state_ = PlatformWindowState::kMinimized;

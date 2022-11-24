@@ -1753,27 +1753,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.CodecImage.CodecBufferWaitCoordinator.FrameTimedOut"
-    enum="BooleanTimedOut" expires_after="M95">
-  <owner>vikassoni@chromium.org</owner>
-  <owner>liberato@chromium.org</owner>
-  <summary>
-    Whether we exceeded the timeout in CodecBufferWaitCoordinator::
-    WaitForFrameAvailable and will proceed without a frame ready.
-  </summary>
-</histogram>
-
-<histogram name="Media.CodecImage.CodecBufferWaitCoordinator.WaitTimeForFrame"
-    units="ms" expires_after="M95">
-  <owner>vikassoni@chromium.org</owner>
-  <owner>liberato@chromium.org</owner>
-  <summary>
-    Time spent waiting for a frame to become available in a Non Overlay
-    (TextureOwner mode) so that MediaCodec can render it. This time is recorded
-    before the frame is rendered.
-  </summary>
-</histogram>
-
 <histogram name="Media.ConditionalFocus.Decision"
     enum="ConditionalFocusDecision" expires_after="2023-07-18">
   <owner>eladalon@chromium.org</owner>
@@ -2574,6 +2553,16 @@ chromium-metrics-reviews@google.com.
   <token key="VideoCodec" variants="VideoCodec"/>
 </histogram>
 
+<histogram name="Media.EME.Widevine.SoftwareSecure.SystemCode"
+    enum="CdmSystemCode" expires_after="2023-05-07">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    System code in promise rejection when using Widevine key system in software
+    secure mode.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Widevine.VideoCapability.HasEmptyRobustness"
     enum="BooleanEmpty" expires_after="2023-03-19">
   <owner>xhwang@chromium.org</owner>
@@ -2644,14 +2633,6 @@ chromium-metrics-reviews@google.com.
   <token key="KeySystem" variants="KeySystem"/>
 </histogram>
 
-<histogram name="Media.EME.{KeySystem}.SystemCode" enum="CdmSystemCode"
-    expires_after="2023-05-07">
-  <owner>xhwang@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>System code in promise rejection.</summary>
-  <token key="KeySystem" variants="KeySystemWithRobustness"/>
-</histogram>
-
 <histogram name="Media.EME.{KeySystem}.TimeTo{ResolveOrReject}.{EmeApi}"
     units="ms" expires_after="2023-05-07">
   <owner>xhwang@chromium.org</owner>
@@ -2678,30 +2659,6 @@ chromium-metrics-reviews@google.com.
   <summary>System code in promise rejection.</summary>
   <token key="KeySystem" variants="KeySystemWithRobustness"/>
   <token key="EmeApi" variants="EmeApi"/>
-</histogram>
-
-<histogram name="Media.Engagement.PreloadedList.CheckResult"
-    enum="PreloadedListCheckResult" expires_after="M82">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Recorded when the Media Engagement Preloaded List is checked whether a
-    string is present on that list. If the check was successful then the result
-    of the check is recorded in this histogram. If the check was not successful
-    then the reason for the check failing is recorded.
-  </summary>
-</histogram>
-
-<histogram name="Media.Engagement.PreloadedList.LoadResult"
-    enum="PreloadedListLoadResult" expires_after="M82">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Recorded when data is loaded into the Media Engagement Preloaded List. If
-    the load is successful then &quot;loaded&quot; is recorded to this
-    histogram. If the load was not successful then the reason why is recorded to
-    this histogram.
-  </summary>
 </histogram>
 
 <histogram name="Media.Engagement.ScoreAtPlayback" units="%"
@@ -3086,63 +3043,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.History.DatabaseSize" units="KB"
-    expires_after="2021-08-09">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    The size of the Media History database. Recorded once on startup.
-  </summary>
-</histogram>
-
-<histogram name="Media.History.Init.Result" enum="MediaHistoryInitResult"
-    expires_after="2021-08-09">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Recorded when Media History is initialized when the browser is started. This
-    is not recorded in incognito mode or if &quot;save browsing history&quot; is
-    disabled.
-  </summary>
-</histogram>
-
-<histogram name="Media.History.Init.ResultAfterDelete"
-    enum="MediaHistoryInitResult" expires_after="2021-08-09">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Recorded when Media History is recreated when the browser is started and the
-    Media History database has been corrupted to the point where we need to
-    delete it and start again. This is not recorded in incognito mode or if
-    &quot;save browsing history&quot; is disabled.
-  </summary>
-</histogram>
-
-<histogram name="Media.History.Playback.WriteResult"
-    enum="MediaHistoryPlaybackWriteResult" expires_after="2021-03-07">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Recorded when Media History records a playback to the database. Playbacks
-    are recorded when the player is destroyed and are are recorded on a
-    per-player level and might be called multiple times on a single page.
-    Playbacks are not recorded in incognito mode or if &quot;save browsing
-    history&quot; is disabled.
-  </summary>
-</histogram>
-
-<histogram name="Media.History.Session.WriteResult"
-    enum="MediaHistorySessionWriteResult" expires_after="2021-03-07">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Recorded when Media History records a sessions to the database. Sessions are
-    recorded once per WebContents on navigation if there was playback on the
-    page. Playbacks are not recorded in incognito mode or if &quot;save browsing
-    history&quot; is disabled.
-  </summary>
-</histogram>
-
 <histogram base="true" name="Media.InitialDecoderSelectionTime" units="ms"
     expires_after="2023-03-25">
   <owner>cassew@google.com</owner>
@@ -3511,10 +3411,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Midi.SendReceiveUsage" enum="MidiSendReceiveUsage"
-    expires_after="2022-11-30">
+    expires_after="2023-06-30">
   <owner>hongchan@chromium.org</owner>
-  <owner>toyoshim@chromium.org</owner>
-  <owner>midi-dev@chromium.org</owner>
+  <owner>mjwilson@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     Reports whether any data was sent or received by a MidiManager. Recorded
     once per MidiManager instantiation, upon destruction. MidiManager is
@@ -3526,10 +3426,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Midi.SysExMessageSizeUpTo1MB" units="bytes"
-    expires_after="2022-11-30">
+    expires_after="2023-06-30">
   <owner>hongchan@chromium.org</owner>
-  <owner>toyoshim@chromium.org</owner>
-  <owner>midi-dev@chromium.org</owner>
+  <owner>mjwilson@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     Reports sysex message size.
 
@@ -3537,10 +3437,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.Midi.Usage" enum="MidiUsage" expires_after="2022-11-30">
+<histogram name="Media.Midi.Usage" enum="MidiUsage" expires_after="2023-06-30">
   <owner>hongchan@chromium.org</owner>
-  <owner>toyoshim@chromium.org</owner>
-  <owner>midi-dev@chromium.org</owner>
+  <owner>mjwilson@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The MidiManager instance use count, but this is not intended to understand
     the real API usage because this can be counted by feature scanning scripts
@@ -6156,7 +6056,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MediaRouter.CastStreaming.Start.Failure.AccessCodeManualEntry"
-    enum="MirroringServiceErrorType" expires_after="2023-01-01">
+    enum="MirroringServiceErrorType" expires_after="2023-07-01">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -6167,7 +6067,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="MediaRouter.CastStreaming.Start.Failure.AccessCodeRememberedDevice"
-    enum="MirroringServiceErrorType" expires_after="2023-01-01">
+    enum="MirroringServiceErrorType" expires_after="2023-07-01">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>

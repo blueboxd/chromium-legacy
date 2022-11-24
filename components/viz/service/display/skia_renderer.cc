@@ -39,6 +39,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/delegated_ink_handler.h"
 #include "components/viz/service/display/delegated_ink_point_renderer_skia.h"
 #include "components/viz/service/display/display_resource_provider.h"
@@ -3580,9 +3581,11 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   // TODO(rivr): Handle the case where the overlay has an arbitrary transform
   // applied.
   if (absl::holds_alternative<gfx::OverlayTransform>(overlay->transform)) {
-    OverlayCandidate::ApplyClip(
-        *overlay,
-        gfx::RectF(gfx::SizeF(current_frame()->device_viewport_size)));
+    gfx::Rect apply_clip = gfx::Rect(current_frame()->device_viewport_size);
+    if (overlay->clip_rect.has_value())
+      apply_clip.Intersect(overlay->clip_rect.value());
+
+    OverlayCandidate::ApplyClip(*overlay, gfx::RectF(apply_clip));
   }
 #endif  // BUILDFLAG(IS_APPLE)
 }
@@ -3598,7 +3601,7 @@ void SkiaRenderer::EndPaint(bool failed) {
     // finished.
     if (current_gpu_commands_completed_fence_->was_set()) {
       on_finished_callback = base::BindPostTask(
-          base::ThreadTaskRunnerHandle::Get(),
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
           base::BindOnce(&FrameResourceGpuCommandsCompletedFence::Signal,
                          std::move(current_gpu_commands_completed_fence_)));
       current_gpu_commands_completed_fence_ =
@@ -3612,7 +3615,7 @@ void SkiaRenderer::EndPaint(bool failed) {
     // when the root render pass is finished.
     if (current_release_fence_->was_set()) {
       on_return_release_fence_cb = base::BindPostTask(
-          base::ThreadTaskRunnerHandle::Get(),
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
           base::BindOnce(&FrameResourceReleaseFence::SetReleaseFenceCallback,
                          std::move(current_release_fence_)));
       current_release_fence_ =

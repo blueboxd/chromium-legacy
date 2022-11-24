@@ -190,19 +190,6 @@ const char* GetSaveAndUpdatePromptDecisionMetricsSuffix(
   return "";
 }
 
-std::string GetCreditCardTypeSuffix(
-    AutofillClient::PaymentsRpcCardType card_type) {
-  switch (card_type) {
-    case AutofillClient::PaymentsRpcCardType::kServerCard:
-      return ".ServerCard";
-    case AutofillClient::PaymentsRpcCardType::kVirtualCard:
-      return ".VirtualCard";
-    case AutofillClient::PaymentsRpcCardType::kUnknown:
-      NOTREACHED();
-      return std::string();
-  }
-}
-
 }  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
@@ -973,7 +960,7 @@ void AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
   base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido",
                               duration);
   base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido" +
-                                  GetCreditCardTypeSuffix(card_type) +
+                                  GetHistogramStringForCardType(card_type) +
                                   PaymentsRpcResultToMetricsSuffix(result),
                               duration);
 }
@@ -994,7 +981,8 @@ void AutofillMetrics::LogCardUnmaskPreflightDuration(
 void AutofillMetrics::LogServerCardUnmaskAttempt(
     AutofillClient::PaymentsRpcCardType card_type) {
   base::UmaHistogramBoolean("Autofill.ServerCardUnmask" +
-                                GetCreditCardTypeSuffix(card_type) + ".Attempt",
+                                GetHistogramStringForCardType(card_type) +
+                                ".Attempt",
                             true);
 }
 
@@ -1020,7 +1008,7 @@ void AutofillMetrics::LogServerCardUnmaskResult(
   }
 
   base::UmaHistogramEnumeration("Autofill.ServerCardUnmask" +
-                                    GetCreditCardTypeSuffix(card_type) +
+                                    GetHistogramStringForCardType(card_type) +
                                     ".Result" + flow_type_suffix,
                                 unmask_result);
 }
@@ -1029,7 +1017,7 @@ void AutofillMetrics::LogServerCardUnmaskResult(
 void AutofillMetrics::LogServerCardUnmaskFormSubmission(
     AutofillClient::PaymentsRpcCardType card_type) {
   base::UmaHistogramBoolean("Autofill.ServerCardUnmask" +
-                                GetCreditCardTypeSuffix(card_type) +
+                                GetHistogramStringForCardType(card_type) +
                                 ".FormSubmission",
                             true);
 }
@@ -2033,6 +2021,18 @@ void AutofillMetrics::LogFieldFillingStats(
                               filling_stats.Total());
 }
 
+void AutofillMetrics::LogSectioningMetrics(
+    const base::flat_map<Section, size_t>& fields_per_section) {
+  constexpr base::StringPiece kBaseHistogramName = "Autofill.Sectioning.";
+  UMA_HISTOGRAM_COUNTS_100(
+      base::StrCat({kBaseHistogramName, "NumberOfSections"}),
+      fields_per_section.size());
+  for (auto& [_, section_size] : fields_per_section) {
+    UMA_HISTOGRAM_COUNTS_100(
+        base::StrCat({kBaseHistogramName, "FieldsPerSection"}), section_size);
+  }
+}
+
 // static
 void AutofillMetrics::LogServerResponseHasDataForForm(bool has_data) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.ServerResponseHasDataForForm", has_data);
@@ -2054,8 +2054,7 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
     const base::TimeTicks& form_parsed_timestamp,
     FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
-    const FormInteractionCounts& form_interaction_counts,
-    const autofill_assistant::AutofillAssistantIntent intent) {
+    const FormInteractionCounts& form_interaction_counts) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.FormSubmittedState", state,
                             AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
 
@@ -2091,7 +2090,7 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
   }
   form_interactions_ukm_logger->LogFormSubmitted(
       is_for_credit_card, has_upi_vpa_field, form_types, state,
-      form_parsed_timestamp, form_signature, form_interaction_counts, intent);
+      form_parsed_timestamp, form_signature, form_interaction_counts);
 }
 
 // static
@@ -2725,6 +2724,15 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       .Record(ukm_recorder_);
 }
 
+void AutofillMetrics::FormInteractionsUkmLogger::LogSectioningHash(
+    FormSignature form_signature,
+    uint32_t sectioning_signature) {
+  ukm::builders::Autofill_Sectioning(source_id_)
+      .SetFormSignature(HashFormSignature(form_signature))
+      .SetSectioningSignature(sectioning_signature % 1024)
+      .Record(ukm_recorder_);
+}
+
 int64_t AutofillMetrics::FormTypesToBitVector(
     const DenseSet<FormType>& form_types) {
   int64_t form_type_bv = 0;
@@ -2767,8 +2775,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     AutofillFormSubmittedState state,
     const base::TimeTicks& form_parsed_timestamp,
     FormSignature form_signature,
-    const FormInteractionCounts& form_interaction_counts,
-    autofill_assistant::AutofillAssistantIntent intent) {
+    const FormInteractionCounts& form_interaction_counts) {
   if (!CanLog())
     return;
 
@@ -2791,9 +2798,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     builder.SetMillisecondsSinceFormParsed(
         MillisecondsSinceFormParsed(form_parsed_timestamp));
 
-  if (intent != autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT)
-    builder.SetAutofillAssistantIntent(static_cast<int64_t>(intent));
-
   builder.Record(ukm_recorder_);
 }
 
@@ -2803,7 +2807,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
     bool suggestions_shown,
     bool edited_autofilled_field,
     bool suggestion_filled,
-    autofill_assistant::AutofillAssistantIntent intent,
     const FormInteractionCounts& form_interaction_counts,
     const FormInteractionsFlowId& flow_id) {
   if (!CanLog())
@@ -2817,9 +2820,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
       .SetFormElementUserModifications(
           form_interaction_counts.form_element_user_modifications)
       .SetFlowId(flow_id.value());
-
-  if (intent != autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT)
-    builder.SetAutofillAssistantIntent(static_cast<int64_t>(intent));
 
   if (suggestions_shown)
     builder.SetFillingAcceptance(suggestion_filled);
@@ -3311,18 +3311,41 @@ void AutofillMetrics::LogAutocompletePredictionCollisionState(
 
 // static
 void AutofillMetrics::LogAutocompletePredictionCollisionTypes(
+    AutocompleteState autocomplete_state,
     ServerFieldType server_type,
     ServerFieldType heuristic_type) {
-  const std::string kHistogramName =
-      "Autofill.Autocomplete.PredictionCollisionType.";
-  if (server_type != NO_SERVER_DATA) {
-    base::UmaHistogramEnumeration(kHistogramName + "Server", server_type,
-                                  ServerFieldType::MAX_VALID_FIELD_TYPE);
+  // Convert `autocomplete_state` to a string for the metric's name.
+  std::string autocomplete_suffix;
+  switch (autocomplete_state) {
+    case AutocompleteState::kNone:
+      autocomplete_suffix = "None";
+      break;
+    case AutocompleteState::kValid:
+      autocomplete_suffix = "Valid";
+      break;
+    case AutocompleteState::kGarbage:
+      autocomplete_suffix = "Garbage";
+      break;
+    case AutocompleteState::kOff:
+      autocomplete_suffix = "Off";
+      break;
+    default:
+      NOTREACHED();
   }
-  base::UmaHistogramEnumeration(kHistogramName + "Heuristics", heuristic_type,
-                                ServerFieldType::MAX_VALID_FIELD_TYPE);
+
+  // Log the metric for heuristic and server type.
+  std::string kHistogramName =
+      "Autofill.Autocomplete.PredictionCollisionType2.";
+  if (server_type != NO_SERVER_DATA) {
+    base::UmaHistogramEnumeration(
+        kHistogramName + "Server." + autocomplete_suffix, server_type,
+        ServerFieldType::MAX_VALID_FIELD_TYPE);
+  }
   base::UmaHistogramEnumeration(
-      kHistogramName + "ServerOrHeuristics",
+      kHistogramName + "Heuristics." + autocomplete_suffix, heuristic_type,
+      ServerFieldType::MAX_VALID_FIELD_TYPE);
+  base::UmaHistogramEnumeration(
+      kHistogramName + "ServerOrHeuristics." + autocomplete_suffix,
       server_type != NO_SERVER_DATA ? server_type : heuristic_type,
       ServerFieldType::MAX_VALID_FIELD_TYPE);
 }
@@ -3364,7 +3387,7 @@ const std::string PaymentsRpcResultToMetricsSuffix(
   return result_suffix;
 }
 
-// // static
+// static
 void AutofillMetrics::LogNumericQuantityCollidesWithServerPrediction(
     bool collision) {
   base::UmaHistogramBoolean(
@@ -3378,6 +3401,37 @@ void AutofillMetrics::
   base::UmaHistogramBoolean(
       "Autofill.AcceptedFilledFieldWithNumericQuantityHeuristicPrediction",
       accepted);
+}
+
+// static
+std::string AutofillMetrics::GetHistogramStringForCardType(
+    absl::variant<AutofillClient::PaymentsRpcCardType, CreditCard::RecordType>
+        card_type) {
+  if (absl::holds_alternative<AutofillClient::PaymentsRpcCardType>(card_type)) {
+    switch (absl::get<AutofillClient::PaymentsRpcCardType>(card_type)) {
+      case AutofillClient::PaymentsRpcCardType::kServerCard:
+        return ".ServerCard";
+      case AutofillClient::PaymentsRpcCardType::kVirtualCard:
+        return ".VirtualCard";
+      case AutofillClient::PaymentsRpcCardType::kUnknown:
+        NOTREACHED();
+        break;
+    }
+  } else if (absl::holds_alternative<CreditCard::RecordType>(card_type)) {
+    switch (absl::get<CreditCard::RecordType>(card_type)) {
+      case CreditCard::FULL_SERVER_CARD:
+      case CreditCard::MASKED_SERVER_CARD:
+        return ".ServerCard";
+      case CreditCard::VIRTUAL_CARD:
+        return ".VirtualCard";
+      case CreditCard::LOCAL_CARD:
+        // We do not offer CVC auth for local cards.
+        NOTREACHED();
+        break;
+    }
+  }
+
+  return "";
 }
 
 }  // namespace autofill

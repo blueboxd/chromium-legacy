@@ -2034,7 +2034,7 @@ grit("web_ui_mojo_test_resources") {
     "grit/web_ui_mojo_test_resources_map.h",
     "web_ui_mojo_test_resources.pak",
   ]
-  deps = [ ":web_ui_test_mojo_bindings_webui_js" ]
+  deps = [ ":web_ui_test_mojo_bindings_js__generator" ]
 }
 
 static_library("run_all_unittests") {
@@ -2134,6 +2134,7 @@ test("content_unittests") {
     "../browser/browsing_data/same_site_data_remover_impl_unittest.cc",
     "../browser/browsing_topics/browsing_topics_site_data_manager_impl_unittest.cc",
     "../browser/browsing_topics/browsing_topics_site_data_storage_unittest.cc",
+    "../browser/browsing_topics/browsing_topics_url_loader_service_unittest.cc",
     "../browser/browsing_topics/header_util_unittest.cc",
     "../browser/buckets/bucket_manager_host_unittest.cc",
     "../browser/buckets/bucket_utils_unittest.cc",

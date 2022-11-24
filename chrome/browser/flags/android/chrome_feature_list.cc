@@ -180,7 +180,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAssistantIntentPageUrl,
     &kAssistantIntentTranslateInfo,
     &kAssistantNonPersonalizedVoiceSearch,
-    &kAppLaunchpad,
     &kAppMenuMobileSiteOption,
     &kAppToWebAttribution,
     &kBackgroundThreadPool,
@@ -207,6 +206,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableAlwaysShowNavBarButtons,
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
+    &kCCTResizableSideSheet,
     &kCCTRetainingState,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
@@ -247,6 +247,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kFoldableJankFix,
     &kGridTabSwitcherForTablets,
     &kHandleMediaIntents,
+    &kHideNonDisplayableAccountEmail,
     &kImmersiveUiMode,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
@@ -413,7 +414,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &share::kUpcomingSharingFeatures,
     &supervised_users::kLocalWebApprovals,
     &supervised_users::kWebFilterInterstitialRefresh,
-    &switches::kAllowSyncOffForChildAccounts,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kTangibleSync,
@@ -512,8 +512,6 @@ BASE_FEATURE(kAssistantIntentTranslateInfo,
 BASE_FEATURE(kAssistantNonPersonalizedVoiceSearch,
              "AssistantNonPersonalizedVoiceSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAppLaunchpad, "AppLaunchpad", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAppMenuMobileSiteOption,
              "AppMenuMobileSiteOption",
@@ -621,6 +619,10 @@ BASE_FEATURE(kCCTResizableForFirstParties,
 BASE_FEATURE(kCCTResizableForThirdParties,
              "CCTResizableForThirdParties",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTResizableSideSheet,
+             "CCTResizableSideSheet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTResourcePrefetch,
              "CCTResourcePrefetch",
@@ -776,6 +778,10 @@ BASE_FEATURE(kGridTabSwitcherForTablets,
 
 BASE_FEATURE(kHandleMediaIntents,
              "HandleMediaIntents",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kHideNonDisplayableAccountEmail,
+             "HideNonDisplayableAccountEmail",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kImmersiveUiMode,

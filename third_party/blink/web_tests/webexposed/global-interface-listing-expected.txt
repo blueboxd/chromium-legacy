@@ -232,6 +232,7 @@ interface AnimationTimeline
     getter currentTime
     getter duration
     method constructor
+    method getCurrentTime
 interface Attr : Node
     attribute @@toStringTag
     getter localName
@@ -2158,11 +2159,17 @@ interface DocumentFragment : Node
     method querySelector
     method querySelectorAll
     method replaceChildren
-interface DocumentPictureInPicture
+interface DocumentPictureInPicture : EventTarget
     attribute @@toStringTag
+    getter onenter
     getter window
     method constructor
     method requestWindow
+    setter onenter
+interface DocumentPictureInPictureEvent : Event
+    attribute @@toStringTag
+    getter window
+    method constructor
 interface DocumentTimeline : AnimationTimeline
     attribute @@toStringTag
     method constructor
@@ -3670,9 +3677,9 @@ interface HTMLIFrameElement : HTMLElement
     getter allow
     getter allowFullscreen
     getter allowPaymentRequest
-    getter anonymous
     getter contentDocument
     getter contentWindow
+    getter credentialless
     getter csp
     getter featurePolicy
     getter frameBorder
@@ -3695,7 +3702,7 @@ interface HTMLIFrameElement : HTMLElement
     setter allow
     setter allowFullscreen
     setter allowPaymentRequest
-    setter anonymous
+    setter credentialless
     setter csp
     setter frameBorder
     setter height
@@ -5981,7 +5988,6 @@ interface Navigator
     getter deviceMemory
     getter devicePosture
     getter doNotTrack
-    getter documentPictureInPicture
     getter geolocation
     getter hardwareConcurrency
     getter hid
@@ -11774,17 +11780,18 @@ namespace CSS
     attribute propertyNamesInGlobal
     attribute testRunner
     attribute textInputController
-    getter anonymouslyFramed
     getter caches
     getter clientInformation
     getter closed
     getter cookieStore
+    getter credentialless
     getter crossOriginEmbedderPolicy
     getter crossOriginIsolated
     getter crypto
     getter customElements
     getter devicePixelRatio
     getter document
+    getter documentPictureInPicture
     getter event
     getter external
     getter frameElement

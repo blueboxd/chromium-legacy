@@ -89,6 +89,62 @@ class WaiterMetricsObserver final : public PageLoadMetricsObserver {
   const char* observer_name_;
 };
 
+std::string PageLoadMetricsTestWaiter::TimingFieldBitSet::ToDebugString()
+    const {
+  std::string debug_string = "";
+  if (ContainsTimingField(TimingField::kFirstPaint))
+    debug_string += "FirstPaint|";
+
+  if (ContainsTimingField(TimingField::kFirstContentfulPaint))
+    debug_string += "FirstContentfulPaint|";
+
+  if (ContainsTimingField(TimingField::kFirstMeaningfulPaint))
+    debug_string += "FirstMeaningfulPaint|";
+
+  if (ContainsTimingField(TimingField::kFirstPaintAfterBackForwardCacheRestore))
+    debug_string += "FirstPaintAfterBackForwardCacheRestore|";
+
+  if (ContainsTimingField(
+          TimingField::kRequestAnimationFrameAfterBackForwardCacheRestore))
+    debug_string += "RequestAnimationFrameAfterBackForwardCacheRestore|";
+
+  if (ContainsTimingField(TimingField::kDocumentWriteBlockReload))
+    debug_string += "DocumentWriteBlockReload|";
+
+  if (ContainsTimingField(TimingField::kFirstInputDelay))
+    debug_string += "FirstInputDelay|";
+
+  if (ContainsTimingField(TimingField::kFirstInputOrScroll))
+    debug_string += "FirstInputOrScroll|";
+
+  if (ContainsTimingField(
+          TimingField::kFirstInputDelayAfterBackForwardCacheRestore))
+    debug_string += "FirstInputDelayAfterBackForwardCacheRestore|";
+
+  if (ContainsTimingField(TimingField::kLoadTimingInfo))
+    debug_string += "LoadTimingInfo|";
+
+  if (ContainsTimingField(TimingField::kLargestContentfulPaint))
+    debug_string += "LargestContentfulPaint|";
+
+  if (ContainsTimingField(TimingField::kTotalInputDelay))
+    debug_string += "TotalInputDelay|";
+
+  if (ContainsTimingField(TimingField::kFirstContentfulPaint))
+    debug_string += "FirstContentfulPaint|";
+
+  if (ContainsTimingField(TimingField::kLayoutShift))
+    debug_string += "LayoutShift|";
+
+  if (ContainsTimingField(TimingField::kLoadEvent))
+    debug_string += "LoadEvent|";
+
+  if (ContainsTimingField(TimingField::kSoftNavigationCountUpdated))
+    debug_string += "SoftNavigationCountUpdated";
+
+  return debug_string;
+}
+
 PageLoadMetricsTestWaiter::PageLoadMetricsTestWaiter(
     content::WebContents* web_contents)
     : MetricsLifecycleObserver(web_contents),
@@ -198,7 +254,7 @@ void PageLoadMetricsTestWaiter::Wait() {
     run_loop_->Run();
     run_loop_ = nullptr;
   }
-  EXPECT_TRUE(ExpectationsSatisfied());
+  AssertExpectationsSatisfied();
   ResetExpectations();
 }
 
@@ -547,6 +603,23 @@ bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
          MainFrameViewportRectExpectationsSatisfied() &&
          MemoryUpdateExpectationsSatisfied() &&
          TotalInputDelayExpectationsSatisfied();
+}
+
+void PageLoadMetricsTestWaiter::AssertExpectationsSatisfied() const {
+  EXPECT_TRUE(expected_.page_fields_.AreAllSetIn(observed_.page_fields_));
+  EXPECT_TRUE(
+      expected_.subframe_fields_.AreAllSetIn(observed_.subframe_fields_));
+  EXPECT_TRUE(ResourceUseExpectationsSatisfied());
+  EXPECT_TRUE(UseCounterExpectationsSatisfied());
+  EXPECT_TRUE(SubframeNavigationExpectationsSatisfied());
+  EXPECT_TRUE(SubframeDataExpectationsSatisfied());
+  EXPECT_TRUE(IsSubset(expected_.frame_sizes_, observed_.frame_sizes_));
+  EXPECT_TRUE(LoadingBehaviorExpectationsSatisfied());
+  EXPECT_TRUE(CpuTimeExpectationsSatisfied());
+  EXPECT_TRUE(MainFrameIntersectionExpectationsSatisfied());
+  EXPECT_TRUE(MainFrameViewportRectExpectationsSatisfied());
+  EXPECT_TRUE(MemoryUpdateExpectationsSatisfied());
+  EXPECT_TRUE(TotalInputDelayExpectationsSatisfied());
 }
 
 void PageLoadMetricsTestWaiter::ResetExpectations() {

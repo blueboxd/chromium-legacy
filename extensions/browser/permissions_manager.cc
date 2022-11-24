@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
@@ -404,16 +405,10 @@ bool PermissionsManager::CanAffectExtension(const Extension& extension) const {
   if (!util::CanWithholdPermissionsFromExtension(extension))
     return false;
 
-  // The extension can be affected if it currently has host permissions, or if
-  // it did and they are actively withheld.
-  return !extension.permissions_data()
-              ->active_permissions()
-              .effective_hosts()
-              .is_empty() ||
-         !extension.permissions_data()
-              ->withheld_permissions()
-              .effective_hosts()
-              .is_empty();
+  // The extension can be affected by runtime host permissions if it requests
+  // host permissions.
+  return !PermissionsParser::GetRequiredPermissions(&extension).IsEmpty() ||
+         !PermissionsParser::GetOptionalPermissions(&extension).IsEmpty();
 }
 
 bool PermissionsManager::HasGrantedHostPermission(const Extension& extension,
@@ -604,6 +599,57 @@ PermissionsManager::GetEffectivePermissionsToGrant(
   return GetAllowedPermissionsAfterWithholding(desired_permissions,
                                                *runtime_granted_permissions,
                                                user_granted_permissions);
+}
+
+std::unique_ptr<const PermissionSet>
+PermissionsManager::GetRevokablePermissions(const Extension& extension) const {
+  // No extra revokable permissions if the extension couldn't ever be affected.
+  if (!util::CanWithholdPermissionsFromExtension(extension))
+    return nullptr;
+
+  // If we aren't withholding host permissions, then there may be some
+  // permissions active on the extension that should be revokable. Otherwise,
+  // all granted permissions should be stored in the preferences (and these
+  // can be a superset of permissions on the extension, as in the case of e.g.
+  // granting origins when only a subset is requested by the extension).
+  // TODO(devlin): This is confusing and subtle. We should instead perhaps just
+  // add all requested hosts as runtime-granted hosts if we aren't withholding
+  // host permissions.
+  const PermissionSet* current_granted_permissions = nullptr;
+  std::unique_ptr<const PermissionSet> runtime_granted_permissions =
+      GetRuntimePermissionsFromPrefs(extension);
+  std::unique_ptr<const PermissionSet> union_set;
+  if (runtime_granted_permissions) {
+    union_set = PermissionSet::CreateUnion(
+        *runtime_granted_permissions,
+        extension.permissions_data()->active_permissions());
+    current_granted_permissions = union_set.get();
+  } else {
+    current_granted_permissions =
+        &extension.permissions_data()->active_permissions();
+  }
+
+  // Unrevokable permissions include granted API permissions, manifest
+  // permissions, and host permissions that are always allowed.
+  PermissionSet unrevokable_permissions(
+      current_granted_permissions->apis().Clone(),
+      current_granted_permissions->manifest_permissions().Clone(),
+      URLPatternSet(), URLPatternSet());
+  {
+    // TODO(devlin): We do this pattern of "required + optional" enough. Make it
+    // a part of PermissionsParser and stop duplicating the set each time.
+    std::unique_ptr<PermissionSet> requested_permissions =
+        PermissionSet::CreateUnion(
+            PermissionsParser::GetRequiredPermissions(&extension),
+            PermissionsParser::GetOptionalPermissions(&extension));
+    ExtensionsBrowserClient::Get()->AddAdditionalAllowedHosts(
+        *requested_permissions, &unrevokable_permissions);
+  }
+
+  // Revokable permissions are, predictably, any in the current set that aren't
+  // considered unrevokable.
+  return PermissionSet::CreateDifference(*current_granted_permissions,
+                                         unrevokable_permissions);
 }
 
 void PermissionsManager::NotifyExtensionPermissionsUpdated(

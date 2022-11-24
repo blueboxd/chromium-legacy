@@ -16,15 +16,10 @@
 #include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
-#include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_document_picture_in_picture_options.h"
-#include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
-#include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -40,6 +35,16 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_document_picture_in_picture_options.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/css/style_sheet_list.h"
+#include "third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture.h"
+#include "third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture_event.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace blink {
 
@@ -224,10 +229,12 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   if (picture_in_picture_element_)
     OnExitedPictureInPicture(nullptr);
 
+#if !BUILDFLAG(IS_ANDROID)
   if (document_picture_in_picture_window_) {
     // TODO(crbug.com/1360452): close the window too.
     document_picture_in_picture_window_ = nullptr;
   }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   picture_in_picture_element_ = element;
   picture_in_picture_element_->OnEnteredPictureInPicture();
@@ -315,11 +322,6 @@ PictureInPictureWindow* PictureInPictureControllerImpl::pictureInPictureWindow()
   return picture_in_picture_window_;
 }
 
-LocalDOMWindow* PictureInPictureControllerImpl::documentPictureInPictureWindow()
-    const {
-  return document_picture_in_picture_window_;
-}
-
 Element* PictureInPictureControllerImpl::PictureInPictureElement() const {
   return picture_in_picture_element_;
 }
@@ -383,9 +385,11 @@ bool PictureInPictureControllerImpl::IsEnterAutoPictureInPictureAllowed()
   if (picture_in_picture_element_)
     return false;
 
+#if !BUILDFLAG(IS_ANDROID)
   // Don't allow if there's already a Document Picture-in-Picture window.
   if (document_picture_in_picture_window_)
     return false;
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Don't allow if there's no element eligible to enter Auto Picture-in-Picture
   if (!AutoPictureInPictureElement())
@@ -410,6 +414,12 @@ bool PictureInPictureControllerImpl::IsExitAutoPictureInPictureAllowed() const {
   // Allow if the element already in Picture-in-Picture is the same as the one
   // eligible to exit Auto Picture-in-Picture.
   return (picture_in_picture_element_ == AutoPictureInPictureElement());
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+LocalDOMWindow* PictureInPictureControllerImpl::documentPictureInPictureWindow()
+    const {
+  return document_picture_in_picture_window_;
 }
 
 void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
@@ -511,6 +521,38 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
           WrapPersistent(this)));
 }
 
+void PictureInPictureControllerImpl::ResolveOpenDocumentPictureInPicture() {
+  CHECK(document_picture_in_picture_window_);
+  CHECK(open_document_pip_resolver_);
+
+  if (DomWindow()) {
+    DocumentPictureInPicture::From(*DomWindow())
+        ->DispatchEvent(*DocumentPictureInPictureEvent::Create(
+            event_type_names::kEnter,
+            WrapPersistent(document_picture_in_picture_window_.Get())));
+  }
+
+  open_document_pip_resolver_->Resolve(document_picture_in_picture_window_);
+  open_document_pip_resolver_ = nullptr;
+}
+
+PictureInPictureControllerImpl::DocumentPictureInPictureObserver::
+    DocumentPictureInPictureObserver(PictureInPictureControllerImpl* controller)
+    : controller_(controller) {}
+PictureInPictureControllerImpl::DocumentPictureInPictureObserver::
+    ~DocumentPictureInPictureObserver() = default;
+
+void PictureInPictureControllerImpl::DocumentPictureInPictureObserver::
+    ContextDestroyed() {
+  controller_->OnDocumentPictureInPictureContextDestroyed();
+}
+
+void PictureInPictureControllerImpl::DocumentPictureInPictureObserver::Trace(
+    Visitor* visitor) const {
+  visitor->Trace(controller_);
+  ContextLifecycleObserver::Trace(visitor);
+}
+
 void PictureInPictureControllerImpl::
     OnDocumentPictureInPictureContextDestroyed() {
   // The document PIP window has been destroyed, so the opener is no longer
@@ -527,6 +569,7 @@ void PictureInPictureControllerImpl::
     open_document_pip_resolver_ = nullptr;
   }
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 void PictureInPictureControllerImpl::PageVisibilityChanged() {
   DCHECK(GetSupplementable());
@@ -593,15 +636,17 @@ void PictureInPictureControllerImpl::SetMayThrottleIfUndrawnFrames(
 }
 
 void PictureInPictureControllerImpl::Trace(Visitor* visitor) const {
+#if !BUILDFLAG(IS_ANDROID)
+  visitor->Trace(document_picture_in_picture_window_);
+  visitor->Trace(document_pip_context_observer_);
+  visitor->Trace(open_document_pip_resolver_);
+#endif  // !BUILDFLAG(IS_ANDROID)
   visitor->Trace(picture_in_picture_element_);
   visitor->Trace(auto_picture_in_picture_elements_);
   visitor->Trace(picture_in_picture_window_);
-  visitor->Trace(document_picture_in_picture_window_);
   visitor->Trace(session_observer_receiver_);
   visitor->Trace(picture_in_picture_service_);
   visitor->Trace(picture_in_picture_session_);
-  visitor->Trace(document_pip_context_observer_);
-  visitor->Trace(open_document_pip_resolver_);
   PictureInPictureController::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
@@ -629,30 +674,6 @@ bool PictureInPictureControllerImpl::EnsureService() {
   GetSupplementable()->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       picture_in_picture_service_.BindNewPipeAndPassReceiver(task_runner));
   return true;
-}
-
-void PictureInPictureControllerImpl::ResolveOpenDocumentPictureInPicture() {
-  CHECK(document_picture_in_picture_window_);
-  CHECK(open_document_pip_resolver_);
-  open_document_pip_resolver_->Resolve(document_picture_in_picture_window_);
-  open_document_pip_resolver_ = nullptr;
-}
-
-PictureInPictureControllerImpl::DocumentPictureInPictureObserver::
-    DocumentPictureInPictureObserver(PictureInPictureControllerImpl* controller)
-    : controller_(controller) {}
-PictureInPictureControllerImpl::DocumentPictureInPictureObserver::
-    ~DocumentPictureInPictureObserver() = default;
-
-void PictureInPictureControllerImpl::DocumentPictureInPictureObserver::
-    ContextDestroyed() {
-  controller_->OnDocumentPictureInPictureContextDestroyed();
-}
-
-void PictureInPictureControllerImpl::DocumentPictureInPictureObserver::Trace(
-    Visitor* visitor) const {
-  visitor->Trace(controller_);
-  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

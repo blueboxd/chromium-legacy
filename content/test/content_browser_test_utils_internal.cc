@@ -901,11 +901,9 @@ void InactiveRenderFrameHostDeletionObserver::Wait() {
       ->GetController()
       .GetBackForwardCache()
       .Flush();
-  if (blink::features::IsPrerender2Enabled()) {
-    static_cast<WebContentsImpl*>(web_contents())
-        ->GetPrerenderHostRegistry()
-        ->CancelAllHostsForTesting();
-  }
+  static_cast<WebContentsImpl*>(web_contents())
+      ->GetPrerenderHostRegistry()
+      ->CancelAllHostsForTesting();
 
   for (RenderFrameHost* rfh : CollectAllRenderFrameHosts(web_contents())) {
     // Keep track of all currently inactive RenderFrameHosts so that we can wait
@@ -939,6 +937,29 @@ void TestNavigationObserverInternal::OnDidFinishNavigation(
                 ->navigation_type()
           : NAVIGATION_TYPE_UNKNOWN;
   TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
+}
+
+RenderFrameHostImpl* DescendantRenderFrameHostAtInternal(
+    RenderFrameHostImpl* rfh,
+    std::string path,
+    std::vector<size_t>& descendant_indices) {
+  if (descendant_indices.size() == 0)
+    return rfh;
+  size_t index = descendant_indices[0];
+  descendant_indices.erase(descendant_indices.begin());
+  CHECK_LT(index, rfh->child_count()) << path;
+  FrameTreeNode* node = rfh->child_at(index);
+  path = base::StringPrintf("%s[%zu]", path.c_str(), index);
+  return DescendantRenderFrameHostAtInternal(node->current_frame_host(), path,
+                                             descendant_indices);
+}
+
+RenderFrameHostImpl* DescendantRenderFrameHostImplAt(
+    const ToRenderFrameHost& adapter,
+    std::vector<size_t> descendant_indices) {
+  return DescendantRenderFrameHostAtInternal(
+      static_cast<RenderFrameHostImpl*>(adapter.render_frame_host()), "rfh",
+      descendant_indices);
 }
 
 }  // namespace content

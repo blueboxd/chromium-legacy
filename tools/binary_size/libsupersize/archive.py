@@ -711,6 +711,9 @@ def _CreateNativeSpecs(*, tentative_output_dir, apk_infolist, elf_path,
         cur_elf_path = elf_path
         elf_path = None
       elif tentative_output_dir:
+        # TODO(crbug.com/1337134): Remove handling the legacy library prefix
+        # 'crazy.' when there is no longer interest in size comparisons for
+        # these pre-N APKs.
         cur_elf_path = os.path.join(
             tentative_output_dir, 'lib.unstripped',
             posixpath.basename(apk_so_path.replace('crazy.', '')))
@@ -853,7 +856,7 @@ def _CreateContainerSpecs(apk_file_manager,
       apk_spec.size_info_prefix = os.path.join(top_args.output_directory,
                                                'size-info',
                                                os.path.basename(apk_prefix))
-    apk_spec.analyze_dex = bool(analyze_dex and apk_spec.size_info_prefix)
+    apk_spec.analyze_dex = analyze_dex
     apk_spec.default_component = json_config.DefaultComponentForSplit(
         split_name)
     apk_spec.path_defaults = json_config.ApkPathDefaults()

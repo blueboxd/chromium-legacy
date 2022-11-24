@@ -35,7 +35,6 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
@@ -771,7 +770,7 @@ void BrowserTestBase::WaitUntilJavaIsReady(
   }
 
   base::TimeDelta retry_interval = base::Milliseconds(100);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&BrowserTestBase::WaitUntilJavaIsReady,
                      base::Unretained(this), std::move(quit_closure),
@@ -821,10 +820,8 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 #endif  // BUILDFLAG(IS_POSIX)
 
   {
-    // This can be called from a posted task. Allow nested tasks here, because
-    // otherwise the test body will have to do it in order to use RunLoop for
-    // waiting.
-    base::CurrentThread::ScopedNestableTaskAllower allow;
+    // This shouldn't be invoked from a posted task.
+    DCHECK(!base::RunLoop::IsRunningOnCurrentThread());
 
 #if !BUILDFLAG(IS_ANDROID)
     // Fail the test if a renderer crashes while the test is running.

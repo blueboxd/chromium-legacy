@@ -150,7 +150,7 @@ config("perfetto_config") {
   }
 }
 
-if (enable_pkeys) {
+if (enable_pkeys && is_debug) {
   config("no_stack_protector") {
     cflags = [ "-fno-stack-protector" ]
   }
@@ -1745,10 +1745,15 @@ component("base") {
       sources += [
         "profiler/chrome_unwind_info_android.cc",
         "profiler/chrome_unwind_info_android.h",
-        "profiler/chrome_unwinder_android.cc",
-        "profiler/chrome_unwinder_android.h",
         "profiler/chrome_unwinder_android_v2.cc",
         "profiler/chrome_unwinder_android_v2.h",
+      ]
+    }
+
+    if (current_cpu == "arm64") {
+      sources += [
+        "profiler/frame_pointer_unwinder.cc",
+        "profiler/frame_pointer_unwinder.h",
       ]
     }
 
@@ -2380,8 +2385,6 @@ component("base") {
       "trace_event/builtin_categories.h",
       "trace_event/category_registry.cc",
       "trace_event/category_registry.h",
-      "trace_event/event_name_filter.cc",
-      "trace_event/event_name_filter.h",
       "trace_event/heap_profiler.h",
       "trace_event/interned_args_helper.cc",
       "trace_event/interned_args_helper.h",
@@ -2422,8 +2425,6 @@ component("base") {
       "trace_event/trace_config_category_filter.h",
       "trace_event/trace_conversion_helper.h",
       "trace_event/trace_event.h",
-      "trace_event/trace_event_filter.cc",
-      "trace_event/trace_event_filter.h",
       "trace_event/trace_event_impl.cc",
       "trace_event/trace_event_impl.h",
       "trace_event/trace_event_memory_overhead.cc",
@@ -2643,7 +2644,6 @@ buildflag_header("profiler_buildflags") {
   flags = [
     "ENABLE_ARM_CFI_TABLE=$enable_arm_cfi_table",
     "IOS_STACK_PROFILER_ENABLED=$ios_stack_profiler_enabled",
-    "USE_ANDROID_UNWINDER_V2=$use_android_unwinder_v2",
   ]
 }
 
@@ -3026,7 +3026,12 @@ if (is_fuchsia) {
     ]
     deps = [
       ":base",
+      "//testing/gtest",
+    ]
+    public_deps = [
       ":testfidl",
+      "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/zx",
     ]
   }
 
@@ -3364,6 +3369,7 @@ test("base_unittests") {
     "test/gmock_callback_support_unittest.cc",
     "test/gmock_move_support_unittest.cc",
     "test/gtest_links_unittest.cc",
+    "test/gtest_tags_unittest.cc",
     "test/gtest_xml_unittest_result_printer_unittest.cc",
     "test/launcher/test_launcher_unittest.cc",
     "test/launcher/test_results_tracker_unittest.cc",
@@ -3633,9 +3639,11 @@ test("base_unittests") {
     if (current_cpu == "arm") {
       sources += [
         "profiler/chrome_unwind_info_android_unittest.cc",
-        "profiler/chrome_unwinder_android_unittest.cc",
         "profiler/chrome_unwinder_android_v2_unittest.cc",
       ]
+    }
+    if (current_cpu == "arm64") {
+      sources += [ "profiler/frame_pointer_unwinder_unittest.cc" ]
     }
     if (!exclude_unwind_tables &&
         (current_cpu == "arm" || current_cpu == "arm64")) {
@@ -3681,6 +3689,7 @@ test("base_unittests") {
       "process/process_unittest.cc",
       "process/process_util_unittest.cc",
       "test/gtest_links_unittest.cc",
+      "test/gtest_tags_unittest.cc",
       "test/gtest_xml_unittest_result_printer_unittest.cc",
       "test/launcher/test_launcher_unittest.cc",
       "test/launcher/test_results_tracker_unittest.cc",
@@ -3713,6 +3722,7 @@ test("base_unittests") {
       "sync_socket_unittest.cc",
       "synchronization/waitable_event_watcher_unittest.cc",
       "test/gtest_links_unittest.cc",
+      "test/gtest_tags_unittest.cc",
       "test/gtest_xml_unittest_result_printer_unittest.cc",
       "test/launcher/test_launcher_unittest.cc",
       "test/launcher/test_results_tracker_unittest.cc",
@@ -3788,7 +3798,10 @@ test("base_unittests") {
       sources += [ "allocator/partition_allocator/partition_alloc_base/fuchsia/fuchsia_logging_pa_unittest.cc" ]
     }
 
-    if (enable_pkeys) {
+    if (enable_pkeys && is_debug && !is_component_build) {
+      # This test requires RELRO, which is not enabled in component builds.
+      # Also, require a debug build, since we only disable stack protectors in
+      # debug builds in partition alloc (see below why it's needed).
       sources += [ "allocator/partition_allocator/pkey_unittest.cc" ]
 
       # We want to test the pkey code without access to memory that is not
@@ -3867,8 +3880,6 @@ test("base_unittests") {
       "fuchsia/mem_buffer_util_unittest.cc",
       "fuchsia/scoped_service_binding_unittest.cc",
       "fuchsia/scoped_service_publisher_unittest.cc",
-      "fuchsia/service_directory_test_base.cc",
-      "fuchsia/service_directory_test_base.h",
       "fuchsia/service_provider_impl_unittest.cc",
       "fuchsia/system_build_info_unittest.cc",
       "fuchsia/system_product_info_unittest.cc",
@@ -3949,7 +3960,6 @@ test("base_unittests") {
   if (enable_base_tracing) {
     sources += [
       "test/trace_event_analyzer_unittest.cc",
-      "trace_event/event_name_filter_unittest.cc",
       "trace_event/heap_profiler_allocation_context_tracker_unittest.cc",
       "trace_event/memory_allocator_dump_unittest.cc",
       "trace_event/memory_dump_manager_unittest.cc",
@@ -3961,8 +3971,6 @@ test("base_unittests") {
       "trace_event/trace_category_unittest.cc",
       "trace_event/trace_config_unittest.cc",
       "trace_event/trace_conversion_helper_unittest.cc",
-      "trace_event/trace_event_filter_test_utils.cc",
-      "trace_event/trace_event_filter_test_utils.h",
       "trace_event/trace_event_unittest.cc",
       "trace_event/traced_value_support_unittest.cc",
       "trace_event/traced_value_unittest.cc",
@@ -4384,6 +4392,22 @@ if (is_android) {
     sources = [ "android/javatests/src/org/chromium/base/library_loader/EarlyNativeTest.java" ]
   }
 
+  android_library("base_java_url_utils_for_test") {
+    testonly = true
+    sources = [
+      "test/android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
+    ]
+
+    deps = [
+      ":base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/junit:junit",
+    ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
   android_library("base_java_test_support") {
     testonly = true
 
@@ -4391,6 +4415,8 @@ if (is_android) {
       ":base_java",
       "//base:jni_java",
       "//build/android:build_java",
+      "//third_party/accessibility_test_framework:accessibility_test_framework_java",
+      "//third_party/android_deps:espresso_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
@@ -4400,6 +4426,8 @@ if (is_android) {
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit",
     ]
+
+    public_deps = [ ":base_java_url_utils_for_test" ]
 
     sources = [
       "test/android/javatests/src/org/chromium/base/FakeTimeTestRule.java",
@@ -4481,7 +4509,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/TestFileUtil.java",
       "test/android/javatests/src/org/chromium/base/test/util/TimeoutScale.java",
       "test/android/javatests/src/org/chromium/base/test/util/TimeoutTimer.java",
-      "test/android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/UserActionTester.java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

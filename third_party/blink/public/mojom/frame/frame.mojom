@@ -161,8 +161,8 @@ const uint16 kMaxTitleChars = 4096; // 4 * 1024;
 struct IframeAttributes {
   // Parsed value of the 'csp' attribute of the iframe.
   network.mojom.ContentSecurityPolicy? parsed_csp_attribute;
-  // 'anonymous' attribute of the iframe.
-  bool anonymous;
+  // 'credentialless' attribute of the iframe.
+  bool credentialless;
   // 'id' attribute of the iframe.
   string id;
   // 'name' attribute of the iframe. This is different from window.name, which is
@@ -339,7 +339,12 @@ interface LocalFrameHost {
   // this frame, and that the target FNE is contiguously same-origin and
   // same-site-instance with the current FNE, so navigating via this
   // function is more restrictive than GoToEntryAtOffset().
-  NavigateToNavigationApiKey(string key, bool has_user_gesture);
+  // |soft_navigation_heuristics_task_id| is the task ID of
+  // the initiator of the navigation, if any. It is sent back to the renderer
+  // when the navigation commits, and is limited to same-document
+  // main-frame navigations initiated by the top-level document.
+  NavigateToNavigationApiKey(string key, bool has_user_gesture,
+                    TaskAttributionId? soft_navigation_heuristics_task_id);
 
   // Changes the title for the page in the UI when the page is navigated or the
   // title changes. Sent for top-level frames. This can be null when loading an

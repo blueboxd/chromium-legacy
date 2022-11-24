@@ -1325,6 +1325,10 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   bool RadiiEqual(const ComputedStyle& o) const {
+    if (IsSurroundDataSharedWith(o)) {
+      // Fast path; we don't need to do individual testing.
+      return true;
+    }
     return BorderTopLeftRadius() == o.BorderTopLeftRadius() &&
            BorderTopRightRadius() == o.BorderTopRightRadius() &&
            BorderBottomLeftRadius() == o.BorderBottomLeftRadius() &&
@@ -2436,7 +2440,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool DiffNeedsPaintInvalidationForPaintImage(const StyleImage&,
                                                const ComputedStyle& other,
                                                const Document&) const;
-  bool DiffNeedsVisualRectUpdate(const ComputedStyle& other) const;
   CORE_EXPORT void UpdatePropertySpecificDifferences(const ComputedStyle& other,
                                                      StyleDifference&) const;
   bool PotentialCompositingReasonsFor3DTransformChanged(
@@ -2593,6 +2596,8 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
 
  public:
   friend class ColorPropertyFunctions;
+  // Access to Appearance().
+  friend class LayoutTheme;
   friend class StyleAdjuster;
   friend class StyleResolverState;
   // Access to UserModify().
@@ -2632,7 +2637,10 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   }
 
   void CopyNonInheritedFromCached(const ComputedStyle& other) {
-    DCHECK(MatchedPropertiesCache::IsStyleCacheable(other));
+#if DCHECK_IS_ON()
+    ComputedStyleBuilder builder(other);
+    DCHECK(MatchedPropertiesCache::IsStyleCacheable(builder));
+#endif
     ComputedStyleBuilderBase::CopyNonInheritedFromCached(other);
   }
 
@@ -2741,6 +2749,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     SetColumnWidthInternal(0);
   }
 
+  // content
+  ContentData* GetContentData() const { return ContentInternal().Get(); }
+
   // counter-*
   CounterDirectiveMap& AccessCounterDirectives() {
     std::unique_ptr<CounterDirectiveMap>& map =
@@ -2782,6 +2793,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     if (CursorDataInternal())
       SetCursorDataInternal(nullptr);
   }
+  CursorList* Cursors() const { return CursorDataInternal().Get(); }
 
   // filter
   FilterOperations& MutableFilter() {
@@ -2802,6 +2814,12 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   const FontDescription& GetFontDescription() const {
     return GetFont().GetFontDescription();
   }
+  int FontSize() const { return GetFontDescription().ComputedPixelSize(); }
+  LayoutUnit FontHeight() const {
+    if (const SimpleFontData* font_data = GetFont().PrimaryFont())
+      return LayoutUnit(font_data->GetFontMetrics().Height());
+    return LayoutUnit();
+  }
   FontOrientation ComputeFontOrientation() const;
   void UpdateFontOrientation();
 
@@ -2810,6 +2828,12 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     FontDescription description(GetFontDescription());
     description.SetLetterSpacing(letter_spacing);
     SetFontDescription(description);
+  }
+
+  // line-height
+  bool HasInitialLineHeight() const {
+    return LineHeightInternal() ==
+           ComputedStyleInitialValues::InitialLineHeight();
   }
 
   // margin-*
@@ -2868,6 +2892,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   }
   void SetMaskBoxImageWidth(const BorderImageLengthBox& slices) {
     MutableMaskBoxImageInternal().SetBorderSlices(slices);
+  }
+  StyleImage* MaskBoxImageSource() const {
+    return MaskBoxImageInternal().GetImage();
   }
 
   // opacity
@@ -2931,6 +2958,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
         ClampTo<float>(shape_image_threshold, 0, 1);
     SetShapeImageThresholdInternal(clamped_shape_image_threshold);
   }
+
+  // shape-outside
+  ShapeValue* ShapeOutside() const { return ShapeOutsideInternal().Get(); }
 
   // tab-size
   void SetTabSize(const TabSize& t) {

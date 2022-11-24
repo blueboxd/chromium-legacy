@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
@@ -34,6 +35,7 @@
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test_scope.h"
+#include "chrome/updater/unittest_util.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -258,6 +260,8 @@ class IntegrationTest : public ::testing::Test {
 
   void RunWake(int exit_code) { test_commands_->RunWake(exit_code); }
 
+  void RunWakeAll() { test_commands_->RunWakeAll(); }
+
   void RunWakeActive(int exit_code) {
     test_commands_->RunWakeActive(exit_code);
   }
@@ -360,7 +364,7 @@ class IntegrationTest : public ::testing::Test {
 // Tests the setup and teardown of the fixture.
 TEST_F(IntegrationTest, DoNothing) {}
 
-TEST_F(IntegrationTest, InstallUninstall) {
+TEST_F(IntegrationTest, Install) {
   Install();
   EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
@@ -465,6 +469,21 @@ TEST_F(IntegrationTest, SelfUpdate) {
                        base::Version(kUpdaterVersion), next_version);
 
   RunWake(0);
+  EXPECT_TRUE(WaitForUpdaterExit());
+  ExpectAppVersion(kUpdaterAppId, next_version);
+
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, SelfUpdateWithWakeAll) {
+  ScopedServer test_server(test_commands_);
+  Install();
+
+  base::Version next_version(base::StringPrintf("%s1", kUpdaterVersion));
+  ExpectUpdateSequence(&test_server, kUpdaterAppId, "",
+                       base::Version(kUpdaterVersion), next_version);
+
+  RunWakeAll();
   EXPECT_TRUE(WaitForUpdaterExit());
   ExpectAppVersion(kUpdaterAppId, next_version);
 
@@ -785,7 +804,13 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
 
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
-TEST_F(IntegrationTest, InstallUninstallLowerVersion) {
+TEST_F(IntegrationTest, InstallLowerVersion) {
+#if BUILDFLAG(IS_WIN)
+  const base::ScopedClosureRunner stop_procmon_logging(
+      base::BindOnce(&updater::test::StopProcmonLogging,
+                     updater::test::StartProcmonLogging()));
+#endif  // BUILDFLAG(IS_WIN)
+
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ExpectVersionNotActive(kUpdaterVersion);
   Uninstall();

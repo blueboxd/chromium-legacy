@@ -61,7 +61,8 @@ class ExtensionFunctionMemoryDumpProvider
  public:
   ExtensionFunctionMemoryDumpProvider() {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "ExtensionFunctions", base::ThreadTaskRunnerHandle::Get());
+        this, "ExtensionFunctions",
+        base::SingleThreadTaskRunner::GetCurrentDefault());
   }
 
   ExtensionFunctionMemoryDumpProvider(
@@ -554,7 +555,7 @@ void ExtensionFunction::SetArgs(base::Value args) {
   args_ = std::move(args).TakeList();
 }
 
-const base::Value::List* ExtensionFunction::GetResultList() const {
+const base::Value::List* ExtensionFunction::GetResultListForTest() const {
   return results_ ? &(*results_) : nullptr;
 }
 

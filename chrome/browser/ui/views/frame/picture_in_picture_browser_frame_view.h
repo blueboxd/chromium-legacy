@@ -70,6 +70,7 @@ class PictureInPictureBrowserFrameView
   void OnThemeChanged() override;
   void Layout() override;
   void AddedToWidget() override;
+  void RemovedFromWidget() override;
 #if BUILDFLAG(IS_LINUX)
   gfx::Insets MirroredFrameBorderInsets() const override;
   gfx::Insets GetInputInsets() const override;
@@ -146,6 +147,9 @@ class PictureInPictureBrowserFrameView
 
   // Returns the insets of the window frame borders.
   gfx::Insets FrameBorderInsets() const;
+
+  // Returns the insets of the window frame borders for resizing.
+  gfx::Insets ResizeBorderInsets() const;
 
   // Returns the height of the top bar area, including the window top border.
   int GetTopAreaHeight() const;

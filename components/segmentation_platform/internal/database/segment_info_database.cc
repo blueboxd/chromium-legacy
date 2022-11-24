@@ -7,7 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 
 namespace segmentation_platform {
 
@@ -67,7 +67,7 @@ void SegmentInfoDatabase::GetSegmentInfoForSegments(
       cache_->GetSegmentInfoForSegments(segment_ids, ids_needing_update);
 
   if (ids_needing_update.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::move(segments_so_far)));
     return;
@@ -131,6 +131,33 @@ void SegmentInfoDatabase::UpdateSegment(
   }
   database_->UpdateEntries(std::move(entries_to_save),
                            std::move(keys_to_delete), std::move(callback));
+}
+
+void SegmentInfoDatabase::UpdateMultipleSegments(
+    const SegmentInfoList& segments_to_update,
+    const std::vector<proto::SegmentId>& segments_to_delete,
+    SuccessCallback callback) {
+  auto entries_to_save = std::make_unique<
+      std::vector<std::pair<std::string, proto::SegmentInfo>>>();
+  auto entries_to_delete = std::make_unique<std::vector<std::string>>();
+  for (auto& segment : segments_to_update) {
+    const proto::SegmentId segment_id = segment.first;
+    auto& segment_info = segment.second;
+
+    // Updating the cache.
+    cache_->UpdateSegmentInfo(segment_id, absl::make_optional(segment_info));
+
+    // Determining entries to save for database.
+    entries_to_save->emplace_back(
+        std::make_pair(ToString(segment_id), std::move(segment_info)));
+  }
+
+  for (auto& segment_id : segments_to_delete) {
+    entries_to_delete->emplace_back(ToString(segment_id));
+  }
+
+  database_->UpdateEntries(std::move(entries_to_save),
+                           std::move(entries_to_delete), std::move(callback));
 }
 
 void SegmentInfoDatabase::SaveSegmentResult(

@@ -166,6 +166,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // Enables to keep prerenderings alive in the background when their visibility
 // state changes to HIDDEN.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InBackground);
+// Enables to run prerendering for new tabs (e.g., target="_blank").
+// See https://crbug.com/1350676.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InNewTab);
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 // Returns true when the same-site cross origin Prerender2 feature is
@@ -382,12 +385,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSanitizerAPINamespaces);
-
-// Kill switch for the blocking of the navigation of top from a cross origin
-// iframe to a different scheme. TODO(https://crbug.com/1151507): Remove in
-// M92.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kBlockCrossOriginTopNavigationToDiffentScheme);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kJXL);
 
@@ -938,6 +935,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTextCodecCJKEnabled);
 // Make the browser decide when to turn on the capture indicator (red button)
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kStartMediaStreamCaptureIndicatorInBrowser);
+
+// Causes MediaStreamVideoSource video frames to be transported on a
+// SequencedTaskRunner backed by the threadpool instead of the normal IO thread.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kUseThreadPoolForMediaStreamVideoTaskRunner);
 
 }  // namespace features
 }  // namespace blink

@@ -7,6 +7,7 @@
 #include <sys/errno.h>
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
@@ -17,10 +18,20 @@ namespace base {
 
 namespace {
 
-// Prior to macOS 10.12, a kqueue could not watch individual Mach ports, only
-// port sets. MessagePumpKqueue will directly use Mach ports in the kqueue if
-// it is possible.
-bool KqueueNeedsPortSet() {
+// Under this feature a simplified version of the Run() function is used. It
+// improves legibility and avoids some calls to kevent64(). Remove once
+// crbug.com/1200141 is resolved.
+BASE_FEATURE(kUseSimplifiedMessagePumpKqueueLoop,
+             "UseSimplifiedMessagePumpKqueueLoop",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if DCHECK_IS_ON()
+// Prior to macOS 10.14, kqueue timers may spuriously wake up, because earlier
+// wake ups race with timer resets in the kernel. As of macOS 10.14, updating a
+// timer from the thread that reads the kqueue does not cause spurious wakeups.
+// Note that updating a kqueue timer from one thread while another thread is
+// waiting in a kevent64 invocation is still (inherently) racy.
+bool KqueueTimersSpuriouslyWakeUp() {
 #if BUILDFLAG(IS_MAC)
   static const bool kqueue_needs_port_set = mac::IsAtMostOS10_11();
   return kqueue_needs_port_set;
@@ -149,27 +160,54 @@ MessagePumpKqueue::~MessagePumpKqueue() {}
 void MessagePumpKqueue::Run(Delegate* delegate) {
   AutoReset<bool> reset_keep_running(&keep_running_, true);
 
+  if (base::FeatureList::IsEnabled(kUseSimplifiedMessagePumpKqueueLoop)) {
+    RunSimplified(delegate);
+  } else {
+    while (keep_running_) {
+      mac::ScopedNSAutoreleasePool pool;
+
+      bool do_more_work = DoInternalWork(delegate, nullptr);
+      if (!keep_running_)
+        break;
+
+      Delegate::NextWorkInfo next_work_info = delegate->DoWork();
+      do_more_work |= next_work_info.is_immediate();
+      if (!keep_running_)
+        break;
+
+      if (do_more_work)
+        continue;
+
+      do_more_work |= delegate->DoIdleWork();
+      if (!keep_running_)
+        break;
+
+      if (do_more_work)
+        continue;
+
+      DoInternalWork(delegate, &next_work_info);
+    }
+  }
+}
+
+void MessagePumpKqueue::RunSimplified(Delegate* delegate) {
+  // Look for native work once before the loop starts. Without this call the
+  // loop would break without checking native work even once in cases where
+  // QuitWhenIdle was used. This is sometimes the case in tests.
+  DoInternalWork(delegate, nullptr);
+
   while (keep_running_) {
     mac::ScopedNSAutoreleasePool pool;
 
-    bool do_more_work = DoInternalWork(delegate, nullptr);
-    if (!keep_running_)
-      break;
-
     Delegate::NextWorkInfo next_work_info = delegate->DoWork();
-    do_more_work |= next_work_info.is_immediate();
     if (!keep_running_)
       break;
 
-    if (do_more_work)
-      continue;
-
-    do_more_work |= delegate->DoIdleWork();
+    if (!next_work_info.is_immediate()) {
+      delegate->DoIdleWork();
+    }
     if (!keep_running_)
       break;
-
-    if (do_more_work)
-      continue;
 
     DoInternalWork(delegate, &next_work_info);
   }

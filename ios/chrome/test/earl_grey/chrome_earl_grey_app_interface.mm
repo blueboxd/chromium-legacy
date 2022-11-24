@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
@@ -872,15 +873,34 @@ NSString* SerializedValue(const base::Value* value) {
   chrome_test_util::StopSync();
 }
 
-+ (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(base::TimeDelta)timeout {
++ (NSError*)waitForSyncEngineInitialized:(BOOL)isInitialized
+                             syncTimeout:(base::TimeDelta)timeout {
   bool success = WaitUntilConditionOrTimeout(timeout, ^{
-    return chrome_test_util::IsSyncInitialized() == isInitialized;
+    return chrome_test_util::IsSyncEngineInitialized() == isInitialized;
   });
   if (!success) {
     NSString* errorDescription =
         [NSString stringWithFormat:@"Sync must be initialized: %@",
                                    isInitialized ? @"YES" : @"NO"];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
+}
+
++ (NSError*)waitForSyncFeatureEnabled:(BOOL)isEnabled
+                          syncTimeout:(base::TimeDelta)timeout {
+  bool success = WaitUntilConditionOrTimeout(timeout, ^{
+    ChromeBrowserState* browser_state =
+        chrome_test_util::GetOriginalBrowserState();
+    DCHECK(browser_state);
+    syncer::SyncService* syncService =
+        SyncServiceFactory::GetForBrowserState(browser_state);
+    return syncService->IsSyncFeatureEnabled() == isEnabled;
+  });
+  if (!success) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:@"Sync feature must be enabled: %@",
+                                   isEnabled ? @"YES" : @"NO"];
     return testing::NSErrorWithLocalizedDescription(errorDescription);
   }
   return nil;

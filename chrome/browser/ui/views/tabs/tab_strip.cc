@@ -1135,31 +1135,7 @@ void TabStrip::OnGroupVisualsChanged(
 void TabStrip::ToggleTabGroup(const tab_groups::TabGroupId& group,
                               bool is_collapsing,
                               ToggleTabGroupCollapsedStateOrigin origin) {
-  if (is_collapsing && GetWidget()) {
-    if (origin != ToggleTabGroupCollapsedStateOrigin::kMouse &&
-        origin != ToggleTabGroupCollapsedStateOrigin::kGesture) {
-      return;
-    }
-
-    const int current_group_width =
-        tab_container_->GetGroupViews(group)->GetBounds().width();
-    // A collapsed group only has the width of its header, which is slightly
-    // smaller for collapsed groups compared to expanded groups.
-    const int collapsed_group_width = tab_container_->GetGroupViews(group)
-                                          ->header()
-                                          ->GetCollapsedHeaderWidth();
-    const CloseTabSource source =
-        origin == ToggleTabGroupCollapsedStateOrigin::kMouse
-            ? CloseTabSource::CLOSE_TAB_FROM_MOUSE
-            : CloseTabSource::CLOSE_TAB_FROM_TOUCH;
-
-    tab_container_->EnterTabClosingMode(
-        tab_container_->GetIdealBounds(GetModelCount() - 1).right() -
-            current_group_width + collapsed_group_width,
-        source);
-  } else {
-    tab_container_->ExitTabClosingMode();
-  }
+  tab_container_->ToggleTabGroup(group, is_collapsing, origin);
 }
 
 void TabStrip::OnGroupMoved(const tab_groups::TabGroupId& group) {
@@ -1535,10 +1511,21 @@ void TabStrip::MoveTabLast(Tab* tab) {
       l10n_util::GetStringUTF16(IDS_TAB_AX_ANNOUNCE_MOVED_LAST));
 }
 
-bool TabStrip::ToggleTabGroupCollapsedState(
+void TabStrip::ToggleTabGroupCollapsedState(
     const tab_groups::TabGroupId group,
     ToggleTabGroupCollapsedStateOrigin origin) {
-  return controller_->ToggleTabGroupCollapsedState(group, origin);
+  int tab_count = GetTabCount();
+  controller_->ToggleTabGroupCollapsedState(group, origin);
+  // If tab count changed, all tab groups are collapsed and we have
+  // created a new tab. We need to exit closing mode to resize the new
+  // tab immediately.
+  // TODO(crbug/1384151): This should be captured along with the
+  // ToggleTabGroup logic, so other callers to
+  // TabStripController::ToggleTabGroupCollapsedState see the same
+  // behavior.
+  if (tab_count != GetTabCount()) {
+    tab_container_->ExitTabClosingMode();
+  }
 }
 
 void TabStrip::NotifyTabGroupEditorBubbleOpened() {

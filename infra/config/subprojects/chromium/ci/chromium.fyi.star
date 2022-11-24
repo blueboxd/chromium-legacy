@@ -334,36 +334,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-lacros-tester-rel-reviver",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium_no_telemetry_dependencies",
-            apply_configs = [
-                "chromeos",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.INTEL,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-chromiumos-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "rev",
-    ),
-    os = os.LINUX_DEFAULT,
-    # To avoid peak hours, we run it from 8PM TO 4AM PST. It is
-    # 3 AM to 11 AM UTC.
-    schedule = "0 3,5,7,9 * * *",
-)
-
-ci.builder(
     name = "linux-lacros-version-skew-fyi",
     console_view_entry = consoles.console_view_entry(
         category = "default",
@@ -1336,7 +1306,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
     service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
     goma_backend = goma.backend.RBE_PROD,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     use_clang_coverage = True,
     # Target luci-chromium-ci-bionic-us-central1-b-ssd-16-*.
     os = os.LINUX_DEFAULT,
@@ -1348,7 +1318,7 @@ ci.builder(
     name = "build-perf-windows",
     description_html = """\
 This builder measures Windows build performance with and without remote caches.<br/>\
-The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng-compilator">win10_chromium_x64_rel_ng-compilator</a>.\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/win-rel-compilator">win-rel-compilator</a>.\
 """,
     builderless = True,
     builder_spec = builder_config.builder_spec(
@@ -1531,6 +1501,30 @@ fyi_mac_builder(
     ),
     description_html = "experiment reclient on mac-arm. should be removed after the migration. crbug.com/1252626",
     reclient_jobs = None,
+)
+
+fyi_mac_builder(
+    name = "mac-12-wpt-fyi-rel",
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+    # TODO(crbug.com/1385202): Enable scheduler when machine has been allocated.
+    schedule = "triggered",
+    triggered_by = [],
+    os = os.MAC_12,
 )
 
 ci.builder(
@@ -1953,32 +1947,6 @@ fyi_ios_builder(
     schedule = "0 2,6,10,14,18,22 * * *",
     triggered_by = [],
     xcode = xcode.x14betabots,
-)
-
-ci.builder(
-    # An FYI version of the following builders that runs on Focal:
-    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Builder
-    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Tests
-    # TODO(crbug.com/1260217): Remove this builder when the main MSAN builder
-    # has migrated to focal.
-    name = "Linux MSan Focal",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium_msan",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "msan",
-        short_name = "lin",
-    ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    os = os.LINUX_FOCAL,
-    execution_timeout = 16 * time.hour,
 )
 
 ci.builder(

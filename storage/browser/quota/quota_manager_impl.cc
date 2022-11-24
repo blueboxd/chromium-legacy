@@ -41,7 +41,6 @@
 #include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/types/pass_key.h"
@@ -1013,7 +1012,8 @@ QuotaManagerImpl::QuotaManagerImpl(
     // Reset the interval to ensure we use the get_settings_function
     // the first times settings_ is needed.
     settings_.refresh_interval = base::TimeDelta();
-    get_settings_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    get_settings_task_runner_ =
+        base::SingleThreadTaskRunner::GetCurrentDefault();
   }
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -2567,7 +2567,7 @@ void QuotaManagerImpl::GetQuotaSettings(QuotaSettingsCallback callback) {
       FROM_HERE,
       base::BindOnce(
           get_settings_function_,
-          base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
+          base::BindPostTask(base::SingleThreadTaskRunner::GetCurrentDefault(),
                              base::BindOnce(&QuotaManagerImpl::DidGetSettings,
                                             weak_factory_.GetWeakPtr()))));
 }
@@ -2610,8 +2610,10 @@ void QuotaManagerImpl::ContinueIncognitoGetStorageCapacity(
     const QuotaSettings& settings) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  int64_t temporary_usage =
-      GetUsageTracker(StorageType::kTemporary)->GetCachedUsage();
+  auto* temporary_usage_tracker = GetUsageTracker(StorageType::kTemporary);
+  int64_t temporary_usage = temporary_usage_tracker == nullptr
+                                ? 0
+                                : temporary_usage_tracker->GetCachedUsage();
   DCHECK_GE(temporary_usage, -1);
 
   int64_t available_space =

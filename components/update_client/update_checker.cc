@@ -19,9 +19,9 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/component.h"
@@ -191,7 +191,7 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
         config_->GetLang(), metadata_->GetInstallDate(app_id), install_source,
         crx_component->install_location, crx_component->fingerprint,
         crx_component->installer_attributes, metadata_->GetCohort(app_id),
-        metadata_->GetCohortName(app_id), metadata_->GetCohortHint(app_id),
+        metadata_->GetCohortHint(app_id), metadata_->GetCohortName(app_id),
         crx_component->channel, crx_component->disabled_reasons,
         MakeProtocolUpdateCheck(!crx_component->updates_enabled,
                                 crx_component->target_version_prefix,
@@ -305,7 +305,8 @@ void UpdateCheckerImpl::UpdateCheckSucceeded(
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(reply));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                              std::move(reply));
 }
 
 void UpdateCheckerImpl::UpdateCheckFailed(ErrorCategory error_category,
@@ -314,7 +315,7 @@ void UpdateCheckerImpl::UpdateCheckFailed(ErrorCategory error_category,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(0, error);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(update_check_callback_), absl::nullopt,
                      error_category, error, retry_after_sec));

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Disable everything on windows only. http://crbug.com/306144
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 
 #include <stddef.h>
@@ -23,10 +22,10 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
@@ -1932,7 +1931,7 @@ class CustomResponse : public net::test_server::HttpResponse {
     if (first_request_) {
       *callback_ = base::BindOnce(
           &net::test_server::HttpResponseDelegate::FinishResponse, delegate);
-      *task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
+      *task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault().get();
       delegate->SendResponseHeaders(net::HTTP_OK, "OK", headers);
       delegate->SendContents(contents);
     } else {
@@ -4817,8 +4816,7 @@ class DownloadExtensionBubbleEnabledTest : public DownloadExtensionTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest,
-                       DownloadExtensionBubbleEnabledTest_SetUiOptions) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest, SetUiOptions) {
   DownloadManager::DownloadVector items;
   CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -4837,9 +4835,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest,
   EXPECT_FALSE(GetDownloadToolbarButton()->IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    DownloadExtensionBubbleEnabledTest,
-    DownloadExtensionBubbleEnabledTest_SetUiOptionsBeforeDownloadStart) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest,
+                       SetUiOptionsBeforeDownloadStart) {
   LoadExtension("downloads_split");
   EXPECT_TRUE(RunFunction(base::MakeRefCounted<DownloadsSetUiOptionsFunction>(),
                           R"([{"enabled": false}])"));
@@ -4849,9 +4846,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(GetDownloadToolbarButton()->IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    DownloadExtensionBubbleEnabledTest,
-    DownloadExtensionBubbleEnabledTest_SetUiOptionsShowDetails) {
+// Flaky. crbug.com/1386043
+IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest,
+                       DISABLED_SetUiOptionsShowDetails) {
   LoadExtension("downloads_split");
   DownloadManager::DownloadVector items;
   CreateFirstSlowTestDownload();
@@ -4872,9 +4869,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(GetDownloadToolbarButton()->IsShowingDetails());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    DownloadExtensionBubbleEnabledTest,
-    DownloadExtensionBubbleEnabledTest_SetUiOptionsOffTheRecord) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest,
+                       SetUiOptionsOffTheRecord) {
   LoadExtension("downloads_split");
   EXPECT_TRUE(RunFunction(base::MakeRefCounted<DownloadsSetUiOptionsFunction>(),
                           R"([{"enabled": false}])"));
@@ -4895,9 +4891,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(GetDownloadToolbarButton()->IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    DownloadExtensionBubbleEnabledTest,
-    DownloadExtensionBubbleEnabledTest_SetUiOptionsMultipleExtensions) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionBubbleEnabledTest,
+                       SetUiOptionsMultipleExtensions) {
   LoadExtension("downloads_split");
   EXPECT_TRUE(RunFunction(base::MakeRefCounted<DownloadsSetUiOptionsFunction>(),
                           R"([{"enabled": false}])"));

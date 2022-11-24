@@ -904,12 +904,13 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
 }
 
 // Returns true if the parent's COEP policy `parent_coep` should block a child
-// embedded in an <iframe> loaded with `child_coep` policy. The `is_anonymous`
-// parameter reflects whether the child will be loaded as an anonymous document.
+// embedded in an <iframe> loaded with `child_coep` policy. The
+// `is_credentialless` parameter reflects whether the child will be loaded as a
+// credentialless document.
 bool CoepBlockIframe(network::mojom::CrossOriginEmbedderPolicyValue parent_coep,
                      network::mojom::CrossOriginEmbedderPolicyValue child_coep,
-                     bool is_anonymous) {
-  return !is_anonymous &&
+                     bool is_credentialless) {
+  return !is_credentialless &&
          (network::CompatibleWithCrossOriginIsolated(parent_coep) &&
           !network::CompatibleWithCrossOriginIsolated(child_coep));
 }
@@ -932,7 +933,7 @@ int EstimateHistoryOffset(NavigationController& controller,
 
 bool IsDocumentToCommitAnonymous(FrameTreeNode* frame,
                                  bool is_synchronous_about_blank_navigation) {
-  // FencedFrame do not propagate the anonymous bit deeper.
+  // FencedFrame do not propagate the credentialless bit deeper.
   // In particular, it means their future response will have to adhere to COEP.
   if (frame->IsFencedFrameRoot())
     return false;
@@ -945,12 +946,14 @@ bool IsDocumentToCommitAnonymous(FrameTreeNode* frame,
   // TODO(https://github.com/whatwg/html/issues/6863): Remove the synchronous
   // about:blank navigation.
   if (is_synchronous_about_blank_navigation)
-    return current_document->IsAnonymous();
+    return current_document->IsCredentialless();
 
-  // The document to commit will be anonymous if either the iframe element
-  // has the 'anonymous' attribute set or the parent document is anonymous.
-  bool parent_is_anonymous = parent_document && parent_document->IsAnonymous();
-  return parent_is_anonymous || frame->anonymous();
+  // The document to commit will be credentialless if either the iframe element
+  // has the 'credentialless' attribute set or the parent document is
+  // credentialless.
+  bool parent_is_credentialless =
+      parent_document && parent_document->IsCredentialless();
+  return parent_is_credentialless || frame->credentialless();
 }
 
 // Returns the "loading" URL in the renderer. This tries to replicate
@@ -1428,7 +1431,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
 
   absl::optional<base::UnguessableToken> nonce =
       render_frame_host->ComputeNonce(
-          navigation_request->is_anonymous(),
+          navigation_request->is_credentialless(),
           navigation_request->ComputeFencedFrameNonce());
   url::Origin top_level_origin =
       render_frame_host->ComputeTopFrameOrigin(origin);
@@ -1520,7 +1523,7 @@ NavigationRequest::NavigationRequest(
       initiator_frame_token_(begin_params_->initiator_frame_token),
       initiator_process_id_(initiator_process_id),
       was_opener_suppressed_(was_opener_suppressed),
-      is_anonymous_(
+      is_credentialless_(
           IsDocumentToCommitAnonymous(frame_tree_node,
                                       is_synchronous_renderer_commit)),
       previous_page_ukm_source_id_(
@@ -2068,9 +2071,6 @@ void NavigationRequest::BeginNavigation() {
 }
 
 bool NavigationRequest::MaybeStartPrerenderingActivationChecks() {
-  if (!blink::features::IsPrerender2Enabled())
-    return false;
-
   // Find an available prerendered page for this request. If it's found, this
   // request may activate it instead of loading a page via network.
   int candidate_prerender_frame_tree_node_id =
@@ -2105,8 +2105,6 @@ bool NavigationRequest::MaybeStartPrerenderingActivationChecks() {
 void NavigationRequest::OnPrerenderingActivationChecksComplete(
     CommitDeferringCondition::NavigationType navigation_type,
     absl::optional<int> candidate_prerender_frame_tree_node_id) {
-  DCHECK(blink::features::IsPrerender2Enabled());
-
   // Prerendered page activation must run CommitDeferringConditions before
   // StartRequest().
   DCHECK_LT(state_, WILL_START_NAVIGATION);
@@ -5003,14 +5001,14 @@ void NavigationRequest::CommitNavigation() {
   // instead of creating one from a URL which lacks opacity information.
   isolation_info_for_subresources_ =
       render_frame_host_->ComputeIsolationInfoForSubresourcesForPendingCommit(
-          origin, is_anonymous(), ComputeFencedFrameNonce());
+          origin, is_credentialless(), ComputeFencedFrameNonce());
   DCHECK(!isolation_info_for_subresources_.IsEmpty());
 
   // TODO(https://crbug.com/888079): The storage key's origin is ignored at the
   // moment. We will be able to use it once the browser can compute the origin
   // to commit.
   absl::optional<base::UnguessableToken> nonce =
-      render_frame_host_->ComputeNonce(is_anonymous(),
+      render_frame_host_->ComputeNonce(is_credentialless(),
                                        ComputeFencedFrameNonce());
   commit_params_->storage_key = render_frame_host_->CalculateStorageKey(
       GetOriginToCommit().value(), base::OptionalToPtr(nonce));
@@ -5886,13 +5884,8 @@ void NavigationRequest::OnRendererRequestedNavigationCancellation() {
     // variables to avoid a use-after-free.
     FrameTreeNode* frame_tree_node = frame_tree_node_;
     render_frame_host_->NavigationRequestCancelled(this);
-    // Ensure that the speculative RFH, if any, is also cleaned up. In theory,
-    // `ResetNavigationRequest()` should handle this; however, it early-returns
-    // if there is no navigation request associated with the FrameTreeNode.
-    // Changing it to no longer early return breaks a bunch of other code that
-    // runs in `CommitPendingIfNecessary()` that expects `DidStopLoading()`
-    // won't be called if `FrameTreeNode::navigation_request()` is null...
-    frame_tree_node->render_manager()->MaybeCleanUpNavigation(
+    // Ensure that the speculative RFH, if any, is also cleaned up.
+    frame_tree_node->render_manager()->DiscardSpeculativeRFHIfUnused(
         NavigationDiscardReason::kCancelled);
   }
 
@@ -6300,8 +6293,7 @@ void NavigationRequest::DidCommitNavigation(
     const mojom::DidCommitProvisionalLoadParams& params,
     bool navigation_entry_committed,
     bool did_replace_entry,
-    const GURL& previous_main_frame_url,
-    NavigationType navigation_type) {
+    const GURL& previous_main_frame_url) {
   common_params_->url = params.url;
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
@@ -6319,7 +6311,6 @@ void NavigationRequest::DidCommitNavigation(
     should_update_history_ = false;
   }
   previous_main_frame_url_ = previous_main_frame_url;
-  navigation_type_ = navigation_type;
 
   // When the embedder navigates a fenced frame root, the navigation
   // installs a new set of inner fenced frame properties.
@@ -6771,8 +6762,7 @@ void NavigationRequest::WriteIntoTrace(
              rfh_restored_from_back_forward_cache_);
   }
 
-  if (blink::features::IsPrerender2Enabled() &&
-      prerender_frame_tree_node_id_.has_value()) {
+  if (prerender_frame_tree_node_id_.has_value()) {
     dict.Add("prerender_frame_tree_node_id",
              prerender_frame_tree_node_id_.value());
   }
@@ -7047,9 +7037,6 @@ bool NavigationRequest::IsInPrerenderedMainFrame() {
 }
 
 bool NavigationRequest::IsPrerenderedPageActivation() const {
-  if (!blink::features::IsPrerender2Enabled())
-    return false;
-
   CHECK(prerender_frame_tree_node_id_.has_value());
   return prerender_frame_tree_node_id_ != RenderFrameHost::kNoFrameTreeNodeId;
 }
@@ -7213,8 +7200,8 @@ net::IsolationInfo NavigationRequest::GetIsolationInfo() {
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   return frame_tree_node_->current_frame_host()
-      ->ComputeIsolationInfoForNavigation(common_params_->url, is_anonymous(),
-                                          ComputeFencedFrameNonce());
+      ->ComputeIsolationInfoForNavigation(
+          common_params_->url, is_credentialless(), ComputeFencedFrameNonce());
 }
 
 bool NavigationRequest::HasSubframeNavigationEntryCommitted() {
@@ -7575,7 +7562,7 @@ bool NavigationRequest::CheckResponseAdherenceToCoep(const GURL& url) {
   // cross-origin isolation and responsePolicy's value is not, then queue a
   // cross-origin embedder policy inheritance violation [...].
   if (CoepBlockIframe(parent_coep.report_only_value, coep.value,
-                      is_anonymous())) {
+                      is_credentialless())) {
     if (parent_coep_reporter) {
       parent_coep_reporter->QueueNavigationReport(redirect_chain_[0],
                                                   /*report_only=*/true);
@@ -7585,7 +7572,7 @@ bool NavigationRequest::CheckResponseAdherenceToCoep(const GURL& url) {
   // [spec]: 4. If parentPolicy's value is not compatible with cross-origin
   // isolation or responsePolicy's value is compatible with cross-origin
   // isolation, then return true.
-  if (!CoepBlockIframe(parent_coep.value, coep.value, is_anonymous()))
+  if (!CoepBlockIframe(parent_coep.value, coep.value, is_credentialless()))
     return true;
 
   // [spec]: 5 Queue a cross-origin embedder policy inheritance violation with
@@ -7617,7 +7604,7 @@ NavigationRequest::EnforceCOEP() {
   if (!parent_frame) {
     return absl::nullopt;
   }
-  if (is_anonymous()) {
+  if (is_credentialless()) {
     return absl::nullopt;
   }
   const auto& url = common_params_->url;
@@ -7651,7 +7638,7 @@ bool NavigationRequest::CoopCoepSanityCheck() {
           network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep &&
       !CompatibleWithCrossOriginIsolated(
           policies.cross_origin_embedder_policy) &&
-      !is_anonymous_) {
+      !is_credentialless_) {
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
     return false;
@@ -7858,7 +7845,7 @@ void NavigationRequest::ComputePoliciesToCommit() {
 
   policy_container_builder_->ComputePolicies(
       url, IsMhtmlOrSubframe(), commit_params_->frame_policy.sandbox_flags,
-      is_anonymous());
+      is_credentialless());
 }
 
 void NavigationRequest::ComputePoliciesToCommitForError() {
@@ -8224,8 +8211,7 @@ NavigationRequest::ComputeWebExposedIsolationInfo() {
 }
 
 void NavigationRequest::MaybeAssignInvalidPrerenderFrameTreeNodeId() {
-  if (blink::features::IsPrerender2Enabled() &&
-      !prerender_frame_tree_node_id_.has_value()) {
+  if (!prerender_frame_tree_node_id_.has_value()) {
     // This navigation won't activate a prerendered page. Otherwise,
     // `prerender_frame_tree_node_id_` should have already been set before this
     // in OnPrerenderingActivationChecksComplete().

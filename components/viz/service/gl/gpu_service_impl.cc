@@ -22,7 +22,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -333,7 +332,7 @@ GpuServiceImpl::GpuServiceImpl(
     const gfx::GpuExtraInfo& gpu_extra_info,
     gpu::VulkanImplementation* vulkan_implementation,
     base::OnceCallback<void(ExitCode)> exit_callback)
-    : main_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : main_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_preferences_(gpu_preferences),
@@ -423,8 +422,8 @@ GpuServiceImpl::GpuServiceImpl(
   gl::DirectCompositionOverlayCapsMonitor::GetInstance()->AddObserver(this);
 #endif
 
-  gpu_memory_buffer_factory_ =
-      gpu::GpuMemoryBufferFactory::CreateNativeType(vulkan_context_provider());
+  gpu_memory_buffer_factory_ = gpu::GpuMemoryBufferFactory::CreateNativeType(
+      vulkan_context_provider(), io_runner_);
 
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }

@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -97,7 +97,7 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
   // trough the same Chrome proxy resolution service to connect to the
   // remote proxy server. The availability of this feature is controlled by the
   // |SystemProxySettings| policy and the feature flag
-  // `ash::features::kSystemProxyForSystemServices`.
+  // `features::kSystemProxyForSystemServices`.
   void AppendSystemProxyIfActive(std::string* pac_proxy_list) {
     SystemProxyManager* system_proxy_manager = SystemProxyManager::Get();
     // |system_proxy_manager| may be missing in tests.
@@ -122,7 +122,7 @@ class ProxyLookupRequest : public network::mojom::ProxyLookupClient {
 }  // namespace
 
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider()
-    : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+    : origin_thread_(base::SingleThreadTaskRunner::GetCurrentDefault()),
       network_anonymization_key_(
           net::NetworkAnonymizationKey::CreateTransient()) {}
 

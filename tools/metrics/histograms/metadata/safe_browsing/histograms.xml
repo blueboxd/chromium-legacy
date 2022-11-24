@@ -258,6 +258,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.BrowserThrottle.CheckerOnIOLifetime" units="ms"
+    expires_after="2023-02-22">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records how long the BrowserURLLoaderThrottle::CheckerOnIO object exists
+    for. Logged when the object destructs.
+  </summary>
+</histogram>
+
 <histogram
     name="SafeBrowsing.BrowserThrottle.IsCheckCompletedOnProcessResponse"
     enum="BooleanCompleted" expires_after="2023-03-19">
@@ -323,6 +333,17 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="SafeBrowsing.BrowserThrottle.WillProcessResponseCount"
+    units="times" expires_after="2023-02-22">
+  <owner>thefrog@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records the number of times that WillProcessResponse has been called for a
+    single BrowserUrlLoaderThrottle. Logged each time WillProcessResponse is
+    called.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.CheckBrowseUrl.HasLocalMatch"
     enum="BooleanMatched" expires_after="2023-03-26">
   <owner>vakh@chromium.org</owner>
@@ -341,6 +362,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Counts the number of times the Safe Browsing reputation lookup timeout
     happens. Logged each time the Safe Browsing reputation of a URL is checked.
+  </summary>
+</histogram>
+
+<histogram
+    name="SafeBrowsing.ClientSafeBrowsingReport.DownloadWarningActionSize"
+    units="units" expires_after="2023-05-22">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Counts the length of the download_warning_actions field in a client Safe
+    Browsing report. Logged each time the field is populated before a report is
+    sent.
   </summary>
 </histogram>
 
@@ -712,6 +745,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.ExtensionTelemetry.Signals.Discarded"
+    enum="SBExtensionTelemetrySignalsSignalType" expires_after="2023-05-07">
+  <owner>anunoy@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records discarded extension telemetry signals by type. Logged each time a
+    signal is discarded because it contains invalid data (e.g., invalid
+    extension id). The signal type recorded here only corresponds to a a raw
+    signal that is created externally and passed to extension service. The count
+    for a combined signal (that is created internally and derived from other raw
+    signals) should always be 0 since the internally generated signal data
+    should always be valid.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.ExtensionTelemetry.Signals.SignalType"
     enum="SBExtensionTelemetrySignalsSignalType" expires_after="2023-05-07">
   <owner>anunoy@chromium.org</owner>
@@ -888,7 +936,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SafeBrowsing.NavigationObserver.DroppedReferrerChainEntries.ClientRedirect"
-    units="units" expires_after="2022-11-27">
+    units="units" expires_after="2023-10-27">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -1349,7 +1397,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="SafeBrowsing.RT.LocalMatch.Result"
     enum="SafeBrowsingAllowlistAsyncMatch" expires_after="2023-05-14">
-  <owner>vakh@chromium.org</owner>
+  <owner>thefrog@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
     Logs the result of checking the URL against the local Safe Browsing high

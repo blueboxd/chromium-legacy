@@ -1170,23 +1170,6 @@
     No thanks
   </message>
 
-  <!-- TODO(crbug.com/1261902): Clean-up old strings once feature is launched. -->
-  <message name="IDS_LOGIN_RECOMMEND_APPS_OLD_SCREEN_TITLE" desc="The title of the dialog that recommend apps to user">
-    Find apps for work and play
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_OLD_SCREEN_DESCRIPTION" desc="The description of the 'Recommend Apps' section">
-    Get creative, be productive, and stay entertained with apps on the Google Play Store
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_OLD_SELECT_ALL" desc="The label on the button that selects all recommended apps">
-    Select all
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_DO_IT_LATER" desc="The label on the button that skips installing any recomended apps">
-    Do it later
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_DONE" desc="The label on the button that installs the user selected apps">
-    Done
-  </message>
-
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps to user">
     Install apps for your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> from the Google Play Store
   </message>
@@ -2914,7 +2897,7 @@
   <message name="IDS_ENTERPRISE_ACCOUNT_CHECK_TITLE" desc="The title of spinner dialog shown during account check.">
     Checking eligibility
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION" desc="The subtitle on the device attribute prompt screen.">
+  <message name="IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION" desc="The title on the device attribute prompt screen.">
     Device information
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_TITLE" desc="Title of the screen to be shown upon an error during enterprise enrollment.">
@@ -3162,7 +3145,7 @@
   </message>
 
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
-    Optional — enter new or update existing information to be associated with this device.
+    Enter new or update existing information to be associated with this device.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_ATTRIBUTE_LINK" desc="Text on the link to the device attribute update help article.">
     Learn more.
@@ -5979,6 +5962,12 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_PARENT_ACCESS_ERROR_DESCRIPTION" desc="Message shown if the parent access dialog has failed to load for any reason.">
     Please try again later
+  </message>
+  <message name="IDS_PARENT_ACCESS_OFFLINE_HEADING" desc="Heading string shown in the parent access flow when the network is not available.">
+    Can’t connect to the internet
+  </message>
+  <message name="IDS_PARENT_ACCESS_OFFLINE_DESCRIPTION" desc="Description shown in the parent access flow when the network is not available.">
+    Check your internet connection
   </message>
 
   <!-- Strings for gnubby U2FD authentication UI -->

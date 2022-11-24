@@ -10,14 +10,16 @@
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/power_bookmarks/core/power_bookmark_data_provider.h"
+#include "components/power_bookmarks/core/power_bookmark_features.h"
 #include "components/power_bookmarks/core/power_bookmark_service.h"
 #include "components/power_bookmarks/core/powers/power.h"
 #include "components/power_bookmarks/core/powers/power_overview.h"
+#include "components/power_bookmarks/core/powers/search_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,21 +29,26 @@ using testing::IsFalse;
 using testing::IsTrue;
 using testing::SizeIs;
 
+namespace power_bookmarks {
+
 namespace {
-std::unique_ptr<power_bookmarks::Power> MakePower(
+
+std::unique_ptr<Power> MakePower(
     GURL url,
-    power_bookmarks::PowerType power_type) {
-  std::unique_ptr<power_bookmarks::PowerSpecifics> power_specifics =
-      std::make_unique<power_bookmarks::PowerSpecifics>();
-  std::unique_ptr<power_bookmarks::Power> power =
-      std::make_unique<power_bookmarks::Power>(std::move(power_specifics));
+    PowerType power_type,
+    std::unique_ptr<PowerSpecifics> power_specifics) {
+  std::unique_ptr<Power> power =
+      std::make_unique<Power>(std::move(power_specifics));
   power->set_url(url);
   power->set_power_type(power_type);
   return power;
 }
-}  // namespace
 
-namespace power_bookmarks {
+std::unique_ptr<Power> MakePower(GURL url, PowerType power_type) {
+  return MakePower(url, power_type, std::make_unique<PowerSpecifics>());
+}
+
+}  // namespace
 
 // Tests for the power bookmark service.
 // In-depth tests for the actual storage can be found in
@@ -49,6 +56,8 @@ namespace power_bookmarks {
 class PowerBookmarkServiceTest : public testing::Test {
  protected:
   void SetUp() override {
+    test_features_.InitAndEnableFeature(kPowerBookmarkBackend);
+
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
 
     model_ = bookmarks::TestBookmarkClient::CreateModel();
@@ -58,8 +67,6 @@ class PowerBookmarkServiceTest : public testing::Test {
     service_ = std::make_unique<PowerBookmarkService>(
         model_.get(), temp_directory_.GetPath(), backend_task_runner_);
     RunUntilIdle();
-
-    service_->InitPowerBookmarkDatabase();
   }
 
   void TearDown() override {
@@ -78,6 +85,8 @@ class PowerBookmarkServiceTest : public testing::Test {
   bookmarks::BookmarkModel* model() { return model_.get(); }
 
  private:
+  base::test::ScopedFeatureList test_features_;
+
   std::unique_ptr<PowerBookmarkService> service_;
   std::unique_ptr<bookmarks::BookmarkModel> model_;
 
@@ -177,6 +186,61 @@ TEST_F(PowerBookmarkServiceTest, GetPowerOverviewsForType) {
   EXPECT_CALL(cb, Run(SizeIs(2)));
 
   service()->GetPowerOverviewsForType(PowerType::POWER_TYPE_MOCK, cb.Get());
+  RunUntilIdle();
+}
+
+TEST_F(PowerBookmarkServiceTest, Search) {
+  base::MockCallback<SuccessCallback> success_cb;
+  EXPECT_CALL(success_cb, Run(IsTrue())).Times(3);
+
+  service()->CreatePower(MakePower(GURL("https://example.com/a1.html"),
+                                   PowerType::POWER_TYPE_MOCK),
+                         success_cb.Get());
+  service()->CreatePower(MakePower(GURL("https://example.com/b1.html"),
+                                   PowerType::POWER_TYPE_MOCK),
+                         success_cb.Get());
+  service()->CreatePower(MakePower(GURL("https://example.com/a2.html"),
+                                   PowerType::POWER_TYPE_MOCK),
+                         success_cb.Get());
+  RunUntilIdle();
+
+  base::MockCallback<PowersCallback> powers_cb;
+  EXPECT_CALL(powers_cb, Run(SizeIs(2)));
+
+  SearchParams search_params{.query = "/a"};
+  service()->Search(search_params, powers_cb.Get());
+  RunUntilIdle();
+}
+
+TEST_F(PowerBookmarkServiceTest, SearchNoteText) {
+  base::MockCallback<SuccessCallback> success_cb;
+  EXPECT_CALL(success_cb, Run(IsTrue())).Times(2);
+
+  {
+    std::unique_ptr<PowerSpecifics> note_specifics =
+        std::make_unique<PowerSpecifics>();
+    note_specifics->mutable_note_specifics()->set_plain_text("lorem ipsum");
+    service()->CreatePower(
+        MakePower(GURL("https://example.com/a1.html"),
+                  PowerType::POWER_TYPE_NOTE, std::move(note_specifics)),
+        success_cb.Get());
+  }
+  {
+    std::unique_ptr<PowerSpecifics> note_specifics =
+        std::make_unique<PowerSpecifics>();
+    note_specifics->mutable_note_specifics()->set_plain_text("not a match");
+    service()->CreatePower(
+        MakePower(GURL("https://example.com/a2.html"),
+                  PowerType::POWER_TYPE_NOTE, std::move(note_specifics)),
+        success_cb.Get());
+  }
+  RunUntilIdle();
+
+  base::MockCallback<PowersCallback> powers_cb;
+  EXPECT_CALL(powers_cb, Run(SizeIs(1)));
+
+  SearchParams search_params{.query = "lorem"};
+  service()->Search(search_params, powers_cb.Get());
   RunUntilIdle();
 }
 

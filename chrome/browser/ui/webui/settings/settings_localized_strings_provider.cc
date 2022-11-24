@@ -91,7 +91,6 @@
 #include "net/net_buildflags.h"
 #include "services/device/public/cpp/device_features.h"
 #include "third_party/blink/public/common/features_generated.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -116,6 +115,7 @@
 #include "ui/chromeos/devicetype_utils.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/settings/system_handler.h"
+#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -266,11 +266,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
                           base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  html_source->AddBoolean("isAccessibilityOSSettingsVisibilityEnabled",
-                          base::FeatureList::IsEnabled(
-                              features::kAccessibilityOSSettingsVisibility));
-#else
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
       "showFocusHighlightOption",
       base::FeatureList::IsEnabled(features::kAccessibilityFocusHighlight));
@@ -1996,8 +1992,6 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
     {"safetyCheckIconWarningAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_ICON_WARNING_ARIA_LABEL},
     {"safetyCheckReview", IDS_SETTINGS_SAFETY_CHECK_REVIEW},
-    {"safetyCheckUnusedSitePermissionsPrimaryLabel",
-     IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_PRIMARY_LABEL},
     {"safetyCheckUpdatesPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL},
     {"safetyCheckUpdatesButtonAriaLabel", IDS_UPDATE_RECOMMENDED_DIALOG_TITLE},
@@ -2011,8 +2005,6 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL},
     {"safetyCheckExtensionsButtonAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL},
-    {"safetyCheckNotificationPermissionReviewSecondaryLabel",
-     IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL},
     {"safetyCheckNotificationPermissionReviewIgnoredToastLabel",
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_IGNORED_TOAST_LABEL},
     {"safetyCheckNotificationPermissionReviewBlockedToastLabel",
@@ -2039,6 +2031,10 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_DONE_LABEL},
     {"safetyCheckNotificationPermissionReviewBlockAllLabel",
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_BLOCK_ALL_LABEL},
+    {"safetyCheckUnusedSitePermissionsHeaderAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_HEADER_ARIA_LABEL},
+    {"safetyCheckNotificationPermissionReviewButtonAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSIONS_REVIEW_BUTTON_ARIA_LABEL},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"safetyCheckChromeCleanerPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},

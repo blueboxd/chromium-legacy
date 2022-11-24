@@ -38,6 +38,7 @@
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/test_overlay_prioritized_surface.h"
+#include "ui/ozone/platform/wayland/test/test_util.h"
 #include "ui/ozone/platform/wayland/test/test_zwp_linux_buffer_params.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -102,14 +103,9 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
 
 class WaylandBufferManagerTest : public WaylandTest {
  public:
-  // TODO(crbug.com/1365887): TestServerMode::kAsync must be removed once all
-  // tests switch to asynchronous mode.
-  WaylandBufferManagerTest()
-      : WaylandTest(WaylandTest::TestServerMode::kAsync) {}
-
+  WaylandBufferManagerTest() = default;
   WaylandBufferManagerTest(const WaylandBufferManagerTest&) = delete;
   WaylandBufferManagerTest& operator=(const WaylandBufferManagerTest&) = delete;
-
   ~WaylandBufferManagerTest() override = default;
 
   void SetUp() override {
@@ -288,7 +284,7 @@ class WaylandBufferManagerTest : public WaylandTest {
                                             std::move(properties));
     EXPECT_TRUE(new_window);
 
-    SyncDisplay();
+    wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
 
     EXPECT_NE(new_window->GetWidget(), gfx::kNullAcceleratedWidget);
     return new_window;
@@ -1453,12 +1449,13 @@ TEST_P(WaylandBufferManagerTest,
   // amount. I.e: No buffer attaches before setting geometry + acking initial
   // configure sequence, etc.
 
+  constexpr uint32_t kActivateSerial = 1u;
   PostToServerAndWait([surface_id, bounds = kRestoredBounds](
                           wl::TestWaylandServerThread* server) {
     auto* mock_surface = server->GetObject<wl::MockSurface>(surface_id);
     auto* xdg_surface = mock_surface->xdg_surface();
     EXPECT_CALL(*xdg_surface, SetWindowGeometry(bounds)).Times(1);
-    EXPECT_CALL(*xdg_surface, AckConfigure(1)).Times(1);
+    EXPECT_CALL(*xdg_surface, AckConfigure(kActivateSerial)).Times(1);
     EXPECT_CALL(*mock_surface, Attach(_, 0, 0)).Times(1);
     EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
     EXPECT_CALL(*mock_surface, Commit()).Times(1);
@@ -1466,7 +1463,7 @@ TEST_P(WaylandBufferManagerTest,
 
   CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId, gfx::Rect{55, 55},
                gfx::RoundedCornersF(), kDefaultScale, gfx::Rect{55, 55});
-  ActivateSurface(surface_id);
+  ActivateSurface(surface_id, kActivateSerial);
 
   CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId, kRestoredBounds,
                gfx::RoundedCornersF(), kDefaultScale, kRestoredBounds);

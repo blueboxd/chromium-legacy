@@ -218,7 +218,6 @@ FrameTreeNode::~FrameTreeNode() {
 
     current_frame_host()->ResetLoadingState();
   } else {
-    DCHECK(blink::features::IsPrerender2Enabled());
     DCHECK(!parent());  // Only main documents can be activated.
     DCHECK(!opener());  // Prerendered frame trees can't have openers.
 
@@ -438,7 +437,6 @@ void FrameTreeNode::SetCollapsed(bool collapsed) {
 }
 
 void FrameTreeNode::SetFrameTree(FrameTree& frame_tree) {
-  DCHECK(blink::features::IsPrerender2Enabled());
   frame_tree_ = &frame_tree;
   DCHECK(current_frame_host());
   current_frame_host()->SetFrameTree(frame_tree);
@@ -483,8 +481,8 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
 
 void FrameTreeNode::SetAttributes(
     blink::mojom::IframeAttributesPtr attributes) {
-  if (!anonymous() && attributes->anonymous) {
-    // Log this only when anonymous is changed to true.
+  if (!credentialless() && attributes->credentialless) {
+    // Log this only when credentialless is changed to true.
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         parent_, blink::mojom::WebFeature::kAnonymousIframe);
   }
@@ -543,7 +541,8 @@ void FrameTreeNode::CreatedNavigationRequest(
   bool was_previously_loading =
       frame_tree()->LoadingTree()->IsLoadingIncludingInnerFrameTrees();
 
-  // There's no need to reset the state: there's still an ongoing load, and the
+  // Reset the previous NavigationRequest owned by `this`. However, there's no
+  // need to reset the state: there's still an ongoing load, and the
   // RenderFrameHostManager will take care of updates to the speculative
   // RenderFrameHost in DidCreateNavigationRequest below.
   if (was_previously_loading) {
@@ -576,7 +575,7 @@ void FrameTreeNode::ResetNavigationRequest(NavigationDiscardReason reason) {
   // The RenderFrameHostManager should clean up any speculative RenderFrameHost
   // it created for the navigation. Also register that the load stopped.
   DidStopLoading();
-  render_manager_.CleanUpNavigation(reason);
+  render_manager_.DiscardSpeculativeRFHIfUnused(reason);
 }
 
 void FrameTreeNode::ResetNavigationRequestButKeepState() {
@@ -801,13 +800,13 @@ void FrameTreeNode::PruneChildFrameNavigationEntries(
 
 void FrameTreeNode::SetInitialPopupURL(const GURL& initial_popup_url) {
   DCHECK(initial_popup_url_.is_empty());
-  DCHECK(is_on_initial_empty_document_);
+  DCHECK(is_on_initial_empty_document());
   initial_popup_url_ = initial_popup_url;
 }
 
 void FrameTreeNode::SetPopupCreatorOrigin(
     const url::Origin& popup_creator_origin) {
-  DCHECK(is_on_initial_empty_document_);
+  DCHECK(is_on_initial_empty_document());
   popup_creator_origin_ = popup_creator_origin;
 }
 
@@ -984,6 +983,10 @@ void FrameTreeNode::RestartNavigationAsCrossDocument(
 
 Navigator& FrameTreeNode::GetCurrentNavigator() {
   return navigator();
+}
+
+void FrameTreeNode::SetFocusedFrame(SiteInstanceGroup* source) {
+  frame_tree_->delegate()->SetFocusedFrame(this, source);
 }
 
 }  // namespace content

@@ -95,6 +95,7 @@ if (is_win) {
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
+    "ENABLE_UPDATER=$enable_updater",
     "ENABLE_UPDATE_NOTIFICATIONS=$enable_update_notifications",
     "USE_MINIKIN_HYPHENATION=$use_minikin_hyphenation",
     "USE_THIN_LTO=$use_thin_lto",
@@ -397,8 +398,6 @@ static_library("browser") {
     "dips/dips_database.h",
     "dips/dips_features.cc",
     "dips/dips_features.h",
-    "dips/dips_helper.cc",
-    "dips/dips_helper.h",
     "dips/dips_service.cc",
     "dips/dips_service.h",
     "dips/dips_service_factory.cc",
@@ -793,8 +792,6 @@ static_library("browser") {
     "memory/memory_ablation_study.h",
     "memory_details.cc",
     "memory_details.h",
-    "metrics/bluetooth_metrics_provider.cc",
-    "metrics/bluetooth_metrics_provider.h",
     "metrics/chrome_browser_main_extra_parts_metrics.cc",
     "metrics/chrome_browser_main_extra_parts_metrics.h",
     "metrics/chrome_browser_sampling_trials.cc",
@@ -3016,14 +3013,10 @@ static_library("browser") {
       "fast_checkout/fast_checkout_capabilities_fetcher_factory.h",
       "fast_checkout/fast_checkout_capabilities_fetcher_impl.cc",
       "fast_checkout/fast_checkout_capabilities_fetcher_impl.h",
-      "fast_checkout/fast_checkout_capabilities_results_cache.cc",
-      "fast_checkout/fast_checkout_capabilities_results_cache.h",
       "fast_checkout/fast_checkout_client.cc",
       "fast_checkout/fast_checkout_client.h",
       "fast_checkout/fast_checkout_client_impl.cc",
       "fast_checkout/fast_checkout_client_impl.h",
-      "fast_checkout/fast_checkout_external_action_delegate.cc",
-      "fast_checkout/fast_checkout_external_action_delegate.h",
       "fast_checkout/fast_checkout_tab_helper.cc",
       "fast_checkout/fast_checkout_tab_helper.h",
       "feature_guide/notifications/android/feature_notification_guide_bridge.cc",
@@ -3132,8 +3125,6 @@ static_library("browser") {
       "password_manager/android/credential_android.h",
       "password_manager/android/credential_leak_controller_android.cc",
       "password_manager/android/credential_leak_controller_android.h",
-      "password_manager/android/generated_password_saved_infobar_delegate_android.cc",
-      "password_manager/android/generated_password_saved_infobar_delegate_android.h",
       "password_manager/android/generated_password_saved_message_delegate.cc",
       "password_manager/android/generated_password_saved_message_delegate.h",
       "password_manager/android/password_accessory_controller.h",
@@ -3154,8 +3145,6 @@ static_library("browser") {
       "password_manager/android/password_manager_error_message_helper_bridge.h",
       "password_manager/android/password_manager_error_message_helper_bridge_impl.cc",
       "password_manager/android/password_manager_error_message_helper_bridge_impl.h",
-      "password_manager/android/password_manager_infobar_delegate_android.cc",
-      "password_manager/android/password_manager_infobar_delegate_android.h",
       "password_manager/android/password_manager_launcher_android.cc",
       "password_manager/android/password_manager_launcher_android.h",
       "password_manager/android/password_scripts_fetcher_android.cc",
@@ -3163,12 +3152,8 @@ static_library("browser") {
       "password_manager/android/password_store_bridge.h",
       "password_manager/android/password_ui_view_android.cc",
       "password_manager/android/password_ui_view_android.h",
-      "password_manager/android/save_password_infobar_delegate_android.cc",
-      "password_manager/android/save_password_infobar_delegate_android.h",
       "password_manager/android/save_update_password_message_delegate.cc",
       "password_manager/android/save_update_password_message_delegate.h",
-      "password_manager/android/update_password_infobar_delegate_android.cc",
-      "password_manager/android/update_password_infobar_delegate_android.h",
       "payments/android/service_worker_payment_app_bridge.cc",
       "permissions/notification_blocked_dialog_controller_android.cc",
       "permissions/notification_blocked_dialog_controller_android.h",
@@ -3760,31 +3745,6 @@ static_library("browser") {
       "enterprise/connectors/connectors_service.h",
       "enterprise/connectors/enterprise_connectors_policy_handler.cc",
       "enterprise/connectors/enterprise_connectors_policy_handler.h",
-      "enterprise/connectors/file_system/access_token_fetcher.cc",
-      "enterprise/connectors/file_system/access_token_fetcher.h",
-      "enterprise/connectors/file_system/account_info_utils.cc",
-      "enterprise/connectors/file_system/account_info_utils.h",
-      "enterprise/connectors/file_system/box_api_call_endpoints.cc",
-      "enterprise/connectors/file_system/box_api_call_endpoints.h",
-      "enterprise/connectors/file_system/box_api_call_flow.cc",
-      "enterprise/connectors/file_system/box_api_call_flow.h",
-      "enterprise/connectors/file_system/box_api_call_response.h",
-      "enterprise/connectors/file_system/box_upload_file_chunks_handler.cc",
-      "enterprise/connectors/file_system/box_upload_file_chunks_handler.h",
-      "enterprise/connectors/file_system/box_uploader.cc",
-      "enterprise/connectors/file_system/box_uploader.h",
-      "enterprise/connectors/file_system/rename_handler.cc",
-      "enterprise/connectors/file_system/rename_handler.h",
-      "enterprise/connectors/file_system/service_settings.cc",
-      "enterprise/connectors/file_system/service_settings.h",
-      "enterprise/connectors/file_system/signin_confirmation_modal.cc",
-      "enterprise/connectors/file_system/signin_confirmation_modal.h",
-      "enterprise/connectors/file_system/signin_dialog_delegate.cc",
-      "enterprise/connectors/file_system/signin_dialog_delegate.h",
-      "enterprise/connectors/file_system/signin_experience.cc",
-      "enterprise/connectors/file_system/signin_experience.h",
-      "enterprise/connectors/file_system/uma_metrics_util.cc",
-      "enterprise/connectors/file_system/uma_metrics_util.h",
       "enterprise/connectors/reporting/browser_crash_event_router.cc",
       "enterprise/connectors/reporting/browser_crash_event_router.h",
       "enterprise/connectors/reporting/extension_install_event_router.cc",
@@ -3844,6 +3804,8 @@ static_library("browser") {
       "feedback/system_logs/log_sources/chrome_internal_log_source.h",
       "feedback/system_logs/log_sources/crash_ids_source.cc",
       "feedback/system_logs/log_sources/crash_ids_source.h",
+      "feedback/system_logs/log_sources/device_event_log_source.cc",
+      "feedback/system_logs/log_sources/device_event_log_source.h",
       "feedback/system_logs/log_sources/memory_details_log_source.cc",
       "feedback/system_logs/log_sources/memory_details_log_source.h",
       "first_run/first_run.cc",
@@ -4170,8 +4132,6 @@ static_library("browser") {
       "resource_coordinator/tab_manager.h",
       "resource_coordinator/tab_manager_resource_coordinator_signal_observer.cc",
       "resource_coordinator/tab_manager_resource_coordinator_signal_observer.h",
-      "resource_coordinator/tab_manager_web_contents_data.cc",
-      "resource_coordinator/tab_manager_web_contents_data.h",
       "resource_coordinator/tab_metrics_logger.cc",
       "resource_coordinator/tab_metrics_logger.h",
       "resource_coordinator/usage_clock.cc",
@@ -4740,6 +4700,8 @@ static_library("browser") {
       "apps/app_preload_service/device_info_manager.h",
       "apps/app_preload_service/preload_app_definition.cc",
       "apps/app_preload_service/preload_app_definition.h",
+      "apps/app_preload_service/web_app_preload_installer.cc",
+      "apps/app_preload_service/web_app_preload_installer.h",
       "apps/app_provisioning_service/app_provisioning_data_manager.cc",
       "apps/app_provisioning_service/app_provisioning_data_manager.h",
       "apps/app_service/app_icon/app_icon_decoder.cc",
@@ -6456,6 +6418,8 @@ static_library("browser") {
       "enterprise/signals/device_info_fetcher_linux.h",
       "first_run/first_run_internal_linux.cc",
       "memory_details_linux.cc",
+      "metrics/bluetooth_metrics_provider.cc",
+      "metrics/bluetooth_metrics_provider.h",
       "policy/browser_dm_token_storage_linux.cc",
       "policy/browser_dm_token_storage_linux.h",
     ]
@@ -7010,6 +6974,13 @@ static_library("browser") {
         "signin/signin_util_win.h",
       ]
     }
+  }
+
+  if (enable_bound_session_credentials) {
+    sources += [
+      "signin/bound_session_credentials/bound_session_cookie_fetcher.cc",
+      "signin/bound_session_credentials/bound_session_cookie_fetcher.h",
+    ]
   }
 
   if (enable_media_remoting) {
@@ -7987,9 +7958,6 @@ proto_library("permissions_proto") {
 grit("resources") {
   source = "browser_resources.grd"
 
-  # Required due to flattenhtml = "true" on a generated file.
-  enable_input_discovery_for_gn_analyze = false
-
   use_brotli = true
 
   defines = chrome_grit_defines
@@ -8011,11 +7979,11 @@ grit("resources") {
 
   deps = [
     ":chrome_internal_resources_gen",
-    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_webui_js",
+    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js__generator",
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces_js",
     "//device/bluetooth/public/mojom:mojom_js",
-    "//services/device/public/mojom:usb_test_webui_js",
-    "//services/device/public/mojom:usb_webui_js",
+    "//services/device/public/mojom:usb_js__generator",
+    "//services/device/public/mojom:usb_test_js__generator",
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
   ]
@@ -8044,6 +8012,7 @@ grit("resources") {
   }
   if (is_chromeos_ash) {
     deps += [
+      "//chrome/browser/ash/guest_os:guest_os_diagnostics_mojom_js__generator",
       "//chrome/browser/resources/chromeos/account_manager:css_wrapper_files",
       "//chrome/browser/resources/chromeos/account_manager:html_wrapper_files",
       "//chrome/browser/resources/chromeos/account_manager/components:html_wrapper_files",
@@ -8066,7 +8035,7 @@ grit("resources") {
       "//chrome/browser/ui/webui/ash/crostini_installer:mojo_bindings_js",
       "//chrome/browser/ui/webui/ash/crostini_upgrader:mojo_bindings_js",
       "//chrome/browser/ui/webui/ash/parent_access:mojo_bindings_js",
-      "//chrome/browser/ui/webui/ash/vm:mojo_bindings_webui_js",
+      "//chrome/browser/ui/webui/ash/vm:mojo_bindings_js__generator",
       "//chrome/browser/ui/webui/settings/ash:mojom_js",
       "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom:mojom_js",
       "//ui/webui/resources/cr_components/app_management:mojo_bindings_js",
@@ -8115,7 +8084,7 @@ grit("dev_ui_browser_resources") {
     "//chrome/browser/resources/memory_internals:build_ts",
     "//chrome/browser/resources/predictors:build_ts",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings_js",
-    "//components/site_engagement/core/mojom:mojo_bindings_webui_js",
+    "//components/site_engagement/core/mojom:mojo_bindings_js__generator",
   ]
 
   if (is_android || is_linux || is_chromeos || is_win) {
@@ -8170,6 +8139,8 @@ static_library("test_support") {
 
   # Always include this via the main test support target.
   visibility = [
+    "//chrome/browser/autofill:interactive_ui_tests",
+    "//chrome/browser/autofill:test_support_ui",
     "//chrome/browser/extensions:test_support",
     "//chrome/test:test_support",
   ]

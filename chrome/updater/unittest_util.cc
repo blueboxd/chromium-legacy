@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -18,6 +19,7 @@
 #include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
@@ -26,6 +28,12 @@
 #include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_WIN)
+#include <shlobj.h>
+
+#include "base/win/windows_version.h"
+#endif
 
 namespace updater::test {
 
@@ -85,13 +93,27 @@ bool DeleteFileAndEmptyParentDirectories(
   return Local::DeleteDirsIfEmpty(file_path->DirName());
 }
 
+base::FilePath GetLogDestinationDir() {
+  const char* var = std::getenv("ISOLATED_OUTDIR");
+  return var ? base::FilePath::FromUTF8Unsafe(var) : base::FilePath();
+}
+
 #if BUILDFLAG(IS_WIN)
+namespace {
+const wchar_t kProcmonPath[] = L"C:\\tools\\Procmon.exe";
+}  // namespace
+
 void MaybeExcludePathsFromWindowsDefender() {
   constexpr char kTestLauncherExcludePathsFromWindowDefender[] =
       "exclude-paths-from-win-defender";
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kTestLauncherExcludePathsFromWindowDefender))
     return;
+
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    VLOG(1) << "Skip changing Windows Defender settings for Win7 and below.";
+    return;
+  }
 
   base::FilePath program_files;
   base::FilePath program_files_x86;
@@ -120,6 +142,91 @@ void MaybeExcludePathsFromWindowsDefender() {
   LOG_IF(ERROR, !process.IsValid())
       << "Failed to disable Windows Defender: " << cmdline;
 }
+
+base::FilePath StartProcmonLogging() {
+  if (base::win::GetVersion() <= base::win::Version::WIN7) {
+    LOG(WARNING) << __func__ << ": skipping procmon logging on Win7.";
+    return {};
+  }
+
+  if (!::IsUserAnAdmin()) {
+    LOG(WARNING) << __func__
+                 << ": user is not an admin, skipping procmon logging";
+    return {};
+  }
+
+  if (!base::PathExists(base::FilePath(kProcmonPath))) {
+    LOG(WARNING) << __func__
+                 << ": procmon missing, skipping logging: " << kProcmonPath;
+    return {};
+  }
+
+  base::FilePath dest_dir = GetLogDestinationDir();
+  if (dest_dir.empty() || !base::PathExists(dest_dir)) {
+    LOG(ERROR) << __func__ << ": failed to get log destination dir";
+    return {};
+  }
+
+  dest_dir = dest_dir.AppendASCII(GetTestName());
+  if (!base::CreateDirectory(dest_dir)) {
+    LOG(ERROR) << __func__
+               << ": failed to create log destination dir: " << dest_dir;
+    return {};
+  }
+
+  base::FilePath source_path;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
+  const base::FilePath pmc_path(source_path.Append(L"chrome")
+                                    .Append(L"updater")
+                                    .Append(L"test")
+                                    .Append(L"data")
+                                    .Append(L"ProcmonConfiguration.pmc"));
+  CHECK(base::PathExists(pmc_path));
+
+  base::Time::Exploded start_time;
+  base::Time::Now().LocalExplode(&start_time);
+  const base::FilePath pml_file(dest_dir.Append(base::StringPrintf(
+      L"%02d%02d%02d-%02d%02d%02d.PML", start_time.year, start_time.month,
+      start_time.day_of_month, start_time.hour, start_time.minute,
+      start_time.second)));
+
+  const std::wstring& cmdline = base::StrCat(
+      {kProcmonPath, L" /AcceptEula /LoadConfig \"", pmc_path.value(),
+       L"\" /BackingFile \"", pml_file.value(), L"\" /Quiet /externalcapture"});
+  base::LaunchOptions options;
+  options.start_hidden = true;
+  VLOG(1) << __func__ << ": running: " << cmdline;
+  const base::Process process = base::LaunchProcess(cmdline, options);
+
+  if (!process.IsValid()) {
+    LOG(ERROR) << __func__ << ": failed to run: " << cmdline;
+    return {};
+  }
+
+  return pml_file;
+}
+
+void StopProcmonLogging(const base::FilePath& pml_file) {
+  if (!::IsUserAnAdmin() || !base::PathExists(base::FilePath(kProcmonPath)) ||
+      !pml_file.MatchesFinalExtension(L".PML")) {
+    return;
+  }
+
+  for (const std::wstring& cmdline :
+       {base::StrCat({kProcmonPath, L" /Terminate"}),
+        base::StrCat({kProcmonPath, L" /AcceptEula /OpenLog \"",
+                      pml_file.value(), L"\" /SaveAs \"",
+                      pml_file.ReplaceExtension(L".CSV").value(), L"\""})}) {
+    base::LaunchOptions options;
+    options.start_hidden = true;
+    options.wait = true;
+    VLOG(1) << __func__ << ": running: " << cmdline;
+    const base::Process process = base::LaunchProcess(cmdline, options);
+    LOG_IF(ERROR, !process.IsValid())
+        << __func__ << ": failed to run: " << cmdline;
+  }
+}
+
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace updater::test

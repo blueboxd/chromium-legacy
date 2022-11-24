@@ -7,7 +7,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/css_to_wrapper.gni")
-import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/html_to_wrapper.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
@@ -291,14 +290,8 @@ generate_grd("build_grd") {
   }
 }
 
-html_to_js("web_components") {
-  js_files = [ "os_settings_icons_css.js" ]
-}
-
 group("generate_web_components") {
   public_deps = [
-    ":web_components",
-
     # Sub-folder targets
     "internet_page:web_components",
     "multidevice_page:web_components",
@@ -306,8 +299,6 @@ group("generate_web_components") {
     "os_a11y_page:web_components",
     "os_apps_page:web_components",
     "os_apps_page/app_management_page:web_components",
-    "os_apps_page/app_management_page/borealis_page:web_components",
-    "os_apps_page/app_management_page/plugin_vm_page:web_components",
     "os_bluetooth_page:web_components",
     "os_people_page:web_components",
     "os_privacy_page:web_components",
@@ -324,8 +315,6 @@ group("closure_compile_module") {
     "os_a11y_page:closure_compile_module",
     "os_apps_page:closure_compile_module",
     "os_apps_page/app_management_page:closure_compile_module",
-    "os_apps_page/app_management_page/borealis_page:closure_compile_module",
-    "os_apps_page/app_management_page/plugin_vm_page:closure_compile_module",
     "os_bluetooth_page:closure_compile_module",
     "os_languages_page:closure_compile_module",
     "os_people_page:closure_compile_module",
@@ -343,14 +332,11 @@ js_type_check("closure_compile_local_module") {
     ":global_scroll_target_behavior",
     ":icon",
     ":lazy_load",
-    ":main_page_behavior",
     ":metrics_recorder",
     ":os_page_visibility",
     ":os_route",
     ":os_settings",
-    ":os_settings_icons_css",
     ":os_settings_routes",
-    ":pref_to_setting_metric_converter",
     ":prefs_behavior",
     ":route_observer_behavior",
     ":route_origin_behavior",
@@ -389,15 +375,6 @@ js_library("global_scroll_target_behavior") {
   ]
 }
 
-js_library("main_page_behavior") {
-  deps = [
-    "..:router",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
-  ]
-}
-
 js_library("metrics_recorder") {
   deps = [
     "//chrome/browser/ui/webui/settings/ash/search:mojo_bindings_webui_js",
@@ -419,9 +396,6 @@ js_library("os_route") {
   ]
 }
 
-js_library("os_settings_icons_css") {
-}
-
 js_library("os_settings_routes") {
   deps = [
     "..:router",
@@ -432,13 +406,6 @@ js_library("os_settings_routes") {
 js_library("prefs_behavior") {
   deps = [ "//ui/webui/resources/js:assert" ]
   externs_list = [ "$externs_path/settings_private.js" ]
-}
-
-js_library("pref_to_setting_metric_converter") {
-  deps = [
-    "//chrome/browser/ui/webui/settings/ash/search:mojo_bindings_webui_js",
-    "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_webui_js",
-  ]
 }
 
 js_library("route_observer_behavior") {

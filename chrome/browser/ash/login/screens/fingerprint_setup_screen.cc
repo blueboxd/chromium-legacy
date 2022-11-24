@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -119,12 +120,20 @@ FingerprintSetupScreen::FingerprintSetupScreen(
 
 FingerprintSetupScreen::~FingerprintSetupScreen() = default;
 
-bool FingerprintSetupScreen::MaybeSkip(WizardContext& context) {
+bool FingerprintSetupScreen::ShouldBeSkipped(
+    const WizardContext& context) const {
   if (context.skip_post_login_screens_for_tests ||
       !quick_unlock::IsFingerprintEnabled(
           ProfileManager::GetActiveUserProfile(),
           quick_unlock::Purpose::kAny) ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    return true;
+  }
+  return false;
+}
+
+bool FingerprintSetupScreen::MaybeSkip(WizardContext& context) {
+  if (ShouldBeSkipped(context)) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }

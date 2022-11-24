@@ -21,9 +21,9 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -291,12 +291,9 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
                                        weak_factory_.GetWeakPtr(), true));
       }
     } else {
-      gfx::ImageSkia default_image =
-          default_user_image::GetDefaultImageDeprecated(image_index_);
       std::unique_ptr<user_manager::UserImage> user_image(
-          user_manager::UserImage::CreateAndEncode(
-              default_image, user_manager::UserImage::ChooseImageFormat(
-                                 *default_image.bitmap())));
+          new user_manager::UserImage(
+              default_user_image::GetDefaultImageDeprecated(image_index_)));
       UpdateUser(std::move(user_image));
       NotifyJobDone();
     }
@@ -333,12 +330,9 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
         image_url_, base::BindOnce(&Job::OnLoadImageDone,
                                    weak_factory_.GetWeakPtr(), true));
   } else {
-    gfx::ImageSkia default_image =
-        default_user_image::GetDefaultImageDeprecated(image_index_);
     std::unique_ptr<user_manager::UserImage> user_image(
-        user_manager::UserImage::CreateAndEncode(
-            default_image, user_manager::UserImage::ChooseImageFormat(
-                               *default_image.bitmap())));
+        new user_manager::UserImage(
+            default_user_image::GetDefaultImageDeprecated(image_index_)));
 
     UpdateUser(std::move(user_image));
     UpdateLocalState();
@@ -954,7 +948,8 @@ void UserImageManagerImpl::OnJobChangedUserImage() {
 
 void UserImageManagerImpl::OnJobDone() {
   if (job_.get())
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, job_.release());
+    base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
+        FROM_HERE, job_.release());
   else
     NOTREACHED();
 }

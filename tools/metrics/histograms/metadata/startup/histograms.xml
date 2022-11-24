@@ -55,16 +55,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Startup.Android.ChromeTabbedTaskExistsTime" units="ms"
-    expires_after="2021-09-19">
-  <owner>mthiesse@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    Measures the amount of time it takes to check if a ChromeTabbedActivity task
-    already exists during startup.
-  </summary>
-</histogram>
-
 <histogram
     name="Startup.Android.Cold.FirstNavigationCommitOccurredPreForeground"
     enum="Boolean" expires_after="2023-05-14">
@@ -721,14 +711,13 @@ chromium-metrics-reviews@google.com.
   <owner>gab@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
-    Measure the elapsed time from the application start to the first non empty
-    paint of the first web contents. Only comprised of cases where the initial
-    foreground tab gets to complete its rendering task unimpeded (an improvement
-    over Startup.FirstWebContents.NonEmptyPaint).
+    [Desktop] Measure the elapsed time from the application start to the first
+    non empty paint of the first web contents. Only comprised of cases where the
+    initial foreground tab gets to complete its rendering task unimpeded (an
+    improvement over Startup.FirstWebContents.NonEmptyPaint).
 
     Application start is a time recorded as early as possible in the startup
-    process. On Android, the application start is the time at which the Java
-    code starts. On Windows, application start is when chrome.exe:main starts,
+    process. On Windows, application start is when chrome.exe:main starts,
     before chrome.dll is loaded. On other platforms, it is when
     ChromeMainDelegate is constructed.
 

@@ -717,7 +717,7 @@ class RemoveDIPSEventsTester {
   }
 
  private:
-  base::SequenceBound<DIPSStorage>* storage_;
+  raw_ptr<base::SequenceBound<DIPSStorage>> storage_;
 };
 
 class RemoveSecurePaymentConfirmationCredentialsTester {
@@ -748,8 +748,8 @@ class RemoveSecurePaymentConfirmationCredentialsTester {
     EXPECT_CALL(*service_.get(), ClearSecurePaymentConfirmationCredentials)
         .Times(times)
         .WillRepeatedly(testing::WithArg<2>([](base::OnceClosure completion) {
-          base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                        std::move(completion));
+          base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+              FROM_HERE, std::move(completion));
         }));
   }
 
@@ -2328,14 +2328,14 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordStatistics) {
       RemoveStatisticsByOriginAndTime(ProbablySameFilter(empty_filter),
                                       base::Time(), base::Time::Max(), _))
       .WillOnce(testing::WithArg<3>([](base::OnceClosure completion) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(completion));
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(completion));
       }));
   EXPECT_CALL(*tester.mock_field_info_store(),
               RemoveFieldInfoByTime(base::Time(), base::Time::Max(), _))
       .WillOnce(testing::WithArg<2>([](base::OnceClosure completion) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(completion));
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(completion));
       }));
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 constants::DATA_TYPE_HISTORY, false);
@@ -2360,8 +2360,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       RemoveStatisticsByOriginAndTime(ProbablySameFilter(filter), base::Time(),
                                       base::Time::Max(), _))
       .WillOnce(testing::WithArg<3>([](base::OnceClosure completion) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(completion));
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(completion));
       }));
 
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
@@ -2401,8 +2401,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DisableAutoSignIn) {
   EXPECT_CALL(*tester.profile_store(),
               DisableAutoSignInForOrigins(ProbablySameFilter(empty_filter), _))
       .WillOnce(testing::WithArg<1>([](base::OnceClosure completion) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(completion));
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(completion));
       }));
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
@@ -2420,8 +2420,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_CALL(*tester.profile_store(),
               DisableAutoSignInForOrigins(ProbablySameFilter(empty_filter), _))
       .WillOnce(testing::WithArg<1>([](base::OnceClosure completion) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(completion));
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(completion));
       }));
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -3018,13 +3018,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDIPSEventsForLastHour) {
   }
 }
 
-// TODO(crbug.com/1245736): Flakes too often on Android bots.
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_RemoveDIPSEventsByType DISABLED_RemoveDIPSEventsByType
-#else
-#define MAYBE_RemoveDIPSEventsByType RemoveDIPSEventsByType
-#endif
-TEST_F(ChromeBrowsingDataRemoverDelegateTest, MAYBE_RemoveDIPSEventsByType) {
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDIPSEventsByType) {
   RemoveDIPSEventsTester tester(GetProfile());
   GURL url1("https://example1.com");
   GURL url2("https://example2.com");

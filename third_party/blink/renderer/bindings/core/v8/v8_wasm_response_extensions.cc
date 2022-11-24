@@ -4,11 +4,13 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
+#include "components/crash/core/common/crash_key.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -535,7 +537,8 @@ void StreamFromResponseCallback(
     kValidDataURL = 8,
     kValidFileURL = 9,
     kValidBlob = 10,
-    kValidOtherProtocol = 11,
+    kValidChromeExtension = 11,
+    kValidOtherProtocol = 12,
 
     kMaxValue = kValidOtherProtocol
   };
@@ -596,8 +599,9 @@ void StreamFromResponseCallback(
                     : protocol == "https" ? WasmStreamingInputType::kValidHttps
                     : protocol == "data" ? WasmStreamingInputType::kValidDataURL
                     : protocol == "file" ? WasmStreamingInputType::kValidFileURL
-                    : protocol == "blob"
-                        ? WasmStreamingInputType::kValidBlob
+                    : protocol == "blob" ? WasmStreamingInputType::kValidBlob
+                    : protocol == "chrome-extension"
+                        ? WasmStreamingInputType::kValidChromeExtension
                         : WasmStreamingInputType::kValidOtherProtocol;
   }
   base::UmaHistogramEnumeration("V8.WasmStreamingInputType", protocol_type);

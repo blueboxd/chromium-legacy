@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -31,7 +32,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
@@ -176,7 +176,7 @@ class QuotaManagerImplTest : public testing::Test {
   void ResetQuotaManagerImpl(bool is_incognito) {
     quota_manager_impl_ = base::MakeRefCounted<QuotaManagerImpl>(
         is_incognito, data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get().get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault().get(),
         /*quota_change_callback=*/base::DoNothing(),
         mock_special_storage_policy_.get(), GetQuotaSettingsFunc());
     SetQuotaSettings(kDefaultPoolSize, kDefaultPerHostQuota,
@@ -2775,20 +2775,35 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketDataWithDBError) {
 }
 
 TEST_F(QuotaManagerImplTest, GetDiskAvailabilityAndTempPoolSize) {
-  const int kPoolSize = 1000;
-  const int kPerHostQuota = kPoolSize / 5;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, 0);
-  storage::StorageCapacityResult storage_capacity = GetStorageCapacity();
+  ResetQuotaManagerImpl(/*is_incognito=*/false);
 
   base::test::TestFuture<int64_t, int64_t, int64_t> quota_internals_future;
   quota_manager_impl()->GetDiskAvailabilityAndTempPoolSize(
       quota_internals_future.GetCallback());
   std::tuple quota_internals_result = quota_internals_future.Take();
 
-  EXPECT_EQ(storage_capacity.total_space, std::get<0>(quota_internals_result));
-  EXPECT_EQ(storage_capacity.available_space,
-            std::get<1>(quota_internals_result));
-  EXPECT_EQ(kPoolSize, std::get<2>(quota_internals_result));
+  int64_t available_space =
+      static_cast<uint64_t>(GetAvailableDiskSpaceForTest());
+  int64_t total_space = available_space * 2;
+
+  EXPECT_EQ(total_space, std::get<0>(quota_internals_result));
+  EXPECT_EQ(available_space, std::get<1>(quota_internals_result));
+  EXPECT_EQ(kDefaultPoolSize, std::get<2>(quota_internals_result));
+}
+
+TEST_F(QuotaManagerImplTest, GetDiskAvailabilityAndTempPoolSize_Incognito) {
+  // Test to make sure total_space and available_space are retrieved
+  // as expected, without producing a crash.
+  ResetQuotaManagerImpl(/*is_incognito=*/true);
+
+  base::test::TestFuture<int64_t, int64_t, int64_t> quota_internals_future;
+  quota_manager_impl()->GetDiskAvailabilityAndTempPoolSize(
+      quota_internals_future.GetCallback());
+  std::tuple quota_internals_result = quota_internals_future.Take();
+
+  EXPECT_EQ(kDefaultPoolSize, std::get<0>(quota_internals_result));
+  EXPECT_EQ(kDefaultPoolSize, std::get<1>(quota_internals_result));
+  EXPECT_EQ(kDefaultPoolSize, std::get<2>(quota_internals_result));
 }
 
 TEST_F(QuotaManagerImplTest, NotifyAndLRUBucket) {

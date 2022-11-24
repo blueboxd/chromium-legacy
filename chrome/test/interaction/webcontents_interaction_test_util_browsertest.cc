@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-shared.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -308,18 +309,27 @@ IN_PROC_BROWSER_TEST_F(WebContentsInteractionTestUtilTest,
   auto util = WebContentsInteractionTestUtil::ForExistingTabInBrowser(
       browser(), kWebContentsElementId);
 
-  // Load the first page and make sure we wait for the page transition.
-  util->LoadPage(url);
-
   auto sequence =
       ui::InteractionSequence::Builder()
           .SetCompletedCallback(completed.Get())
           .SetAbortedCallback(aborted.Get())
           .SetContext(browser()->window()->GetElementContext())
+          // Load the first page and make sure we wait for the page transition.
           .AddStep(ui::InteractionSequence::StepBuilder()
                        .SetType(ui::InteractionSequence::StepType::kShown)
                        .SetElementID(kWebContentsElementId)
                        .SetMustRemainVisible(false)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             util->LoadPage(url);
+                           }))
+                       .Build())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kWebContentsElementId)
+                       .SetMustRemainVisible(false)
+                       .SetTransitionOnlyOnEvent(true)
                        .SetStartCallback(base::BindLambdaForTesting(
                            [&](ui::InteractionSequence* sequence,
                                ui::TrackedElement* element) {

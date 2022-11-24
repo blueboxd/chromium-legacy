@@ -13,7 +13,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -295,9 +294,12 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
 void FullscreenController::FullscreenTabOpeningPopup(
     content::WebContents* opener,
     content::WebContents* popup) {
-  DCHECK_EQ(exclusive_access_tab(), opener);
-  DCHECK(popunder_preventer_);
-  popunder_preventer_->AddPotentialPopunder(popup);
+  if (popunder_preventer_) {
+    DCHECK_EQ(exclusive_access_tab(), opener);
+    popunder_preventer_->AddPotentialPopunder(popup);
+  } else {
+    DCHECK(IsFullscreenWithinTab(opener));
+  }
 }
 
 void FullscreenController::OnTabDeactivated(
@@ -368,8 +370,11 @@ void FullscreenController::FullscreenTransititionCompleted() {
   started_fullscreen_transition_ = false;
   if (IsTabFullscreen()) {
     DCHECK(exclusive_access_tab());
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+    // TODO(crbug.com/1385866): This is flaky on ChromeOS Lacros browser tests.
     DCHECK_EQ(tab_fullscreen_target_display_id_,
               GetDisplayId(*exclusive_access_tab()));
+#endif
   }
   tab_fullscreen_target_display_id_ = display::kInvalidDisplayId;
 }
@@ -419,7 +424,7 @@ void FullscreenController::ExitExclusiveAccessIfNecessary() {
 }
 
 void FullscreenController::PostFullscreenChangeNotification() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&FullscreenController::NotifyFullscreenChange,
                                 ptr_factory_.GetWeakPtr()));
 }

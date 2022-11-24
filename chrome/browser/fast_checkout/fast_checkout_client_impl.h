@@ -13,8 +13,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
-class FastCheckoutExternalActionDelegate;
-
 namespace autofill {
 class LogManager;
 }
@@ -51,8 +49,7 @@ class FastCheckoutClientImpl
 
   // FastCheckoutClient:
   bool Start(base::WeakPtr<autofill::FastCheckoutDelegate> delegate,
-             const GURL& url,
-             bool script_supports_consentless_execution) override;
+             const GURL& url) override;
   void Stop() override;
   bool IsRunning() const override;
 
@@ -64,10 +61,6 @@ class FastCheckoutClientImpl
 
  protected:
   explicit FastCheckoutClientImpl(content::WebContents* web_contents);
-
-  // Creates the external action delegate.
-  virtual std::unique_ptr<FastCheckoutExternalActionDelegate>
-  CreateFastCheckoutExternalActionDelegate();
 
   // Creates the UI controller.
   virtual std::unique_ptr<FastCheckoutController>
@@ -97,18 +90,13 @@ class FastCheckoutClientImpl
   void SetShouldSuppressKeyboard(bool suppress);
 
   // Returns true if fast checkout should run, e.g. if the feature is enabled.
-  bool ShouldRun(bool script_supports_consentless_execution);
+  bool ShouldRun();
 
   // Returns the Autofill log manager if available.
   autofill::LogManager* GetAutofillLogManager();
 
   // Delegate for the surface being shown.
   base::WeakPtr<autofill::FastCheckoutDelegate> delegate_;
-
-  // The delegate is responsible for handling protos received from backend DSL
-  // actions.
-  std::unique_ptr<FastCheckoutExternalActionDelegate>
-      fast_checkout_external_action_delegate_;
 
   // Fast Checkout UI Controller. Responsible for showing the bottomsheet and
   // handling user selections.

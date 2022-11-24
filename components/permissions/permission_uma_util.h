@@ -16,6 +16,10 @@
 #include "components/permissions/prediction_service/prediction_service_messages.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace blink {
+enum class PermissionType;
+}
+
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -332,8 +336,9 @@ class PermissionUmaUtil {
   PermissionUmaUtil(const PermissionUmaUtil&) = delete;
   PermissionUmaUtil& operator=(const PermissionUmaUtil&) = delete;
 
-  static void PermissionRequested(ContentSettingsType permission,
-                                  const GURL& requesting_origin);
+  static void PermissionRequested(ContentSettingsType permission);
+
+  static void PermissionRequestPreignored(blink::PermissionType permission);
 
   // Records the revocation UMA and UKM metrics for ContentSettingsTypes that
   // have user facing permission prompts. The passed in `permission` must be
@@ -350,6 +355,11 @@ class PermissionUmaUtil {
       PermissionStatusSource source);
 
   static void RecordEmbargoStatus(PermissionEmbargoStatus embargo_status);
+
+  // Recorded when a permission prompt creation is in progress.
+  static void RecordPermissionPromptAttempt(
+      const std::vector<PermissionRequest*>& requests,
+      bool IsLocationBarEditingOrEmpty);
 
   // UMA specifically for when permission prompts are shown. This should be
   // roughly equivalent to the metrics above, however it is

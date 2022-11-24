@@ -106,11 +106,10 @@ class TestWebContentsDelegate : public WebContentsDelegate {
 class PrerenderHostTest : public RenderViewHostImplTestHarness {
  public:
   PrerenderHostTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kPrerender2},
+    scoped_feature_list_.InitAndDisableFeature(
         // Disable the memory requirement of Prerender2 so the test can run on
         // any bot.
-        {blink::features::kPrerender2MemoryControls});
+        blink::features::kPrerender2MemoryControls);
   }
 
   ~PrerenderHostTest() override = default;
@@ -497,13 +496,13 @@ TEST_F(PrerenderHostTest, CanceledPrerenderCannotBeReadyForActivation) {
       registry->FindNonReservedHostById(prerender_frame_tree_node_id);
   ASSERT_NE(prerender_host, nullptr);
 
-  // Registry keeps alive through this test, so it is safe to use
-  // base::Unretained.
+  // Registry keeps alive through this test, so it is safe to capture the
+  // reference to `registry`.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&PrerenderHostRegistry::CancelHost),
-                     base::Unretained(registry), prerender_frame_tree_node_id,
-                     PrerenderFinalStatus::kTriggerDestroyed));
+      FROM_HERE, base::BindOnce(base::BindLambdaForTesting([&]() {
+        registry->CancelHost(prerender_frame_tree_node_id,
+                             PrerenderFinalStatus::kTriggerDestroyed);
+      })));
 
   // For some reasons triggers want to set the failure reason by themselves,
   // this would happen together with cancelling prerender.
@@ -539,8 +538,7 @@ class PrerenderHostInBackgroundTest : public PrerenderHostTest {
  public:
   PrerenderHostInBackgroundTest() {
     scoped_feature_list_.InitWithFeatures(
-        {blink::features::kPrerender2,
-         // Enable to run prerenderings in the background.
+        {// Enable to run prerenderings in the background.
          blink::features::kPrerender2InBackground},
         // Disable the memory requirement of Prerender2 so the test can run on
         // any bot.

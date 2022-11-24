@@ -132,6 +132,7 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
 
  protected:
   virtual bool ExpectationsSatisfied() const;
+  void AssertExpectationsSatisfied() const;
 
   // Intended to be overridden in tests to allow tests to wait on other resource
   // conditions.
@@ -174,6 +175,17 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
     // Returns whether all the bits in this bitset are set in |other|.
     bool AreAllSetIn(const TimingFieldBitSet& other) const {
       return !((bitmask_ & other.bitmask_) ^ bitmask_);
+    }
+
+    // Returns the string representation of the TimingFields this bitset
+    // contains. This method is not called anywhere and is for debug purpose
+    // only.
+    std::string ToDebugString() const;
+
+    // Returns true if the bitset contains the TimingField. This method is not
+    // called anywhere and is for debug purpose only.
+    bool ContainsTimingField(TimingField time_field) const {
+      return (bitmask_ & static_cast<int>(time_field)) > 0;
     }
 
    private:
@@ -294,8 +306,6 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
   };
   State expected_;
   State observed_;
-
-  TimingFieldBitSet observed_page_fields_;
 
   int current_complete_resources_ = 0;
   int64_t current_network_bytes_ = 0;

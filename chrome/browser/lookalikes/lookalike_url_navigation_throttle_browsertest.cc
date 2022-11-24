@@ -16,6 +16,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/lookalikes/digital_asset_links_cross_validator.h"
+#include "chrome/browser/lookalikes/lookalike_test_helper.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
@@ -223,10 +224,6 @@ void ConfigureAllowlistWithScopes() {
   reputation::SetSafetyTipsRemoteConfigProto(std::move(config_proto));
 }
 
-namespace test {
-#include "components/url_formatter/spoof_checks/top_domains/browsertest_domains-trie-inc.cc"
-}
-
 }  // namespace
 
 class LookalikeUrlNavigationThrottleBrowserTest
@@ -250,7 +247,6 @@ class LookalikeUrlNavigationThrottleBrowserTest
     }
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);
-    reputation::InitializeSafetyTipConfig();
     InProcessBrowserTest::SetUp();
   }
 
@@ -268,36 +264,14 @@ class LookalikeUrlNavigationThrottleBrowserTest
         LookalikeUrlService::Get(browser()->profile());
     lookalike_service->SetClockForTesting(&test_clock_);
 
-    // Use test top domain lists instead of the actual list.
-    url_formatter::IDNSpoofChecker::HuffmanTrieParams trie_params{
-        test::kTopDomainsHuffmanTree, sizeof(test::kTopDomainsHuffmanTree),
-        test::kTopDomainsTrie, test::kTopDomainsTrieBits,
-        test::kTopDomainsRootPosition};
-    url_formatter::IDNSpoofChecker::SetTrieParamsForTesting(trie_params);
-
-    // Use test top 500 domain skeletons instead of the actual list.
-    Top500DomainsParams top500_params{
-        test_top500_domains::kTop500EditDistanceSkeletons,
-        test_top500_domains::kNumTop500EditDistanceSkeletons};
-    SetTop500DomainsParamsForTesting(top500_params);
-
-    // Use test keywords instead of the actual list. This isn't strictly
-    // necessary as this test doesn't use reputation service, but it's good
-    // practice.
-    ReputationService* rep_service =
-        ReputationService::Get(browser()->profile());
-    rep_service->SetSensitiveKeywordsForTesting(
-        test_top500_domains::kTopKeywords,
-        test_top500_domains::kNumTopKeywords);
+    test_helper_ = std::make_unique<LookalikeTestHelper>(browser());
+    test_helper_->SetUp();
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
-    url_formatter::IDNSpoofChecker::RestoreTrieParamsForTesting();
-    ResetTop500DomainsParamsForTesting();
-
-    ReputationService* rep_service =
-        ReputationService::Get(browser()->profile());
-    rep_service->ResetSensitiveKeywordsForTesting();
+    InProcessBrowserTest::TearDownOnMainThread();
+    test_helper_->TearDown();
   }
 
   GURL GetURL(const char* hostname) const {
@@ -479,6 +453,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   base::SimpleTestClock test_clock_;
+  std::unique_ptr<LookalikeTestHelper> test_helper_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -1115,7 +1090,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
         NavigationSuggestionEvent::kMatchSiteEngagement);
 
     ukm_urls.push_back(kNavigatedUrl);
-    CheckUkm(ukm_urls, "MatchType", LookalikeUrlMatchType::kSiteEngagement);
+    CheckUkm(ukm_urls, "MatchType",
+             LookalikeUrlMatchType::kSkeletonMatchSiteEngagement);
   }
 }
 
@@ -1218,7 +1194,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
       NavigationSuggestionEvent::kMatchSiteEngagement);
 
   CheckUkm({kNavigatedUrl}, "MatchType",
-           LookalikeUrlMatchType::kSiteEngagement);
+           LookalikeUrlMatchType::kSkeletonMatchSiteEngagement);
 }
 
 // Similar to Idn_SiteEngagement_Match, but tests a single domain. Also checks
@@ -1249,7 +1225,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
         NavigationSuggestionEvent::kMatchSiteEngagement);
 
     ukm_urls.push_back(kNavigatedUrl);
-    CheckUkm(ukm_urls, "MatchType", LookalikeUrlMatchType::kSiteEngagement);
+    CheckUkm(ukm_urls, "MatchType",
+             LookalikeUrlMatchType::kSkeletonMatchSiteEngagement);
   }
 
   // Incognito shouldn't record metrics because there are no engaged sites.
@@ -1274,7 +1251,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
         incognito, histograms, kNavigatedUrl, kEngagedUrl,
         NavigationSuggestionEvent::kMatchSiteEngagement);
     ukm_urls.push_back(kNavigatedUrl);
-    CheckUkm(ukm_urls, "MatchType", LookalikeUrlMatchType::kSiteEngagement);
+    CheckUkm(ukm_urls, "MatchType",
+             LookalikeUrlMatchType::kSkeletonMatchSiteEngagement);
   }
 
   // Main profile shouldn't record metrics because there are no engaged sites.
@@ -1351,7 +1329,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
       NavigationSuggestionEvent::kMatchSiteEngagement);
 
   CheckUkm({kNavigatedUrl}, "MatchType",
-           LookalikeUrlMatchType::kSiteEngagement);
+           LookalikeUrlMatchType::kSkeletonMatchSiteEngagement);
 }
 
 // Navigate to lookalike domains that redirect to benign domains and ensure that

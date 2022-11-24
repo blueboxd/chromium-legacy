@@ -191,22 +191,15 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
     return current_frame_host()->GetLastCommittedURL();
   }
 
-  // Sets `is_on_initial_empty_document_` to false.
-  void SetNotOnInitialEmptyDocument() { is_on_initial_empty_document_ = false; }
-
-  // Returns false if the frame has committed a document that is not the initial
-  // empty document, or if the current document's input stream has been opened
-  // with document.open(), causing the document to lose its "initial empty
-  // document" status. For more details, see the definition of
-  // `is_on_initial_empty_document_`.
+  // Note that the current RenderFrameHost might not exist yet when calling this
+  // during FrameTreeNode initialization. In this case the FrameTreeNode must be
+  // on the initial empty document. Refer RFHI::is_initial_empty_document for a
+  // more details.
   bool is_on_initial_empty_document() const {
-    return is_on_initial_empty_document_;
+    return current_frame_host()
+               ? current_frame_host()->is_initial_empty_document()
+               : true;
   }
-
-  // Sets `is_on_initial_empty_document_` to
-  // false. Must only be called after the current document's input stream has
-  // been opened with document.open().
-  void DidOpenDocumentInputStream() { is_on_initial_empty_document_ = false; }
 
   // Returns whether the frame's owner element in the parent document is
   // collapsed, that is, removed from the layout as if it did not exist, as per
@@ -275,12 +268,12 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   }
 
   // Reflects the attributes of the corresponding iframe html element, such
-  // as 'anonymous', 'id', 'name' and 'src'. These values should not be
+  // as 'credentialless', 'id', 'name' and 'src'. These values should not be
   // exposed to cross-origin renderers.
   const network::mojom::ContentSecurityPolicy* csp_attribute() const {
     return attributes_->parsed_csp_attribute.get();
   }
-  bool anonymous() const { return attributes_->anonymous; }
+  bool credentialless() const { return attributes_->credentialless; }
   const std::string& html_id() const { return attributes_->id; }
   // This tracks iframe's 'name' attribute instead of window.name, which is
   // tracked in FrameReplicationState. See the comment for frame_name() for
@@ -324,11 +317,15 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   void CreatedNavigationRequest(
       std::unique_ptr<NavigationRequest> navigation_request);
 
-  // Resets the current navigation request and any state created by it,
-  // including the speculative RenderFrameHost.
+  // Resets the navigation request owned by `this` (which shouldn't have reached
+  // the "pending commit" stage yet) and any state created by it, including the
+  // speculative RenderFrameHost (if there are no other navigations associated
+  // with it). Note that this does not affect navigations that have reached the
+  // "pending commit" stage, which are owned by their corresponding
+  // RenderFrameHosts instead.
   void ResetNavigationRequest(NavigationDiscardReason reason);
 
-  // Resets the current navigation request, but keeping state created by the
+  // Similar to `ResetNavigationRequest()`, but keeps the state created by the
   // NavigationRequest (e.g. speculative RenderFrameHost, loading state).
   void ResetNavigationRequestButKeepState();
 
@@ -605,6 +602,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;
   Navigator& GetCurrentNavigator() override;
+  void SetFocusedFrame(SiteInstanceGroup* source) override;
 
  private:
   friend class CSPEmbeddedEnforcementUnitTest;
@@ -613,12 +611,13 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessPermissionsPolicyBrowserTest,
                            ContainerPolicySandboxDynamic);
   FRIEND_TEST_ALL_PREFIXES(NavigationRequestTest, StorageKeyToCommit);
-  FRIEND_TEST_ALL_PREFIXES(NavigationRequestTest,
-                           NavigationToAnonymousDocumentNetworkIsolationInfo);
+  FRIEND_TEST_ALL_PREFIXES(
+      NavigationRequestTest,
+      NavigationToCredentiallessDocumentNetworkIsolationInfo);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplTest,
-                           ChildOfAnonymousIsAnonymous);
+                           ChildOfCredentiallessIsCredentialless);
   FRIEND_TEST_ALL_PREFIXES(ContentPasswordManagerDriverTest,
-                           PasswordAutofillDisabledOnAnonymousIframe);
+                           PasswordAutofillDisabledOnCredentiallessIframe);
 
   // Called by the destructor. When `this` is an outer dummy FrameTreeNode
   // representing an inner FrameTree, this method destroys said inner FrameTree.
@@ -698,24 +697,6 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // If the url from the the last BeginNavigation is about:srcdoc, this value
   // stores the srcdoc_attribute's value for re-use in history navigations.
   std::string srcdoc_value_;
-
-  // Whether this frame is still on the initial about:blank document or the
-  // synchronously committed about:blank document committed at frame creation,
-  // and its "initial empty document"-ness is still true.
-  // This will be false if either of these has happened:
-  // - The current RenderFrameHost commits a cross-document navigation that is
-  //   not the synchronously committed about:blank document per:
-  //   https://html.spec.whatwg.org/multipage/browsers.html#creating-browsing-contexts:is-initial-about:blank
-  // - The document's input stream has been opened with document.open(), per
-  //   https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#opening-the-input-stream:is-initial-about:blank
-  // NOTE: we treat both the "initial about:blank document" and the
-  // "synchronously committed about:blank document" as the initial empty
-  // document. In the future, we plan to remove the synchronous about:blank
-  // commit so that this state will only be true if the frame is on the
-  // "initial about:blank document". See also:
-  // - https://github.com/whatwg/html/issues/6863
-  // - https://crbug.com/1215096
-  bool is_on_initial_empty_document_ = true;
 
   // Whether the frame's owner element in the parent document is collapsed.
   bool is_collapsed_ = false;

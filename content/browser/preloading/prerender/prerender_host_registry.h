@@ -20,7 +20,9 @@
 #include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/common/content_export.h"
+#include "content/common/frame.mojom.h"
 #include "content/public/browser/visibility.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -29,7 +31,9 @@
 
 namespace content {
 
+class PrerenderNewTabHandle;
 class RenderFrameHostImpl;
+class PrerenderCancellationReason;
 
 // PrerenderHostRegistry creates and retains a prerender host, and reserves it
 // for NavigationRequest to activate the prerendered page. This is created per
@@ -91,12 +95,23 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
                          WebContents& web_contents,
                          PreloadingAttempt* preloading_attempt = nullptr);
 
+  // Creates and starts a host in a new WebContents so that a navigation in a
+  // new tab will be able to activate it. PrerenderHostRegistry associated with
+  // the new WebContents manages the started host, and `this`
+  // PrerenderHostRegistry manages PrerenderNewTabHandle that owns the
+  // WebContents (see `prerender_new_tab_handle_by_frame_tree_node_id_`).
+  int CreateAndStartHostForNewTab(const PrerenderAttributes& attributes,
+                                  WebContents& web_contents);
+
   // Cancels the host registered for `frame_tree_node_id`. The host is
   // immediately removed from the map of non-reserved hosts but asynchronously
   // destroyed so that prerendered pages can cancel themselves without concern
   // for self destruction.
   // Returns true if a cancelation has occurred.
   bool CancelHost(int frame_tree_node_id, PrerenderFinalStatus final_status);
+  // Same as CancelHost, but can pass a detailed reason for recording if given.
+  bool CancelHost(int frame_tree_node_id,
+                  const PrerenderCancellationReason& reason);
 
   // Cancels the existing hosts specified in the vector with the same final
   // status.
@@ -152,6 +167,13 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // does not match any reserved host.
   PrerenderHost* FindReservedHostById(int frame_tree_node_id);
 
+  // Returns the ownership of a pre-created WebContentsImpl that contains a
+  // prerendered page that corresponds to the given params for a new tab
+  // navigation, if it exists.
+  std::unique_ptr<WebContentsImpl> TakePreCreatedWebContentsForNewTabIfExists(
+      const mojom::CreateNewWindowParams& create_new_window_params,
+      const WebContents::CreateParams& web_contents_create_params);
+
   // Returns the FrameTrees owned by this registry's prerender hosts.
   std::vector<FrameTree*> GetPrerenderFrameTrees();
 
@@ -189,7 +211,7 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
 
   void ScheduleToDeleteAbandonedHost(
       std::unique_ptr<PrerenderHost> prerender_host,
-      PrerenderFinalStatus final_status);
+      const PrerenderCancellationReason& cancellation_reason);
   void DeleteAbandonedHosts();
 
   void NotifyTrigger(const GURL& url);
@@ -243,6 +265,10 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
 
   // The host that is reserved for activation.
   std::unique_ptr<PrerenderHost> reserved_prerender_host_;
+
+  // Handles that manage WebContents for prerendering in new tabs.
+  base::flat_map<int, std::unique_ptr<PrerenderNewTabHandle>>
+      prerender_new_tab_handle_by_frame_tree_node_id_;
 
   // Hosts that are scheduled to be deleted asynchronously.
   // Design note: PrerenderHostRegistry should explicitly manage the hosts to be

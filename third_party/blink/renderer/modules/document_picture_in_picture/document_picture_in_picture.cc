@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/document_picture_in_picture/picture_in_picture_controller_impl.h"
 
 namespace blink {
@@ -14,30 +14,33 @@ namespace blink {
 const char DocumentPictureInPicture::kSupplementName[] =
     "DocumentPictureInPicture";
 
-DocumentPictureInPicture::DocumentPictureInPicture(
-    ExecutionContext* execution_context,
-    Navigator& navigator)
-    : Supplement<Navigator>(navigator) {}
+DocumentPictureInPicture::DocumentPictureInPicture(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window) {}
 
 // static
 DocumentPictureInPicture* DocumentPictureInPicture::From(
-    ExecutionContext* execution_context,
-    Navigator& navigator) {
+    LocalDOMWindow& window) {
   DocumentPictureInPicture* pip =
-      Supplement<Navigator>::From<DocumentPictureInPicture>(navigator);
+      Supplement<LocalDOMWindow>::From<DocumentPictureInPicture>(window);
   if (!pip) {
-    pip = MakeGarbageCollected<DocumentPictureInPicture>(execution_context,
-                                                         navigator);
-    ProvideTo(navigator, pip);
+    pip = MakeGarbageCollected<DocumentPictureInPicture>(window);
+    ProvideTo(window, pip);
   }
   return pip;
 }
 
 // static
 DocumentPictureInPicture* DocumentPictureInPicture::documentPictureInPicture(
-    ScriptState* script_state,
-    Navigator& navigator) {
-  return From(ExecutionContext::From(script_state), navigator);
+    LocalDOMWindow& window) {
+  return From(window);
+}
+
+const AtomicString& DocumentPictureInPicture::InterfaceName() const {
+  return event_target_names::kDocumentPictureInPicture;
+}
+
+ExecutionContext* DocumentPictureInPicture::GetExecutionContext() const {
+  return GetSupplementable();
 }
 
 ScriptPromise DocumentPictureInPicture::requestWindow(
@@ -85,8 +88,18 @@ DOMWindow* DocumentPictureInPicture::window(ScriptState* script_state) const {
 }
 
 void DocumentPictureInPicture::Trace(Visitor* visitor) const {
-  ScriptWrappable::Trace(visitor);
-  Supplement<Navigator>::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
+}
+
+void DocumentPictureInPicture::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  if (event_type == event_type_names::kEnter) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kDocumentPictureInPictureEnterEvent);
+  }
+  EventTarget::AddedEventListener(event_type, registered_listener);
 }
 
 }  // namespace blink

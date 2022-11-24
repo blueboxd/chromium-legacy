@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
@@ -639,8 +640,19 @@ NavigationResult* NavigationApi::traverseTo(ScriptState* script_state,
       MakeGarbageCollected<NavigationApiNavigation>(script_state, this, options,
                                                     key);
   upcoming_traversals_.insert(key, ongoing_navigation);
+  if (window_->GetFrame()->IsMainFrame()) {
+    SoftNavigationHeuristics* heuristics =
+        SoftNavigationHeuristics::From(*window_);
+    heuristics->SawURLChange(script_state, /*url=*/String(""));
+  }
+  auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+  absl::optional<scheduler::TaskAttributionId> task_id;
+  if (tracker && script_state->World().IsMainWorld()) {
+    task_id = tracker->RunningTaskAttributionId(script_state);
+  }
   window_->GetFrame()->GetLocalFrameHostRemote().NavigateToNavigationApiKey(
-      key, LocalFrame::HasTransientUserActivation(window_->GetFrame()));
+      key, LocalFrame::HasTransientUserActivation(window_->GetFrame()),
+      task_id);
   return ongoing_navigation->GetNavigationResult();
 }
 
@@ -776,10 +788,14 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   init->setNavigationType(navigation_type);
 
   SerializedScriptValue* destination_state = nullptr;
-  if (params->destination_item)
+  if (params->destination_item) {
     destination_state = params->destination_item->GetNavigationApiState();
-  else if (ongoing_navigation_)
+  } else if (ongoing_navigation_) {
     destination_state = ongoing_navigation_->GetSerializedState();
+  } else if (navigation_type == "reload") {
+    HistoryItem* current_item = window_->document()->Loader()->GetHistoryItem();
+    destination_state = current_item->GetNavigationApiState();
+  }
   NavigationDestination* destination =
       MakeGarbageCollected<NavigationDestination>(
           params->url, params->event_type != NavigateEventType::kCrossDocument,

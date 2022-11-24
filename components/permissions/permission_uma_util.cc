@@ -428,14 +428,18 @@ const char PermissionUmaUtil::kPermissionsPromptDeniedNoGesture[] =
 
 // Make sure you update histograms.xml permission histogram_suffix if you
 // add new permission
-void PermissionUmaUtil::PermissionRequested(ContentSettingsType content_type,
-                                            const GURL& requesting_origin) {
+void PermissionUmaUtil::PermissionRequested(ContentSettingsType content_type) {
   PermissionType permission;
   bool success = PermissionUtil::GetPermissionType(content_type, &permission);
   DCHECK(success);
 
   base::UmaHistogramEnumeration("ContentSettings.PermissionRequested",
                                 permission, PermissionType::NUM);
+}
+
+void PermissionUmaUtil::PermissionRequestPreignored(PermissionType permission) {
+  base::UmaHistogramEnumeration("Permissions.QuietPrompt.Preignore", permission,
+                                PermissionType::NUM);
 }
 
 void PermissionUmaUtil::PermissionRevoked(
@@ -493,6 +497,46 @@ void PermissionUmaUtil::RecordEmbargoStatus(
     PermissionEmbargoStatus embargo_status) {
   base::UmaHistogramEnumeration("Permissions.AutoBlocker.EmbargoStatus",
                                 embargo_status, PermissionEmbargoStatus::NUM);
+}
+
+void PermissionUmaUtil::RecordPermissionPromptAttempt(
+    const std::vector<PermissionRequest*>& requests,
+    bool IsLocationBarEditingOrEmpty) {
+  DCHECK(!requests.empty());
+
+  RequestTypeForUma request_type = RequestTypeForUma::MULTIPLE;
+  PermissionRequestGestureType gesture_type =
+      PermissionRequestGestureType::UNKNOWN;
+  if (requests.size() == 1) {
+    request_type = GetUmaValueForRequestType(requests[0]->request_type());
+    gesture_type = requests[0]->GetGestureType();
+  }
+
+  std::string permission_type = GetPermissionRequestString(request_type);
+
+  std::string gesture;
+
+  switch (gesture_type) {
+    case PermissionRequestGestureType::UNKNOWN: {
+      gesture = "Unknown";
+      break;
+    }
+    case PermissionRequestGestureType::GESTURE: {
+      gesture = "Gesture";
+      break;
+    }
+    case PermissionRequestGestureType::NO_GESTURE: {
+      gesture = "NoGesture";
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+
+  std::string histogram_name =
+      "Permissions.Prompt." + permission_type + "." + gesture + ".Attempt";
+
+  base::UmaHistogramBoolean(histogram_name, IsLocationBarEditingOrEmpty);
 }
 
 void PermissionUmaUtil::PermissionPromptShown(

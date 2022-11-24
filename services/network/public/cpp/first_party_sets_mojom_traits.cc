@@ -5,7 +5,10 @@
 #include "services/network/public/cpp/first_party_sets_mojom_traits.h"
 
 #include "base/containers/flat_map.h"
+#include "base/ranges/algorithm.h"
 #include "base/types/optional_util.h"
+#include "base/version.h"
+#include "mojo/public/cpp/base/version_mojom_traits.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/schemeful_site.h"
@@ -148,24 +151,30 @@ bool StructTraits<network::mojom::GlobalFirstPartySetsDataView,
                   net::GlobalFirstPartySets>::
     Read(network::mojom::GlobalFirstPartySetsDataView sets,
          net::GlobalFirstPartySets* out_sets) {
+  base::Version public_sets_version;
+  if (!sets.ReadPublicSetsVersion(&public_sets_version))
+    return false;
+
   base::flat_map<net::SchemefulSite, net::FirstPartySetEntry> entries;
-  if (!sets.ReadSets(&entries))
+  if (public_sets_version.IsValid() && !sets.ReadSets(&entries))
     return false;
 
   base::flat_map<net::SchemefulSite, net::SchemefulSite> aliases;
-  if (!sets.ReadAliases(&aliases))
+  if (public_sets_version.IsValid() && !sets.ReadAliases(&aliases))
     return false;
 
-  base::flat_map<net::SchemefulSite, net::FirstPartySetEntry> manual_entries;
-  if (!sets.ReadManualEntries(&manual_entries))
+  if (!base::ranges::all_of(aliases, [&](const auto& pair) {
+        return entries.contains(pair.second);
+      })) {
     return false;
+  }
 
   net::FirstPartySetsContextConfig manual_config;
   if (!sets.ReadManualConfig(&manual_config))
     return false;
 
-  *out_sets = net::GlobalFirstPartySets(entries, aliases, manual_entries,
-                                        std::move(manual_config));
+  *out_sets = net::GlobalFirstPartySets(std::move(public_sets_version), entries,
+                                        aliases, std::move(manual_config));
 
   return true;
 }

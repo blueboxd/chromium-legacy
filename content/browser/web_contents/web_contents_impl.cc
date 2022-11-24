@@ -41,7 +41,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "base/trace_event/trace_event.h"
@@ -78,6 +77,8 @@
 #include "content/browser/portal/portal.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
+#include "content/browser/preloading/prerender/prerender_metrics.h"
+#include "content/browser/preloading/prerender/prerender_new_tab_handle.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
@@ -922,10 +923,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           std::make_unique<MediaWebContentsObserver>(this)),
       is_overlay_content_(false),
       showing_context_menu_(false),
-      prerender_host_registry_(
-          blink::features::IsPrerender2Enabled()
-              ? std::make_unique<PrerenderHostRegistry>(*this)
-              : nullptr),
+      prerender_host_registry_(std::make_unique<PrerenderHostRegistry>(*this)),
       audible_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Audible")) {
@@ -1474,12 +1472,10 @@ std::vector<FrameTree*> WebContentsImpl::GetOutermostFrameTrees() {
   std::vector<FrameTree*> result;
   result.push_back(&GetPrimaryFrameTree());
 
-  if (blink::features::IsPrerender2Enabled()) {
-    const std::vector<FrameTree*> prerender_frame_trees =
-        GetPrerenderHostRegistry()->GetPrerenderFrameTrees();
-    result.insert(result.end(), prerender_frame_trees.begin(),
-                  prerender_frame_trees.end());
-  }
+  const std::vector<FrameTree*> prerender_frame_trees =
+      GetPrerenderHostRegistry()->GetPrerenderFrameTrees();
+  result.insert(result.end(), prerender_frame_trees.begin(),
+                prerender_frame_trees.end());
 
   return result;
 }
@@ -1704,7 +1700,7 @@ void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
   // them into a single tree and call |callback| with that result, then
   // delete |combiner|.
   auto params = mojom::SnapshotAccessibilityTreeParams::New();
-  params->ax_mode = ax_mode.mode();
+  params->ax_mode = ax_mode.flags();
   params->exclude_offscreen = exclude_offscreen;
   params->max_nodes = max_nodes;
   params->timeout = timeout;
@@ -1834,7 +1830,8 @@ void WebContentsImpl::SetUserAgentOverride(
       // page may not allow another navigation including a reload, depending
       // on conditions.
       frame_tree->GetMainFrame()->CancelPrerendering(
-          PrerenderFinalStatus::kUaChangeRequiresReload);
+          PrerenderCancellationReason(
+              PrerenderFinalStatus::kUaChangeRequiresReload));
     } else {
       frame_tree->controller().Reload(ReloadType::BYPASSING_CACHE, true);
     }
@@ -2984,9 +2981,7 @@ void WebContentsImpl::Stop() {
   TRACE_EVENT0("content", "WebContentsImpl::Stop");
   ForEachFrameTree(base::BindRepeating(
       [](FrameTree* frame_tree) { frame_tree->StopLoading(); }));
-  if (blink::features::IsPrerender2Enabled()) {
-    GetPrerenderHostRegistry()->CancelAllHosts(PrerenderFinalStatus::kStop);
-  }
+  GetPrerenderHostRegistry()->CancelAllHosts(PrerenderFinalStatus::kStop);
   observers_.NotifyObservers(&WebContentsObserver::NavigationStopped);
 }
 
@@ -4002,17 +3997,41 @@ FrameTree* WebContentsImpl::CreateNewWindow(
         params.pip_options->lock_aspect_ratio;
   }
 
+  // Check whether there is an available prerendered page for this navigation if
+  // this is not for guest. If it exists, take WebContents pre-created for
+  // hosting the prerendered page instead of creating new WebContents.
+  // TODO(crbug.com/1350676): Instead of filtering out the guest case here,
+  // check it and drop prerender requests before starting prerendering.
   std::unique_ptr<WebContentsImpl> new_contents;
-  if (!is_guest) {
-    create_params.context = view_->GetNativeView();
-    new_contents = WebContentsImpl::Create(create_params);
-  } else {
-    new_contents = GetBrowserPluginGuest()->CreateNewGuestWindow(create_params);
+  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab) &&
+      !is_guest) {
+    new_contents =
+        GetPrerenderHostRegistry()->TakePreCreatedWebContentsForNewTabIfExists(
+            params, create_params);
+    if (new_contents) {
+      // The SiteInstance of the pre-created WebContents should be in a
+      // different BrowsingInstance from the source SiteInstance, while they
+      // should be in the same StoragePartition.
+      SiteInstanceImpl* new_site_instance = new_contents->GetSiteInstance();
+      DCHECK(!new_site_instance->IsRelatedSiteInstance(source_site_instance));
+      DCHECK_EQ(new_site_instance->GetStoragePartitionConfig(),
+                source_site_instance->GetStoragePartitionConfig());
+    }
   }
-  auto* new_contents_impl = new_contents.get();
 
-  new_contents_impl->GetController().SetSessionStorageNamespace(
-      partition_config, session_storage_namespace);
+  if (!new_contents) {
+    if (!is_guest) {
+      create_params.context = view_->GetNativeView();
+      new_contents = WebContentsImpl::Create(create_params);
+    } else {
+      new_contents =
+          GetBrowserPluginGuest()->CreateNewGuestWindow(create_params);
+    }
+    new_contents->GetController().SetSessionStorageNamespace(
+        partition_config, session_storage_namespace);
+  }
+
+  auto* new_contents_impl = new_contents.get();
 
   // If the new frame has a name, make sure any SiteInstances that can find
   // this named frame have proxies for it.  Must be called after
@@ -4503,7 +4522,7 @@ void WebContentsImpl::RecordAccessibilityEvents(
   DCHECK_EQ(start_recording, callback.has_value());
   if (start_recording) {
     BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        ui::kAXModeBasic.mode());
+        ui::kAXModeBasic.flags());
     auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
     CHECK(ax_mgr);
     base::ProcessId pid = base::Process::Current().Pid();
@@ -7461,7 +7480,6 @@ WebContentsImpl::GetActiveTopLevelDocumentsInBrowsingContextGroup(
 }
 
 PrerenderHostRegistry* WebContentsImpl::GetPrerenderHostRegistry() {
-  DCHECK(blink::features::IsPrerender2Enabled());
   DCHECK(prerender_host_registry_);
   return prerender_host_registry_.get();
 }
@@ -7542,7 +7560,7 @@ void WebContentsImpl::DidChangeLoadProgressForPrimaryMainFrame() {
   if (min_delay == base::Milliseconds(0)) {
     SendChangeLoadProgress();
   } else {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&WebContentsImpl::SendChangeLoadProgress,
                        loading_weak_factory_.GetWeakPtr()),
@@ -8274,7 +8292,7 @@ service_manager::InterfaceProvider* WebContentsImpl::GetJavaInterfaces() {
     BindInterfaceRegistryForWebContents(
         provider.InitWithNewPipeAndPassReceiver(), this);
     java_interfaces_ = std::make_unique<service_manager::InterfaceProvider>(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     java_interfaces_->Bind(std::move(provider));
   }
   return java_interfaces_.get();
@@ -9521,9 +9539,6 @@ bool WebContentsImpl::IsPrerender2Disabled() {
 
 bool WebContentsImpl::CancelPrerendering(FrameTreeNode* frame_tree_node,
                                          PrerenderFinalStatus final_status) {
-  if (!blink::features::IsPrerender2Enabled())
-    return false;
-
   if (!frame_tree_node)
     return false;
 
@@ -9534,7 +9549,7 @@ bool WebContentsImpl::CancelPrerendering(FrameTreeNode* frame_tree_node,
   // the prerender root.
   if (frame_tree_node->GetParentOrOuterDocumentOrEmbedder()) {
     return frame_tree_node->GetParentOrOuterDocumentOrEmbedder()
-        ->CancelPrerendering(final_status);
+        ->CancelPrerendering(PrerenderCancellationReason(final_status));
   }
   return GetPrerenderHostRegistry()->CancelHost(
       frame_tree_node->frame_tree_node_id(), final_status);

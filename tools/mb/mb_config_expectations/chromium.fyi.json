@@ -438,17 +438,6 @@
       "use_remoteexec": true
     }
   },
-  "Linux MSan Focal": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "instrumented_libraries_release": "focal",
-      "is_component_build": false,
-      "is_debug": false,
-      "is_msan": true,
-      "msan_track_origins": 2,
-      "use_remoteexec": true
-    }
-  },
   "Linux Viz": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -1278,17 +1267,6 @@
       "use_goma": true
     }
   },
-  "linux-lacros-tester-rel-reviver": {
-    "gn_args": {
-      "also_build_ash_chrome": true,
-      "chromeos_is_browser_only": true,
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "chromeos",
-      "use_remoteexec": true
-    }
-  },
   "linux-lacros-version-skew-fyi": {
     "gn_args": {
       "chromeos_is_browser_only": true,
@@ -1361,6 +1339,14 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "mac-12-wpt-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
       "use_remoteexec": true
     }
   },

@@ -34,6 +34,7 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -42,6 +43,7 @@ namespace {
 
 using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceRegistrationError;
+using ::blink::mojom::AttributionNavigationType;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -98,11 +100,6 @@ const base::FeatureParam<base::TimeDelta> kTriggerDelay{
     base::Seconds(5)};
 
 constexpr size_t kMaxDelayedTriggers = 30;
-
-void ReportBadMessageInsecureReportingOrigin() {
-  mojo::ReportBadMessage(
-      "AttributionDataHost: Reporting origin must be secure.");
-}
 
 absl::optional<attribution_reporting::AggregatableTriggerDataList> FromMojo(
     std::vector<blink::mojom::AttributionAggregatableTriggerDataPtr> mojo) {
@@ -175,6 +172,7 @@ struct AttributionDataHostManagerImpl::FrozenContext {
   // Input event associated with the navigation for navigation source data
   // hosts, `absl::nullopt` otherwise.
   absl::optional<AttributionInputEvent> input_event;
+  absl::optional<AttributionNavigationType> nav_type;
 };
 
 struct AttributionDataHostManagerImpl::DelayedTrigger {
@@ -198,6 +196,7 @@ struct AttributionDataHostManagerImpl::NavigationDataHost {
   mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host;
   base::TimeTicks register_time;
   AttributionInputEvent input_event;
+  AttributionNavigationType nav_type;
 };
 
 struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
@@ -219,6 +218,7 @@ struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
 
   // Input event associated with the navigation.
   AttributionInputEvent input_event;
+  AttributionNavigationType nav_type;
 };
 
 AttributionDataHostManagerImpl::AttributionDataHostManagerImpl(
@@ -249,12 +249,14 @@ void AttributionDataHostManagerImpl::RegisterDataHost(
 bool AttributionDataHostManagerImpl::RegisterNavigationDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
     const blink::AttributionSrcToken& attribution_src_token,
-    AttributionInputEvent input_event) {
+    AttributionInputEvent input_event,
+    AttributionNavigationType nav_type) {
   auto [it, inserted] = navigation_data_host_map_.try_emplace(
       attribution_src_token,
       NavigationDataHost{.data_host = std::move(data_host),
                          .register_time = base::TimeTicks::Now(),
-                         .input_event = input_event});
+                         .input_event = input_event,
+                         .nav_type = nav_type});
   // Should only be possible with a misbehaving renderer.
   if (!inserted)
     return false;
@@ -270,7 +272,8 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
     std::string header_value,
     SuitableOrigin reporting_origin,
     const SuitableOrigin& source_origin,
-    AttributionInputEvent input_event) {
+    AttributionInputEvent input_event,
+    AttributionNavigationType nav_type) {
   // Avoid costly isolated JSON parsing below if the header is obviously
   // invalid.
   if (header_value.empty()) {
@@ -283,7 +286,8 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
       attribution_src_token, NavigationRedirectSourceRegistrations{
                                  .source_origin = source_origin,
                                  .register_time = base::TimeTicks::Now(),
-                                 .input_event = input_event});
+                                 .input_event = input_event,
+                                 .nav_type = nav_type});
   DCHECK(!it->second.navigation_complete);
 
   // Treat ongoing redirect registrations within a chain as a data host for the
@@ -299,12 +303,13 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
       header_value,
       base::BindOnce(&AttributionDataHostManagerImpl::OnRedirectSourceParsed,
                      weak_factory_.GetWeakPtr(), attribution_src_token,
-                     std::move(reporting_origin), header_value));
+                     std::move(reporting_origin), header_value, nav_type));
 }
 
 void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
     const blink::AttributionSrcToken& attribution_src_token,
-    const SuitableOrigin& source_origin) {
+    const SuitableOrigin& source_origin,
+    AttributionNavigationType nav_type) {
   auto it = navigation_data_host_map_.find(attribution_src_token);
 
   if (it != navigation_data_host_map_.end()) {
@@ -315,7 +320,8 @@ void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
                       .source_type = AttributionSourceType::kNavigation,
                       .register_time = it->second.register_time,
                       .is_within_fenced_frame = false,
-                      .input_event = it->second.input_event});
+                      .input_event = it->second.input_event,
+                      .nav_type = nav_type});
 
     navigation_data_host_map_.erase(it);
     RecordNavigationDataHostStatus(NavigationDataHostStatus::kProcessed);
@@ -368,21 +374,9 @@ void AttributionDataHostManagerImpl::NotifyNavigationFailure(
 
 void AttributionDataHostManagerImpl::SourceDataAvailable(
     blink::mojom::AttributionSourceDataPtr data) {
-  auto reporting_origin =
-      SuitableOrigin::Create(std::move(data->reporting_origin));
-  if (!reporting_origin) {
-    RecordSourceDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
-    ReportBadMessageInsecureReportingOrigin();
-    return;
-  }
-
-  auto destination = SuitableOrigin::Create(std::move(data->destination));
-  if (!destination) {
-    RecordSourceDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Destination origin must be secure.");
-    return;
-  }
+  // This is validated by the Mojo typemapping.
+  DCHECK(data->reporting_origin.IsValid());
+  DCHECK(data->destination.IsValid());
 
   FrozenContext& context = receivers_.current_context();
 
@@ -427,7 +421,8 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
   StorableSource storable_source(
       CommonSourceInfo(
           data->source_event_id, context.context_origin,
-          std::move(*destination), std::move(*reporting_origin), source_time,
+          std::move(data->destination), std::move(data->reporting_origin),
+          source_time,
           CommonSourceInfo::GetExpiryTime(data->expiry, source_time,
                                           context.source_type),
           data->event_report_window
@@ -444,18 +439,18 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
           data->debug_key, std::move(*aggregation_keys)),
       context.is_within_fenced_frame, data->debug_reporting);
 
+  if (context.nav_type.has_value()) {
+    base::UmaHistogramEnumeration(
+        "Conversions.SourceRegistration.NavigationType.Background",
+        *context.nav_type);
+  }
   attribution_manager_->HandleSource(std::move(storable_source));
 }
 
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
     blink::mojom::AttributionTriggerDataPtr data) {
-  auto reporting_origin =
-      SuitableOrigin::Create(std::move(data->reporting_origin));
-  if (!reporting_origin) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
-    ReportBadMessageInsecureReportingOrigin();
-    return;
-  }
+  // This is validated by the Mojo typemapping.
+  DCHECK(data->reporting_origin.IsValid());
 
   FrozenContext& context = receivers_.current_context();
 
@@ -565,7 +560,7 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
 
   AttributionTrigger trigger(
       attribution_reporting::TriggerRegistration(
-          std::move(*reporting_origin), std::move(*filters),
+          std::move(data->reporting_origin), std::move(*filters),
           std::move(*not_filters), data->debug_key,
           data->aggregatable_dedup_key, std::move(*event_trigger_data_list),
           std::move(*aggregatable_trigger_data),
@@ -698,6 +693,7 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
     const blink::AttributionSrcToken& attribution_src_token,
     SuitableOrigin reporting_origin,
     std::string header_value,
+    AttributionNavigationType nav_type,
     data_decoder::DataDecoder::ValueOrError result) {
   // TODO(johnidel): Add metrics regarding parsing failures / misconfigured
   // headers.
@@ -728,6 +724,8 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
   }
 
   if (source.has_value()) {
+    base::UmaHistogramEnumeration(
+        "Conversions.SourceRegistration.NavigationType.Foreground", nav_type);
     attribution_manager_->HandleSource(std::move(*source));
   } else {
     attribution_manager_->NotifyFailedSourceRegistration(

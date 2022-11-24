@@ -884,10 +884,10 @@ Style notes:
         Keyboard backlight is on
       </message>
       <message name="IDS_ASH_STATUS_AREA_TOAST_MIC_OFF" desc="The text in the toast that shows up when the mic is muted using a physical key or shortcut.">
-        Microphone is off
+        Device microphone access is off
       </message>
       <message name="IDS_ASH_STATUS_AREA_TOAST_MIC_ON" desc="The text in the toast that shows up when the mic is unmuted using a physical key or shortcut.">
-        Microphone is on
+        Device microphone access is on
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the toggle volume muted button in the tray.">
         Toggle Volume. <ph name="STATE_TEXT">$1<ex>Volume is muted</ex></ph>
@@ -1534,7 +1534,7 @@ Style notes:
       </message>
       <message name="IDS_ASH_PHONE_HUB_FULL_APPS_LIST_BUTTON_TITLE" desc="Text indicates that the button is to display full apps list.">
         More apps
-      </message> 
+      </message>
       <message name="IDS_ASH_PHONE_HUB_RECENT_APPS_PLACEHOLDER" desc="The placeholder of the recently used apps section (where users relaunch it directly after an app is launched from a notification) in phone hub bubble.">
         When you stream your phone’s apps, they will appear here
       </message>
@@ -2267,6 +2267,12 @@ Connect your device to power.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header. [CHAR_LIMIT=18]">
         Network
       </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_KNOWN_NETWORKS" desc="The label used in the network detailed page for the known networks group">
+        Known networks
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_UNKNOWN_NETWORKS" desc="The label used in the network detailed page for the unknown networks group">
+        Unknown networks
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN" desc="Accessibility label used for a network in quick settings network list that opens network settings page.">
         Open settings for <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
       </message>
@@ -2559,7 +2565,7 @@ Connect your device to power.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_HEADPHONE" desc="label used for audio headphone device">
-        Headphone
+        Headphones
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_SPEAKER" desc="label used for internal audio speaker">
@@ -3448,6 +3454,9 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_ACTION_DEBUG_TOGGLE_TABLET_MODE" translateable="false" desc="Label for accelerator action - Turn Tablet mode on or off.">
         Turn tablet mode on or off
       </message>
+      <message name="IDS_ASH_ACCELERATOR_ACTION_DEBUG_TOGGLE_VIDEO_CONFERENCE_CAMERA_TRAY_ICON" translateable="false" desc="Label for accelerator action - Turn video conference camera tray icon on or off.">
+        Turn video conference camera tray icon on or off
+      </message>
       <message name="IDS_ASH_ACCELERATOR_ACTION_DEBUG_TOGGLE_WALLPAPER_MODE" translateable="false" desc="Label for accelerator action - Turn wallpapaer mode on or off.">
         Turn wallpapaer mode on or off
       </message>
@@ -3954,6 +3963,7 @@ Connect your device to power.
         Sign out
       </message>
 
+      <!-- TODO(b/259709518): Update naming from "Message center" to "Notification center" -->
       <!-- Message center -->
       <message name="IDS_ASH_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The spoken feedback name for when accessible focus moves to the message center">
         Notification Center
@@ -4026,6 +4036,9 @@ Connect your device to power.
           ChromiumOS
         </message>
       </if>
+      <message name="IDS_ASH_MESSAGE_CENTER_ACCELERATOR_NO_NOTIFICATIONS" desc="The toast message displayed when Alt+Shift+N is pressed but there are no notifications.">
+        No notifications
+      </message>
 
       <!-- Notification -->
       <message name="IDS_ASH_NOTIFICATION_EXPAND_TOOLTIP" desc="The tooltip for the expand button, indicating action to expand the notification.">
@@ -4507,20 +4520,23 @@ Here are some things you can try to get started.
       </message>
 
       <!-- Strings for microphone mute switch notification -->
-      <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the microphone while the microphone is muted.i Similar to IDS_MICROPHONE_MUTED_NOTIFICATION_TITLE_WITH_APP_NAME, except this message contains a generic app name string. Used when the name of the app that's using the microphone cannot be determined.">
-          Turn on microphone access?
+      <message name="IDS_MICROPHONE_MUTED_BY_SW_SWITCH_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the microphone while the microphone is muted by one of the software switches.">
+        Turn on microphone access?
+      </message>
+      <message name="IDS_MICROPHONE_MUTED_BY_HW_SWITCH_NOTIFICATION_TITLE" desc="Title for a notification shown to the users when an app tries to use the microphone while the microphone is muted by the hardware switch.">
+        Turn on physical mic switch on your device
       </message>
       <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use the microphone while the microphone is muted.">
-        Allows microphone access for all apps and websites with the microphone permission
+        This allows microphone access for all apps and websites with the microphone permission
       </message>
-      <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_APP_NAME" desc="Message for a notification shown to the users when an app tries to use the microphone while the microphone is muted.">
-        Allows microphone access for <ph name="APP_NAME">$1<ex>Zoom</ex></ph> and all apps and websites with the microphone permission
+      <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME" desc="Message for the notification shown to the users when an app tries to use the microphone while the microphone is muted.">
+        This allows microphone access for <ph name="APP_NAME">$1<ex>Zoom</ex></ph> and all apps and websites with the microphone permission
+      </message>
+      <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES" desc="Message for the notification shown to the users when multiple apps try to use the microphone while the microphone is muted.">
+        This allows microphone access for <ph name="APP1_NAME">$1<ex>Zoom</ex></ph>, <ph name="APP2_NAME">$2<ex>Snapchat</ex></ph>, and all apps and websites with the microphone permission
       </message>
       <message name="IDS_MICROPHONE_MUTED_NOTIFICATION_ACTION_BUTTON" desc="Label for an action button in a notification shown to the users when an app tries to use the microphone while the microphone is muted. The button, when tapped unmutes the microphone.">
         Turn on microphone access
-      </message>
-      <message name="IDS_MICROPHONE_MUTE_SWITCH_ON_NOTIFICATION_MESSAGE" desc="Message for a notification shown to the users when an app tries to use the microphone while the microphone mute switch, which disables microphone input, is turned on.">
-        Your microphone is off. Turn on your device’s microphone button.
       </message>
 
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION" desc="The short message to encourage user to unlock the device so that ChromeOS can perform the notification action selected by user after unlocking.">

@@ -251,15 +251,18 @@ PaletteTray::PaletteTray(Shelf* shelf)
       welcome_bubble_(std::make_unique<PaletteWelcomeBubble>(this)),
       stylus_event_handler_(std::make_unique<StylusEventHandler>(this)),
       scoped_session_observer_(this) {
+  SetPressedCallback(base::BindRepeating(&PaletteTray::OnPaletteTrayPressed,
+                                         base::Unretained(this)));
+
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  icon_ = new views::ImageView();
-  icon_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
-  UpdateTrayIcon();
 
+  auto icon = std::make_unique<views::ImageView>();
+  icon->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
   tray_container()->SetMargin(kTrayIconMainAxisInset, kTrayIconCrossAxisInset);
-  tray_container()->AddChildView(icon_);
+  icon_ = tray_container()->AddChildView(std::move(icon));
+  UpdateTrayIcon();
 
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
@@ -606,27 +609,6 @@ void PaletteTray::Initialize() {
   InitializeWithLocalState();
 }
 
-bool PaletteTray::PerformAction(const ui::Event& event) {
-  if (bubble_) {
-    if (num_actions_in_bubble_ == 0) {
-      RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION,
-                                PaletteInvocationMethod::MENU);
-    }
-    HidePalette();
-    return true;
-  }
-
-  // Do not show the bubble if there was an action on the palette tray while
-  // there was an active tool.
-  if (DeactivateActiveTool()) {
-    SetIsActive(false);
-    return true;
-  }
-
-  ShowBubble();
-  return true;
-}
-
 void PaletteTray::CloseBubble() {
   HidePalette();
 }
@@ -660,7 +642,7 @@ void PaletteTray::ShowBubble() {
   // rows.
 
   // Create and customize bubble view.
-  TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
+  auto bubble_view = std::make_unique<TrayBubbleView>(init_params);
   bubble_view->set_margins(GetSecondaryBubbleInsets());
   bubble_view->SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR(0, 0, kPaddingBetweenBottomAndLastTrayItem, 0)));
@@ -697,7 +679,8 @@ void PaletteTray::ShowBubble() {
   }
 
   // Show the bubble.
-  bubble_ = std::make_unique<TrayBubbleWrapper>(this, bubble_view);
+  bubble_ = std::make_unique<TrayBubbleWrapper>(this);
+  bubble_->ShowBubble(std::move(bubble_view));
   SetIsActive(true);
 }
 
@@ -756,6 +739,26 @@ void PaletteTray::OnPaletteEnabledPrefChanged() {
   } else {
     UpdateIconVisibility();
   }
+}
+
+void PaletteTray::OnPaletteTrayPressed(const ui::Event& event) {
+  if (bubble_) {
+    if (num_actions_in_bubble_ == 0) {
+      RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION,
+                                PaletteInvocationMethod::MENU);
+    }
+    HidePalette();
+    return;
+  }
+
+  // Do not show the bubble if there was an action on the palette tray while
+  // there was an active tool.
+  if (DeactivateActiveTool()) {
+    SetIsActive(false);
+    return;
+  }
+
+  ShowBubble();
 }
 
 void PaletteTray::OnHasSeenStylusPrefChanged() {

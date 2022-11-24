@@ -16,8 +16,7 @@ from xml.parsers import expat
 sys.path.append(os.path.abspath('.'))
 from policy_templates import GetPolicyTemplates
 
-_SRC_PATH = os.path.abspath('../../../')
-sys.path.append(os.path.join(_SRC_PATH, 'third_party'))
+sys.path.append(os.path.join('..', '..', '..', 'third_party'))
 import pyyaml
 
 
@@ -28,6 +27,8 @@ _TEST_CASES_DEPOT_PATH = os.path.join(
       'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
 _PRESUBMIT_PATH = os.path.join(
       'components', 'policy', 'resources', 'PRESUBMIT.py')
+_SYNTAX_CHECK_SCRIPT_PATH = os.path.join('components', 'policy', 'tools',
+      'syntax_check_policy_template_json.py')
 _TEMPLATES_PATH = os.path.join(
       'components', 'policy', 'resources',
       'templates')
@@ -67,6 +68,17 @@ def _LoadYamlFile(root, path):
   return _CACHED_FILES[str_path]
 
 
+def _GetKnownFeatures(input_api):
+  feature_messages = []
+  root = input_api.change.RepositoryRoot()
+  messages_path = input_api.os_path.join(_TEMPLATES_PATH, 'messages.yaml')
+  messages = _LoadYamlFile(root, messages_path)
+  for message in messages:
+    if message.startswith('doc_feature_'):
+      feature_messages.append(message[12:])
+  return feature_messages
+
+
 def _GetPolicyChangeList(input_api):
   '''Returns a list of policies modified inthe changelist with their old schema
      next to their new schemas.
@@ -88,7 +100,7 @@ def _GetPolicyChangeList(input_api):
   for affected_file in template_affected_files:
     path = affected_file.AbsoluteLocalPath()
     filename = os.path.basename(path)
-    filename_no_extension = os.path.splitext(filename)[0]
+    policy_name = os.path.splitext(filename)[0]
     if (filename == '.group.details.yaml' or
         filename == 'policy_atomic_groups.yaml'):
       continue
@@ -97,12 +109,14 @@ def _GetPolicyChangeList(input_api):
     if affected_file.Action() in ['M', 'D']:
       try:
         old_policy = pyyaml.safe_load('\n'.join(affected_file.OldContents()))
+        old_policy['name'] = policy_name
       except:
         old_policy = None
     if affected_file.Action() != 'D':
       new_policy = pyyaml.safe_load('\n'.join(affected_file.NewContents()))
+      new_policy['name'] = policy_name
     _CACHED_POLICY_CHANGE_LIST.append({
-      'policy': filename_no_extension,
+      'policy': policy_name,
       'old_policy': old_policy,
       'new_policy': new_policy})
   return _CACHED_POLICY_CHANGE_LIST
@@ -118,7 +132,7 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api, legacy_policy_template):
   try:
     tools_path = input_api.os_path.normpath(
         input_api.os_path.join(local_path, input_api.os_path.pardir, 'tools'))
-    sys.path = [tools_path] + sys.path
+    sys.path.append(tools_path)
     # Optimization: only load this when it's needed.
     import syntax_check_policy_template_json
     device_policy_proto_path = input_api.os_path.join(
@@ -452,6 +466,158 @@ def CheckDevicePolicyProtos(input_api, output_api):
          f"Policy '{policy}': Expected field '{field}' not found in "
          "chrome_device_policy.proto."))
   return results
+
+
+def CheckMissingPolicyNames(input_api, output_api):
+  results = []
+  if _SkipPresubmitChecks(
+      input_api,
+      [_MESSAGES_PATH, _POLICIES_DEFINITIONS_PATH, _SYNTAX_CHECK_SCRIPT_PATH,
+       _PRESUBMIT_PATH]):
+    return results
+
+  root = input_api.change.RepositoryRoot()
+
+  # Check for missing policy names in policy.yaml and policy names to be removed
+  # from policy.yaml.
+  policies_yaml = _LoadYamlFile(root, _POLICIES_YAML_PATH)
+  policies = policies_yaml['policies']
+  policy_names = frozenset([name for _, name in policies.items() if name])
+  policy_changelist = _GetPolicyChangeList(input_api)
+  for policy_change in policy_changelist:
+    policy_name = policy_change['policy']
+    if policy_change['new_policy'] and policy_name not in policy_names:
+      results.append(output_api.PresubmitError(
+            f'{policy_name} needs an ID in {_POLICIES_YAML_PATH}'))
+    if not policy_change['new_policy'] and policy_name in policy_names:
+      results.append(output_api.PresubmitError(
+            f'{policy_name}\'s needs to be erased from {_POLICIES_YAML_PATH}'))
+
+  return results
+
+
+def CheckPoliciesYamlOrdering(input_api, output_api):
+  results = []
+  if _SkipPresubmitChecks(
+      input_api,
+      [_POLICIES_YAML_PATH, _PRESUBMIT_PATH]):
+    return results
+
+  root = input_api.change.RepositoryRoot()
+  with open(os.path.join(root, _POLICIES_YAML_PATH), 'r') as f:
+    policies_yaml_lines = f.readlines()
+
+  previous_id = 0
+  error_msg_template = ''
+  for line in policies_yaml_lines:
+    if line.startswith('  '):
+      if not error_msg_template:
+        results.append(output_api.PresubmitError(
+          f'Invalid syntax, missing either policies, or atomic_groups key.'))
+        continue
+      id = int(line.strip().split(':')[0])
+      if previous_id + 1 != id:
+        results.append(output_api.PresubmitError(error_msg_template % id))
+      previous_id = id
+    elif 'policies:' in line:
+      error_msg_template = 'Policy ID %s is out of place'
+      previous_id = 0
+    elif  'atomic_groups:' in line:
+      error_msg_template = 'Atomic policy group ID %s is out of place'
+      previous_id = 0
+  return results
+
+
+def CheckPolicyIds(input_api, output_api):
+  results = []
+  if _SkipPresubmitChecks(
+      input_api,
+      [_MESSAGES_PATH, _POLICIES_DEFINITIONS_PATH, _SYNTAX_CHECK_SCRIPT_PATH,
+       _PRESUBMIT_PATH]):
+    return results
+
+  root = input_api.change.RepositoryRoot()
+
+  # Check for duplicated ids
+  policies_yaml = _LoadYamlFile(root, _POLICIES_YAML_PATH)
+  policies = policies_yaml['policies']
+  policy_ids = set()
+  duplicated_policy_ids = []
+  for id, _ in policies.items():
+    if id in policy_ids:
+      duplicated_policy_ids.add(id)
+    policy_ids.add(id)
+
+  if duplicated_policy_ids:
+    duplicated_policy_ids_str = ', '.join(duplicated_policy_ids)
+    results.append(output_api.PresubmitError(
+        f'Duplicate ids {duplicated_policy_ids_str} in {_POLICIES_YAML_PATH}'))
+
+  # Check for missing ids
+  missing_ids = sorted(list(set(range(1, max(policy_ids) + 1)) - policy_ids))
+  if missing_ids:
+    missing_ids_str = ', '.join(str(id) for id in missing_ids)
+    results.append(output_api.PresubmitError(
+        f'Missing policy ids {missing_ids_str} in {_POLICIES_YAML_PATH}'))
+
+  return results
+
+
+
+def CheckPolicyDefinitions(input_api, output_api):
+  results = []
+  if _SkipPresubmitChecks(
+      input_api,
+      [_MESSAGES_PATH, _POLICIES_DEFINITIONS_PATH, _SYNTAX_CHECK_SCRIPT_PATH,
+       _PRESUBMIT_PATH]):
+    return results
+
+  root = input_api.change.RepositoryRoot()
+  # Get the current version from the VERSION file so that we can check
+  # which policies are un-released and thus can be changed at will.
+  current_version = None
+  try:
+    version_path = input_api.os_path.join(root, 'chrome', 'VERSION')
+    with open(version_path, "rb") as f:
+      current_version = int(f.readline().split(b"=")[1])
+      print('Checking policies against current version: ' +
+            current_version)
+  except:
+    pass
+
+  old_sys_path = sys.path
+  tools_path = input_api.os_path.normpath(input_api.os_path.join(
+    input_api.PresubmitLocalPath(), input_api.os_path.pardir, 'tools'))
+  sys.path.append(tools_path)
+  # Optimization: only load this when it's needed.
+  import syntax_check_policy_template_json
+  sys.path = old_sys_path
+
+  checker = syntax_check_policy_template_json.PolicyTemplateChecker()
+  # Check if there is a tag that allows us to bypass compatibility checks.
+  # This can be used in situations where there is a bug in the validation
+  # code or if a policy change needs to urgently be submitted.
+  skip_compatibility_check = ('BYPASS_POLICY_COMPATIBILITY_CHECK'
+                                in input_api.change.tags)
+  errors, warnings = checker.CheckModifiedPolicies(
+    _GetPolicyChangeList(input_api), current_version, skip_compatibility_check,
+    _GetKnownFeatures(input_api))
+
+  # PRESUBMIT won't print warning if there is any error. Append warnings to
+  # error for policy_templates.json so that they can always be printed
+  # together.
+  if errors:
+    error_msgs = "\n".join(errors+warnings)
+    return [output_api.PresubmitError('Syntax error(s) in file:',
+                                      [_TEMPLATES_PATH],
+                                      error_msgs)]
+  elif warnings:
+    warning_msgs = "\n".join(warnings)
+    return [output_api.PresubmitPromptWarning('Syntax warning(s) in file:',
+                                                [_TEMPLATES_PATH],
+                                                warning_msgs)]
+
+  return []
 
 
 def _CommonChecks(input_api, output_api):

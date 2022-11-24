@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
@@ -289,7 +290,8 @@ void ChromeBrowserCloudManagementControllerDesktop::StartInvalidations() {
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager()
           ->core(),
-      base::ThreadTaskRunnerHandle::Get(), base::DefaultClock::GetInstance(),
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
+      base::DefaultClock::GetInstance(),
       0 /* highest_handled_invalidation_version */);
   policy_invalidator_->Initialize(invalidation_service_.get());
 

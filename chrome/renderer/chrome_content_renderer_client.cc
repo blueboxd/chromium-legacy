@@ -21,7 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -537,7 +537,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
         HeapProfilerController::GetProfilingEnabled() ==
             HeapProfilerController::ProfilingEnabled::kEnabled) {
       ThreadProfiler::SetMainThreadTaskRunner(
-          base::ThreadTaskRunnerHandle::Get());
+          base::SingleThreadTaskRunner::GetCurrentDefault());
       mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
       thread->BindHostReceiver(collector.InitWithNewPipeAndPassReceiver());
       metrics::CallStackProfileBuilder::
@@ -1599,10 +1599,9 @@ void ChromeContentRendererClient::
   // One of the features of kOmniboxTriggerForPrerender2 and
   // kSupportSearchSuggestionForPrerender2 should be enabled before telling the
   // blink side that chrome is enrolling the experinment.
-  if (blink::features::IsPrerender2Enabled() &&
-      (base::FeatureList::IsEnabled(features::kOmniboxTriggerForPrerender2) ||
-       base::FeatureList::IsEnabled(
-           features::kSupportSearchSuggestionForPrerender2))) {
+  if (base::FeatureList::IsEnabled(features::kOmniboxTriggerForPrerender2) ||
+      base::FeatureList::IsEnabled(
+          features::kSupportSearchSuggestionForPrerender2)) {
     blink::WebRuntimeFeatures::EnablePrerender2RelatedFeatures(true);
   }
 

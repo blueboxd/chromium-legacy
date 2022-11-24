@@ -12,7 +12,7 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_storage.h"
-#include "components/reading_list/core/reading_list_store_delegate.h"
+#include "components/reading_list/core/reading_list_sync_bridge_delegate.h"
 
 namespace base {
 class Clock;
@@ -22,7 +22,7 @@ class PrefService;
 
 // Concrete implementation of a reading list model using in memory lists.
 class ReadingListModelImpl : public ReadingListModel,
-                             public ReadingListStoreDelegate {
+                             public ReadingListSyncBridgeDelegate {
  public:
   using ReadingListEntries = std::map<GURL, ReadingListEntry>;
 
@@ -42,7 +42,7 @@ class ReadingListModelImpl : public ReadingListModel,
 
   ~ReadingListModelImpl() override;
 
-  void StoreLoaded(std::unique_ptr<ReadingListEntries> entries) override;
+  void StoreLoaded(ReadingListEntries entries) override;
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -132,7 +132,7 @@ class ReadingListModelImpl : public ReadingListModel,
 
   // Returns a mutable pointer to the entry with URL |url|. Return nullptr if
   // no entry is found.
-  ReadingListEntry* GetMutableEntryFromURL(const GURL& url) const;
+  ReadingListEntry* GetMutableEntryFromURL(const GURL& url);
 
   // Returns the |storage_layer_| of the model.
   ReadingListModelStorage* StorageLayer();
@@ -142,7 +142,7 @@ class ReadingListModelImpl : public ReadingListModel,
 
   void RebuildIndex() const;
 
-  std::unique_ptr<ReadingListEntries> entries_;
+  ReadingListEntries entries_;
   size_t unread_entry_count_;
   size_t read_entry_count_;
   size_t unseen_entry_count_;

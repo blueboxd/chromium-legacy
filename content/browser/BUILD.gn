@@ -641,6 +641,10 @@ source_set("browser") {
     "browsing_topics/browsing_topics_site_data_manager_impl.h",
     "browsing_topics/browsing_topics_site_data_storage.cc",
     "browsing_topics/browsing_topics_site_data_storage.h",
+    "browsing_topics/browsing_topics_url_loader.cc",
+    "browsing_topics/browsing_topics_url_loader.h",
+    "browsing_topics/browsing_topics_url_loader_service.cc",
+    "browsing_topics/browsing_topics_url_loader_service.h",
     "browsing_topics/header_util.cc",
     "browsing_topics/header_util.h",
     "buckets/bucket_context.h",
@@ -1393,8 +1397,6 @@ source_set("browser") {
     "permissions/permission_service_context.h",
     "permissions/permission_service_impl.cc",
     "permissions/permission_service_impl.h",
-    "picture_in_picture/document_picture_in_picture_window_controller_impl.cc",
-    "picture_in_picture/document_picture_in_picture_window_controller_impl.h",
     "picture_in_picture/picture_in_picture_service_impl.cc",
     "picture_in_picture/picture_in_picture_service_impl.h",
     "picture_in_picture/picture_in_picture_session.cc",
@@ -1478,6 +1480,8 @@ source_set("browser") {
     "preloading/prerender/prerender_navigation_throttle.h",
     "preloading/prerender/prerender_navigation_utils.cc",
     "preloading/prerender/prerender_navigation_utils.h",
+    "preloading/prerender/prerender_new_tab_handle.cc",
+    "preloading/prerender/prerender_new_tab_handle.h",
     "preloading/prerender/prerender_subframe_navigation_throttle.cc",
     "preloading/prerender/prerender_subframe_navigation_throttle.h",
     "preloading/prerenderer.cc",
@@ -1760,6 +1764,7 @@ source_set("browser") {
     "renderer_host/navigation_request_info.h",
     "renderer_host/navigation_throttle_runner.cc",
     "renderer_host/navigation_throttle_runner.h",
+    "renderer_host/navigation_type.h",
     "renderer_host/navigator.cc",
     "renderer_host/navigator.h",
     "renderer_host/navigator_delegate.h",
@@ -2318,6 +2323,8 @@ source_set("browser") {
       "font_service.cc",
       "font_service.h",
       "media/stable_video_decoder_factory.cc",
+      "media/video_encode_accelerator_provider_launcher.cc",
+      "media/video_encode_accelerator_provider_launcher.h",
       "memory/swap_metrics_driver_impl_linux.cc",
       "memory/swap_metrics_driver_impl_linux.h",
       "sandbox_host_linux.cc",
@@ -3120,6 +3127,10 @@ source_set("browser") {
       "webauth/virtual_discovery.h",
       "webauth/virtual_fido_discovery_factory.cc",
       "webauth/virtual_fido_discovery_factory.h",
+
+      # The Document Picture-in-Picture API is not implemented on Android.
+      "picture_in_picture/document_picture_in_picture_window_controller_impl.cc",
+      "picture_in_picture/document_picture_in_picture_window_controller_impl.h",
     ]
 
     deps += [

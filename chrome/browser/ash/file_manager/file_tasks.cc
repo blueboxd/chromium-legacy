@@ -112,6 +112,8 @@ const char kActionIdWebDriveOfficePowerPoint[] =
     "open-web-drive-office-powerpoint";
 const char kActionIdOpenInOffice[] = "open-in-office";
 
+const char kODFSExtensionId[] = "ajdgmkbkgifbokednjgbmieaemeighkg";
+
 namespace {
 
 // The values "file" and "app" are confusing, but cannot be changed easily as
@@ -478,8 +480,7 @@ bool ExecuteWebDriveOfficeTask(Profile* profile,
       // TODO(b/247038054) Add user preference to decide whether or not the
       // dialog should be shown.
       return ash::cloud_upload::UploadAndOpen(
-          profile, file_urls, ash::cloud_upload::CloudProvider::kGoogleDrive,
-          /*show_dialog=*/false);
+          profile, file_urls, ash::cloud_upload::CloudProvider::kGoogleDrive);
     }
   } else {
     UMA_HISTOGRAM_ENUMERATION(kDriveErrorMetricName,
@@ -494,19 +495,6 @@ bool ExecuteWebDriveOfficeTask(Profile* profile,
 using ash::file_system_provider::ProvidedFileSystemInfo;
 using ash::file_system_provider::ProviderId;
 using ash::file_system_provider::Service;
-
-const char kODFSExtensionId[] = "ajdgmkbkgifbokednjgbmieaemeighkg";
-
-bool ODFSMounted(Profile* profile) {
-  ProviderId provider_id = ProviderId::CreateFromExtensionId(kODFSExtensionId);
-
-  Service* service = Service::Get(profile);
-  std::vector<ProvidedFileSystemInfo> file_systems =
-      service->GetProvidedFileSystemInfoList(provider_id);
-
-  // Assume any file system mounted by ODFS is the correct one.
-  return !file_systems.empty();
-}
 
 bool FileIsOnODFS(const FileSystemURL& url, Profile* profile) {
   ash::file_system_provider::util::FileSystemURLParser parser(url);
@@ -563,26 +551,18 @@ bool ExecuteOpenInOfficeTask(Profile* profile,
     // TODO(petermarshall): UMAs.
   }
 
-  if (ODFSMounted(profile)) {
-    if (FileIsOnODFS(file_urls.front(), profile)) {
-      OpenODFSUrl(profile, task, file_urls);
-      LOG(ERROR) << "File is on ODFS";
-      return true;
-    } else {
-      // We need to move the file to ODFS first. This flow will eventually open
-      // the file in the browser, too.
-      // TODO(b/247038054) Add user preference to decide whether or not the
-      // dialog should be shown.
-      LOG(ERROR) << "File can be moved to ODFS";
-      return ash::cloud_upload::UploadAndOpen(
-          profile, file_urls, ash::cloud_upload::CloudProvider::kOneDrive,
-          /*show_dialog=*/false);
-    }
+  if (FileIsOnODFS(file_urls.front(), profile)) {
+    OpenODFSUrl(profile, task, file_urls);
+    LOG(ERROR) << "File is on ODFS";
+    return true;
   } else {
-    LOG(ERROR) << "ODFS not available/mounted";
-    return GetUserFallbackChoice(
-        profile, task, file_urls,
-        ash::office_fallback::FallbackReason::kOneDriveUnavailable);
+    // We need to move the file to ODFS first. This flow will eventually open
+    // the file in the browser, too.
+    // TODO(b/247038054) Add user preference to decide whether or not the
+    // dialog should be shown.
+    LOG(ERROR) << "File can be moved to ODFS";
+    return ash::cloud_upload::UploadAndOpen(
+        profile, file_urls, ash::cloud_upload::CloudProvider::kOneDrive);
   }
 }
 
@@ -593,6 +573,8 @@ ResultingTasks::~ResultingTasks() = default;
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDefaultHandlersForFileExtensions);
+  registry->RegisterBooleanPref(prefs::kOfficeSetupComplete, false);
+  registry->RegisterBooleanPref(prefs::kOfficeFilesAlwaysMove, false);
 }
 
 // Converts a string to a TaskType. Returns TASK_TYPE_UNKNOWN on error.
@@ -1251,6 +1233,22 @@ void SetPowerPointFileHandler(Profile* profile, const std::string& action_id) {
       {"application/vnd.ms-powerpoint",
        "application/"
        "vnd.openxmlformats-officedocument.presentationml.presentation"});
+}
+
+void SetOfficeSetupComplete(Profile* profile, bool complete) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeSetupComplete, complete);
+}
+
+bool OfficeSetupComplete(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kOfficeSetupComplete);
+}
+
+void SetAlwaysMoveOfficeFiles(Profile* profile, bool always_move) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeFilesAlwaysMove, always_move);
+}
+
+bool AlwaysMoveOfficeFiles(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kOfficeFilesAlwaysMove);
 }
 
 }  // namespace file_manager::file_tasks

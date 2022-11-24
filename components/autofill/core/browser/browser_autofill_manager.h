@@ -282,12 +282,6 @@ class BrowserAutofillManager : public AutofillManager,
   // to be uploadable. Exposed for testing.
   bool ShouldUploadForm(const FormStructure& form);
 
-  void SetProfileFillViaAutofillAssistantIntent(
-      const autofill_assistant::AutofillAssistantIntent intent) override;
-
-  void SetCreditCardFillViaAutofillAssistantIntent(
-      const autofill_assistant::AutofillAssistantIntent intent) override;
-
   // Returns the last form the autofill manager considered in this frame.
   virtual const FormData& last_query_form() const;
 
@@ -412,15 +406,11 @@ class BrowserAutofillManager : public AutofillManager,
   FormData* pending_form_data_for_test() { return pending_form_data_.get(); }
 
  protected:
-  // Uploads the form data to the Autofill server. |observed_submission|
-  // indicates that upload is the result of a submission event.
-  virtual void UploadFormData(const FormStructure& submitted_form,
-                              bool observed_submission);
-
-  // Logs quality metrics for the |submitted_form| and uploads the form data
-  // to the crowdsourcing server, if appropriate. |observed_submission|
-  // indicates whether the upload is a result of an observed submission event.
-  virtual void UploadFormDataAsyncCallback(
+  // Logs quality metrics for the |submitted_form| and uploads votes for the
+  // field types to the crowdsourcing server, if appropriate.
+  // |observed_submission| indicates whether the upload is a result of an
+  // observed submission event.
+  virtual void UploadVotesAndLogQuality(
       std::unique_ptr<FormStructure> submitted_form,
       base::TimeTicks interaction_time,
       base::TimeTicks submission_time,

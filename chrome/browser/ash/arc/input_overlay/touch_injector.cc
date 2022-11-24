@@ -23,6 +23,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_source.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -156,8 +157,10 @@ class TouchInjector::KeyCommand {
 };
 
 TouchInjector::TouchInjector(aura::Window* top_level_window,
+                             const std::string& package_name,
                              OnSaveProtoFileCallback save_file_callback)
     : window_(top_level_window),
+      package_name_(package_name),
       content_bounds_(CalculateWindowContentBounds(window_)),
       save_file_callback_(save_file_callback) {}
 
@@ -198,6 +201,7 @@ void TouchInjector::UnRegisterEventRewriter() {
   // Need reset pending input bind if it is unregistered in edit mode.
   for (auto& action : actions_)
     action->ResetPendingBind();
+  OnSaveProtoFile();
 }
 
 void TouchInjector::Update() {
@@ -314,11 +318,8 @@ void TouchInjector::OnBindingRestore() {
     action->RestoreToDefault();
 }
 
-const std::string* TouchInjector::GetPackageName() const {
-  return window_->GetProperty(ash::kArcPackageNameKey);
-}
-
 void TouchInjector::OnProtoDataAvailable(AppDataProto& proto) {
+  LoadMenuEntryFromProto(proto);
   LoadMenuStateFromProto(proto);
   for (const ActionProto& action_proto : proto.actions()) {
     if (action_proto.id() <= kMaxDefaultActionID) {
@@ -344,27 +345,33 @@ void TouchInjector::OnProtoDataAvailable(AppDataProto& proto) {
 
 void TouchInjector::OnInputMenuViewRemoved() {
   OnSaveProtoFile();
-  const auto* package_name = GetPackageName();
   // Record UMA stats upon |InputMenuView| close because it needs to ignore the
   // unfinalized menu state change.
   if (touch_injector_enable_ != touch_injector_enable_uma_) {
     touch_injector_enable_uma_ = touch_injector_enable_;
     RecordInputOverlayFeatureState(touch_injector_enable_uma_);
     InputOverlayUkm::RecordInputOverlayFeatureStateUkm(
-        *package_name, touch_injector_enable_uma_);
+        package_name_, touch_injector_enable_uma_);
   }
 
   if (input_mapping_visible_ != input_mapping_visible_uma_) {
     input_mapping_visible_uma_ = input_mapping_visible_;
     RecordInputOverlayMappingHintState(input_mapping_visible_uma_);
     InputOverlayUkm::RecordInputOverlayMappingHintStateUkm(
-        *package_name, input_mapping_visible_uma_);
+        package_name_, input_mapping_visible_uma_);
   }
 }
 
 void TouchInjector::NotifyFirstTimeLaunch() {
   first_launch_ = true;
   show_nudge_ = true;
+}
+
+void TouchInjector::SaveMenuEntryLocation(
+    gfx::Point menu_entry_location_point) {
+  menu_entry_location_ = absl::make_optional<gfx::Vector2dF>(
+      1.0 * menu_entry_location_point.x() / content_bounds().width(),
+      1.0 * menu_entry_location_point.y() / content_bounds().height());
 }
 
 void TouchInjector::UpdateForDisplayMetricsChanged() {
@@ -657,7 +664,7 @@ ui::EventDispatchDetails TouchInjector::RewriteEvent(
         // Some apps can't process correctly on the touch move event which
         // follows touch press event immediately, so send the touch move event
         // delayed here.
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(&TouchInjector::SendExtraEvent,
                            weak_ptr_factory_.GetWeakPtr(), continuation,
@@ -755,18 +762,28 @@ std::unique_ptr<AppDataProto> TouchInjector::ConvertToProto() {
     customized_proto.reset();
   }
   AddMenuStateToProto(*app_data_proto);
+  AddMenuEntryToProtoIfCustomized(*app_data_proto);
   return app_data_proto;
 }
 
 void TouchInjector::OnSaveProtoFile() {
   auto app_data_proto = ConvertToProto();
-  std::string package_name(*GetPackageName());
-  save_file_callback_.Run(std::move(app_data_proto), package_name);
+  save_file_callback_.Run(std::move(app_data_proto), package_name_);
 }
 
 void TouchInjector::AddMenuStateToProto(AppDataProto& proto) {
   proto.set_input_control(touch_injector_enable_);
   proto.set_input_mapping_hint(input_mapping_visible_);
+}
+
+void TouchInjector::AddMenuEntryToProtoIfCustomized(AppDataProto& proto) const {
+  if (!menu_entry_location_)
+    return;
+  auto menu_entry_position_proto = std::make_unique<PositionProto>();
+  menu_entry_position_proto->add_anchor_to_target(menu_entry_location_->x());
+  menu_entry_position_proto->add_anchor_to_target(menu_entry_location_->y());
+
+  proto.set_allocated_menu_entry_position(menu_entry_position_proto.release());
 }
 
 void TouchInjector::LoadMenuStateFromProto(AppDataProto& proto) {
@@ -777,6 +794,15 @@ void TouchInjector::LoadMenuStateFromProto(AppDataProto& proto) {
 
   if (display_overlay_controller_)
     display_overlay_controller_->OnApplyMenuState();
+}
+
+void TouchInjector::LoadMenuEntryFromProto(AppDataProto& proto) {
+  if (!proto.has_menu_entry_position())
+    return;
+  auto menu_entry_position = proto.menu_entry_position().anchor_to_target();
+  DCHECK_EQ(menu_entry_position.size(), 2);
+  menu_entry_location_ = absl::make_optional<gfx::Vector2dF>(
+      menu_entry_position[0], menu_entry_position[1]);
 }
 
 std::unique_ptr<Action> TouchInjector::CreateRawAction(ActionType action_type) {
@@ -911,13 +937,12 @@ void TouchInjector::RemoveActionView(Action* action) {
 void TouchInjector::RecordMenuStateOnLaunch() {
   touch_injector_enable_uma_ = touch_injector_enable_;
   input_mapping_visible_uma_ = input_mapping_visible_;
-  const auto* package_name = GetPackageName();
   RecordInputOverlayFeatureState(touch_injector_enable_uma_);
   InputOverlayUkm::RecordInputOverlayFeatureStateUkm(
-      *package_name, touch_injector_enable_uma_);
+      package_name_, touch_injector_enable_uma_);
   RecordInputOverlayMappingHintState(input_mapping_visible_uma_);
   InputOverlayUkm::RecordInputOverlayMappingHintStateUkm(
-      *package_name, input_mapping_visible_uma_);
+      package_name_, input_mapping_visible_uma_);
 }
 
 int TouchInjector::GetRewrittenTouchIdForTesting(ui::PointerId original_id) {

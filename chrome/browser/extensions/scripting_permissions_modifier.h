@@ -41,12 +41,6 @@ class ScriptingPermissionsModifier {
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   void SetWithholdHostPermissions(bool withhold);
 
-  // Returns true if the associated extension can be affected by
-  // runtime host permissions.
-  // TODO(crbug.com/1289441): Migrate callers to
-  // PermissionsManager::CanAffectExtension.
-  bool CanAffectExtension() const;
-
   // Grants the extension permission to run on the origin of |url|.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
@@ -79,9 +73,6 @@ class ScriptingPermissionsModifier {
   // may not be the permissions to compare against.
   std::unique_ptr<const PermissionSet> WithholdPermissionsIfNecessary(
       const PermissionSet& permissions);
-
-  // Returns the subset of active permissions which can be withheld.
-  std::unique_ptr<const PermissionSet> GetRevokablePermissions() const;
 
  private:
   // Grants any withheld host permissions.

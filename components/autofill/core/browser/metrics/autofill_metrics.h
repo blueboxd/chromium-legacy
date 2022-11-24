@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -21,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
@@ -30,7 +32,6 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
-#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -991,14 +992,12 @@ class AutofillMetrics {
                           AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp,
                           FormSignature form_signature,
-                          const FormInteractionCounts& form_interaction_counts,
-                          autofill_assistant::AutofillAssistantIntent intent);
+                          const FormInteractionCounts& form_interaction_counts);
     void LogKeyMetrics(const DenseSet<FormType>& form_types,
                        bool data_to_fill_available,
                        bool suggestions_shown,
                        bool edited_autofilled_field,
                        bool suggestion_filled,
-                       autofill_assistant::AutofillAssistantIntent intent,
                        const FormInteractionCounts& form_interaction_counts,
                        const FormInteractionsFlowId& flow_id);
     void LogFormEvent(FormEvent form_event,
@@ -1017,6 +1016,14 @@ class AutofillMetrics {
         const FormSignature form_signature,
         const AutofillField& field,
         ServerFieldType old_type);
+
+    // Logs a hash of the `sectioning_signature` for a specific
+    // `form_signature`. This is useful for detecting sites where different
+    // sectioning algorithms yield different results. Emitted every time
+    // sectioning is performed and only when
+    // `AutofillUseParameterizedSectioning` is enabled.
+    void LogSectioningHash(FormSignature form_signature,
+                           uint32_t sectioning_signature);
 
    private:
     bool CanLog() const;
@@ -1058,8 +1065,8 @@ class AutofillMetrics {
     kNone = 0,
     kValid = 1,
     kGarbage = 2,
-    kIgnored = 3,
-    kMaxValue = kIgnored
+    kOff = 3,
+    kMaxValue = kOff
   };
 
   AutofillMetrics() = delete;
@@ -1420,6 +1427,10 @@ class AutofillMetrics {
   static void LogFieldFillingStats(FormType form_type,
                                    const FormGroupFillingStats& filling_stats);
 
+  // Logs the number of sections and the number of fields/section.
+  static void LogSectioningMetrics(
+      const base::flat_map<Section, size_t>& fields_per_section);
+
   // This should be called each time a server response is parsed for a form.
   static void LogServerResponseHasDataForForm(bool has_data);
 
@@ -1437,8 +1448,7 @@ class AutofillMetrics {
       const base::TimeTicks& form_parsed_timestamp,
       FormSignature form_signature,
       FormInteractionsUkmLogger* form_interactions_ukm_logger,
-      const FormInteractionCounts& form_interaction_counts,
-      const autofill_assistant::AutofillAssistantIntent intent);
+      const FormInteractionCounts& form_interaction_counts);
 
   // Logs if every non-empty field in a submitted form was filled by Autofill.
   // If |is_address| an address was filled, otherwise it was a credit card.
@@ -1782,9 +1792,10 @@ class AutofillMetrics {
       PredictionState prediction_state,
       AutocompleteState autocomplete_state);
 
-  // Logs a field's server and heuristic type on form submit. This is only used
-  // for fields with autocomplete=garbage.
+  // Logs a field's server and heuristic type on form submit into a histogram
+  // corresponding to the field's `autocomplete_state`.
   static void LogAutocompletePredictionCollisionTypes(
+      AutocompleteState autocomplete_state,
       ServerFieldType server_type,
       ServerFieldType heuristic_types);
 
@@ -1797,6 +1808,13 @@ class AutofillMetrics {
   // heuristic precedence is disabled.
   static void LogAcceptedFilledFieldWithNumericQuantityHeuristicPrediction(
       bool accepted);
+
+  // Returns the histogram string for the passed in
+  // `AutofillClient::PaymentsRpcCardType` or `CreditCard::RecordType`, starting
+  // with a period.
+  static std::string GetHistogramStringForCardType(
+      absl::variant<AutofillClient::PaymentsRpcCardType, CreditCard::RecordType>
+          card_type);
 
   // Logs the context menu impressions based on the autofill type as well as
   // based on the autocomplete type.

@@ -1842,19 +1842,9 @@ CommandHandler.COMMANDS_['default-task'] = new (class extends FilesCommand {
  */
 CommandHandler.COMMANDS_['open-with'] = new (class extends FilesCommand {
   execute(event, fileManager) {
-    fileManager.taskController.getFileTasks()
-        .then(tasks => {
-          tasks.showTaskPicker(
-              fileManager.ui.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
-              '', task => {
-                tasks.execute(task);
-              }, TaskPickerType.OpenWith);
-        })
-        .catch(error => {
-          if (error) {
-            console.warn(error.stack || error);
-          }
-        });
+    console.assert(
+        `open-with command doesn't execute, ` +
+        `instead it only opens the sub-menu`);
   }
 
   /** @override */
@@ -2156,11 +2146,8 @@ CommandHandler.COMMANDS_['search'] = new (class extends FilesCommand {
   execute(event, fileManager) {
     // Cancel item selection.
     fileManager.directoryModel.clearSelection();
-
-    // Focus and unhide the search box.
-    const element = fileManager.document.querySelector('#search-box cr-input');
-    element.disabled = false;
-    (/** @type {!CrInputElement} */ (element)).select();
+    // Open the query input via the search container.
+    fileManager.ui.searchContainer.openSearch();
   }
 
   /** @override */

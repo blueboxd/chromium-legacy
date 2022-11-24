@@ -82,6 +82,13 @@ void SetCanMakePaymentEvenWithoutApps(const JavaRef<jobject>& jcallback) {
                                                                   jcallback);
 }
 
+void SetOptOutOffered(const JavaRef<jobject>& jcallback) {
+  JNIEnv* env = AttachCurrentThread();
+  if (!env)
+    return;
+  Java_PaymentAppServiceCallback_setOptOutOffered(env, jcallback);
+}
+
 }  // namespace
 
 /* static */
@@ -130,6 +137,8 @@ void JNI_PaymentAppServiceBridge_Create(
       base::BindOnce(&OnDoneCreatingPaymentApps,
                      ScopedJavaGlobalRef<jobject>(env, jcallback)),
       base::BindRepeating(&SetCanMakePaymentEvenWithoutApps,
+                          ScopedJavaGlobalRef<jobject>(env, jcallback)),
+      base::BindRepeating(&SetOptOutOffered,
                           ScopedJavaGlobalRef<jobject>(env, jcallback)));
 
   bridge->CreatePaymentApps();
@@ -183,7 +192,8 @@ PaymentAppServiceBridge* PaymentAppServiceBridge::Create(
     PaymentAppCreatedCallback payment_app_created_callback,
     PaymentAppCreationErrorCallback payment_app_creation_error_callback,
     base::OnceClosure done_creating_payment_apps_callback,
-    base::RepeatingClosure set_can_make_payment_even_without_apps_callback) {
+    base::RepeatingClosure set_can_make_payment_even_without_apps_callback,
+    base::RepeatingClosure set_opt_out_offered_callback) {
   DCHECK(render_frame_host);
   // Not using std::make_unique, because that requires a public constructor.
   std::unique_ptr<PaymentAppServiceBridge> bridge(new PaymentAppServiceBridge(
@@ -193,7 +203,8 @@ PaymentAppServiceBridge* PaymentAppServiceBridge::Create(
       std::move(payment_app_created_callback),
       std::move(payment_app_creation_error_callback),
       std::move(done_creating_payment_apps_callback),
-      std::move(set_can_make_payment_even_without_apps_callback)));
+      std::move(set_can_make_payment_even_without_apps_callback),
+      std::move(set_opt_out_offered_callback)));
   return PaymentAppServiceBridgeStorage::GetInstance()->Add(std::move(bridge));
 }
 
@@ -268,19 +279,6 @@ bool PaymentAppServiceBridge::IsOffTheRecord() const {
   return is_off_the_record_;
 }
 
-const std::vector<autofill::AutofillProfile*>&
-PaymentAppServiceBridge::GetBillingProfiles() {
-  // PaymentAppService flow should have short-circuited before this point.
-  NOTREACHED();
-  return dummy_profiles_;
-}
-
-bool PaymentAppServiceBridge::IsRequestedAutofillDataAvailable() {
-  // PaymentAppService flow should have short-circuited before this point.
-  NOTREACHED();
-  return false;
-}
-
 base::WeakPtr<ContentPaymentRequestDelegate>
 PaymentAppServiceBridge::GetPaymentRequestDelegate() const {
   // PaymentAppService flow should have short-circuited before this point.
@@ -306,10 +304,6 @@ void PaymentAppServiceBridge::OnPaymentAppCreated(
     std::move(can_make_payment_calculated_callback_).Run(true);
 
   payment_app_created_callback_.Run(std::move(app));
-}
-
-bool PaymentAppServiceBridge::SkipCreatingNativePaymentApps() const {
-  return true;
 }
 
 void PaymentAppServiceBridge::OnPaymentAppCreationError(
@@ -341,6 +335,10 @@ base::WeakPtr<CSPChecker> PaymentAppServiceBridge::GetCSPChecker() {
   return csp_checker_;
 }
 
+void PaymentAppServiceBridge::SetOptOutOffered() {
+  set_opt_out_offered_callback_.Run();
+}
+
 PaymentAppServiceBridge::PaymentAppServiceBridge(
     std::unique_ptr<PaymentAppService> payment_app_service,
     content::RenderFrameHost* render_frame_host,
@@ -354,7 +352,8 @@ PaymentAppServiceBridge::PaymentAppServiceBridge(
     PaymentAppCreatedCallback payment_app_created_callback,
     PaymentAppCreationErrorCallback payment_app_creation_error_callback,
     base::OnceClosure done_creating_payment_apps_callback,
-    base::RepeatingClosure set_can_make_payment_even_without_apps_callback)
+    base::RepeatingClosure set_can_make_payment_even_without_apps_callback,
+    base::RepeatingClosure set_opt_out_offered_callback)
     : payment_app_service_(std::move(payment_app_service)),
       number_of_pending_factories_(
           payment_app_service_->GetNumberOfFactories()),
@@ -376,6 +375,7 @@ PaymentAppServiceBridge::PaymentAppServiceBridge(
       done_creating_payment_apps_callback_(
           std::move(done_creating_payment_apps_callback)),
       set_can_make_payment_even_without_apps_callback_(
-          std::move(set_can_make_payment_even_without_apps_callback)) {}
+          std::move(set_can_make_payment_even_without_apps_callback)),
+      set_opt_out_offered_callback_(std::move(set_opt_out_offered_callback)) {}
 
 }  // namespace payments

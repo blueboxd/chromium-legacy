@@ -16,10 +16,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/features.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "media/base/android/media_drm_bridge.h"
-#endif
-
 namespace content_settings {
 
 namespace {
@@ -214,21 +210,8 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
-  // On Android, the default value is ALLOW or ASK depending on whether
-  // per-origin provisioning is used (https://crbug.com/854737 and
-  // https://crbug.com/904883).
-  // On ChromeOS and Windows the default value is always ALLOW.
-  const auto protected_media_identifier_setting =
-#if BUILDFLAG(IS_ANDROID)
-      media::MediaDrmBridge::IsPerOriginProvisioningSupported()
-          ? CONTENT_SETTING_ALLOW
-          : CONTENT_SETTING_ASK;
-#else
-      CONTENT_SETTING_ALLOW;
-#endif  // BUILDFLAG(IS_ANDROID)
-
   Register(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
-           "protected-media-identifier", protected_media_identifier_setting,
+           "protected-media-identifier", CONTENT_SETTING_ALLOW,
            WebsiteSettingsInfo::UNSYNCABLE, /*allowlisted_schemes=*/{},
 #if BUILDFLAG(IS_ANDROID)
            /*valid_settings=*/
@@ -240,9 +223,7 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsRegistry::PLATFORM_ANDROID |
                WebsiteSettingsRegistry::PLATFORM_CHROMEOS |
                WebsiteSettingsRegistry::PLATFORM_WINDOWS,
-           protected_media_identifier_setting == CONTENT_SETTING_ALLOW
-               ? ContentSettingsInfo::INHERIT_IN_INCOGNITO
-               : ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
@@ -497,7 +478,7 @@ void ContentSettingsRegistry::Init() {
             CONTENT_SETTING_SESSION_ONLY},
            WebsiteSettingsInfo::REQUESTING_AND_TOP_ORIGIN_SCOPE,
            WebsiteSettingsRegistry::ALL_PLATFORMS,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 
@@ -570,8 +551,7 @@ void ContentSettingsRegistry::Init() {
   Register(ContentSettingsType::PRIVATE_NETWORK_GUARD, "private-network-guard",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
            /*allowlisted_schemes=*/{},
-           /*valid_settings=*/{CONTENT_SETTING_BLOCK, CONTENT_SETTING_ASK,
-                         CONTENT_SETTING_SESSION_ONLY},
+           /*valid_settings=*/{CONTENT_SETTING_BLOCK, CONTENT_SETTING_ASK},
            WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,

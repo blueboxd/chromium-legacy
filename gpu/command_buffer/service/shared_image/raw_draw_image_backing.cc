@@ -159,15 +159,6 @@ void RawDrawImageBacking::OnMemoryDump(
   }
 }
 
-size_t RawDrawImageBacking::EstimatedSizeForMemTracking() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  AutoLock auto_lock(this);
-  return backend_texture_.isValid()
-             ? viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size(),
-                                                                format())
-             : 0u;
-}
-
 std::unique_ptr<RasterImageRepresentation> RawDrawImageBacking::ProduceRaster(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
@@ -214,7 +205,7 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
 
   auto mipmap = usage() & SHARED_IMAGE_USAGE_MIPMAP ? GrMipMapped::kYes
                                                     : GrMipMapped::kNo;
-  auto sk_color = viz::ResourceFormatToClosestSkColorType(
+  auto sk_color = viz::ToClosestSkColorType(
       /*gpu_compositing=*/true, format());
   const std::string label =
       "RawDrawImageBacking" + CreateLabelForSharedImageUsage(usage());
@@ -227,9 +218,6 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
     return false;
   }
   promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
-
-  // TODO(crbug.com/1353911): The estimated size recorded with GPU memory
-  // tracker should be updated after `backend_texture_` is allocated.
 
   auto surface = SkSurface::MakeFromBackendTexture(
       context_state_->gr_context(), backend_texture_, surface_origin(),
@@ -260,6 +248,9 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
     // and when gr_context->flush() is call, the surface will be resolved.
     surface->resolveMSAA();
   }
+
+  UpdateEstimatedSize(
+      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size(), format()));
 
   return true;
 }

@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/fast_checkout/fast_checkout_external_action_delegate.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -78,9 +77,8 @@ FastCheckoutClientImpl::~FastCheckoutClientImpl() {
 
 bool FastCheckoutClientImpl::Start(
     base::WeakPtr<autofill::FastCheckoutDelegate> delegate,
-    const GURL& url,
-    bool script_supports_consentless_execution) {
-  if (!ShouldRun(script_supports_consentless_execution)) {
+    const GURL& url) {
+  if (!ShouldRun()) {
     LOG_AF(GetAutofillLogManager()) << autofill::LoggingScope::kFastCheckout
                                     << autofill::LogMessage::kFastCheckout
                                     << "not triggered because "
@@ -93,9 +91,6 @@ bool FastCheckoutClientImpl::Start(
   delegate_ = std::move(delegate);
   personal_data_manager_observation_.Observe(GetPersonalDataManager());
 
-  fast_checkout_external_action_delegate_ =
-      CreateFastCheckoutExternalActionDelegate();
-
   SetShouldSuppressKeyboard(true);
 
   fast_checkout_controller_ = CreateFastCheckoutController();
@@ -104,28 +99,12 @@ bool FastCheckoutClientImpl::Start(
   return true;
 }
 
-bool FastCheckoutClientImpl::ShouldRun(
-    bool script_supports_consentless_execution) {
+bool FastCheckoutClientImpl::ShouldRun() {
   if (!base::FeatureList::IsEnabled(features::kFastCheckout)) {
     LOG_AF(GetAutofillLogManager())
         << autofill::LoggingScope::kFastCheckout
         << autofill::LogMessage::kFastCheckout
         << "not triggered because FastCheckout flag is disabled.";
-    return false;
-  }
-
-  bool client_supports_consentless_execution =
-      features::kFastCheckoutConsentlessExecutionParam.Get();
-
-  // The run requires consent (`script_supports_consentless_execution == false`)
-  // but the client is consentless.
-  if (!script_supports_consentless_execution &&
-      client_supports_consentless_execution) {
-    LOG_AF(GetAutofillLogManager())
-        << autofill::LoggingScope::kFastCheckout
-        << autofill::LogMessage::kFastCheckout
-        << "not triggered because the script requires consent but the client "
-           "is consent-less.";
     return false;
   }
 
@@ -214,11 +193,6 @@ bool FastCheckoutClientImpl::IsRunning() const {
   return is_running_;
 }
 
-std::unique_ptr<FastCheckoutExternalActionDelegate>
-FastCheckoutClientImpl::CreateFastCheckoutExternalActionDelegate() {
-  return std::make_unique<FastCheckoutExternalActionDelegate>();
-}
-
 std::unique_ptr<FastCheckoutController>
 FastCheckoutClientImpl::CreateFastCheckoutController() {
   return std::make_unique<FastCheckoutControllerImpl>(&GetWebContents(), this);
@@ -234,8 +208,7 @@ void FastCheckoutClientImpl::OnHidden() {
 void FastCheckoutClientImpl::OnOptionsSelected(
     std::unique_ptr<autofill::AutofillProfile> selected_profile,
     std::unique_ptr<autofill::CreditCard> selected_credit_card) {
-  fast_checkout_external_action_delegate_->SetOptionsSelected(
-      *selected_profile, *selected_credit_card);
+  // TODO(crbug.com/1334642): Signal that FC options have been selected.
   OnHidden();
 }
 

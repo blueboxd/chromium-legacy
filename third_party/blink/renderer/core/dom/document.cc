@@ -2156,7 +2156,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     }
   }
 
-  SCOPED_UMA_AND_UKM_TIMER(View()->EnsureUkmAggregator(),
+  SCOPED_UMA_AND_UKM_TIMER(View()->GetUkmAggregator(),
                            LocalFrameUkmAggregator::kStyle);
   FontPerformance::StyleScope font_performance_scope;
   ENTER_EMBEDDER_STATE(V8PerIsolateData::MainThreadIsolate(), GetFrame(),
@@ -8808,8 +8808,6 @@ const Node* Document::GetFindInPageActiveMatchNode() const {
 
 void Document::ActivateForPrerendering(
     const mojom::blink::PrerenderPageActivationParams& params) {
-  DCHECK(features::IsPrerender2Enabled());
-
   // TODO(bokan): Portals will change this assumption since they mean an active
   // document can be "adopted" into a portal.
   DCHECK(is_prerendering_);

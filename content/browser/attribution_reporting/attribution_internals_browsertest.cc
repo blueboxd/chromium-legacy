@@ -22,6 +22,7 @@
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
+#include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -305,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       StorableSource::Result::kInsufficientUniqueDestinationCapacity);
 
   manager()->NotifySourceHandled(
-      SourceBuilder(now + base::Hours(7)).Build(),
+      SourceBuilder(now + base::Hours(7)).SetDebugReporting(true).Build(),
       StorableSource::Result::kExcessiveReportingOrigins);
 
   static constexpr char wait_script[] = R"(
@@ -336,7 +337,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[3].children[1].innerText === "Rejected: internal error" &&
           table.children[4].children[1].innerText === "Rejected: insufficient source capacity" &&
           table.children[5].children[1].innerText === "Rejected: insufficient unique destination capacity" &&
-          table.children[6].children[1].innerText === "Rejected: excessive reporting origins") {
+          table.children[6].children[1].innerText === "Rejected: excessive reporting origins" &&
+          table.children[5].children[15].innerText === "disabled" &&
+          table.children[6].children[15].innerText === "enabled") {
         obs.disconnect();
         document.title = $3;
       }
@@ -616,8 +619,11 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[2].children[6].innerText === "0" &&
             table.children[2].children[7].innerText === "no" &&
             table.children[2].children[2].innerText === "Sent: HTTP 200" &&
+            !table.children[2].classList.contains('send-error') &&
             table.children[3].children[2].innerText === "Prohibited by browser policy" &&
+            !table.children[3].classList.contains('send-error') &&
             table.children[4].children[2].innerText === "Network error: ERR_METHOD_NOT_SUPPORTED" &&
+            table.children[4].classList.contains('send-error') &&
             table.children[5].children[2].innerText === "Network error: ERR_TIMED_OUT" &&
             table.children[5].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-event-attribution") {
@@ -1082,7 +1088,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[0].children[8].innerText === $2 &&
             table.children[0].children[9].innerText === $3 &&
             table.children[0].children[10].innerText === '{ "a": 123, "b": 456}' &&
-            table.children[0].children[11].innerText === "18") {
+            table.children[0].children[11].innerText === "18" &&
+            table.children[0].children[12].innerText === "disabled") {
           obs.disconnect();
           document.title = $1;
         }
@@ -1307,6 +1314,45 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     ClickRefreshButton();
     EXPECT_EQ(kCompleteTitle3, title_watcher.WaitAndGetTitle());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       VerboseDebugReport) {
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  absl::optional<AttributionDebugReport> report =
+      AttributionDebugReport::Create(
+          SourceBuilder().SetDebugReporting(true).Build(),
+          /*is_debug_cookie_set=*/true,
+          AttributionStorage::StoreSourceResult(
+              StorableSource::Result::kInternalError));
+  ASSERT_TRUE(report);
+
+  static constexpr char wait_script[] = R"(
+    const table = document.querySelector('#debugReportTable')
+        .shadowRoot.querySelector('tbody');
+
+    const url = 'https://report.test/.well-known/attribution-reporting/debug/verbose';
+
+    let obs = new MutationObserver((_, obs) => {
+      if (table.children.length === 1 &&
+          table.children[0].children.length >= 4 &&
+          table.children[0].children[1].innerText === url &&
+          table.children[0].children[2].innerText === 'HTTP 200' &&
+          table.children[0].children[3].innerText.includes('source-unknown-error')
+      ) {
+        obs.disconnect();
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+
+  ASSERT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+
+  manager()->NotifyDebugReportSent(*report, /*status=*/200, base::Time::Now());
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
 
 }  // namespace content

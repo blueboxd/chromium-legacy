@@ -325,24 +325,6 @@ const char kAutofillAutoTriggerManualFallbackForCardsDescription[] =
     "When enabled, manual fallback will be auto-triggered on form interaction "
     "in the case where autofill failed to fill a credit card form accurately.";
 
-const char kAutofillCenterAligngedSuggestionsName[] =
-    "Center-aligned Autofill suggestions.";
-const char kAutofillCenterAligngedSuggestionsDescription[] =
-    "When enabled, the Autofill suggestion popup will be aligned to the center "
-    "of the initiating field and not to its border.";
-
-const char kAutofillVisualImprovementsForSuggestionUiName[] =
-    "Visual improvements for the Autofill and Password Manager suggestion UI.";
-const char kAutofillVisualImprovementsForSuggestionUiDescription[] =
-    "Non function changes that visually improve the suggestion UI used for "
-    "addresses, passswords and credit cards.";
-
-const char kAutofillTypeSpecificPopupWidthName[] =
-    "Type-specific width limits for the Autofill popup";
-const char kAutofillTypeSpecificPopupWidthDescription[] =
-    "Controls if different width limits are used for the popup that provides "
-    "Autofill suggestions, depending on the type of data that is filled.";
-
 const char kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[] =
     "Enable parsing of the GetDetailsForEnrollResponseDetails in the "
     "UploadCardResponseDetails";
@@ -589,15 +571,14 @@ const char kBiometricReauthForPasswordFillingDescription[] =
     "Enables biometric"
     "re-authentication before password filling";
 
-const char kTouchToFillPasswordSubmissionName[] =
-    "Form submission in Touch-To-Fill";
-const char kTouchToFillPasswordSubmissionDescription[] =
-    "Enables automatic form submission after filling credentials with "
-    "Touch-To-Fill";
-
 const char kFastCheckoutName[] = "Fast Checkout";
 const char kFastCheckoutDescription[] =
     "Enables Fast Checkout experiences in Chrome.";
+
+const char kFailFastQuietChipName[] = "Fail fast quiet chip";
+const char kFailFastQuietChipDescription[] =
+    "Enables fast finalization of a permission request if it is displayed as a "
+    "quiet chip.";
 
 const char kBorealisBigGlName[] = "Borealis Big GL";
 const char kBorealisBigGlDescription[] = "Enable Big GL when running Borealis.";
@@ -972,11 +953,6 @@ const char kEnhancedNetworkVoicesName[] = "Enhanced network voices";
 const char kEnhancedNetworkVoicesDescription[] =
     "This option enables high-quality, network-based voices in "
     "Select-to-speak.";
-
-const char kAccessibilityOSSettingsVisibilityName[] =
-    "Accessibility OS Settings Visibility";
-const char kAccessibilityOSSettingsVisibilityDescription[] =
-    "This option enables improvements in Accessibility OS Settings visibility.";
 
 const char kAccessibilityServiceName[] = "Experimental Accessibility Service";
 const char kAccessibilityServiceDescription[] =
@@ -1499,6 +1475,12 @@ const char kFullUserAgentDescription[] =
     "If set, use the full (non-reduced) user agent string for the User-Agent "
     "request header and the JS APIs.";
 
+const char kGalleryAppPdfEditNotificationName[] =
+    "Gallery App Pdf Edit Notification";
+const char kGalleryAppPdfEditNotificationDescription[] =
+    "Shows a notification to provide an option to open Gallery app for a "
+    "downloaded pdf file";
+
 const char kGlobalMediaControlsForCastName[] = "Global Media Controls for Cast";
 const char kGlobalMediaControlsForCastDescription[] =
     "Shows Cast sessions in the Global Media Controls UI.";
@@ -1653,13 +1635,6 @@ const char kIgnoreSyncEncryptionKeysLongMissingDescription[] =
     "(configurable) number of consecutive GetUpdates. Restarting the browser "
     "resets the counter. The threshold is configurable via the "
     "MinGuResponsesToIgnoreKey feature parameter.";
-
-const char kImprovedDesksKeyboardShortcutsName[] =
-    "Enable improved desks keyboard shortcuts";
-const char kImprovedDesksKeyboardShortcutsDescription[] =
-    "Enable keyboard shortcuts for activating desks at specific indices and "
-    "toggling whether a window is assigned to all desks. Must be used with "
-    "the #improved-keyboard-shortcuts flag.";
 
 const char kImprovedKeyboardShortcutsName[] =
     "Enable improved keyboard shortcuts";
@@ -2416,6 +2391,10 @@ const char kPointerLockOptionsDescription[] =
     "to true, pointer movements wil not be affected by the underlying platform "
     "modications such as mouse accelaration.";
 
+const char kPowerBookmarksSidePanel[] = "Power bookmarks side panel";
+const char kPowerBookmarksSidePanelDescription[] =
+    "Enables the power bookmarks version of the bookmarks side panel content.";
+
 const char kBookmarksImprovedSaveFlowName[] = "Improved bookmarks save flow";
 const char kBookmarksImprovedSaveFlowDescription[] =
     "Enabled an improved save flow for bookmarks.";
@@ -2423,11 +2402,6 @@ const char kBookmarksImprovedSaveFlowDescription[] =
 const char kBookmarksRefreshName[] = "Bookmarks refresh";
 const char kBookmarksRefreshDescription[] =
     "Enable various changes to bookmarks.";
-
-const char kPrerender2Name[] = "Prerender2";
-const char kPrerender2Description[] =
-    "Enables the new prerenderer implementation for "
-    "<script type=speculationrules> that specifies prerender candidates.";
 
 const char kOmniboxTriggerForPrerender2Name[] =
     "Omnibox trigger for Prerender2";
@@ -2438,7 +2412,7 @@ const char kSupportSearchSuggestionForPrerender2Name[] =
     "Prerender search suggestions";
 const char kSupportSearchSuggestionForPrerender2Description[] =
     "Allows Prerender2 to prerender search suggestions provided by the default "
-    "search engine. Requires chrome://flags/#enable-prerender2 to be enabled";
+    "search engine.";
 
 const char kEnableOmniboxSearchPrefetchName[] = "Omnibox prefetch Search";
 const char kEnableOmniboxSearchPrefetchDescription[] =
@@ -2502,12 +2476,6 @@ const char kPwaUpdateDialogForAppTitleDescription[] =
 
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
-
-const char kQuickDimName[] = "Enable lock on leave";
-const char kQuickDimDescription[] =
-    "Enables lock on leave feature to better dim or lock the device. Can be "
-    "enabled and disabled from the Smart privacy section of your device "
-    "settings.";
 
 const char kQuickIntensiveWakeUpThrottlingAfterLoadingName[] =
     "Quick intensive throttling after loading";
@@ -2844,6 +2812,10 @@ const char kSystemKeyboardLockDescription[] =
     "keyboard shortcuts and have the events routed directly to the website "
     "when in fullscreen mode.";
 
+const char kSystemSoundsName[] = "Power Sounds";
+const char kSystemSoundsDescription[] =
+    "Enable device charging and low battery warning sounds.";
+
 const char kStylusBatteryStatusName[] =
     "Show stylus battery stylus in the stylus tools menu";
 const char kStylusBatteryStatusDescription[] =
@@ -3040,6 +3012,11 @@ const char kUnsafeWebGPUDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
+const char kUIEnableSharedImageCacheForGpuName[] = "Shared GPUImageDecodeCache";
+const char kUIEnableSharedImageCacheForGpuDescription[] =
+    "Enables shared GPUImageDecodeCache for UI if gpu rasterization is "
+    "enabled.";
+
 const char kUseNAT64ForIPv4LiteralName[] =
     "Use NAT64 translation for IPv4 literals";
 const char kUseNAT64ForIPv4LiteralDescription[] =
@@ -3113,11 +3090,6 @@ const char kWallpaperFullScreenPreviewName[] =
 const char kWallpaperFullScreenPreviewDescription[] =
     "Allows users to minimize all active windows to preview their current "
     "wallpaper";
-
-const char kWallpaperGooglePhotosIntegrationName[] =
-    "Enable Google Photos wallpaper integration";
-const char kWallpaperGooglePhotosIntegrationDescription[] =
-    "Allows users to select their wallpaper from Google Photos";
 
 const char kWallpaperPerDeskName[] =
     "Enable setting different wallpapers per desk";
@@ -3482,6 +3454,11 @@ const char kCCTResizable90MaximumHeightDescription[] =
     "of the screen height, otherwise the maximum height is 100% of the screen "
     "height. In both cases, Custom Tabs will yield to the top status bar when "
     "at full stop";
+const char kCCTResizableAlwaysShowNavBarButtonsName[] =
+    "Always show the navigation bar buttons";
+const char kCCTResizableAlwaysShowNavBarButtonsDescription[] =
+    "The navigation bar buttons will remain visible while a Partial Chrome "
+    "Custom Tab is being resized.";
 const char kCCTResizableAllowResizeByUserGestureName[] =
     "Bottom sheet Custom Tabs allow resize by user gesture";
 const char kCCTResizableAllowResizeByUserGestureDescription[] =
@@ -3494,11 +3471,10 @@ const char kCCTResizableForThirdPartiesName[] =
     "Bottom sheet Custom Tabs (third party)";
 const char kCCTResizableForThirdPartiesDescription[] =
     "Enable bottom sheet Custom Tabs for third party apps.";
-const char kCCTResizableAlwaysShowNavBarButtonsName[] =
-    "Always show the navigation bar buttons";
-const char kCCTResizableAlwaysShowNavBarButtonsDescription[] =
-    "The navigation bar buttons will remain visible while a Partial Chrome "
-    "Custom Tab is being resized.";
+const char kCCTResizableSideSheetName[] = "Side sheet Custom Tabs";
+const char kCCTResizableSideSheetDescription[] =
+    "Enable side sheet Custom Tabs";
+
 const char kCCTRetainingStateInMemoryName[] =
     "Enable restoring of previous Custom Tab session";
 const char kCCTRetainingStateInMemoryDescription[] =
@@ -3642,9 +3618,6 @@ const char kFeedLoadingPlaceholderDescription[] =
 
 const char kFeedStampName[] = "StAMP cards in the feed";
 const char kFeedStampDescription[] = "Enables StAMP cards in the feed.";
-
-const char kFeedIsAblatedName[] = "Feed ablation";
-const char kFeedIsAblatedDescription[] = "Enables feed ablation.";
 
 const char kFeedCloseRefreshName[] = "Feed-close refresh";
 const char kFeedCloseRefreshDescription[] =
@@ -4826,6 +4799,10 @@ const char kAutocorrectParamsTuningName[] = "CrOS autocorrect params tuning";
 const char kAutocorrectParamsTuningDescription[] =
     "Enables params tuning experiment for autocorrect on ChromeOS.";
 
+const char kAutocorrectToggleName[] = "CrOS autocorrect toggle";
+const char kAutocorrectToggleDescription[] =
+    "Enables using a toggle for enabling autocorrect on ChromeOS.";
+
 const char kAvatarsCloudMigrationName[] =
     "Loading CrOS avatar images from the cloud";
 const char kAvatarsCloudMigrationDescription[] =
@@ -4911,6 +4888,13 @@ const char kDesksTemplatesName[] = "Desk Templates";
 const char kDesksTemplatesDescription[] =
     "Streamline workflows by saving a group of applications and windows as a "
     "launchable template in a new desk";
+
+extern const char kDnsOverHttpsWithIdentifiersReuseOldPolicyName[] =
+    "Experiment: Allows using identifiers in the DoH template URI";
+extern const char kDnsOverHttpsWithIdentifiersReuseOldPolicyDescription[] =
+    "Enables early testing of the DoH template URI with identifiers by "
+    "evaluating user identifiers in the existing policy DnsOverHttpsTemplates "
+    "and hashing them using a hardcoded salt.";
 
 const char kPreferConstantFrameRateName[] = "Prefer Constant Frame Rate";
 const char kPreferConstantFrameRateDescription[] =
@@ -5923,23 +5907,11 @@ const char kSmartLockUIRevampDescription[] =
     "Replaces the existing Smart Lock UI on the lock screen with a new design "
     "and adds Smart Lock to the 'Lock screen and sign-in' section of settings.";
 
-const char kSnoopingProtectionName[] = "Enable snooping detection";
-const char kSnoopingProtectionDescription[] =
-    "Enables snooping protection to notify you whenever there is a 'snooper' "
-    "looking over your shoulder. Can be enabled and disabled from the Smart "
-    "privacy section of your device settings.";
-
 const char kSpectreVariant2MitigationName[] = "Spectre variant 2 mitigation";
 const char kSpectreVariant2MitigationDescription[] =
     "Controls whether Spectre variant 2 mitigation is enabled when "
     "bootstrapping the Seccomp BPF sandbox. Can be overridden by "
     "#force-spectre-variant2-mitigation.";
-
-const char kSystemChinesePhysicalTypingName[] =
-    "Use system IME for Chinese typing";
-const char kSystemChinesePhysicalTypingDescription[] =
-    "Use the system input engine instead of the Chrome extension for physical "
-    "typing in Chinese.";
 
 const char kSystemJapanesePhysicalTypingName[] =
     "Use system IME for Japanese typing";
@@ -5947,12 +5919,6 @@ const char kSystemJapanesePhysicalTypingDescription[] =
     "Use the system input engine instead of the Chrome extension for physical "
     "typing in Japanese. This also replaces the Japanese extension settings "
     "page with one built into the UI and migrates the data to a new location.";
-
-const char kSystemTransliterationPhysicalTypingName[] =
-    "Use system IME for Transliteration typing";
-const char kSystemTransliterationPhysicalTypingDescription[] =
-    "Use the system input engine instead of the Chrome extension for physical "
-    "typing in transliteration input methods.";
 
 const char kQuickSettingsNetworkRevampName[] =
     "Enables the Quick Settings Network revamp.";

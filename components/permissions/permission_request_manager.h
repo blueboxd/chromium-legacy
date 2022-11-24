@@ -18,6 +18,7 @@
 #include "components/permissions/permission_ui_selector.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/request_type.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -74,6 +75,13 @@ class PermissionRequestManager
    public:
     virtual void OnPromptAdded() {}
     virtual void OnPromptRemoved() {}
+    // Called when recreation of the permission prompt is not possible. It means
+    // that `PermissionRequestManager` is ready to display a prompt but the UI
+    // layer was not able to display it.
+    virtual void OnPromptRecreateViewFailed() {}
+    // Called when permission prompt creation was aborted because the current
+    // tab is no longer visible, hance it is not possible to display a prompt.
+    virtual void OnPromptCreationFailedHiddenTab() {}
     // Called when the current batch of requests have been handled and the
     // prompt is no longer visible. Note that there might be some queued
     // permission requests that will get shown after this. This differs from
@@ -118,6 +126,13 @@ class PermissionRequestManager
 
   bool IsRequestInProgress() const;
 
+  // Returns `true` if a permission request is in progress but a prompt view is
+  // nullptr.
+  bool CanRestorePrompt();
+
+  // Recreates a permission prompt.
+  void RestorePrompt();
+
   // Do NOT use this methods in production code. Use this methods in browser
   // tests that need to accept or deny permissions when requested in
   // JavaScript. Your test needs to set this appropriately, and then the bubble
@@ -145,6 +160,7 @@ class PermissionRequestManager
   void Deny() override;
   void Dismiss() override;
   void Ignore() override;
+  void PreIgnoreQuietPrompt() override;
   bool WasCurrentRequestAlreadyDisplayed() override;
   bool ShouldDropCurrentRequestIfCannotShowQuietly() const override;
   bool ShouldCurrentRequestUseQuietUI() const override;
@@ -307,12 +323,15 @@ class PermissionRequestManager
   // Calls PermissionDenied on a request and all its duplicates.
   void PermissionDeniedIncludingDuplicates(PermissionRequest* request);
   // Calls Cancelled on a request and all its duplicates.
-  void CancelledIncludingDuplicates(PermissionRequest* request);
+  void CancelledIncludingDuplicates(PermissionRequest* request,
+                                    bool is_final_decision = true);
   // Calls RequestFinished on a request and all its duplicates.
   void RequestFinishedIncludingDuplicates(PermissionRequest* request);
 
   void NotifyPromptAdded();
   void NotifyPromptRemoved();
+  void NotifyPromptRecreateFailed();
+  void NotifyPromptCreationFailedHiddenTab();
   void NotifyRequestDecided(permissions::PermissionAction permission_action);
 
   void StorePermissionActionForUMA(const GURL& origin,
@@ -329,6 +348,8 @@ class PermissionRequestManager
   void LogWarningToConsole(const char* message);
 
   void DoAutoResponseForTesting();
+
+  void PreIgnoreQuietPromptInternal();
 
   // Factory to be used to create views when needed.
   PermissionPrompt::Factory view_factory_;
@@ -354,8 +375,7 @@ class PermissionRequestManager
   std::vector<PermissionRequest*> requests_;
 
   struct PermissionRequestSource {
-    int render_process_id;
-    int render_frame_id;
+    content::GlobalRenderFrameHostId requesting_frame_id;
 
     bool IsSourceFrameInactiveAndDisallowActivation() const;
   };

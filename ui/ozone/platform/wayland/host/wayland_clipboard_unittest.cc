@@ -17,10 +17,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -42,6 +42,7 @@
 #include "ui/ozone/platform/wayland/test/test_keyboard.h"
 #include "ui/ozone/platform/wayland/test/test_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/test/test_touch.h"
+#include "ui/ozone/platform/wayland/test/test_util.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/public/platform_clipboard.h"
@@ -90,7 +91,7 @@ wl::TestSelectionSource* GetSelectionSource(wl::TestWaylandServerThread* server,
 
 class WaylandClipboardTestBase : public WaylandTest {
  public:
-  WaylandClipboardTestBase() : WaylandTest(TestServerMode::kAsync) {}
+  WaylandClipboardTestBase() = default;
   WaylandClipboardTestBase(const WaylandClipboardTestBase&) = delete;
   WaylandClipboardTestBase& operator=(const WaylandClipboardTestBase&) = delete;
   ~WaylandClipboardTestBase() override = default;
@@ -120,7 +121,8 @@ class WaylandClipboardTestBase : public WaylandTest {
     WaylandConnectionTestApi(connection_.get())
         .SetRoundtripClosure(base::BindLambdaForTesting([&]() {
           wl_display_flush(connection_->display());
-          SyncDisplay();
+          wl::SyncDisplay(connection_->display_wrapper(),
+                          *connection_->display());
           base::ThreadPoolInstance::Get()->FlushForTesting();
         }));
 
@@ -140,7 +142,7 @@ class WaylandClipboardTestBase : public WaylandTest {
   // Actual clipboard data reading is performed in the ThreadPool. Also,
   // wl::TestSelection{Source,Offer} currently use ThreadPool task runners.
   void WaitForClipboardTasks() {
-    SyncDisplay();
+    wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
     base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
@@ -230,7 +232,7 @@ class WaylandClipboardTest : public WaylandClipboardTestBase {
     // calls, otherwise tests, such as ReadFromClipboard, would crash.
     ASSERT_EQ(WhichBufferToUse() == ClipboardBuffer::kSelection,
               !!clipboard_->GetClipboard(ClipboardBuffer::kSelection));
-    SyncDisplay();
+    wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
 
     offered_data_.clear();
   }
@@ -319,7 +321,7 @@ TEST_P(WaylandClipboardTest, WriteToClipboard) {
 
     // 1. Offer sample text as selection data.
     OfferData(WhichBufferToUse(), kSampleClipboardText, {kMimeTypeTextUtf8});
-    SyncDisplay();
+    wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
 
     // 2. Emulate an external client requesting to read the offered data and
     // make sure the appropriate string gets delivered.
@@ -465,7 +467,7 @@ TEST_P(WaylandClipboardTest, OverlapReadingFromDifferentBuffers) {
                           : ClipboardBuffer::kSelection;
   base::MockCallback<PlatformClipboard::RequestDataClosure> callback;
   EXPECT_CALL(callback, Run(Eq(nullptr))).Times(1);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&PlatformClipboard::RequestClipboardData,
                                 base::Unretained(clipboard_), other_buffer,
                                 kMimeTypeTextUtf8, callback.Get()));
@@ -557,7 +559,7 @@ TEST_P(CopyPasteOnlyClipboardTest, DISABLED_OverlappingReadRequests) {
   EXPECT_CALL(got_html, Run(_)).WillOnce([&](PlatformClipboard::Data data) {
     html = std::string(data->front_as<const char>(), data->size());
   });
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PlatformClipboard::RequestClipboardData,
                      base::Unretained(clipboard_), ClipboardBuffer::kCopyPaste,

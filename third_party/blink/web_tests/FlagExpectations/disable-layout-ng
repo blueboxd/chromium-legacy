@@ -11,6 +11,7 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-multicol/relative-child-overflowing-container.html [ Failure ]
 crbug.com/626703 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/dom/events/scrolling/scrollend-event-handler-content-attributes.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/active-lock.html [ Timeout ]
@@ -2230,6 +2231,9 @@ crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/tex
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
 
 crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ Failure ]
+
+# The initial-letter implements only in LayoutNG.
+crbug.com/1276900 external/wpt/css/css-inline/initial-letter/* [ Skip ]
 
 # crbug.com/1339051: some ref tests generate output with minor differences.
 crbug.com/1339051 external/wpt/css/css-transforms/perspective-split-by-zero-w.html [ Failure ]

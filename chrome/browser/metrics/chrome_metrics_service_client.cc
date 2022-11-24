@@ -32,10 +32,10 @@
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -43,7 +43,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/metrics/bluetooth_metrics_provider.h"
 #include "chrome/browser/metrics/cached_metrics_profile.h"
 #include "chrome/browser/metrics/chrome_metrics_extensions_helper.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -196,6 +195,10 @@
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/metrics/power/power_metrics_provider_mac.h"
 #endif
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/metrics/bluetooth_metrics_provider.h"
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 namespace {
 
@@ -788,8 +791,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<safe_browsing::SafeBrowsingMetricsProvider>());
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::BluetoothMetricsProvider>());
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
@@ -1002,8 +1007,9 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   // Set up the callback task to call after we receive histograms from all
   // child processes. `timeout` specifies how long to wait before absolutely
   // calling us back on the task.
-  content::FetchHistogramsAsynchronously(base::ThreadTaskRunnerHandle::Get(),
-                                         std::move(callback), timeout);
+  content::FetchHistogramsAsynchronously(
+      base::SingleThreadTaskRunner::GetCurrentDefault(), std::move(callback),
+      timeout);
 }
 
 void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {

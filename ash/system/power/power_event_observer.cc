@@ -21,7 +21,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/scoped_multi_source_observation.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chromeos/ash/components/feature_usage/feature_usage_metrics.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -174,7 +174,7 @@ class CompositorWatcher : public ui::CompositorObserver {
 
     // Post task to make sure callback is not invoked synchronously as watcher
     // is started.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&CompositorWatcher::RunCallbackIfAllCompositingEnded,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -378,6 +378,7 @@ void PowerEventObserver::MaybeLockOnLidClose(bool is_projecting) {
 }
 
 void PowerEventObserver::OnLoginStatusChanged(LoginStatus) {
+  VLOG(1) << "PowerEventObserver::OnLoginStatusChanged";
   // Bail if usage tracker is already created.
   if (lock_on_suspend_usage_)
     return;
@@ -421,7 +422,7 @@ void PowerEventObserver::OnLockStateChanged(bool locked) {
       }
     }
   }
-  VLOG(1) << "PowerEventObserver::OnLockStateChanged finieshed, new lock_state="
+  VLOG(1) << "PowerEventObserver::OnLockStateChanged finished, new lock_state="
           << static_cast<int>(lock_state_);
 }
 

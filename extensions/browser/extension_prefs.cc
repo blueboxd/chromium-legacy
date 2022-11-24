@@ -175,8 +175,16 @@ constexpr const char kPrefManifestPermissions[] = "manifest_permissions";
 constexpr const char kPrefExplicitHosts[] = "explicit_host";
 constexpr const char kPrefScriptableHosts[] = "scriptable_host";
 
-// A preference that indicates when an extension was installed.
-constexpr const char kPrefInstallTime[] = "install_time";
+// A preference that indicates when an extension was first installed.
+// This preference is created when an extension is installed and deleted when
+// it is removed. It is NOT updated when the extension is updated.
+constexpr const char kPrefFirstInstallTime[] = "first_install_time";
+// A preference that indicates when an extension was last installed/updated.
+constexpr const char kPrefLastUpdateTime[] = "last_update_time";
+// A preference that indicates when an extension was installed/updated.
+// TODO(anunoy): DEPRECATED! Remove after M113.
+// Use kPrefLastUpdateTime instead.
+constexpr const char kPrefDeprecatedInstallTime[] = "install_time";
 
 // A preference which saves the creation flags for extensions.
 constexpr const char kPrefCreationFlags[] = "creation_flags";
@@ -302,8 +310,7 @@ class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
     std::unique_ptr<prefs::DictionaryValueUpdate> extension;
     if (!dict->GetDictionary(extension_id_, &extension)) {
       // Extension pref does not exist, create it.
-      extension = dict->SetDictionary(
-          extension_id_, std::make_unique<base::DictionaryValue>());
+      extension = dict->SetDictionary(extension_id_, base::Value::Dict());
     }
     return extension;
   }
@@ -350,7 +357,7 @@ ExtensionPrefs::ScopedDictionaryUpdate::Create() {
   if (dict->GetDictionary(key_, &key_value))
     return key_value;
 
-  return dict->SetDictionary(key_, std::make_unique<base::DictionaryValue>());
+  return dict->SetDictionary(key_, base::Value::Dict());
 }
 
 ExtensionPrefs::ScopedListUpdate::ScopedListUpdate(
@@ -1645,8 +1652,17 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(const std::string& extension_id) {
   pending_install_dict->Remove(kDelayedInstallReason);
 
   const base::Time install_time = clock_->Now();
-  pending_install_dict->SetString(
-      kPrefInstallTime, base::NumberToString(install_time.ToInternalValue()));
+  std::string install_time_str =
+      base::NumberToString(install_time.ToInternalValue());
+  pending_install_dict->SetString(kPrefLastUpdateTime, install_time_str);
+
+  // Update first install time only if it does not already exist in committed
+  // data. Otherwise, remove the key from the temp dictionary so it does not
+  // incorrectly update the committed data.
+  if (!extension_dict->HasKey(kPrefFirstInstallTime))
+    pending_install_dict->SetString(kPrefFirstInstallTime, install_time_str);
+  else
+    pending_install_dict->Remove(kPrefFirstInstallTime);
 
   // Commit the delayed install data.
   for (const auto [key, value] : *pending_install_dict->AsConstDict()) {
@@ -1756,19 +1772,29 @@ bool ExtensionPrefs::WasInstalledByOem(const std::string& extension_id) const {
   return false;
 }
 
-base::Time ExtensionPrefs::GetInstallTime(
-    const std::string& extension_id) const {
+base::Time ExtensionPrefs::GetTimePrefHelper(const std::string& extension_id,
+                                             const char* pref_key) const {
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
   if (!extension) {
     return base::Time();
   }
-  std::string install_time_str;
-  if (!extension->GetString(kPrefInstallTime, &install_time_str))
+  std::string time_str;
+  if (!extension->GetString(pref_key, &time_str))
     return base::Time();
-  int64_t install_time_i64 = 0;
-  if (!base::StringToInt64(install_time_str, &install_time_i64))
+  int64_t time_i64 = 0;
+  if (!base::StringToInt64(time_str, &time_i64))
     return base::Time();
-  return base::Time::FromInternalValue(install_time_i64);
+  return base::Time::FromInternalValue(time_i64);
+}
+
+base::Time ExtensionPrefs::GetFirstInstallTime(
+    const std::string& extension_id) const {
+  return GetTimePrefHelper(extension_id, kPrefFirstInstallTime);
+}
+
+base::Time ExtensionPrefs::GetInstallTime(
+    const std::string& extension_id) const {
+  return GetTimePrefHelper(extension_id, kPrefLastUpdateTime);
 }
 
 bool ExtensionPrefs::DoNotSync(const std::string& extension_id) const {
@@ -1781,17 +1807,7 @@ bool ExtensionPrefs::DoNotSync(const std::string& extension_id) const {
 
 base::Time ExtensionPrefs::GetLastLaunchTime(
     const std::string& extension_id) const {
-  const base::DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return base::Time();
-
-  std::string launch_time_str;
-  if (!extension->GetString(kPrefLastLaunchTime, &launch_time_str))
-    return base::Time();
-  int64_t launch_time_i64 = 0;
-  if (!base::StringToInt64(launch_time_str, &launch_time_i64))
-    return base::Time();
-  return base::Time::FromInternalValue(launch_time_i64);
+  return GetTimePrefHelper(extension_id, kPrefLastLaunchTime);
 }
 
 void ExtensionPrefs::SetLastLaunchTime(const std::string& extension_id,
@@ -2230,6 +2246,8 @@ ExtensionPrefs::ExtensionPrefs(
 
   InitPrefStore();
 
+  BackfillAndMigrateInstallTimePrefs();
+
   MigrateToNewWithholdingPref();
 
   MigrateToNewExternalUninstallPref();
@@ -2340,8 +2358,14 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
                              extension->was_installed_by_default());
   extension_dict->SetBoolean(kPrefWasInstalledByOem,
                              extension->was_installed_by_oem());
-  extension_dict->SetString(
-      kPrefInstallTime, base::NumberToString(install_time.ToInternalValue()));
+
+  std::string install_time_str =
+      base::NumberToString(install_time.ToInternalValue());
+  // Don't overwrite any existing first_install_time pref value so that we
+  // preserve the original install time.
+  if (!extension_dict->HasKey(kPrefFirstInstallTime))
+    extension_dict->SetString(kPrefFirstInstallTime, install_time_str);
+  extension_dict->SetString(kPrefLastUpdateTime, install_time_str);
   if (install_flags & kInstallFlagIsBlocklistedForMalware) {
     // Don't reset the acknowledged state during an update, because we wouldn't
     // want to reset the acknowledged state if the extension was already on the
@@ -2357,18 +2381,19 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   if (ruleset_install_prefs.empty()) {
     extension_dict->Remove(kDNRStaticRulesetPref);
   } else {
-    auto ruleset_prefs = std::make_unique<base::DictionaryValue>();
+    base::Value::Dict ruleset_prefs;
     for (const declarative_net_request::RulesetInstallPref& install_pref :
          ruleset_install_prefs) {
       std::string id_key =
           base::NumberToString(install_pref.ruleset_id.value());
-      DCHECK(!ruleset_prefs->FindKey(id_key));
-      auto* ruleset_dict = ruleset_prefs->SetKey(
-          id_key, base::Value(base::Value::Type::DICTIONARY));
-      if (install_pref.checksum)
-        ruleset_dict->SetIntKey(kDNRChecksumKey, *install_pref.checksum);
 
-      ruleset_dict->SetBoolKey(kDNRIgnoreRulesetKey, install_pref.ignored);
+      base::Value::Dict ruleset_dict;
+      ruleset_dict.Set(kDNRIgnoreRulesetKey, install_pref.ignored);
+      if (install_pref.checksum)
+        ruleset_dict.Set(kDNRChecksumKey, *install_pref.checksum);
+
+      DCHECK(!ruleset_prefs.Find(id_key));
+      ruleset_prefs.Set(id_key, std::move(ruleset_dict));
     }
 
     extension_dict->SetDictionary(kDNRStaticRulesetPref,
@@ -2520,6 +2545,28 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   for (auto& observer : observer_list_)
     observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
+}
+
+void ExtensionPrefs::BackfillAndMigrateInstallTimePrefs() {
+  // Get information for for all extensions including component extensions
+  // since the install time pref is saved for them too.
+  std::unique_ptr<ExtensionsInfo> extensions_info(
+      GetInstalledExtensionsInfo(/*include_component_extensions=*/true));
+
+  for (const auto& info : *extensions_info) {
+    ScopedExtensionPrefUpdate update(prefs_, info->extension_id);
+    auto ext_dict = update.Get();
+    if (ext_dict->HasKey(kPrefDeprecatedInstallTime)) {
+      std::string install_time_string;
+      ext_dict->GetString(kPrefDeprecatedInstallTime, &install_time_string);
+      // Populate the new 'last_update_time' pref.
+      ext_dict->SetString(kPrefLastUpdateTime, install_time_string);
+      // Backfill the 'first_install_time' pref with the existing install time.
+      ext_dict->SetString(kPrefFirstInstallTime, install_time_string);
+      // Remove the deprecated 'install_time' pref.
+      ext_dict->Remove(kPrefDeprecatedInstallTime);
+    }
+  }
 }
 
 void ExtensionPrefs::MigrateDeprecatedDisableReasons() {

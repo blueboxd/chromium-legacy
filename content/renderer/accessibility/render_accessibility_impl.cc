@@ -177,6 +177,7 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
   const WebDocument& document = GetMainDocument();
   DCHECK(!document.IsNull());
   ax_context_ = std::make_unique<WebAXContext>(document, accessibility_mode_);
+  ScheduleSendPendingAccessibilityEvents();
 }
 
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
@@ -566,7 +567,6 @@ bool RenderAccessibilityImpl::IsImmediateProcessingRequiredForEvent(
       return true;
 
     case ax::mojom::Event::kAriaAttributeChanged:
-    case ax::mojom::Event::kChildrenChanged:
     case ax::mojom::Event::kDocumentTitleChanged:
     case ax::mojom::Event::kExpandedChanged:
     case ax::mojom::Event::kHide:
@@ -588,6 +588,7 @@ bool RenderAccessibilityImpl::IsImmediateProcessingRequiredForEvent(
     // This list is duplicated in WebFrameTestProxy::PostAccessibilityEvent().
     case ax::mojom::Event::kAlert:
     case ax::mojom::Event::kAutocorrectionOccured:
+    case ax::mojom::Event::kChildrenChanged:
     case ax::mojom::Event::kControlsChanged:
     case ax::mojom::Event::kEndOfTest:
     case ax::mojom::Event::kFocusAfterMenuClose:
@@ -761,7 +762,7 @@ void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
   if (obj.IsNull())
     return;
 
-  HandleAXEvent(ui::AXEvent(obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  MarkWebAXObjectDirty(obj, /* subtree */ false);
 }
 
 void RenderAccessibilityImpl::ShowPluginContextMenu() {

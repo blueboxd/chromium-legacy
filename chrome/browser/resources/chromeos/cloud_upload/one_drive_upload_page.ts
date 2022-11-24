@@ -41,12 +41,14 @@ export class OneDriveUploadPageElement extends BaseSetupPageElement {
    * Initialises the page specific content inside the page.
    */
   connectedCallback(): void {
-    this.innerHTML = getTemplate() as string;
+    this.innerHTML = getTemplate();
     const fileContainerElement =
         this.querySelector('#file-container')! as HTMLElement;
     const fileNameElement = this.querySelector('#file-name')! as HTMLElement;
     const uploadButton = this.querySelector('.action-button')! as HTMLElement;
     const cancelButton = this.querySelector('.cancel-button') as HTMLElement;
+
+    this.proxy.handler.setOfficeAsDefaultHandler();
 
     // TODO(b/251046341): Show multiple files.
     if (this.fileNames.length > 0) {
@@ -59,7 +61,7 @@ export class OneDriveUploadPageElement extends BaseSetupPageElement {
   }
 
   private onUploadButtonClick(): void {
-    this.proxy.handler.respondAndClose(UserAction.kUploadToOneDrive);
+    this.proxy.handler.respondAndClose(UserAction.kConfirmOrUploadToOneDrive);
   }
 
   private onCancelButtonClick(): void {

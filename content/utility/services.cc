@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -65,6 +65,7 @@ extern sandbox::TargetServices* g_utility_target_services;
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "media/mojo/services/mojo_video_encode_accelerator_provider_factory.h"
 #include "sandbox/linux/services/libc_interceptor.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
@@ -290,7 +291,7 @@ auto RunTracing(
 auto RunVideoCapture(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
   return std::make_unique<UtilityThreadVideoCaptureServiceImpl>(
-      std::move(receiver), base::ThreadTaskRunnerHandle::Get());
+      std::move(receiver), base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 #if BUILDFLAG(ENABLE_VR) && !BUILDFLAG(IS_ANDROID)
@@ -322,6 +323,17 @@ auto RunStableVideoDecoderFactoryService(
 }
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) &&
         // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+auto RunVideoEncodeAcceleratorProviderFactory(
+    mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProviderFactory>
+        receiver) {
+  auto factory =
+      std::make_unique<media::MojoVideoEncodeAcceleratorProviderFactory>();
+  factory->BindReceiver(std::move(receiver));
+  return factory;
+}
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
 
@@ -370,6 +382,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunStableVideoDecoderFactoryService);
 #endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)) &&
         // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  services.Add(RunVideoEncodeAcceleratorProviderFactory);
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
   if (::features::IsAccessibilityServiceEnabled())

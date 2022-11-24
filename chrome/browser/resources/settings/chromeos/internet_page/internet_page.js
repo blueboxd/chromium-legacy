@@ -17,11 +17,11 @@ import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../os_settings_icons_css.js';
 import '../../prefs/prefs.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_shared.css.js';
+import '../os_settings_icons.css.js';
 import './cellular_setup_dialog.js';
 import './internet_detail_menu.js';
 import './internet_detail_page.js';
@@ -1037,7 +1037,7 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
           // This shouldn't happen, the UI should prevent this, fall through and
           // show the error.
         case StartConnectResult.kUnknown:
-          console.error(
+          console.warn(
               'startConnect failed for: ' + networkState.guid +
               ' Error: ' + response.message);
           return;

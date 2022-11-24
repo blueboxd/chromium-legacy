@@ -11,8 +11,6 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "base/bind.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,7 +66,7 @@ SearchControllerImpl::SearchControllerImpl(
       model_updater_(model_updater),
       list_controller_(list_controller) {}
 
-SearchControllerImpl::~SearchControllerImpl() {}
+SearchControllerImpl::~SearchControllerImpl() = default;
 
 void SearchControllerImpl::StartSearch(const std::u16string& query) {
   DCHECK(!query.empty());
@@ -316,14 +314,6 @@ void SearchControllerImpl::Publish() {
   std::vector<ChromeSearchResult*> all_results;
   for (const auto& type_results : results_) {
     for (const auto& result : type_results.second) {
-      // TODO(crbug.com/1385194): Category-based search combines apps into the
-      // results list, so redirect any kTile results to kList before updating
-      // the UI. Once SearchControllerImpl is the only search controller,
-      // this can be removed and all results can be created as kList.
-      if (result->display_type() == ash::SearchResultDisplayType::kTile) {
-        result->SetDisplayType(ash::SearchResultDisplayType::kList);
-      }
-
       double score = result->scoring().FinalScore();
 
       // Filter out results with negative relevance, which is the rankers'

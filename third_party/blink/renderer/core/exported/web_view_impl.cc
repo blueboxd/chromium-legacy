@@ -2622,15 +2622,15 @@ void WebViewImpl::DispatchPersistedPageshow(base::TimeTicks navigation_start) {
     }
     if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
       auto pageshow_start_time = base::TimeTicks::Now();
+      LocalDOMWindow* window = frame->DomWindow()->ToLocalDOMWindow();
 
-      frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
-          navigation_start);
+      window->DispatchPersistedPageshowEvent(navigation_start);
 
-      if (RuntimeEnabledFeatures::NavigationIdEnabled()) {
+      if (RuntimeEnabledFeatures::NavigationIdEnabled(window)) {
         auto pageshow_end_time = base::TimeTicks::Now();
 
-        WindowPerformance* performance = DOMWindowPerformance::performance(
-            *frame->DomWindow()->ToLocalDOMWindow());
+        WindowPerformance* performance =
+            DOMWindowPerformance::performance(*window);
         DCHECK(performance);
 
         performance->AddBackForwardCacheRestoration(
@@ -2639,8 +2639,7 @@ void WebViewImpl::DispatchPersistedPageshow(base::TimeTicks navigation_start) {
       if (frame->IsOutermostMainFrame()) {
         UMA_HISTOGRAM_BOOLEAN(
             "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
-            frame->DomWindow()->ToLocalDOMWindow()->HasEventListeners(
-                event_type_names::kPageshow));
+            window->HasEventListeners(event_type_names::kPageshow));
       }
     }
   }
@@ -3302,8 +3301,6 @@ void WebViewImpl::ActivatePrerenderedPage(
     mojom::blink::PrerenderPageActivationParamsPtr
         prerender_page_activation_params,
     ActivatePrerenderedPageCallback callback) {
-  DCHECK(features::IsPrerender2Enabled());
-
   // From here all new documents will have prerendering false.
   GetPage()->SetIsPrerendering(false);
 

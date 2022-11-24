@@ -70,11 +70,6 @@ export class FileSelection {
     this.anyFilesHosted = true;
 
     /**
-     * @public {?string}
-     */
-    this.iconType = null;
-
-    /**
      * @private {Promise<boolean>}
      */
     this.additionalPromise_ = null;
@@ -83,15 +78,6 @@ export class FileSelection {
     this.hasReadOnlyEntry_ = false;
 
     entries.forEach(entry => {
-      if (this.iconType == null) {
-        this.iconType = FileType.getIcon(entry);
-      } else if (this.iconType != 'unknown') {
-        const iconType = FileType.getIcon(entry);
-        if (this.iconType != iconType) {
-          this.iconType = 'unknown';
-        }
-      }
-
       if (entry.isFile) {
         this.fileCount += 1;
       } else {
@@ -207,7 +193,11 @@ export class FileSelectionHandler extends EventTarget {
      */
     this.allowedPaths_ = allowedPaths;
 
-    // Register evnets to update file selections.
+    // Listens to changes in the selection model to propagate to other parts.
+    directoryModel.getFileListSelection().addEventListener(
+        'change', this.onFileSelectionChanged.bind(this));
+
+    // Register events to update file selections.
     directoryModel.addEventListener(
         'directory-changed', this.onFileSelectionChanged.bind(this));
   }

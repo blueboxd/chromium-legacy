@@ -127,6 +127,8 @@ extern const char kActionIdWebDriveOfficeExcel[];
 extern const char kActionIdWebDriveOfficePowerPoint[];
 extern const char kActionIdOpenInOffice[];
 
+extern const char kODFSExtensionId[];
+
 // Task types as explained in the comment above. Search for <task-type>.
 enum TaskType {
   TASK_TYPE_UNKNOWN = 0,  // Used only for handling errors.
@@ -379,6 +381,19 @@ bool IsOfficeFile(const base::FilePath& path);
 void SetWordFileHandler(Profile* profile, const std::string& action_id);
 void SetExcelFileHandler(Profile* profile, const std::string& action_id);
 void SetPowerPointFileHandler(Profile* profile, const std::string& action_id);
+
+// TODO(petermarshall): Move these to a new file office_file_tasks.cc/h
+// Sets the user preference storing whether the setup flow for office files has
+// ever been completed.
+void SetOfficeSetupComplete(Profile* profile, bool complete = true);
+// Whether or not the setup flow for office files has ever been completed.
+bool OfficeSetupComplete(Profile* profile);
+
+// Sets the user preference storing whether we should always move office files
+// without first asking the user.
+void SetAlwaysMoveOfficeFiles(Profile* profile, bool complete = true);
+// Whether we should always move office files without first asking the user.
+bool AlwaysMoveOfficeFiles(Profile* profile);
 
 }  // namespace file_manager::file_tasks
 

@@ -220,6 +220,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="AccessCodeCast.Discovery.DeviceDurationOnRoute"
+    units="seconds" expires_after="2023-03-12">
+  <owner>bzielinski@google.com</owner>
+  <owner>cros-edu-eng@google.com</owner>
+  <summary>
+    The duration in seconds an access code device will stay in the list of cast
+    devices. Recorded on successful creation of a cast session to an access code
+    device. Logged only on desktop platforms.
+  </summary>
+</histogram>
+
 <histogram name="AccessCodeCast.Discovery.RememberedDevicesCount"
     units="cast devices" expires_after="2023-05-07">
   <owner>bzielinski@google.com</owner>
@@ -3324,6 +3335,21 @@ chromium-metrics-reviews@google.com.
     per conversion report. For conversion report that has been retried, only the
     last retry will be counted.
   </summary>
+</histogram>
+
+<histogram name="Conversion.SourceRegistration.NavigationType.{RequestType}"
+    enum="AttributionNavigationType" expires_after="M117">
+  <owner>csharrison@chromium.org</owner>
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    For any successfully registered {RequestType} navigation sources, records
+    the API surface that initiated the navigation.
+  </summary>
+  <token key="RequestType">
+    <variant name="Background" summary="background"/>
+    <variant name="Foreground" summary="foreground"/>
+  </token>
 </histogram>
 
 <histogram name="Conversions.AggregatableKeysPerSource" units="keys"
@@ -7324,7 +7350,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="HostedAppFrame.ContentSettings.ImagePressed"
     enum="ContentSettingImageType" expires_after="2021-02-01">
-  <owner>calamity@chromium.org</owner>
+  <obsolete>
+    Removed in Nov 2022.
+  </obsolete>
+  <owner>alancutter@chromium.org</owner>
   <owner>src/chrome/browser/ui/page_action/OWNERS</owner>
   <summary>
     Counts which content setting buttons in the hosted app frame are pressed by
@@ -7868,15 +7897,6 @@ chromium-metrics-reviews@google.com.
     WebView supports flags differently than most platforms, see
     https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/developer-ui.md
     for details.
-  </summary>
-</histogram>
-
-<histogram name="Launch.IntentFlags" enum="LaunchIntentFlags"
-    expires_after="2020-10-04">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    Records flags (and combinations of flags) that were attached to the Intent
-    that started ChromeLauncherActivity.
   </summary>
 </histogram>
 
@@ -9498,7 +9518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OAuth2Login.SessionRestoreTimeToSuccess" units="ms"
-    expires_after="2022-12-04">
+    expires_after="2023-06-04">
   <owner>anastasiian@chromium.org</owner>
   <owner>sinhak@chromium.org</owner>
   <summary>
@@ -9899,26 +9919,6 @@ chromium-metrics-reviews@google.com.
   <owner>erikchen@chromium.org</owner>
   <summary>
     Whether an attempt to load the system hotkeys on a Mac was successful.
-  </summary>
-</histogram>
-
-<histogram name="OutdatedUpgradeBubble.NumLaterPerEnableAU" units="units"
-    expires_after="M85">
-  <owner>mad@chromium.org</owner>
-  <summary>
-    Counts the number of times the user clicked on the later button of the
-    outdated upgrade bubble, before clicking on the enable updates button in the
-    same Chrome session.
-  </summary>
-</histogram>
-
-<histogram name="OutdatedUpgradeBubble.NumLaterPerReinstall" units="units"
-    expires_after="M85">
-  <owner>mad@chromium.org</owner>
-  <summary>
-    Counts the number of times the user clicked on the later button of the
-    outdated upgrade bubble, before clicking on the reinstall button in the same
-    Chrome session.
   </summary>
 </histogram>
 
@@ -12842,34 +12842,6 @@ should be kept until we remove incident reporting. -->
   <summary>
     The final exit-result of the entire run of setup.exe on Windows.
   </summary>
-</histogram>
-
-<histogram name="Setup.Install.ServiceInstallResult"
-    enum="SetupInstallServiceInstallResult" expires_after="2020-12-30">
-  <owner>ganesh@chromium.org</owner>
-  <owner>sorin@chromium.org</owner>
-  <owner>xiaolingbao@chromium.org</owner>
-  <summary>The outcome of attempting to install a service on Windows.</summary>
-</histogram>
-
-<histogram name="Setup.Install.ServiceRollbackResult"
-    enum="SetupInstallServiceRollbackResult" expires_after="2020-12-30">
-  <owner>ganesh@chromium.org</owner>
-  <owner>sorin@chromium.org</owner>
-  <owner>xiaolingbao@chromium.org</owner>
-  <summary>
-    The outcome of attempting to rollback an install of a service on Windows.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Setup.Install.Win32ApiError"
-    enum="WinGetLastError" expires_after="2020-12-30">
-<!-- Name completed by histogram_suffixes name="SetupInstallWin32Apis". -->
-
-  <owner>ganesh@chromium.org</owner>
-  <owner>sorin@chromium.org</owner>
-  <owner>xiaolingbao@chromium.org</owner>
-  <summary>Win32 APIs that error out during setup.</summary>
 </histogram>
 
 <histogram name="SharedMemory.MapBlockedForSecurity" enum="BooleanBlocked"

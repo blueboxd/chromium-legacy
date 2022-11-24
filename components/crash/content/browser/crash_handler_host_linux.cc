@@ -30,10 +30,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,8 +45,6 @@
 #endif  // ! BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID) && !defined(__LP64__)
-#include <sys/syscall.h>
-
 #define SYS_read __NR_read
 #endif
 
@@ -339,7 +337,7 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
       attempt <= kNumAttemptsTranslatingTid) {
     LOG(WARNING) << "Could not translate tid, attempt = " << attempt
                  << " retry ...";
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&CrashHandlerHostLinux::FindCrashingThreadAndDump,
                        base::Unretained(this), crashing_pid,

@@ -54,6 +54,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -103,7 +104,7 @@ class DocumentPictureInPictureWindowControllerBrowserTest
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kDocumentPictureInPictureAPI);
+        blink::features::kDocumentPictureInPictureAPI);
     InProcessBrowserTest::SetUp();
   }
 
@@ -211,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(true, EvalJs(active_web_contents,
-                         "navigator.documentPictureInPicture.requestWindow()"
+                         "documentPictureInPicture.requestWindow()"
                          ".then(w => true)"));
   base::RunLoop().RunUntilIdle();
 
@@ -398,5 +399,5 @@ IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
 
   // In an insecure context, there should not be a method.
   EXPECT_EQ(false, EvalJs(active_web_contents,
-                          "'documentPictureInPicture' in navigator"));
+                          "'documentPictureInPicture' in window"));
 }

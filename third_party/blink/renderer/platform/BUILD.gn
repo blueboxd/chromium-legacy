@@ -8,6 +8,7 @@ import("//build/compiled_action.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/nocompile.gni")
 import("//media/media_options.gni")
 import("//skia/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
@@ -69,6 +70,28 @@ blink_python_runner("runtime_enabled_features") {
   ]
 }
 
+blink_python_runner("runtime_feature_state_override_context") {
+  script = "../build/scripts/make_runtime_feature_state_override_context.py"
+
+  inputs = scripts_for_json5_files + [
+             "../build/scripts/make_runtime_feature_state_override_context.py",
+             "runtime_enabled_features.json5",
+             "../build/scripts/templates/runtime_feature_state_override_context.h.tmpl",
+             "../build/scripts/templates/runtime_feature_state_override_context.cc.tmpl",
+           ]
+  outputs = [
+    "$blink_platform_output_dir/runtime_feature_state/runtime_feature_state_override_context.h",
+    "$blink_platform_output_dir/runtime_feature_state/runtime_feature_state_override_context.cc",
+  ]
+
+  args = [
+    rebase_path("runtime_enabled_features.json5", root_build_dir),
+    "--output_dir",
+    rebase_path("$blink_platform_output_dir/runtime_feature_state",
+                root_build_dir),
+  ]
+}
+
 blink_python_runner("color_data") {
   script = "../build/scripts/gperf.py"
 
@@ -121,6 +144,7 @@ group("make_platform_generated") {
     ":color_data",
     ":font_family_names",
     ":runtime_enabled_features",
+    ":runtime_feature_state_override_context",
     "//third_party/blink/renderer/platform/network:make_generated",
   ]
 }
@@ -612,6 +636,8 @@ component("platform") {
     "fonts/font_smoothing_mode.h",
     "fonts/font_unique_name_lookup.cc",
     "fonts/font_unique_name_lookup.h",
+    "fonts/font_variant_alternates.cc",
+    "fonts/font_variant_alternates.h",
     "fonts/font_variant_east_asian.cc",
     "fonts/font_variant_east_asian.h",
     "fonts/font_variant_numeric.cc",
@@ -622,7 +648,6 @@ component("platform") {
     "fonts/generic_font_family_settings.cc",
     "fonts/generic_font_family_settings.h",
     "fonts/glyph_metrics_map.h",
-    "fonts/lock_for_parallel_text_shaping.h",
     "fonts/ng_text_fragment_paint_info.cc",
     "fonts/ng_text_fragment_paint_info.h",
     "fonts/opentype/font_format_check.cc",
@@ -1545,7 +1570,8 @@ component("platform") {
   # Add in the generated files.
   sources += get_target_outputs(":character_data") +
              get_target_outputs(":color_data") +
-             get_target_outputs(":font_family_names")
+             get_target_outputs(":font_family_names") +
+             get_target_outputs(":runtime_feature_state_override_context")
 
   foreach(_output, get_target_outputs(":runtime_enabled_features")) {
     if (get_path_info(_output, "extension") != "pickle") {
@@ -2035,6 +2061,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/typesetting_features_test.cc",
     "fonts/unicode_range_set_test.cc",
     "fonts/utf16_ragel_iterator_test.cc",
+    "geometry/calculation_expression_node_test.cc",
     "geometry/float_polygon_test.cc",
     "geometry/float_rounded_rect_test.cc",
     "geometry/layout_rect_test.cc",
@@ -2657,4 +2684,21 @@ source_set("unit_tests") {
     "//third_party/blink/public:test_headers",
   ]
   public_deps = [ "//gpu:raster" ]
+}
+
+if (enable_nocompile_tests) {
+  nocompile_test("blink_platform_nocompile_tests") {
+    sources = [ "wtf/functional_test.nc" ]
+
+    deps = [
+      ":platform",
+      "//base",
+      "//base/test:run_all_unittests",
+      "//testing/gtest",
+    ]
+
+    # Since the nocompile test is not able to inspect the contents of
+    # include_dirs, we need to specify the v8 include dir manually.
+    include_dirs = [ "//v8/include" ]
+  }
 }

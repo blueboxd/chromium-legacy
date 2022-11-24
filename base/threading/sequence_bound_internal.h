@@ -15,6 +15,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 
 namespace base::sequence_bound_internal {
@@ -25,8 +26,6 @@ struct CrossThreadTraits {
 
   template <typename Functor, typename... Args>
   static inline auto BindOnce(Functor&& functor, Args&&... args) {
-    return base::BindOnce(std::forward<Functor>(functor),
-                          std::forward<Args>(args)...);
     return ::base::BindOnce(std::forward<Functor>(functor),
                             std::forward<Args>(args)...);
   }
@@ -92,7 +91,7 @@ class Storage {
     // AlignedAlloc() requires alignment be a multiple of sizeof(void*).
     alloc_ = AlignedAlloc(
         sizeof(T), sizeof(void*) > alignof(T) ? sizeof(void*) : alignof(T));
-    ptr_ = reinterpret_cast<Ptr>(alloc_);
+    ptr_ = reinterpret_cast<Ptr>(alloc_.get());
 
     // Ensure that `ptr_` will be initialized.
     CrossThreadTraits::PostTask(
@@ -151,7 +150,7 @@ class Storage {
   // Storage originally allocated by `AlignedAlloc()`. Maintained separately
   // from  `ptr_` since the original, unadjusted pointer needs to be passed to
   // `AlignedFree()`.
-  void* alloc_ = nullptr;
+  raw_ptr<void> alloc_ = nullptr;
 };
 
 template <typename T, typename CrossThreadTraits>

@@ -629,6 +629,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
       // card art icon - because we download it in all cases, revealing a
       // failure doesn't leak any information about the user to the site.
       error_reason != AppCreationFailureReason::ICON_DOWNLOAD_FAILED) {
+    journey_logger_.SetNoMatchingCredentialsShown();
     auto opt_out_callback =
         spec_->method_data().front()->secure_payment_confirmation->show_opt_out
             ? base::BindOnce(&PaymentRequest::OnUserOptedOut,
@@ -829,7 +830,7 @@ void PaymentRequest::OnUserOptedOut() {
   if (!client_.is_bound())
     return;
 
-  RecordFirstAbortReason(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
+  RecordFirstAbortReason(JourneyLogger::ABORT_REASON_USER_OPTED_OUT);
 
   // This sends an error to the renderer, which informs the API user.
   client_->OnError(mojom::PaymentErrorReason::USER_OPT_OUT,

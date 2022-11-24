@@ -958,6 +958,19 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Permissions.Prompt.{PermissionType}.{Gesture}.Attempt"
+    enum="Boolean" expires_after="2023-10-26">
+  <owner>elklm@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>Recorded when a permission prompt creation is in progress.</summary>
+  <token key="PermissionType" variants="AllPermissionTypes"/>
+  <token key="Gesture">
+    <variant name="Gesture"/>
+    <variant name="NoGesture"/>
+    <variant name="Unknown"/>
+  </token>
+</histogram>
+
 <histogram name="Permissions.QuietChip.TimeToInteraction" units="ms"
     expires_after="2023-05-07">
   <owner>elklm@chromium.org</owner>
@@ -1007,6 +1020,16 @@ chromium-metrics-reviews@google.com.
     Records whether the quiet notification permission UI is enabled in
     preferences at profile creation. No sample recorded when notifications are
     set to be blocked completely.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.QuietPrompt.Preignore" enum="PermissionType"
+    expires_after="2023-11-15">
+  <owner>elklm@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    Records when a permission request was preignored because it will be shown as
+    a quiet chip.
   </summary>
 </histogram>
 

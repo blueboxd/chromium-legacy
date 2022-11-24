@@ -229,9 +229,9 @@
         <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_high.wav" type="BINDATA" />
         <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_low.wav" type="BINDATA" />
         <include name="IDR_SOUND_TOUCH_TYPE_WAV" file="resources\chromeos\sounds\touch_type.wav" type="BINDATA" />
-        <include name="IDR_SOUND_CHARGE_HIGH_BATTERY_WAV" file="resources\chromeos\sounds\power\charge_high.wav" type="BINDATA" />
-        <include name="IDR_SOUND_CHARGE_MEDIUM_BATTERY_WAV" file="resources\chromeos\sounds\power\charge_medium.wav" type="BINDATA" />
-        <include name="IDR_SOUND_CHARGE_LOW_BATTERY_WAV" file="resources\chromeos\sounds\power\charge_low.wav" type="BINDATA" />
+        <include name="IDR_SOUND_CHARGE_HIGH_BATTERY_WAV" file="resources\chromeos\sounds\power\charging_started_high.wav" type="BINDATA" />
+        <include name="IDR_SOUND_CHARGE_MEDIUM_BATTERY_WAV" file="resources\chromeos\sounds\power\charging_started_medium.wav" type="BINDATA" />
+        <include name="IDR_SOUND_CHARGE_LOW_BATTERY_WAV" file="resources\chromeos\sounds\power\charging_started_low.wav" type="BINDATA" />
         <include name="IDR_SOUND_NO_CHARGE_LOW_BATTERY_WAV" file="resources\chromeos\sounds\power\low_battery.wav" type="BINDATA" />
       </if>
       <if expr="chromeos_ash">
@@ -316,6 +316,7 @@
         <include name="IDR_PARENT_ACCESS_AFTER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\parent_access_after.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_ERROR_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\parent_access_error.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_WEBVIEW_MANAGER_JS" file="resources\chromeos\parent_access\webview_manager.js" type="BINDATA" />
+        <include name="IDR_PARENT_ACCESS_OFFLINE_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\parent_access_offline.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_LOCAL_WEB_APPROVALS_AFTER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\flows\local_web_approvals_after.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_CONTROLLER_JS" file="resources\chromeos\parent_access\parent_access_controller.js" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_UI_HANDLER_JS" file="resources\chromeos\parent_access\parent_access_ui_handler.js" type="BINDATA" />

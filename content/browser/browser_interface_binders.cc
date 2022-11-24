@@ -51,6 +51,7 @@
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -85,6 +86,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/capture/mojom/video_capture.mojom.h"
+#include "media/midi/midi_service.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/media_player.mojom.h"
@@ -980,6 +982,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::RenderAccessibilityHost>(
       base::BindRepeating(&RenderFrameHostImpl::BindRenderAccessibilityHost,
                           base::Unretained(host)));
+
+#if BUILDFLAG(IS_FUCHSIA)
+  map->Add<media::mojom::FuchsiaMediaCodecProvider>(
+      base::BindRepeating(&RenderProcessHost::BindMediaCodecProvider,
+                          base::Unretained(host->GetProcess())));
+#endif
 }
 
 void PopulateBinderMapWithContext(
@@ -1174,17 +1182,15 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   map->Add<blink::mojom::BucketManagerHost>(base::BindRepeating(
       &DedicatedWorkerHost::CreateBucketManagerHost, base::Unretained(host)));
 
-#if BUILDFLAG(IS_FUCHSIA)
-  map->Add<media::mojom::FuchsiaMediaResourceProvider>(base::BindRepeating(
-      &DedicatedWorkerHost::BindFuchsiaMediaResourceProvider,
-      base::Unretained(host)));
-#endif  // BUILDFLAG(IS_FUCHSIA)
-
   // RenderProcessHost binders
   map->Add<media::mojom::VideoDecodePerfHistory>(BindWorkerReceiver(
       &RenderProcessHostImpl::BindVideoDecodePerfHistory, host));
   map->Add<media::mojom::WebrtcVideoPerfHistory>(BindWorkerReceiver(
       &RenderProcessHostImpl::BindWebrtcVideoPerfHistory, host));
+#if BUILDFLAG(IS_FUCHSIA)
+  map->Add<media::mojom::FuchsiaMediaCodecProvider>(
+      BindWorkerReceiver(&RenderProcessHostImpl::BindMediaCodecProvider, host));
+#endif
 
   // RenderProcessHost binders taking a StorageKey
   map->Add<blink::mojom::FileSystemAccessManager>(

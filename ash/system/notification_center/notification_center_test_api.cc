@@ -8,9 +8,11 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
+#include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/notification_center/notification_center_bubble.h"
 #include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/notification_center/notification_center_view.h"
+#include "ash/system/notification_center/notification_list_view.h"
 #include "ash/system/notification_center/stacked_notification_bar.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,8 +30,19 @@ NotificationCenterTestApi::NotificationCenterTestApi(
 void NotificationCenterTestApi::ToggleBubble() {
   auto event_generator =
       std::make_unique<ui::test::EventGenerator>(Shell::GetPrimaryRootWindow());
-  event_generator->MoveMouseTo(
-      notification_center_tray_->GetBoundsInScreen().CenterPoint());
+
+  gfx::Point click_location =
+      notification_center_tray_
+          ? notification_center_tray_->GetBoundsInScreen().CenterPoint()
+          : Shell::Get()
+                ->GetPrimaryRootWindowController()
+                ->shelf()
+                ->status_area_widget()
+                ->unified_system_tray()
+                ->GetBoundsInScreen()
+                .CenterPoint();
+
+  event_generator->MoveMouseTo(click_location);
   event_generator->ClickLeftButton();
 }
 
@@ -55,6 +68,10 @@ void NotificationCenterTestApi::RemoveNotification(const std::string& id) {
                                                            /*by_user=*/true);
 }
 
+size_t NotificationCenterTestApi::GetNotificationCount() const {
+  return message_center::MessageCenter::Get()->NotificationCount();
+}
+
 bool NotificationCenterTestApi::IsBubbleShown() {
   return notification_center_tray_->is_active() && GetWidget()->IsVisible();
 }
@@ -65,6 +82,15 @@ bool NotificationCenterTestApi::IsPopupShown(const std::string& id) {
 
 bool NotificationCenterTestApi::IsTrayShown() {
   return notification_center_tray_->GetVisible();
+}
+
+views::View* NotificationCenterTestApi::GetNotificationViewForId(
+    const std::string& id) {
+  // Ensure this api is only called when the notification list view exists, i.e.
+  // The notification center bubble is open.
+  DCHECK(GetNotificationListView());
+
+  return GetNotificationListView()->GetMessageViewForNotificationId(id);
 }
 
 views::View* NotificationCenterTestApi::GetPopupViewForId(
@@ -103,6 +129,25 @@ views::View* NotificationCenterTestApi::GetClearAllButton() {
 
 std::string NotificationCenterTestApi::GenerateNotificationId() {
   return base::NumberToString(notification_id_++);
+}
+
+NotificationListView* NotificationCenterTestApi::GetNotificationListView() {
+  DCHECK(message_center::MessageCenter::Get()->IsMessageCenterVisible());
+
+  if (notification_center_tray_) {
+    return notification_center_tray_->bubble_->notification_center_view_
+        ->notification_list_view();
+  }
+
+  auto* unified_system_tray = Shell::Get()
+                                  ->GetPrimaryRootWindowController()
+                                  ->shelf()
+                                  ->GetStatusAreaWidget()
+                                  ->unified_system_tray();
+
+  return unified_system_tray->message_center_bubble()
+      ->notification_center_view()
+      ->notification_list_view();
 }
 
 std::unique_ptr<message_center::Notification>

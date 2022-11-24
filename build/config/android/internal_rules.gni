@@ -471,10 +471,6 @@ template("write_build_config") {
       args += [ "--library-always-compress=${invoker.library_always_compress}" ]
     }
 
-    if (defined(invoker.library_renames)) {
-      args += [ "--library-renames=${invoker.library_renames}" ]
-    }
-
     if (defined(invoker.apk_path)) {
       # TODO(tiborg): Remove APK path from build config and use
       # install_artifacts from metadata instead.
@@ -1419,6 +1415,11 @@ if (enable_java_templates) {
       _main_class = invoker.main_class
       _build_config = invoker.build_config
       _script_name = invoker.script_name
+      if (defined(invoker.max_heap_size)) {
+        _max_heap_size = invoker.max_heap_size
+      } else {
+        _max_heap_size = "1G"
+      }
 
       script = "//build/android/gyp/create_java_binary_script.py"
       inputs = [ _build_config ]
@@ -1431,6 +1432,7 @@ if (enable_java_templates) {
         "--main-class",
         _main_class,
         "--classpath=@FileArg($_rebased_build_config:deps_info:host_classpath)",
+        "--max-heap-size=$_max_heap_size",
       ]
       data = []
 
@@ -2817,9 +2819,6 @@ if (enable_java_templates) {
       _args +=
           [ "--library-always-compress=${invoker.library_always_compress}" ]
     }
-    if (defined(invoker.library_renames)) {
-      _args += [ "--library-renames=${invoker.library_renames}" ]
-    }
     if (defined(invoker.dex_path)) {
       _inputs += [ invoker.dex_path ]
       _args += [
@@ -3616,7 +3615,6 @@ if (enable_java_templates) {
               "static_library_dependent_targets",
               "uncompress_shared_libraries",
               "library_always_compress",
-              "library_renames",
             ])
       }
       if (_type == "android_apk") {
@@ -4037,6 +4035,7 @@ if (enable_java_templates) {
                                [
                                  "tiered_stop_at_level_one",
                                  "main_class",
+                                 "max_heap_size",
                                  "wrapper_script_args",
                                ])
         build_config = _build_config
@@ -4233,7 +4232,6 @@ template("create_android_app_bundle_module") {
     "--uncompress-shared-libraries=@FileArg(" +
         "$_rebased_build_config:native:uncompress_shared_libraries)",
     "--library-always-compress=@FileArg($_rebased_build_config:native:library_always_compress)",
-    "--library-renames=@FileArg($_rebased_build_config:native:library_renames)",
   ]
   if (defined(android_app_secondary_abi)) {
     _rebased_secondary_abi_native_libraries_config =

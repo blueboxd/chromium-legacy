@@ -257,7 +257,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="ContentSettings.ImagePressed" enum="ContentSettingImageType"
     expires_after="2021-02-01">
-  <owner>calamity@chromium.org</owner>
+  <obsolete>
+    Removed in Nov 2022.
+  </obsolete>
+  <owner>alancutter@chromium.org</owner>
   <owner>src/chrome/browser/ui/page_action/OWNERS</owner>
   <summary>
     Counts which content setting buttons are pressed by the user.
@@ -936,7 +939,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.BrokenNTPHierarchy"
-    enum="NTPBrokenViewHierarchyRelationship" expires_after="M107">
+    enum="NTPBrokenViewHierarchyRelationship" expires_after="M115">
   <owner>adamta@google.com</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -2053,6 +2056,20 @@ chromium-metrics-reviews@google.com.
   <token key="PlayType">
     <variant name="AutoplayMuted"/>
     <variant name="NormalUnmuted"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.{FeedType}.CardIndexOnSwitch" units="index"
+    expires_after="2023-04-21">
+  <owner>adamta@google.com</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    iOS: Before switching to a new feed type, logs the index of the last visible
+    card.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
   </token>
 </histogram>
 

@@ -34,7 +34,6 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_local_storage.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
@@ -42,7 +41,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
-#include "gpu/command_buffer/service/shared_image/gl_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/gl_image_pbuffer_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -717,7 +716,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
   client_ = client;
 
-  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  main_thread_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
 
   if (!config.supported_output_formats.empty() &&
       !base::Contains(config.supported_output_formats, PIXEL_FORMAT_NV12)) {
@@ -3263,8 +3262,11 @@ DXVAVideoDecodeAccelerator::GetSharedImagesFromPictureBuffer(
           kPremul_SkAlphaType, shared_image_usage, gl_image_dxgi->texture(),
           std::move(gl_texture));
     } else {
-      shared_image = gpu::GLImageBacking::CreateFromGLTexture(
-          picture_buffer->gl_image(), mailbox, viz_formats[texture_idx],
+      auto* gl_image_pbuffer =
+          gpu::GLImagePbuffer::FromGLImage(picture_buffer->gl_image().get());
+      DCHECK(gl_image_pbuffer);
+      shared_image = gpu::GLImagePbufferBacking::CreateFromGLTexture(
+          gl_image_pbuffer, mailbox, viz_formats[texture_idx],
           picture_buffer->size(), picture_buffer->color_space(),
           kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, shared_image_usage,
           GetTextureTarget(), std::move(gl_texture));

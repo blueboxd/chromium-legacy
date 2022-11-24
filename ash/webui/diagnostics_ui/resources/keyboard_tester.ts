@@ -117,6 +117,9 @@ const standardNumberPadCodes: Set<number> = new Set([
   111,  // KEY_DELETE
 ]);
 
+const DISPLAY_TOAST_INDEFINITELY_MS = 0;
+const TOAST_LINGER_MS = 1000;
+
 const KeyboardTesterElementBase = I18nMixin(PolymerElement);
 
 export class KeyboardTesterElement extends KeyboardTesterElementBase {
@@ -170,6 +173,12 @@ export class KeyboardTesterElement extends KeyboardTesterElementBase {
         type: Boolean,
         value: loadTimeData.getBoolean('isLoggedIn'),
       },
+
+      lostFocusToastLingerMs: {
+        type: Number,
+        value: DISPLAY_TOAST_INDEFINITELY_MS,
+      },
+
     };
   }
 
@@ -178,6 +187,7 @@ export class KeyboardTesterElement extends KeyboardTesterElementBase {
   // string.
   protected isLoggedIn: boolean;
   protected diagramTopRightKey_: string;
+  private lostFocusToastLingerMs: number;
   private layoutIsKnown_: boolean;
   // TODO(crbug.com/1257138): use the proper type annotation instead of
   // string.
@@ -295,7 +305,11 @@ export class KeyboardTesterElement extends KeyboardTesterElementBase {
     this.inputDataProvider.observeKeyEvents(
         this.keyboard.id, this.receiver_.$.bindNewPipeAndPassRemote());
     this.addEventListeners();
+    const title: HTMLElement|null =
+        this.shadowRoot!.querySelector('div[slot="title"]');
+    this.$.dialog.getNative().removeAttribute('aria-describedby');
     this.$.dialog.showModal();
+    title?.focus();
   }
 
   // Prevent the default behavior for keydown/keyup only when the keyboard
@@ -398,6 +412,7 @@ export class KeyboardTesterElement extends KeyboardTesterElementBase {
         this.shadowRoot!.querySelector('#diagram');
     assert(diagram);
     diagram.clearPressedKeys();
+    this.lostFocusToastLingerMs = DISPLAY_TOAST_INDEFINITELY_MS;
     this.$.lostFocusToast.show();
   }
 
@@ -408,7 +423,9 @@ export class KeyboardTesterElement extends KeyboardTesterElementBase {
     if (this.isOpen()) {
       this.$.dialog.focus();
     }
-    this.$.lostFocusToast.hide();
+
+    // Show focus lost toast for 1 second after regaining focus.
+    this.lostFocusToastLingerMs = TOAST_LINGER_MS;
   }
 }
 

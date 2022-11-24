@@ -488,6 +488,15 @@ size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
   return size;
 }
 
+#if BUILDFLAG(IS_APPLE)
+bool PartitionClaimedAddress(const AllocatorDispatch*,
+                             void* address,
+                             void* context) {
+  return partition_alloc::IsManagedByPartitionAlloc(
+      reinterpret_cast<uintptr_t>(address));
+}
+#endif  // BUILDFLAG(IS_APPLE)
+
 unsigned PartitionBatchMalloc(const AllocatorDispatch*,
                               size_t size,
                               void** results,
@@ -514,6 +523,23 @@ void PartitionBatchFree(const AllocatorDispatch*,
     PartitionFree(nullptr, to_be_freed[i], nullptr);
   }
 }
+
+#if BUILDFLAG(IS_APPLE)
+void PartitionTryFreeDefault(const AllocatorDispatch*,
+                             void* address,
+                             void* context) {
+  partition_alloc::ScopedDisallowAllocations guard{};
+
+  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
+          reinterpret_cast<uintptr_t>(address)))) {
+    // The object pointed to by `address` is not allocated by the
+    // PartitionAlloc. Call find_zone_and_free.
+    return allocator_shim::TryFreeDefaultFallbackToFindZoneAndFree(address);
+  }
+
+  partition_alloc::ThreadSafePartitionRoot::FreeNoHooks(address);
+}
+#endif  // BUILDFLAG(IS_APPLE)
 
 // static
 partition_alloc::ThreadSafePartitionRoot* PartitionAllocMalloc::Allocator() {
@@ -561,6 +587,7 @@ void ConfigurePartitions(
     EnableBrpZapping enable_brp_zapping,
     SplitMainPartition split_main_partition,
     UseDedicatedAlignedPartition use_dedicated_aligned_partition,
+    AddDummyRefCount add_dummy_ref_count,
     AlternateBucketDistribution use_alternate_bucket_distribution) {
   // BRP cannot be enabled without splitting the main partition. Furthermore, in
   // the "before allocation" mode, it can't be enabled without further splitting
@@ -610,7 +637,7 @@ void ConfigurePartitions(
   // shouldn't bite us here. Mentioning just in case we move this code earlier.
   static partition_alloc::internal::base::NoDestructor<
       partition_alloc::ThreadSafePartitionRoot>
-      new_main_partition(partition_alloc::PartitionOptions{
+      new_main_partition(partition_alloc::PartitionOptions(
           !use_dedicated_aligned_partition
               ? partition_alloc::PartitionOptions::AlignedAlloc::kAllowed
               : partition_alloc::PartitionOptions::AlignedAlloc::kDisallowed,
@@ -625,7 +652,10 @@ void ConfigurePartitions(
               : partition_alloc::PartitionOptions::BackupRefPtrZapping::
                     kDisabled,
           partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
-      });
+          add_dummy_ref_count
+              ? partition_alloc::PartitionOptions::AddDummyRefCount::kEnabled
+              : partition_alloc::PartitionOptions::AddDummyRefCount::
+                    kDisabled));
   partition_alloc::ThreadSafePartitionRoot* new_root = new_main_partition.get();
 
   partition_alloc::ThreadSafePartitionRoot* new_aligned_root;
@@ -724,6 +754,11 @@ const AllocatorDispatch AllocatorDispatch::default_dispatch = {
     &allocator_shim::internal::PartitionFree,      // free_function
     &allocator_shim::internal::
         PartitionGetSizeEstimate,  // get_size_estimate_function
+#if BUILDFLAG(IS_APPLE)
+    &allocator_shim::internal::PartitionClaimedAddress,  // claimed_address
+#else
+    nullptr,  // claimed_address
+#endif
     &allocator_shim::internal::PartitionBatchMalloc,  // batch_malloc_function
     &allocator_shim::internal::PartitionBatchFree,    // batch_free_function
 #if BUILDFLAG(IS_APPLE)
@@ -731,8 +766,12 @@ const AllocatorDispatch AllocatorDispatch::default_dispatch = {
     // get_size_estimate() is used to determine whether an allocation belongs to
     // the current zone. It makes sense to optimize for it.
     &allocator_shim::internal::PartitionFreeDefiniteSize,
+    // On Apple OSes, try_free_default() is sometimes called as an optimization
+    // of free().
+    &allocator_shim::internal::PartitionTryFreeDefault,
 #else
     nullptr,  // free_definite_size_function
+    nullptr,  // try_free_default_function
 #endif
     &allocator_shim::internal::
         PartitionAlignedAlloc,  // aligned_malloc_function

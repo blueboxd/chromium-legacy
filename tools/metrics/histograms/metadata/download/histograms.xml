@@ -641,7 +641,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Download.IOSPresentQLPreviewControllerResult"
-    enum="PresentQLPreviewController" expires_after="2022-12-05">
+    enum="PresentQLPreviewController" expires_after="2023-12-05">
   <owner>sdefresne@chromium.org</owner>
   <owner>ewannpv@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
@@ -1444,6 +1444,16 @@ chromium-metrics-reviews@google.com.
   <owner>dtrainor@chromium.org</owner>
   <owner>qinmin@chromium.org</owner>
   <summary>Records events for local video thumbnail retrieval.</summary>
+</histogram>
+
+<histogram name="Download.WarningData.AddWarningActionEventOutcome"
+    enum="DownloadAddWarningActionEventOutcome" expires_after="2023-05-22">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-counter-abuse-alerts@google.com</owner>
+  <summary>
+    Records whether a download warning action event was sent, or if not, then
+    why not. Logged each time an action is taken on the download warning.
+  </summary>
 </histogram>
 
 <histogram name="Download.WinFileMoveError" enum="WinIFileOperationError"

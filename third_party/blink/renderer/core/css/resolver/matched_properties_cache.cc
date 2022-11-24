@@ -116,7 +116,8 @@ MatchedPropertiesCache::Key::Key(const MatchResult& result, unsigned hash)
 
 const CachedMatchedProperties* MatchedPropertiesCache::Find(
     const Key& key,
-    const StyleResolverState& style_resolver_state) {
+    const StyleResolverState& style_resolver_state,
+    const MatchResult& match_result) {
   DCHECK(key.IsValid());
   Cache::iterator it = cache_.find(key.hash_);
   if (it == cache_.end())
@@ -129,6 +130,11 @@ const CachedMatchedProperties* MatchedPropertiesCache::Find(
   if (cache_item->computed_style->InsideLink() !=
       style_resolver_state.StyleBuilder().InsideLink())
     return nullptr;
+  if (cache_item->computed_style->CanAffectAnimations() !=
+      (style_resolver_state.CanAffectAnimations() ||
+       match_result.ConditionallyAffectsAnimations())) {
+    return nullptr;
+  }
   if (!cache_item->DependenciesEqual(style_resolver_state))
     return nullptr;
   return cache_item;
@@ -204,23 +210,24 @@ void MatchedPropertiesCache::ClearViewportDependent() {
   cache_.RemoveAll(to_remove);
 }
 
-bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
+bool MatchedPropertiesCache::IsStyleCacheable(
+    const ComputedStyleBuilder& builder) {
   // Content property with attr() values depend on the attribute value of the
   // originating element, thus we cannot cache based on the matched properties
   // because the value of content is retrieved from the attribute at apply time.
-  if (style.HasAttrContent())
+  if (builder.HasAttrContent())
     return false;
-  if (style.Zoom() != ComputedStyleInitialValues::InitialZoom())
+  if (builder.Zoom() != ComputedStyleInitialValues::InitialZoom())
     return false;
-  if (style.TextAutosizingMultiplier() != 1)
+  if (builder.TextAutosizingMultiplier() != 1)
     return false;
-  if (style.HasContainerRelativeUnits())
+  if (builder.HasContainerRelativeUnits())
     return false;
   // Avoiding cache for ::highlight styles, and the originating styles they are
   // associated with, because the style depends on the highlight names involved
   // and they're not cached.
-  if (style.HasPseudoElementStyle(kPseudoIdHighlight) ||
-      style.StyleType() == kPseudoIdHighlight)
+  if (builder.InternalStyle()->HasPseudoElementStyle(kPseudoIdHighlight) ||
+      builder.StyleType() == kPseudoIdHighlight)
     return false;
   return true;
 }
@@ -228,7 +235,7 @@ bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
 bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
   const ComputedStyle& parent_style = *state.ParentStyle();
 
-  if (!IsStyleCacheable(*state.Style()))
+  if (!IsStyleCacheable(state.StyleBuilder()))
     return false;
 
   // The cache assumes static knowledge about which properties are inherited.

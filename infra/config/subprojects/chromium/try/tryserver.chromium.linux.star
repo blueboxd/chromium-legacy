@@ -14,13 +14,13 @@ try_.defaults.set(
     builder_group = "tryserver.chromium.linux",
     cores = 8,
     orchestrator_cores = 2,
-    compilator_cores = 16,
+    compilator_cores = 8,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
-    compilator_goma_jobs = goma.jobs.J150,
+    compilator_goma_jobs = goma.jobs.J300,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    compilator_reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
@@ -226,6 +226,8 @@ try_.compilator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
     main_list_view = "try",
+    # TODO (gatong): Remove once we've migrated to n2s
+    cores = "8|16",
 )
 
 try_.orchestrator_builder(
@@ -271,7 +273,8 @@ try_.compilator_builder(
     name = "linux-wayland-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    cores = 16,
+    # TODO (gatong): Remove once we've migrated to n2s
+    cores = "8|16",
     ssd = True,
 )
 
@@ -400,6 +403,8 @@ try_.compilator_builder(
     name = "linux_chromium_asan_rel_ng-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
+    # TODO (gatong): Remove once we've migrated to n2s
+    cores = "8|16",
 )
 
 try_.builder(
@@ -480,7 +485,7 @@ try_.builder(
             path = "linux_debug",
         ),
     ],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -522,17 +527,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux_chromium_msan_focal",
-    mirrors = [
-        "ci/Linux MSan Focal",
-    ],
-    execution_timeout = 16 * time.hour,
-    goma_backend = None,
-    os = os.LINUX_FOCAL,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-)
-
-try_.builder(
     name = "linux_chromium_msan_rel_ng",
     mirrors = [
         "ci/Linux MSan Builder",
@@ -540,6 +534,7 @@ try_.builder(
     ],
     execution_timeout = 6 * time.hour,
     goma_backend = None,
+    os = os.LINUX_FOCAL,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
@@ -589,6 +584,8 @@ try_.compilator_builder(
     name = "linux_chromium_tsan_rel_ng-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
+    # TODO (gatong): Remove once we've migrated to n2s
+    cores = "8|16",
 )
 
 try_.builder(
@@ -681,16 +678,19 @@ try_.builder(
 try_.builder(
     name = "tricium-metrics-analysis",
     executable = "recipe:tricium_metrics",
+    goma_backend = None,
 )
 
 try_.builder(
     name = "tricium-oilpan-analysis",
     executable = "recipe:tricium_oilpan",
+    goma_backend = None,
 )
 
 try_.builder(
     name = "tricium-simple",
     executable = "recipe:tricium_simple",
+    goma_backend = None,
 )
 
 try_.gpu.optional_tests_builder(

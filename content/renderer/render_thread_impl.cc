@@ -45,7 +45,6 @@
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_pressure_level_proto.h"
 #include "base/trace_event/trace_event.h"
@@ -566,7 +565,7 @@ void RenderThreadImpl::Init() {
 #endif
 
   lazy_tls.Pointer()->Set(this);
-  g_main_task_runner.Get() = base::ThreadTaskRunnerHandle::Get();
+  g_main_task_runner.Get() = base::SingleThreadTaskRunner::GetCurrentDefault();
 
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
@@ -1092,11 +1091,22 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 
   mojo::PendingRemote<media::mojom::VideoEncodeAcceleratorProvider>
       vea_provider;
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(media::kUseOutOfProcessVideoEncoding)) {
+    BindHostReceiver(vea_provider.InitWithNewPipeAndPassReceiver());
+  } else {
+    gpu_->CreateVideoEncodeAcceleratorProvider(
+        vea_provider.InitWithNewPipeAndPassReceiver());
+  }
+#else
   gpu_->CreateVideoEncodeAcceleratorProvider(
       vea_provider.InitWithNewPipeAndPassReceiver());
+#endif
 
   gpu_factories_.push_back(GpuVideoAcceleratorFactoriesImpl::Create(
-      std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
+      std::move(gpu_channel_host),
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
       GetMediaSequencedTaskRunner(), std::move(media_context_provider),
       enable_video_gpu_memory_buffers, enable_media_stream_gpu_memory_buffers,
       enable_video_decode_accelerator, enable_video_encode_accelerator,
@@ -1649,7 +1659,8 @@ RenderThreadImpl::GetMediaSequencedTaskRunner() {
   if (base::FeatureList::IsEnabled(kUseThreadPoolForMediaTaskRunner)) {
     if (!media_task_runner_) {
       media_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-          base::TaskTraits{base::TaskPriority::USER_VISIBLE, base::MayBlock()});
+          base::TaskTraits{base::TaskPriority::USER_VISIBLE,
+                           base::WithBaseSyncPrimitives(), base::MayBlock()});
     }
     return media_task_runner_;
   }

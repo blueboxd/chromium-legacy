@@ -215,8 +215,11 @@ AutofillMetrics::AutocompleteState AutocompleteStateForSubmittedField(
     const AutofillField& field) {
   // An unparsable autocomplete attribute is treated like kNone.
   auto autocomplete_state = AutofillMetrics::AutocompleteState::kNone;
-  if (ShouldIgnoreAutocompleteAttribute(field.autocomplete_attribute)) {
-    autocomplete_state = AutofillMetrics::AutocompleteState::kIgnored;
+  // autocomplete=on is ignored as well. But for the purposes of metrics we care
+  // about cases where the developer tries to disable autocomplete.
+  if (field.autocomplete_attribute != "on" &&
+      ShouldIgnoreAutocompleteAttribute(field.autocomplete_attribute)) {
+    autocomplete_state = AutofillMetrics::AutocompleteState::kOff;
   } else if (field.parsed_autocomplete) {
     autocomplete_state =
         field.parsed_autocomplete->field_type != HtmlFieldType::kUnrecognized
@@ -244,13 +247,10 @@ void LogAutocompletePredictionCollisionTypeMetrics(
     }
 
     auto autocomplete_state = AutocompleteStateForSubmittedField(*field);
-
     AutofillMetrics::LogAutocompletePredictionCollisionState(
         prediction_state, autocomplete_state);
-    if (autocomplete_state == AutofillMetrics::AutocompleteState::kGarbage) {
-      AutofillMetrics::LogAutocompletePredictionCollisionTypes(server_type,
-                                                               heuristic_type);
-    }
+    AutofillMetrics::LogAutocompletePredictionCollisionTypes(
+        autocomplete_state, server_type, heuristic_type);
   }
 }
 
@@ -920,7 +920,7 @@ bool BrowserAutofillManager::MaybeStartVoteUploadProcess(
           &BrowserAutofillManager::DeterminePossibleFieldTypesForUpload,
           copied_profiles, copied_credit_cards, last_unlocked_credit_card_cvc_,
           app_locale_, raw_form),
-      base::BindOnce(&BrowserAutofillManager::UploadFormDataAsyncCallback,
+      base::BindOnce(&BrowserAutofillManager::UploadVotesAndLogQuality,
                      weak_ptr_factory_.GetWeakPtr(), std::move(form_structure),
                      initial_interaction_timestamp_,
                      AutofillTickClock::NowTicks(), observed_submission));
@@ -1310,16 +1310,6 @@ void BrowserAutofillManager::FillProfileFormImpl(
     const AutofillProfile& profile) {
   FillOrPreviewProfileForm(mojom::RendererFormDataAction::kFill,
                            /*query_id=*/kNoQueryId, form, field, profile);
-}
-
-void BrowserAutofillManager::SetProfileFillViaAutofillAssistantIntent(
-    const autofill_assistant::AutofillAssistantIntent intent) {
-  address_form_event_logger_->SetAutofillAssistantIntentForFilling(intent);
-}
-
-void BrowserAutofillManager::SetCreditCardFillViaAutofillAssistantIntent(
-    const autofill_assistant::AutofillAssistantIntent intent) {
-  credit_card_form_event_logger_->SetAutofillAssistantIntentForFilling(intent);
 }
 
 void BrowserAutofillManager::FillOrPreviewVirtualCardInformation(
@@ -1834,14 +1824,40 @@ void BrowserAutofillManager::OnSuggestionsReturned(
                                             autoselect_first_suggestion);
 }
 
-void BrowserAutofillManager::UploadFormData(const FormStructure& submitted_form,
-                                            bool observed_submission) {
+// We explicitly pass in all the time stamps of interest, as the cached ones
+// might get reset before this method executes.
+void BrowserAutofillManager::UploadVotesAndLogQuality(
+    std::unique_ptr<FormStructure> submitted_form,
+    base::TimeTicks interaction_time,
+    base::TimeTicks submission_time,
+    bool observed_submission) {
+  if (submitted_form->ShouldRunHeuristics() ||
+      submitted_form->ShouldRunHeuristicsForSingleFieldForms() ||
+      submitted_form->ShouldBeQueried()) {
+    FormInteractionCounts form_interaction_counts = {};
+    if (submitted_form->field_count() > 0) {
+      const AutofillField* autofill_field = submitted_form->field(0);
+      auto* logger = GetEventFormLogger(autofill_field->Type().group());
+      if (logger) {
+        form_interaction_counts = logger->form_interaction_counts();
+      }
+    }
+
+    submitted_form->LogQualityMetrics(
+        submitted_form->form_parsed_timestamp(), interaction_time,
+        submission_time, form_interactions_ukm_logger(), did_show_suggestions_,
+        observed_submission, form_interaction_counts);
+  }
+
+  if (!submitted_form->ShouldBeUploaded())
+    return;
+
   if (!download_manager())
     return;
 
   // Check if the form is among the forms that were recently auto-filled.
   bool was_autofilled = base::Contains(autofilled_form_signatures_,
-                                       submitted_form.FormSignatureAsStr());
+                                       submitted_form->FormSignatureAsStr());
 
   ServerFieldTypeSet non_empty_types;
   personal_data_->GetNonEmptyTypes(&non_empty_types);
@@ -1852,40 +1868,9 @@ void BrowserAutofillManager::UploadFormData(const FormStructure& submitted_form,
   }
 
   download_manager()->StartUploadRequest(
-      submitted_form, was_autofilled, non_empty_types,
+      *submitted_form, was_autofilled, non_empty_types,
       /*login_form_signature=*/std::string(), observed_submission,
       client()->GetPrefs());
-}
-
-// We explicitly pass in all the time stamps of interest, as the cached ones
-// might get reset before this method executes.
-void BrowserAutofillManager::UploadFormDataAsyncCallback(
-    std::unique_ptr<FormStructure> submitted_form,
-    base::TimeTicks interaction_time,
-    base::TimeTicks submission_time,
-    bool observed_submission) {
-  if (submitted_form->ShouldRunHeuristics() ||
-      submitted_form->ShouldRunHeuristicsForSingleFieldForms() ||
-      submitted_form->ShouldBeQueried()) {
-    autofill_assistant::AutofillAssistantIntent intent =
-        autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT;
-    FormInteractionCounts form_interaction_counts = {};
-    if (submitted_form->field_count() > 0) {
-      const AutofillField* autofill_field = submitted_form->field(0);
-      auto* logger = GetEventFormLogger(autofill_field->Type().group());
-      if (logger) {
-        intent = logger->autofill_assistant_intent();
-        form_interaction_counts = logger->form_interaction_counts();
-      }
-    }
-
-    submitted_form->LogQualityMetrics(
-        submitted_form->form_parsed_timestamp(), interaction_time,
-        submission_time, form_interactions_ukm_logger(), did_show_suggestions_,
-        observed_submission, form_interaction_counts, intent);
-  }
-  if (submitted_form->ShouldBeUploaded())
-    UploadFormData(*submitted_form, observed_submission);
 }
 
 const gfx::Image& BrowserAutofillManager::GetCardImage(

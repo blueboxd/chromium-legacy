@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
+#include "chrome/browser/ui/webui/settings/site_settings_permissions_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -77,6 +78,7 @@
 #include "components/performance_manager/public/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/features.h"
@@ -206,6 +208,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<ClearBrowsingDataHandler>(web_ui, profile));
   AddSettingsPageUIHandler(std::make_unique<SafetyCheckHandler>());
+  AddSettingsPageUIHandler(std::make_unique<SiteSettingsPermissionsHandler>());
   AddSettingsPageUIHandler(std::make_unique<DownloadsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ExtensionControlHandler>());
   AddSettingsPageUIHandler(std::make_unique<FontHandler>(profile));
@@ -400,6 +403,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "safetyCheckNotificationPermissionReviewPrimaryLabel",
       IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckUnusedSitePermissionsHeaderLabel",
+      IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_HEADER_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckNotificationPermissionReviewSecondaryLabel",
+      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.
@@ -413,6 +422,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),
       IDR_SETTINGS_SETTINGS_HTML);
+  webui::EnableTrustedTypesCSP(html_source);
 
   AddLocalizedStrings(html_source, profile, web_ui->GetWebContents());
 
@@ -429,9 +439,13 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   bool is_privacy_sandbox_restricted =
       PrivacySandboxServiceFactory::GetForProfile(profile)
           ->IsPrivacySandboxRestricted();
+  bool is_privacy_sandbox_settings_4 =
+      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4);
   html_source->AddBoolean("isPrivacySandboxRestricted",
                           is_privacy_sandbox_restricted);
-  if (!is_privacy_sandbox_restricted) {
+  html_source->AddBoolean("isPrivacySandboxSettings4",
+                          is_privacy_sandbox_settings_4);
+  if (!is_privacy_sandbox_restricted && !is_privacy_sandbox_settings_4) {
     html_source->AddResourcePath(
         "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
   }

@@ -1072,8 +1072,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Missive.ResourceExhaustedCase" units="count"
-    expires_after="2023-11-17">
+<histogram name="Platform.Missive.ResourceExhaustedCase"
+    enum="ResourceExhaustedCase" expires_after="2023-11-17">
   <owner>xuhong@chromium.org</owner>
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
@@ -1625,12 +1625,12 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.TPM2.CommandAndResponse.{Client}"
-    enum="TPM2CommandAndResponse" expires_after="2023-04-20">
+<histogram name="Platform.TPM1.CommandAndResponse.{Client}"
+    enum="TPM1CommandAndResponse" expires_after="2023-04-20">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
-    The TPM2 command and response code send from |Client| to trunks. The value
+    The TPM1 command and response code send from {Client} to trousers. The value
     is the encoding of 2 bytes command code and 2 bytes response code.
   </summary>
   <token key="Client">
@@ -1640,6 +1640,27 @@ chromium-metrics-reviews@google.com.
     <variant name="TpmManager"/>
     <variant name="TrunksSend"/>
     <variant name="U2f"/>
+    <variant name="Unknown"/>
+    <variant name="Vtpm"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.TPM2.CommandAndResponse.{Client}"
+    enum="TPM2CommandAndResponse" expires_after="2023-04-20">
+  <owner>chingkang@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The TPM2 command and response code send from {Client} to trunks. The value
+    is the encoding of 2 bytes command code and 2 bytes response code.
+  </summary>
+  <token key="Client">
+    <variant name="Attestation"/>
+    <variant name="Chaps"/>
+    <variant name="Cryptohome"/>
+    <variant name="TpmManager"/>
+    <variant name="TrunksSend"/>
+    <variant name="U2f"/>
+    <variant name="Unknown"/>
     <variant name="Vtpm"/>
   </token>
 </histogram>
@@ -1729,8 +1750,13 @@ chromium-metrics-reviews@google.com.
   <owner>mutexlox@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
   <summary>
-    Count of crashes (unclean shutdown) during the previous day, or the most
-    recent day the device was in use. Reported at most once a day.
+    Count of unclean OS shutdowns during the previous day, or the most recent
+    day the device was in use. Specifically, the counter is incremented during
+    boot if the OS did not shut down cleanly and the previous shutdown was not
+    due to a kernel crash (kernel crashes are counted elsewere) and the previous
+    shutdown did not occur while the device was suspended (failures while
+    suspended are assumed to be the battery running down). Reported at most once
+    a day.
   </summary>
 </histogram>
 

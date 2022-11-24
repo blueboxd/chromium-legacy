@@ -24,7 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -508,7 +508,8 @@ AutocompleteController::AutocompleteController(
 #endif
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "AutocompleteController", base::ThreadTaskRunnerHandle::Get());
+      this, "AutocompleteController",
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 AutocompleteController::~AutocompleteController() {
@@ -888,14 +889,6 @@ void AutocompleteController::SetMatchDestinationURL(
 #endif
 }
 
-void AutocompleteController::SetTailSuggestContentPrefixes() {
-  result_.SetTailSuggestContentPrefixes();
-}
-
-void AutocompleteController::SetTailSuggestCommonPrefixes() {
-  result_.SetTailSuggestCommonPrefixes();
-}
-
 const AutocompleteResult& AutocompleteController::result() const {
   return DebouncingEnabled() ? published_result_ : result_;
 }
@@ -986,6 +979,8 @@ void AutocompleteController::UpdateResult(
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);
+  UpdateTailSuggestPrefix(&result_);
+
   if (search_provider_)
     search_provider_->RegisterDisplayedAnswers(result_);
 
@@ -1213,6 +1208,17 @@ void AutocompleteController::UpdateAssistedQueryStats(
   }
 }
 
+void AutocompleteController::UpdateTailSuggestPrefix(
+    AutocompleteResult* result) {
+  const auto common_prefix = result->GetCommonPrefix();
+  if (!common_prefix.empty()) {
+    for (auto& match : *result) {
+      if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
+        match.tail_suggest_common_prefix = common_prefix;
+    }
+  }
+}
+
 void AutocompleteController::NotifyChanged() {
   // Will log metrics for how many matches changed. Will also log timing metrics
   // for the current request if it's complete; otherwise, will just update
@@ -1237,6 +1243,7 @@ void AutocompleteController::DelayedNotifyChanged(bool notify_default_match) {
   if (notify_default_match)
     notify_changed_default_match_ = true;
   if (done_ || in_start_) {
+    notify_changed_debouncer_.ResetTimeLastRun();
     NotifyChanged();
   } else {
     notify_changed_debouncer_.RequestRun(base::BindOnce(

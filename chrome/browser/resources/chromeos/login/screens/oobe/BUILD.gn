@@ -8,13 +8,6 @@ import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("../../oobe_auto_imports.gni")
 
-group("polymer3_elements") {
-  public_deps = [
-    ":enterprise_enrollment_module",
-    ":packaged_license_module",
-    ":quick_start_module",
-  ]
-}
 
 js_type_check("closure_compile") {
   is_polymer3 = true
@@ -30,11 +23,11 @@ js_type_check("closure_compile") {
     ":demo_preferences",
     ":demo_setup",
     ":enable_debugging",
-    ":enterprise_enrollment.m",
+    ":enterprise_enrollment",
     ":hid_detection",
     ":oobe_network",
-    ":packaged_license.m",
-    ":quick_start.m",
+    ":packaged_license",
+    ":quick_start",
     ":update",
     ":welcome",
     ":welcome_dialog",
@@ -98,8 +91,8 @@ js_library("enable_debugging") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("enterprise_enrollment.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/enterprise_enrollment.m.js" ]
+js_library("enterprise_enrollment") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/enterprise_enrollment.js" ]
   deps = [
     "../../../keyboard:keyboard_utils.m",
     "../../components:display_manager_types.m",
@@ -115,7 +108,7 @@ js_library("enterprise_enrollment.m") {
   ]
   externs_list =
       [ "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js" ]
-  extra_deps = [ ":enterprise_enrollment_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("hid_detection") {
@@ -132,8 +125,8 @@ js_library("hid_detection") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("quick_start.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/quick_start.m.js" ]
+js_library("quick_start") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/quick_start.js" ]
   deps = [
     "../../components:oobe_types.m",
     "../../components/behaviors:login_screen_behavior.m",
@@ -141,7 +134,7 @@ js_library("quick_start.m") {
     "../../components/dialogs:oobe_loading_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":quick_start_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("oobe_network") {
@@ -158,8 +151,8 @@ js_library("oobe_network") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("packaged_license.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/packaged_license.m.js" ]
+js_library("packaged_license") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/oobe/packaged_license.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -167,7 +160,7 @@ js_library("packaged_license.m") {
     "../../components/dialogs:oobe_adaptive_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":packaged_license_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("update") {
@@ -223,41 +216,17 @@ js_library("welcome_dialog") {
   externs_list = [ "$externs_path/tts.js" ]
 }
 
-polymer_modulizer("enterprise_enrollment") {
-  js_file = "enterprise_enrollment.js"
-  html_file = "enterprise_enrollment.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("quick_start") {
-  js_file = "quick_start.js"
-  html_file = "quick_start.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("packaged_license") {
-  js_file = "packaged_license.js"
-  html_file = "packaged_license.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
 html_to_js("web_components") {
   js_files = [
     "auto_enrollment_check.js",
     "demo_setup.js",
     "demo_preferences.js",
     "enable_debugging.js",
+    "enterprise_enrollment.js",
     "hid_detection.js",
     "oobe_network.js",
+    "packaged_license.js",
+    "quick_start.js",
     "update.js",
     "welcome.js",
     "welcome_dialog.js",

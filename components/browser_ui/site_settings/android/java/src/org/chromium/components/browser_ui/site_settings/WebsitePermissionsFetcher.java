@@ -321,7 +321,7 @@ public class WebsitePermissionsFetcher {
 
         private Website findOrCreateSite(String origin, String embedder) {
             // Ensure that the origin parameter is actually an origin and not a host.
-            assert origin.contains(SCHEME_SUFFIX);
+            assert origin.equals(SITE_WILDCARD) || origin.contains(SCHEME_SUFFIX);
 
             // This allows us to show multiple entries in "All sites" for the same origin, based on
             // the (origin, embedder) combination. For example, "cnn.com", "cnn.com all cookies on
@@ -356,8 +356,10 @@ public class WebsitePermissionsFetcher {
                         || (address.equals(embedder) && address.equals(SITE_WILDCARD))) {
                     continue;
                 }
-                // Convert the address to origin, if it's not one already.
-                String origin = WebsiteAddress.create(address).getOrigin();
+                // Convert the address to origin, if it's not one already (unless it's a wildcard).
+                String origin = address.equals(SITE_WILDCARD)
+                        ? address
+                        : WebsiteAddress.create(address).getOrigin();
                 Website site = findOrCreateSite(origin, embedder);
                 site.setContentSettingException(contentSettingsType, exception);
             }

@@ -248,12 +248,14 @@ void BackgroundTracingActiveScenario::SetState(State new_state) {
     // we abort tracing here.
     DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
     base::trace_event::TraceLog::GetInstance()->SetDisabled(
-        base::trace_event::TraceLog::GetInstance()->enabled_modes());
+        base::trace_event::TraceLog::RECORDING_MODE);
   }
 
   if (scenario_state_ == State::kAborted) {
     DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
     tracing_session_.reset();
+    tracing_timer_.reset();
+
     std::move(on_aborted_callback_).Run();
   }
 }

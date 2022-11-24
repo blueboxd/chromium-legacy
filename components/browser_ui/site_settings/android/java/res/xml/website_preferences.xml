@@ -12,8 +12,7 @@ found in the LICENSE file.
 
     <!-- A text message describing cookie settings. -->
     <org.chromium.components.browser_ui.settings.TextMessagePreference
-        android:key="cookie_info_text"
-        android:summary="@string/website_settings_cookie_info"/>
+        android:key="info_text"/>
 
     <!-- A common binary toggle, only shown for specific categories that allow
          turning default values for that category on/off.-->
@@ -28,7 +27,9 @@ found in the LICENSE file.
     <!-- A four state toggle for cookie preferences, only shown for the Cookies category. -->
     <org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference
         android:key="four_state_cookie_toggle" />
-
+    <!-- A three state toggle for third-party cookies preferences, only shown for the ThirdPartyCookies category. -->
+    <org.chromium.components.browser_ui.site_settings.TriStateCookieSettingsPreference
+        android:key="tri_state_cookie_toggle" />
     <!-- A checkbox for enabling a quiet ui for notification prompts. Only shown in the Notifications category. -->
     <org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference
         android:key="notifications_quiet_ui"

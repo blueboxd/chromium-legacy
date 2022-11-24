@@ -254,12 +254,6 @@ Config::Config() {
             "hide_single_visit_clusters_on_prominent_ui_surfaces",
             should_hide_single_visit_clusters_on_prominent_ui_surfaces);
 
-    should_hide_single_domain_clusters_on_prominent_ui_surfaces =
-        GetFieldTrialParamByFeatureAsBool(
-            features::kOnDeviceClustering,
-            "hide_single_domain_clusters_on_prominent_ui_surfaces",
-            should_hide_single_domain_clusters_on_prominent_ui_surfaces);
-
     should_filter_noisy_clusters = GetFieldTrialParamByFeatureAsBool(
         features::kOnDeviceClustering, "filter_noisy_clusters",
         should_filter_noisy_clusters);
@@ -375,6 +369,15 @@ Config::Config() {
         "search_results_page_ranking_weight",
         search_results_page_ranking_weight);
     DCHECK_GE(search_results_page_ranking_weight, 0.0f);
+  }
+
+  // The `kHistoryClustersNavigationContextClustering` feature and child params.
+  {
+    context_clustering_clean_up_duration =
+        base::Minutes(GetFieldTrialParamByFeatureAsInt(
+            internal::kHistoryClustersNavigationContextClustering,
+            "clean_up_duration_minutes",
+            context_clustering_clean_up_duration.InMinutes()));
   }
 
   // Lonely features without child params.

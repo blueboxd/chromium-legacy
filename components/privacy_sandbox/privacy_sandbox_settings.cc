@@ -95,6 +95,11 @@ PrivacySandboxSettings::PrivacySandboxSettings(
 PrivacySandboxSettings::~PrivacySandboxSettings() = default;
 
 bool PrivacySandboxSettings::IsTopicsAllowed() const {
+  // M1 specific
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
+    return pref_service_->GetBoolean(prefs::kPrivacySandboxM1TopicsEnabled);
+  }
+
   // Topics API calculation should be prevented if the user has blocked 3PC
   // cookies, as there will be no context specific check.
   const auto cookie_controls_mode =
@@ -113,6 +118,11 @@ bool PrivacySandboxSettings::IsTopicsAllowed() const {
 bool PrivacySandboxSettings::IsTopicsAllowedForContext(
     const GURL& url,
     const absl::optional<url::Origin>& top_frame_origin) const {
+  // M1 specific
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
+    return IsTopicsAllowed() && IsSiteDataAllowed(url);
+  }
+
   // If the Topics API is disabled completely, it is not available in any
   // context.
   return IsTopicsAllowed() &&
@@ -339,49 +349,25 @@ bool PrivacySandboxSettings::IsPrivacySandboxEnabled() const {
   if (delegate_->IsPrivacySandboxRestricted())
     return false;
 
+  if (incognito_profile_)
+    return false;
+
   // For Measurement and Relevance APIs, we explicitly do not require the
   // underlying pref to be enabled if there is a local flag enabling the APIs to
   // allow for local testing.
-  bool should_override_setting_for_local_testing = base::FeatureList::IsEnabled(
-      privacy_sandbox::kOverridePrivacySandboxSettingsLocalTesting);
-
-  // Which preference is consulted is dependent on whether release 3 of the
-  // settings is available.
-  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
-    // For Privacy Sandbox Settings 3, APIs are disabled in incognito.
-    if (incognito_profile_)
-      return false;
-
-    if (should_override_setting_for_local_testing) {
-      return true;
-    }
-
-    // For Privacy Sandbox Settings 3, APIs may be restricted via the delegate.
-    // The V2 pref was introduced with the 3rd Privacy Sandbox release.
-    return pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2);
+  if (base::FeatureList::IsEnabled(
+          privacy_sandbox::kOverridePrivacySandboxSettingsLocalTesting)) {
+    return true;
   }
 
-  if (should_override_setting_for_local_testing)
-    return true;
-
-  return pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled);
+  return pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2);
 }
 
 void PrivacySandboxSettings::SetPrivacySandboxEnabled(bool enabled) {
-  // Only apply the decision to the appropriate preference.
-  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
-    pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, enabled);
-  } else {
-    pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabled, enabled);
-  }
+  pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, enabled);
 }
 
 bool PrivacySandboxSettings::IsTrustTokensAllowed() {
-  // The PrivacySandboxSettings is only involved in Trust Token access
-  // decisions when the Release 3 flag is enabled.
-  if (!base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3))
-    return true;
-
   return IsPrivacySandboxEnabled();
 }
 
@@ -394,11 +380,6 @@ void PrivacySandboxSettings::OnCookiesCleared() {
 }
 
 void PrivacySandboxSettings::OnPrivacySandboxPrefChanged() {
-  // The PrivacySandboxSettings is only involved in Trust Token access
-  // decisions when the Release 3 flag is enabled.
-  if (!base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3))
-    return;
-
   for (auto& observer : observers_)
     observer.OnTrustTokenBlockingChanged(!IsTrustTokensAllowed());
 }
@@ -447,6 +428,17 @@ void PrivacySandboxSettings::SetTopicsDataAccessibleFromNow() const {
 
   for (auto& observer : observers_)
     observer.OnTopicsDataAccessibleSinceUpdated();
+}
+
+bool PrivacySandboxSettings::IsSiteDataAllowed(const GURL& url) const {
+  // Relying on |host_content_settings_map_| instead of |cookie_settings_|
+  // allows to query whether the site associated with the |url| is allowed to
+  // access Site data (aka ContentSettingsType::COOKIES) from a stand-alone
+  // point of view. This is not possible via |cookies_settings_|, which _also_
+  // takes into account third party context.
+  return host_content_settings_map_->GetContentSetting(
+             url, GURL(), ContentSettingsType::COOKIES) !=
+         ContentSetting::CONTENT_SETTING_BLOCK;
 }
 
 }  // namespace privacy_sandbox

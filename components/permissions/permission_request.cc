@@ -13,10 +13,6 @@
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "media/base/android/media_drm_bridge.h"
-#endif
-
 namespace permissions {
 
 PermissionRequest::PermissionRequest(
@@ -83,9 +79,7 @@ std::u16string PermissionRequest::GetDialogMessageText() const {
       break;
     case RequestType::kProtectedMediaIdentifier:
       message_id =
-          media::MediaDrmBridge::IsPerOriginProvisioningSupported()
-              ? IDS_PROTECTED_MEDIA_IDENTIFIER_PER_ORIGIN_PROVISIONING_INFOBAR_TEXT
-              : IDS_PROTECTED_MEDIA_IDENTIFIER_PER_DEVICE_PROVISIONING_INFOBAR_TEXT;
+          IDS_PROTECTED_MEDIA_IDENTIFIER_PER_ORIGIN_PROVISIONING_INFOBAR_TEXT;
       break;
     case RequestType::kStorageAccess:
       // Handled by `PermissionPromptAndroid::GetMessageText` directly.
@@ -237,17 +231,19 @@ std::u16string PermissionRequest::GetMessageTextFragment() const {
 
 void PermissionRequest::PermissionGranted(bool is_one_time) {
   std::move(permission_decided_callback_)
-      .Run(CONTENT_SETTING_ALLOW, is_one_time);
+      .Run(CONTENT_SETTING_ALLOW, is_one_time,
+           /*is_final_decision=*/true);
 }
 
 void PermissionRequest::PermissionDenied() {
   std::move(permission_decided_callback_)
-      .Run(CONTENT_SETTING_BLOCK, /*is_one_time=*/false);
+      .Run(CONTENT_SETTING_BLOCK, /*is_one_time=*/false,
+           /*is_final_decision=*/true);
 }
 
-void PermissionRequest::Cancelled() {
-  std::move(permission_decided_callback_)
-      .Run(CONTENT_SETTING_DEFAULT, /*is_one_time=*/false);
+void PermissionRequest::Cancelled(bool is_final_decision) {
+  permission_decided_callback_.Run(CONTENT_SETTING_DEFAULT,
+                                   /*is_one_time=*/false, is_final_decision);
 }
 
 void PermissionRequest::RequestFinished() {

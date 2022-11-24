@@ -46,6 +46,7 @@
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -85,6 +86,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
@@ -2233,9 +2235,11 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
 
   // The old window's PolicyContainer must be accessed before being potentially
   // extracted below.
-  const bool old_window_is_anonymous =
-      frame_->DomWindow() &&
-      frame_->DomWindow()->GetPolicyContainer()->GetPolicies().is_anonymous;
+  const bool old_window_is_credentialless =
+      frame_->DomWindow() && frame_->DomWindow()
+                                 ->GetPolicyContainer()
+                                 ->GetPolicies()
+                                 .is_credentialless;
 
   // DocumentLoader::InitializeWindow is called either on FrameLoader::Init or
   // on FrameLoader::CommitNavigation. FrameLoader::Init always initializes a
@@ -2258,7 +2262,8 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   DCHECK(policy_container_);
 
   const bool window_anonymous_matching =
-      old_window_is_anonymous == policy_container_->GetPolicies().is_anonymous;
+      old_window_is_credentialless ==
+      policy_container_->GetPolicies().is_credentialless;
 
   ContentSecurityPolicy* csp = CreateCSP();
 
@@ -2675,10 +2680,16 @@ void DocumentLoader::CommitNavigation() {
 
 void DocumentLoader::CreateParserPostCommit() {
   if (RuntimeEnabledFeatures::SpeculationRulesFetchFromHeaderEnabled()) {
+    CountUse(WebFeature::kSpeculationRulesHeader);
     auto& speculation_rules_header =
         response_.HttpHeaderField(http_names::kSpeculationRules);
     PreloadHelper::LoadSpeculationRuleLinkFromHeader(
         speculation_rules_header, GetFrame()->GetDocument(), *GetFrame());
+  }
+
+  if (navigation_delivery_type_ ==
+      network::mojom::NavigationDeliveryType::kNavigationalPrefetch) {
+    CountUse(WebFeature::kDocumentLoaderDeliveryTypeNavigationalPrefetch);
   }
 
   // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is

@@ -77,27 +77,36 @@ SamePartyContext::Type ContextTypeFromBool(bool is_same_party) {
 GlobalFirstPartySets::GlobalFirstPartySets() = default;
 
 GlobalFirstPartySets::GlobalFirstPartySets(
+    base::Version public_sets_version,
     base::flat_map<SchemefulSite, FirstPartySetEntry> entries,
     base::flat_map<SchemefulSite, SchemefulSite> aliases)
-    : GlobalFirstPartySets(std::move(entries),
-                           std::move(aliases),
-                           /*manual_sets=*/{},
-                           FirstPartySetsContextConfig()) {}
+    : GlobalFirstPartySets(
+          public_sets_version,
+          public_sets_version.IsValid()
+              ? std::move(entries)
+              : base::flat_map<SchemefulSite, FirstPartySetEntry>(),
+          public_sets_version.IsValid()
+              ? std::move(aliases)
+              : base::flat_map<SchemefulSite, SchemefulSite>(),
+          FirstPartySetsContextConfig()) {}
 
 GlobalFirstPartySets::GlobalFirstPartySets(
+    base::Version public_sets_version,
     base::flat_map<SchemefulSite, FirstPartySetEntry> entries,
     base::flat_map<SchemefulSite, SchemefulSite> aliases,
-    base::flat_map<SchemefulSite, FirstPartySetEntry> manual_sets,
     FirstPartySetsContextConfig manual_config)
-    : entries_(std::move(entries)),
+    : public_sets_version_(std::move(public_sets_version)),
+      entries_(std::move(entries)),
       aliases_(std::move(aliases)),
-      manual_sets_(std::move(manual_sets)),
       manual_config_(std::move(manual_config)) {
-  // `aliases_` can only be nonempty if `entries_` is also nonempty.
-  if (!aliases_.empty())
-    DCHECK(!entries_.empty());
-
-  DCHECK_EQ(manual_sets_.empty(), manual_config_.empty());
+  if (public_sets_version_.IsValid()) {
+    DCHECK(base::ranges::all_of(aliases_, [&](const auto& pair) {
+      return entries_.contains(pair.second);
+    }));
+  } else {
+    DCHECK(entries_.empty());
+    DCHECK(aliases_.empty());
+  }
 }
 
 GlobalFirstPartySets::GlobalFirstPartySets(GlobalFirstPartySets&&) = default;
@@ -107,8 +116,8 @@ GlobalFirstPartySets& GlobalFirstPartySets::operator=(GlobalFirstPartySets&&) =
 GlobalFirstPartySets::~GlobalFirstPartySets() = default;
 
 bool GlobalFirstPartySets::operator==(const GlobalFirstPartySets& other) const {
-  return std::tie(entries_, aliases_, manual_sets_, manual_config_) ==
-         std::tie(other.entries_, other.aliases_, other.manual_sets_,
+  return std::tie(public_sets_version_, entries_, aliases_, manual_config_) ==
+         std::tie(other.public_sets_version_, other.entries_, other.aliases_,
                   other.manual_config_);
 }
 
@@ -117,7 +126,7 @@ bool GlobalFirstPartySets::operator!=(const GlobalFirstPartySets& other) const {
 }
 
 GlobalFirstPartySets GlobalFirstPartySets::Clone() const {
-  return GlobalFirstPartySets(entries_, aliases_, manual_sets_,
+  return GlobalFirstPartySets(public_sets_version_, entries_, aliases_,
                               manual_config_.Clone());
 }
 
@@ -226,11 +235,16 @@ bool GlobalFirstPartySets::IsContextSamePartyWithSite(
 void GlobalFirstPartySets::ApplyManuallySpecifiedSet(
     const base::flat_map<SchemefulSite, FirstPartySetEntry>& manual_entries) {
   DCHECK(manual_config_.empty());
-  manual_sets_ = manual_entries;
   // We handle the manually-specified set the same way as we handle
   // replacement enterprise policy sets.
   manual_config_ = ComputeConfig(
       /*replacement_sets=*/{manual_entries}, /*addition_sets=*/{});
+}
+
+void GlobalFirstPartySets::UnsafeSetManualConfig(
+    FirstPartySetsContextConfig manual_config) {
+  DCHECK(manual_config_.empty());
+  manual_config_ = std::move(manual_config);
 }
 
 FirstPartySetsContextConfig GlobalFirstPartySets::ComputeConfig(
@@ -429,6 +443,13 @@ bool GlobalFirstPartySets::ForEachPublicSetEntry(
   return true;
 }
 
+bool GlobalFirstPartySets::ForEachManualConfigEntry(
+    base::FunctionRef<bool(const SchemefulSite&,
+                           const absl::optional<FirstPartySetEntry>&)> f)
+    const {
+  return manual_config_.ForEachCustomizationEntry(f);
+}
+
 bool GlobalFirstPartySets::ForEachEffectiveSetEntry(
     const FirstPartySetsContextConfig& config,
     base::FunctionRef<bool(const SchemefulSite&, const FirstPartySetEntry&)> f)
@@ -481,10 +502,6 @@ std::ostream& operator<<(std::ostream& os, const GlobalFirstPartySets& sets) {
   os << "}, aliases = {";
   for (const auto& [alias, canonical] : sets.aliases()) {
     os << "{" << alias.Serialize() << ": " << canonical.Serialize() << "}, ";
-  }
-  os << "}, manual_sets = {";
-  for (const auto& [site, entry] : sets.manual_sets()) {
-    os << "{" << site.Serialize() << ": " << entry << "}, ";
   }
   os << "}, manual_config = {";
   sets.manual_config().ForEachCustomizationEntry(

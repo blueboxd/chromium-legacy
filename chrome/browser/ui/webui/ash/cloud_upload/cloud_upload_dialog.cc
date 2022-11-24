@@ -78,26 +78,46 @@ void StartUpload(Profile* profile,
   }
 }
 
+void ConfirmMoveOrStartUpload(
+    Profile* profile,
+    const std::vector<storage::FileSystemURL>& file_urls,
+    const CloudProvider cloud_provider) {
+  if (file_manager::file_tasks::AlwaysMoveOfficeFiles(profile)) {
+    return StartUpload(profile, file_urls, cloud_provider);
+  }
+
+  if (cloud_provider == CloudProvider::kGoogleDrive) {
+    CloudUploadDialog::Show(profile, file_urls,
+                            mojom::DialogPage::kMoveConfirmationGoogleDrive);
+  } else if (cloud_provider == CloudProvider::kOneDrive) {
+    CloudUploadDialog::Show(profile, file_urls,
+                            mojom::DialogPage::kMoveConfirmationOneDrive);
+  }
+}
+
 void OnDialogComplete(Profile* profile,
                       const std::vector<storage::FileSystemURL>& file_urls,
                       const std::string& action) {
-  using file_manager::file_tasks::kActionIdOpenInOffice;
   using file_manager::file_tasks::SetExcelFileHandler;
+  using file_manager::file_tasks::SetOfficeSetupComplete;
   using file_manager::file_tasks::SetPowerPointFileHandler;
   using file_manager::file_tasks::SetWordFileHandler;
 
-  if (action == kUserActionUploadToGoogleDrive) {
+  if (action == kUserActionConfirmOrUploadToGoogleDrive) {
     SetWordFileHandler(profile,
                        file_manager::file_tasks::kActionIdWebDriveOfficeWord);
     SetExcelFileHandler(profile,
                         file_manager::file_tasks::kActionIdWebDriveOfficeExcel);
     SetPowerPointFileHandler(
         profile, file_manager::file_tasks::kActionIdWebDriveOfficePowerPoint);
+    SetOfficeSetupComplete(profile);
+    ConfirmMoveOrStartUpload(profile, file_urls, CloudProvider::kGoogleDrive);
+  } else if (action == kUserActionConfirmOrUploadToOneDrive) {
+    // Default handlers have already been set by this point for Office/OneDrive.
+    ConfirmMoveOrStartUpload(profile, file_urls, CloudProvider::kOneDrive);
+  } else if (action == kUserActionUploadToGoogleDrive) {
     StartUpload(profile, file_urls, CloudProvider::kGoogleDrive);
   } else if (action == kUserActionUploadToOneDrive) {
-    SetWordFileHandler(profile, kActionIdOpenInOffice);
-    SetExcelFileHandler(profile, kActionIdOpenInOffice);
-    SetPowerPointFileHandler(profile, kActionIdOpenInOffice);
     StartUpload(profile, file_urls, CloudProvider::kOneDrive);
   } else if (action == kUserActionSetUpGoogleDrive) {
     CloudUploadDialog::Show(profile, file_urls,
@@ -115,9 +135,9 @@ void OnDialogComplete(Profile* profile,
 
 bool UploadAndOpen(Profile* profile,
                    const std::vector<storage::FileSystemURL>& file_urls,
-                   const CloudProvider cloud_provider,
-                   bool show_dialog) {
-  if (show_dialog) {
+                   const CloudProvider cloud_provider) {
+  // Run the setup flow if it's never been completed.
+  if (!file_manager::file_tasks::OfficeSetupComplete(profile)) {
     return CloudUploadDialog::Show(profile, file_urls,
                                    mojom::DialogPage::kFileHandlerDialog);
   }
@@ -127,7 +147,7 @@ bool UploadAndOpen(Profile* profile,
   if (empty_selection) {
     return false;
   }
-  StartUpload(profile, file_urls, cloud_provider);
+  ConfirmMoveOrStartUpload(profile, file_urls, cloud_provider);
   return true;
 }
 
@@ -201,6 +221,9 @@ const int kDialogHeightForFileHandlerDialog = 532;
 
 const int kDialogWidthForDriveSetup = 512;
 const int kDialogHeightForDriveSetup = 220;
+
+const int kDialogWidthForMoveConfirmation = 448;
+const int kDialogHeightForMoveConfirmation = 228;
 }  // namespace
 
 void CloudUploadDialog::GetDialogSize(gfx::Size* size) const {
@@ -218,6 +241,12 @@ void CloudUploadDialog::GetDialogSize(gfx::Size* size) const {
     case mojom::DialogPage::kGoogleDriveSetup: {
       size->set_width(kDialogWidthForDriveSetup);
       size->set_height(kDialogHeightForDriveSetup);
+      return;
+    }
+    case mojom::DialogPage::kMoveConfirmationGoogleDrive:
+    case mojom::DialogPage::kMoveConfirmationOneDrive: {
+      size->set_width(kDialogWidthForMoveConfirmation);
+      size->set_height(kDialogHeightForMoveConfirmation);
       return;
     }
   }

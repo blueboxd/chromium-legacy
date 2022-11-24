@@ -21,7 +21,8 @@
 
 namespace autofill {
 
-// A simplistic PersonalDataManager used for testing.
+// A simplistic PersonalDataManager used for testing. It doesn't load profiles
+// from AutofillTable or update them there.
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager();
@@ -55,15 +56,15 @@ class TestPersonalDataManager : public PersonalDataManager {
   void DeleteLocalCreditCards(const std::vector<CreditCard>& cards) override;
   void UpdateCreditCard(const CreditCard& credit_card) override;
   void AddFullServerCreditCard(const CreditCard& credit_card) override;
-  std::vector<AutofillProfile*> GetProfiles() const override;
   const std::string& GetDefaultCountryCodeForNewAddress() const override;
   void SetProfiles(std::vector<AutofillProfile>* profiles) override;
+  bool SetProfilesFromSource(base::span<const AutofillProfile> new_profiles,
+                             AutofillProfile::Source source) override;
   void LoadProfiles() override;
   void LoadCreditCards() override;
   void LoadCreditCardCloudTokenData() override;
   void LoadIBANs() override;
   void LoadUpiIds() override;
-  bool IsAutofillEnabled() const override;
   bool IsAutofillProfileEnabled() const override;
   bool IsAutofillCreditCardEnabled() const override;
   bool IsAutofillWalletImportEnabled() const override;
@@ -81,7 +82,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Unique to TestPersonalDataManager:
 
-  // Clears |web_profiles_|.
+  // Clears `web_profiles_` and `account_profiles_`.
   void ClearProfiles();
 
   // Clears |local_credit_cards_| and |server_credit_cards_|.
@@ -92,12 +93,6 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   // Clears |autofill_offer_data_|.
   void ClearCreditCardOfferData();
-
-  // Gets a profile based on the provided |guid|.
-  AutofillProfile* GetProfileWithGUID(const char* guid);
-
-  // Gets a credit card based on the provided |guid| (local or server).
-  CreditCard* GetCreditCardWithGUID(const char* guid);
 
   // Adds a card to |server_credit_cards_|.  Functionally identical to
   // AddFullServerCreditCard().

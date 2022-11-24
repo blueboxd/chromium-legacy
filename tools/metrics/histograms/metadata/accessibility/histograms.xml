@@ -1683,7 +1683,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Reliability.Tree.UnserializeError"
-    enum="AccessibilityTreeUnserializeError" expires_after="2022-11-18">
+    enum="AccessibilityTreeUnserializeError" expires_after="2023-04-23">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -2172,7 +2172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PumpkinInstaller.InstallationSuccess" enum="BooleanSuccess"
-    expires_after="2023-01-01">
+    expires_after="2023-09-01">
   <owner>akihiroota@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -2184,7 +2184,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SodaInstaller.BinaryInstallationFailureTime" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-06-01">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>yilkal@chromium.org</owner>
@@ -2197,7 +2197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SodaInstaller.BinaryInstallationResult" enum="BooleanSuccess"
-    expires_after="2023-01-01">
+    expires_after="2023-06-01">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>yilkal@chromium.org</owner>
@@ -2210,7 +2210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SodaInstaller.BinaryInstallationSuccessTime" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-06-01">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>yilkal@chromium.org</owner>
@@ -2224,7 +2224,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SodaInstaller.Language.{SodaLanguageCode}.InstallationFailureTime"
-    units="ms" expires_after="2023-01-01">
+    units="ms" expires_after="2023-06-01">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>yilkal@chromium.org</owner>
@@ -2238,7 +2238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SodaInstaller.Language.{SodaLanguageCode}.InstallationResult"
-    enum="BooleanSuccess" expires_after="2023-01-01">
+    enum="BooleanSuccess" expires_after="2023-06-01">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>yilkal@chromium.org</owner>
@@ -2254,7 +2254,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SodaInstaller.Language.{SodaLanguageCode}.InstallationSuccessTime"
-    units="ms" expires_after="2023-01-01">
+    units="ms" expires_after="2023-06-01">
   <owner>abigailbklein@google.com</owner>
   <owner>evliu@google.com</owner>
   <owner>yilkal@chromium.org</owner>

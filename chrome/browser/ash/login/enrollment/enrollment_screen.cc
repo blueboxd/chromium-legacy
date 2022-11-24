@@ -438,6 +438,10 @@ void EnrollmentScreen::AuthenticateUsingAttestation() {
   // in the logs.
   LOG(WARNING) << "Authenticating using attestation.";
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
+  if (features::IsAutoEnrollmentKioskInOobeEnabled()) {
+    license_type_to_use_ = config_.license_type;
+  }
+
   if (view_)
     view_->Show();
   CreateEnrollmentHelper();
@@ -470,7 +474,7 @@ void EnrollmentScreen::AutomaticRetry() {
   retry_task_.Reset(base::BindOnce(&EnrollmentScreen::ProcessRetry,
                                    weak_ptr_factory_.GetWeakPtr()));
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, retry_task_.callback(), retry_backoff_->GetTimeUntilRelease());
 }
 

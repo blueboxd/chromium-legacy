@@ -15,8 +15,8 @@
 #include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_helper.h"
@@ -29,6 +29,7 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -127,7 +128,7 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
   return std::make_unique<MachineLevelUserCloudPolicyManager>(
       std::move(policy_store), nullptr, policy_dir,
-      base::ThreadTaskRunnerHandle::Get(),
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
       delegate_->CreateNetworkConnectionTrackerGetter());
 }
 
@@ -335,9 +336,9 @@ void ChromeBrowserCloudManagementController::OnClientError(
   // to re-enroll automatically. DM_STATUS_SERVICE_DEVICE_NEEDS_RESET signals
   // that the browser has been unenrolled via DMToken deletion, and that it will
   // automatically re-enroll if a valid enrollment token has been set.
-  if (client->status() == DM_STATUS_SERVICE_DEVICE_NOT_FOUND ||
-      client->status() == DM_STATUS_SERVICE_DEVICE_NEEDS_RESET) {
-    UnenrollBrowser(/*delete_dm_token=*/client->status() ==
+  if (client->last_dm_status() == DM_STATUS_SERVICE_DEVICE_NOT_FOUND ||
+      client->last_dm_status() == DM_STATUS_SERVICE_DEVICE_NEEDS_RESET) {
+    UnenrollBrowser(/*delete_dm_token=*/client->last_dm_status() ==
                     DM_STATUS_SERVICE_DEVICE_NEEDS_RESET);
   }
 }

@@ -19,7 +19,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -63,15 +63,12 @@ base::AtomicSequenceNumber g_next_video_resource_updater_id;
 
 gfx::ProtectedVideoType ProtectedVideoTypeFromMetadata(
     const VideoFrameMetadata& metadata) {
-  gfx::ProtectedVideoType video_type = gfx::ProtectedVideoType::kClear;
-  if (metadata.protected_video) {
-    if (metadata.hw_protected) {
-      video_type = gfx::ProtectedVideoType::kHardwareProtected;
-    } else {
-      video_type = gfx::ProtectedVideoType::kSoftwareProtected;
-    }
+  if (!metadata.protected_video) {
+    return gfx::ProtectedVideoType::kClear;
   }
-  return video_type;
+
+  return metadata.hw_protected ? gfx::ProtectedVideoType::kHardwareProtected
+                               : gfx::ProtectedVideoType::kSoftwareProtected;
 }
 
 VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
@@ -583,7 +580,8 @@ VideoResourceUpdater::VideoResourceUpdater(
          shared_bitmap_reporter_);
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "media::VideoResourceUpdater", base::ThreadTaskRunnerHandle::Get());
+      this, "media::VideoResourceUpdater",
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 VideoResourceUpdater::~VideoResourceUpdater() {

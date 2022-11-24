@@ -20,6 +20,7 @@
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace web_app {
@@ -142,13 +143,9 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockValidated(
     return;
   }
 
-#if BUILDFLAG(IS_CHROMEOS)
-  // On ChromeOS, we only verify integrity at install-time. On other OSes,
-  // we verify integrity once per session.
-  std::move(integrity_callback)
-      .Run(SignedWebBundleReader::SignatureVerificationAction::
-               ContinueAndSkipSignatureVerification());
-#else
+  // TODO(crbug.com/1366309): On ChromeOS, we should only verify signatures at
+  // install-time. Until this is implemented, we will verify signatures on
+  // ChromeOS once per session.
   if (verified_files_.contains(web_bundle_path)) {
     // If we already verified the signatures of this Signed Web Bundle during
     // the current browser session, we trust that the Signed Web Bundle has not
@@ -161,7 +158,6 @@ void IsolatedWebAppReaderRegistry::OnIntegrityBlockValidated(
         .Run(SignedWebBundleReader::SignatureVerificationAction::
                  ContinueAndVerifySignatures());
   }
-#endif
 }
 
 void IsolatedWebAppReaderRegistry::OnIntegrityBlockAndMetadataRead(
@@ -261,6 +257,11 @@ void IsolatedWebAppReaderRegistry::OnResponseRead(
     ReadResponseCallback callback,
     base::expected<web_package::mojom::BundleResponsePtr,
                    SignedWebBundleReader::ReadResponseError> response_head) {
+  base::UmaHistogramEnumeration(
+      "WebApp.Isolated.ReadResponseHeadStatus",
+      response_head.has_value() ? ReadResponseHeadStatus::kSuccess
+                                : GetStatusFromError(response_head.error()));
+
   if (!response_head.has_value()) {
     std::move(callback).Run(
         base::unexpected(ReadResponseError::ForError(response_head.error())));
@@ -316,6 +317,19 @@ IsolatedWebAppReaderRegistry::GetStatusFromError(
             }
           }},
       error);
+}
+
+IsolatedWebAppReaderRegistry::ReadResponseHeadStatus
+IsolatedWebAppReaderRegistry::GetStatusFromError(
+    const SignedWebBundleReader::ReadResponseError& error) {
+  switch (error.type) {
+    case SignedWebBundleReader::ReadResponseError::Type::kParserInternalError:
+      return ReadResponseHeadStatus::kResponseHeadParserInternalError;
+    case SignedWebBundleReader::ReadResponseError::Type::kFormatError:
+      return ReadResponseHeadStatus::kResponseHeadParserFormatError;
+    case SignedWebBundleReader::ReadResponseError::Type::kResponseNotFound:
+      return ReadResponseHeadStatus::kResponseNotFoundError;
+  }
 }
 
 IsolatedWebAppReaderRegistry::Response::Response(

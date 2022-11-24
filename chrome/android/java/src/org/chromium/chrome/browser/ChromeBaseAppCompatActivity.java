@@ -31,7 +31,6 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.base.ServiceTracingProxyProvider;
 import org.chromium.chrome.browser.base.SplitChromeApplication;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.language.GlobalAppLocaleController;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
@@ -128,6 +127,16 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         BundleUtils.saveLoadedSplits(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@Nullable Bundle state) {
+        if (state != null) {
+            // Ensure that classes from previously loaded splits can be read from the bundle.
+            // https://crbug.com/1382227
+            state.setClassLoader(BundleUtils.getSplitCompatClassLoader());
+        }
+        super.onRestoreInstanceState(state);
     }
 
     @Override
@@ -233,26 +242,6 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
             UmaSessionStats.registerSyntheticFieldTrial(
                     "IsDynamicColorAvailable", isDynamicColorAvailable ? "Enabled" : "Disabled");
         });
-
-        // Try to enable browser overscroll when content overscroll is enabled for consistency. This
-        // needs to be in a cached feature because activity startup happens before native is
-        // initialized. Unfortunately content overscroll is read in renderer threads, and these two
-        // are not synchronized. Typically the first time overscroll is enabled, the following will
-        // use the old value and then content will pick up the enabled value, causing one execution
-        // of inconsistency.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                && !ChromeFeatureList.sElasticOverscroll.isEnabled()) {
-            setTheme(R.style.ThemeOverlay_DisableOverscroll);
-        }
-
-        // TODO(https://crbug.com/1345778): Remove these overlays.
-        // We apply an extra theme overlay to override some of the dynamic colors. For example,
-        // android:textColorHighlight is overridden by dynamic colors, preventing us from specifying
-        // the alpha for the selected text highlight. In this case, the overridden colors should
-        // still use dynamic colors, as in the android:textColorHighlight example where we use a
-        // color state list that depends on colorPrimary.
-        setTheme(R.style.ThemeOverlay_DynamicColorOverrides);
-        setTheme(R.style.ThemeOverlay_DynamicButtons);
     }
 
     /**

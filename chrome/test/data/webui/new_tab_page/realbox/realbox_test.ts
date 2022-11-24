@@ -10,7 +10,7 @@ import {NavigationPredictor} from 'chrome://new-tab-page/omnibox.mojom-webui.js'
 import {AutocompleteMatch} from 'chrome://new-tab-page/realbox.mojom-webui.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
@@ -2637,7 +2637,7 @@ suite('NewTabPageRealboxTest', () => {
       loadTimeData.overrideValues({
         realboxLensSearch: true,
       });
-      document.body.innerHTML = '';
+      document.body.innerHTML = window.trustedTypes!.emptyHTML;
       realbox = document.createElement('ntp-realbox');
       document.body.appendChild(realbox);
       const whenOpenLensSearch = eventToPromise('open-lens-search', realbox);

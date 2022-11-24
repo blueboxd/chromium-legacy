@@ -32,8 +32,6 @@ source_set("wayland") {
     "common/wayland_object.h",
     "common/wayland_util.cc",
     "common/wayland_util.h",
-    "gpu/drm_render_node_path_finder.cc",
-    "gpu/drm_render_node_path_finder.h",
     "gpu/gl_surface_egl_readback_wayland.cc",
     "gpu/gl_surface_egl_readback_wayland.h",
     "gpu/gl_surface_wayland.cc",
@@ -357,6 +355,8 @@ source_set("wayland") {
     sources += [
       "gpu/drm_render_node_handle.cc",
       "gpu/drm_render_node_handle.h",
+      "gpu/drm_render_node_path_finder.cc",
+      "gpu/drm_render_node_path_finder.h",
       "gpu/gbm_pixmap_wayland.cc",
       "gpu/gbm_pixmap_wayland.h",
       "gpu/gbm_surfaceless_wayland.cc",
@@ -486,6 +486,8 @@ source_set("test_support") {
     "test/test_surface_augmenter.h",
     "test/test_touch.cc",
     "test/test_touch.h",
+    "test/test_util.cc",
+    "test/test_util.h",
     "test/test_viewport.cc",
     "test/test_viewport.h",
     "test/test_viewporter.cc",
@@ -521,6 +523,7 @@ source_set("test_support") {
   deps = [
     ":wayland",
     "//base:base",
+    "//ui/base/wayland:wayland_display_util",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
   ]
@@ -586,6 +589,7 @@ source_set("wayland_unittests") {
     ":test_support",
     ":wayland",
     "//build:chromeos_buildflags",
+    "//build/config/linux/libdrm",
     "//components/crash/core/common:crash_key",
     "//components/exo/wayland/protocol:aura_shell_protocol",
     "//testing/gmock",
@@ -602,6 +606,7 @@ source_set("wayland_unittests") {
     "//ui/base/dragdrop:types",
     "//ui/base/dragdrop/mojom",
     "//ui/base/ime/linux",
+    "//ui/base/wayland:wayland_display_util",
     "//ui/events/ozone/layout",
     "//ui/gfx/linux:test_support",
     "//ui/ozone:platform",
@@ -628,7 +633,6 @@ source_set("wayland_unittests") {
       "wayland_buffer_manager_unittest.cc",
     ]
     deps += [
-      "//build/config/linux/libdrm",
       "//ui/gfx/linux:drm",
       "//ui/gfx/linux:gbm",
     ]

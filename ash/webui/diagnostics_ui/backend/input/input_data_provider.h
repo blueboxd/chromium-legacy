@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "ui/aura/window.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/ozone/device/device_event.h"
@@ -55,10 +56,16 @@ class InputDataProvider : public mojom::InputDataProvider,
       aura::Window* window,
       std::unique_ptr<ui::DeviceManager> device_manager,
       std::unique_ptr<EventWatcherFactory> watcher_factory,
-      KeyboardInputLog* keyboard_input_log_ptr);
+      KeyboardInputLog* keyboard_input_log_ptr,
+      AcceleratorControllerImpl* accelerator_controller,
+      ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate);
   InputDataProvider(const InputDataProvider&) = delete;
   InputDataProvider& operator=(const InputDataProvider&) = delete;
   ~InputDataProvider() override;
+
+  static bool ShouldCloseDialogOnEscape() {
+    return should_close_dialog_on_escape_;
+  }
 
   void BindInterface(
       mojo::PendingReceiver<mojom::InputDataProvider> pending_receiver);
@@ -158,6 +165,10 @@ class InputDataProvider : public mojom::InputDataProvider,
   base::raw_ptr<KeyboardInputLog> keyboard_input_log_ptr_ =
       nullptr;  // Not Owned.
 
+  // Denotes whether DiagnosticsDialog should be closed when escape is pressed.
+  // Currently, this is only false when the keyboard tester is actively in use.
+  static bool should_close_dialog_on_escape_;
+
   // Whether a tablet mode switch is present (which we use as a hint for the
   // top-right key glyph).
   bool has_tablet_mode_switch_ = false;
@@ -182,6 +193,10 @@ class InputDataProvider : public mojom::InputDataProvider,
   base::flat_map<int, std::unique_ptr<InputDataEventWatcher>>
       keyboard_watchers_;
 
+  // Timestamp of when keyboard tester is first opened. Undefined if the
+  // keyboard tester is not open.
+  base::Time keyboard_tester_start_timestamp_;
+
   bool logged_not_dispatching_key_events_ = false;
   views::Widget* widget_ = nullptr;
 
@@ -197,6 +212,9 @@ class InputDataProvider : public mojom::InputDataProvider,
   std::unique_ptr<ui::DeviceManager> device_manager_;
 
   std::unique_ptr<EventWatcherFactory> watcher_factory_;
+
+  raw_ptr<AcceleratorControllerImpl> accelerator_controller_;
+  raw_ptr<ui::EventRewriterChromeOS::Delegate> event_rewriter_delegate_;
 
   base::WeakPtrFactory<InputDataProvider> weak_factory_{this};
 };

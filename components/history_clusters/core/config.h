@@ -245,10 +245,6 @@ struct Config {
   // Whether to hide single-visit clusters on prominent UI surfaces.
   bool should_hide_single_visit_clusters_on_prominent_ui_surfaces = true;
 
-  // Whether to hide clusters that only contain URLs from the same domain on
-  // prominent UI surfaces.
-  bool should_hide_single_domain_clusters_on_prominent_ui_surfaces = false;
-
   // Whether to filter clusters that are noisy from the UI. This will
   // heuristically remove clusters that are unlikely to be "interesting".
   bool should_filter_noisy_clusters = true;
@@ -341,6 +337,9 @@ struct Config {
   // Returns the weight to use for visits that are search results pages ranking
   // visits within a cluster. Will always be greater than or equal to 0.
   float search_results_page_ranking_weight = 2.0;
+
+  // The `kHistoryClustersNavigationContextClustering` feature and child params.
+  base::TimeDelta context_clustering_clean_up_duration = base::Minutes(10);
 
   // Lonely features without child params.
 

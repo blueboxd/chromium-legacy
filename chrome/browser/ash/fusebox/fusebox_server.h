@@ -8,14 +8,19 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequence_bound.h"
 #include "base/values.h"
 #include "chrome/browser/ash/fusebox/fusebox.pb.h"
 #include "chrome/browser/ash/fusebox/fusebox_moniker.h"
 #include "chrome/browser/ash/fusebox/fusebox_staging.pb.h"
+#include "net/base/io_buffer.h"
 #include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/file_system/file_stream_writer.h"
 #include "storage/browser/file_system/file_system_context.h"
 
 class Profile;
@@ -89,6 +94,18 @@ class Server {
   using CloseCallback = base::OnceCallback<void(int32_t posix_error_code)>;
   void Close(const std::string& fs_url_as_string, CloseCallback callback);
 
+  // Close2 closes a virtual file opened by Open2.
+  using Close2Callback = base::OnceCallback<void(
+      const fusebox_staging::Close2ResponseProto& response)>;
+  void Close2(const fusebox_staging::Close2RequestProto& request,
+              Close2Callback callback);
+
+  // Create creates a file (not a directory).
+  using CreateCallback = base::OnceCallback<void(
+      const fusebox_staging::CreateResponseProto& response)>;
+  void Create(const fusebox_staging::CreateRequestProto& request,
+              CreateCallback callback);
+
   // MkDir is analogous to "/usr/bin/mkdir".
   using MkDirCallback = base::OnceCallback<void(
       const fusebox_staging::MkDirResponseProto& response)>;
@@ -101,6 +118,12 @@ class Server {
   using OpenCallback = base::OnceCallback<void(int32_t posix_error_code)>;
   void Open(const std::string& fs_url_as_string, OpenCallback callback);
 
+  // Open2 opens a virtual file for reading and/or writing.
+  using Open2Callback = base::OnceCallback<void(
+      const fusebox_staging::Open2ResponseProto& response)>;
+  void Open2(const fusebox_staging::Open2RequestProto& request,
+             Open2Callback callback);
+
   // Read returns the file's byte contents at the given offset and length.
   using ReadCallback = base::OnceCallback<
       void(int32_t posix_error_code, const uint8_t* data_ptr, size_t data_len)>;
@@ -108,6 +131,12 @@ class Server {
             int64_t offset,
             int32_t length,
             ReadCallback callback);
+
+  // Read2 reads from a virtual file opened by Open2.
+  using Read2Callback = base::OnceCallback<void(
+      const fusebox_staging::Read2ResponseProto& response)>;
+  void Read2(const fusebox_staging::Read2RequestProto& request,
+             Read2Callback callback);
 
   // ReadDir2 lists the directory's children. The results will be sent back in
   // the responses of one or more request-response RPC pairs. The first request
@@ -134,6 +163,12 @@ class Server {
                                                const base::File::Info& info,
                                                bool read_only)>;
   void Stat(const std::string& fs_url_as_string, StatCallback callback);
+
+  // Write2 writes to a virtual file opened by Open2.
+  using Write2Callback = base::OnceCallback<void(
+      const fusebox_staging::Write2ResponseProto& response)>;
+  void Write2(const fusebox_staging::Write2RequestProto& request,
+              Write2Callback callback);
 
   // File operation D-Bus methods above. Meta D-Bus methods below, which do not
   // map 1:1 to FUSE or C standard library file operations.
@@ -176,6 +211,85 @@ class Server {
                               const std::string& underlying_file_path)>;
   void MakeTempDir(MakeTempDirCallback callback);
   void RemoveTempDir(const std::string& fusebox_file_path);
+
+  // ----
+
+  using PendingRead2 =
+      std::pair<fusebox_staging::Read2RequestProto, Read2Callback>;
+  using PendingWrite2 =
+      std::pair<fusebox_staging::Write2RequestProto, Write2Callback>;
+
+  // Lives entirely on the I/O thread, as enforced by base::SequenceBound.
+  struct ReadWriter {
+    explicit ReadWriter(const storage::FileSystemURL& fs_url);
+    ~ReadWriter();
+
+    void Read(scoped_refptr<storage::FileSystemContext> fs_context,
+              int64_t offset,
+              int64_t length,
+              Server::Read2Callback callback);
+    void OnRead(Server::Read2Callback callback,
+                scoped_refptr<storage::FileSystemContext> fs_context,
+                std::unique_ptr<storage::FileStreamReader> fs_reader,
+                scoped_refptr<net::IOBuffer> buffer,
+                int64_t offset,
+                int length);
+
+    void Write(scoped_refptr<storage::FileSystemContext> fs_context,
+               scoped_refptr<net::StringIOBuffer> buffer,
+               int64_t offset,
+               int length,
+               Server::Write2Callback callback);
+    void OnWrite(Server::Write2Callback callback,
+                 scoped_refptr<storage::FileSystemContext> fs_context,
+                 std::unique_ptr<storage::FileStreamWriter> fs_writer,
+                 scoped_refptr<net::IOBuffer> buffer,
+                 int64_t offset,
+                 int length);
+
+    const storage::FileSystemURL fs_url_;
+
+    std::unique_ptr<storage::FileStreamReader> fs_reader_;
+    // Unused whenever fs_reader_ is nullptr.
+    int64_t read_offset_ = -1;
+
+    std::unique_ptr<storage::FileStreamWriter> fs_writer_;
+    // Unused whenever fs_writer_ is nullptr.
+    int64_t write_offset_ = -1;
+
+    // TODO(b/255703917): snapshot management.
+
+    base::WeakPtrFactory<ReadWriter> weak_ptr_factory_{this};
+  };
+
+  struct FuseFileMapEntry {
+    FuseFileMapEntry(scoped_refptr<storage::FileSystemContext> fs_context_arg,
+                     storage::FileSystemURL fs_url_arg,
+                     bool readable_arg,
+                     bool writable_arg);
+    FuseFileMapEntry(FuseFileMapEntry&&);
+    ~FuseFileMapEntry();
+
+    void DoRead2(const fusebox_staging::Read2RequestProto& request,
+                 Read2Callback callback);
+    void DoWrite2(const fusebox_staging::Write2RequestProto& request,
+                  Write2Callback callback);
+
+    const scoped_refptr<storage::FileSystemContext> fs_context_;
+    const bool readable_;
+    const bool writable_;
+
+    bool has_in_flight_read_ = false;
+    bool has_in_flight_write_ = false;
+    base::circular_deque<PendingRead2> pending_reads_;
+    base::circular_deque<PendingWrite2> pending_writes_;
+
+    base::SequenceBound<ReadWriter> seqbnd_read_writer_;
+  };
+
+  // Maps from fuse_handle uint64_t values to FileStreamReader /
+  // FileStreamWriter state.
+  using FuseFileMap = std::map<uint64_t, FuseFileMapEntry>;
 
   struct PrefixMapEntry {
     PrefixMapEntry(std::string fs_url_prefix_arg, bool read_only_arg);
@@ -228,11 +342,17 @@ class Server {
   // temporary directory.
   using TempSubdirMap = std::map<std::string, base::ScopedTempDir>;
 
+  // ----
+
  private:
   void MakeTempDirOnWorkerThread(MakeTempDirCallback callback);
   void ReplyToMakeTempDir(base::ScopedTempDir scoped_temp_dir,
                           bool create_succeeded,
                           MakeTempDirCallback callback);
+
+  void OnRead2(uint64_t fuse_handle,
+               Read2Callback callback,
+               const fusebox_staging::Read2ResponseProto& response);
 
   void OnReadDirectory(scoped_refptr<storage::FileSystemContext> fs_context,
                        bool read_only,
@@ -241,7 +361,17 @@ class Server {
                        storage::AsyncFileUtil::EntryList entry_list,
                        bool has_more);
 
+  void OnWrite2(uint64_t fuse_handle,
+                Write2Callback callback,
+                const fusebox_staging::Write2ResponseProto& response);
+
+  // Removes the entry (if present) for the given map key.
+  void EraseFuseFileMapEntry(uint64_t fuse_handle);
+  // Returns the fuse_handle that is the map key.
+  uint64_t InsertFuseFileMapEntry(FuseFileMapEntry&& entry);
+
   Delegate* delegate_;
+  FuseFileMap fuse_file_map_;
   fusebox::MonikerMap moniker_map_;
   PrefixMap prefix_map_;
   ReadDir2Map read_dir_2_map_;

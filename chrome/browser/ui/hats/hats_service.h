@@ -61,6 +61,8 @@ extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeLearnMore[];
 extern const char kHatsSurveyTriggerTrustSafetyPrivacySettings[];
 extern const char kHatsSurveyTriggerTrustSafetyTrustedSurface[];
 extern const char kHatsSurveyTriggerTrustSafetyTransactions[];
+extern const char kHatsSurveyTriggerTrustSafetyV2BrowsingData[];
+extern const char kHatsSurveyTriggerTrustSafetyV2PasswordCheck[];
 extern const char kHatsSurveyTriggerTrustSafetyV2SafetyCheck[];
 extern const char kHatsSurveyTriggerTrustSafetyV2TrustedSurface[];
 extern const char kHatsSurveyTriggerWhatsNew[];

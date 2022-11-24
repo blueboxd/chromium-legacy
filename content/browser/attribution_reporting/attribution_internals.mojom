@@ -77,6 +77,18 @@ struct WebUIReport {
   WebUIReportData data;
 };
 
+union DebugReportStatus {
+  int32 http_response_code;
+  string network_error;
+};
+
+struct WebUIDebugReport {
+  url.mojom.Url url;
+  double time;
+  string body;
+  DebugReportStatus status;
+};
+
 struct DebugKey {
   uint64 value;
 };
@@ -99,6 +111,7 @@ struct WebUISource {
   map<string, string> aggregation_keys;
   uint64 aggregatable_budget_consumed;
   array<uint64> aggregatable_dedup_keys;
+  bool debug_reporting_enabled;
 
   // Union of `StorableSource::Result` and `StoredSource::AttributionLogic`.
   enum Attributability {
@@ -146,6 +159,7 @@ struct WebUITrigger {
   array<WebUIAggregatableTriggerData> aggregatable_triggers;
   map<string, uint32> aggregatable_values;
   DedupKey? aggregatable_dedup_key;
+  bool debug_reporting_enabled;
 
   enum Status {
     // Shared statuses:
@@ -215,6 +229,9 @@ interface Observer {
 
   // Called when a report is sent, regardless of success.
   OnReportSent(WebUIReport report);
+
+  // Called when a verbose debug report is sent, regardless of success.
+  OnDebugReportSent(WebUIDebugReport report);
 
   // Called when a report is dropped from storage or prevented from being
   // created in the first place.

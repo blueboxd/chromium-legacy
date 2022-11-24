@@ -134,8 +134,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     static final float BACKGROUND_TAB_BRIGHTNESS_DEFAULT = 1.f;
     static final float BACKGROUND_TAB_BRIGHTNESS_DIMMED = 0.65f;
     static final float DIVIDER_HIDDEN_OPACITY = 0.f;
-    static final float DIVIDER_DEFAULT_OPACITY = 0.2f;
-    static final float DIVIDER_BOLD_OPACITY = 0.6f;
+    static final float DIVIDER_DEFAULT_OPACITY = 1.f;
     static final float FADE_FULL_OPACITY_THRESHOLD_DP = 24.f;
 
     private static final int MESSAGE_RESIZE = 1;
@@ -765,25 +764,25 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      * a tab group when in edit mode.
      */
     private void updateDividers() {
-        if (!ChromeFeatureList.sTabStripRedesign.isEnabled() || mMultiStepTabCloseAnimRunning) {
-            return;
-        }
+        if (!ChromeFeatureList.sTabStripRedesign.isEnabled()) return;
+
+        // Validate the index. For example, the index can be {@link TabList.INVALID_TAB_INDEX} when
+        // all tabs are closed.
+        int index = mModel.index();
+        if (index < 0 || index >= mStripTabs.length) return;
 
         // Divider is never shown for the first tab.
         mStripTabs[0].setDividerOpacity(DIVIDER_HIDDEN_OPACITY);
 
-        int selectedTabId = mStripTabs[mModel.index()].getId();
+        int selectedTabId = mStripTabs[index].getId();
         for (int i = 1; i < mStripTabs.length; i++) {
             final StripLayoutTab prevTab = mStripTabs[i - 1];
             final StripLayoutTab currTab = mStripTabs[i];
-            if (prevTab.getTrailingMargin() > 0) {
-                // The first divider after a tab group margin is bolded to help indicate separation.
-                currTab.setDividerOpacity(DIVIDER_BOLD_OPACITY);
-            } else if (prevTab.getId() == selectedTabId || currTab.getId() == selectedTabId) {
+            if (prevTab.getId() == selectedTabId || currTab.getId() == selectedTabId) {
                 // Dividers adjacent to the selected tab are hidden.
                 currTab.setDividerOpacity(DIVIDER_HIDDEN_OPACITY);
             } else {
-                // Otherwise return the divider to the default opacity.
+                // All other dividers are visible.
                 currTab.setDividerOpacity(DIVIDER_DEFAULT_OPACITY);
             }
         }
@@ -1094,9 +1093,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 2. Set the dying state of the tab.
         tab.setIsDying(true);
-        Tab nextTab = mModel.getNextTabIfClosed(tab.getId(), /*uponExit=*/false);
 
         // 3. Setup animation end listener to resize and move tabs after tab closes.
+        Tab nextTab = mModel.getNextTabIfClosed(tab.getId(), /*uponExit=*/false);
         tabClosingAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -1255,6 +1254,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         AnimatorSet set = new AnimatorSet();
         set.playTogether(animationList);
         if (listener != null) set.addListener(listener);
+        if (mRunningAnimator != null && mRunningAnimator.isRunning()) {
+            mRunningAnimator.end();
+        }
         mRunningAnimator = set;
         mRunningAnimator.start();
     }
@@ -2086,15 +2088,13 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 4. We have hovered for the required time, so trigger a reorder.
         int direction = towardEnd ? 1 : -1;
-        int destinationTabId = mTabGroupModelFilter.getRootId(
-                getTabById(mStripTabs[curIndex + direction].getId()));
+        StripLayoutTab destTab = mStripTabs[curIndex + direction];
         float effectiveWidth = mCachedTabWidth - mTabOverlapWidth;
         float flipThreshold = effectiveWidth * REORDER_OVERLAP_SWITCH_PERCENTAGE;
         float minFlipOffset = mTabMarginWidth + flipThreshold;
         int numTabsToSkip =
                 1 + (int) Math.floor((Math.abs(offset) - minFlipOffset) / effectiveWidth);
-
-        mTabGroupModelFilter.mergeTabsToGroup(mInteractingTab.getId(), destinationTabId, true);
+        mTabGroupModelFilter.mergeTabsToGroup(mInteractingTab.getId(), destTab.getId(), true);
         RecordUserAction.record("MobileToolbarReorderTab.TabAddedToGroup");
 
         return towardEnd ? curIndex + 1 + numTabsToSkip : curIndex - numTabsToSkip;

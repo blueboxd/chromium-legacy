@@ -318,6 +318,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Note that this may be different from getting the WebContents' primary main
   // frame. For example, if `this` is in a bfcached or prerendered page, this
   // will return the cached/prerendered page's main RenderFrameHost.
+  // See docs/frame_trees.md for more details.
   virtual RenderFrameHost* GetOutermostMainFrame() = 0;
 
   // Fenced frames (meta-bug https://crbug.com/1111084):
@@ -1055,9 +1056,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // example, helper methods for MojoJs to better work with Web API objects.
   virtual void EnableMojoJsBindings(mojom::ExtraMojoJsFeaturesPtr features) = 0;
 
-  // Whether the current document is loaded inside an anonymous iframe. Updated
-  // on every cross-document navigation.
-  virtual bool IsAnonymous() const = 0;
+  // Whether the current document is loaded inside iframe credentialless.
+  // Updated on every cross-document navigation.
+  virtual bool IsCredentialless() const = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -819,6 +819,18 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.DiagnosticsUi.KeyboardTesterRoutineDuration"
+    units="ms" expires_after="2024-02-12">
+  <owner>dpad@chromium.org</owner>
+  <owner>michaelcheco@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the duration that the user spent in the Keyboard Tester. Emitted
+    when the user closes the keyboard tester.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.DiagnosticsUi.MemoryRoutineDuration" units="s"
     expires_after="2023-02-12">
   <owner>ashleydp@google.com</owner>
@@ -904,6 +916,17 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="Memory"/>
     <variant name="SignalStrength"/>
   </token>
+</histogram>
+
+<histogram name="ChromeOS.FastPair.SubsequentPairing"
+    enum="FastPairSubsequentSuccessFunnelEvent" expires_after="2023-06-01">
+  <owner>jackshira@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each sucessful step in the Subsequent Pairing flow. These steps are:
+    on notification click, on initialization start, on pairing start, and on
+    completion of the entire pairing process.
+  </summary>
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}" enum="FeatureUsageEvent"
@@ -1788,6 +1811,35 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.Secagentd.Bpf.{Bpf}.AttachResult"
+    enum="SecagentdBpfAttachResult" expires_after="2023-05-18">
+  <owner>aashay@google.com</owner>
+  <owner>cros-enterprise-security@google.com</owner>
+  <summary>
+    Records the initialization status of the {Bpf} BPF used by the CrOS
+    secagentd daemon. Emits either a success or a specific error value.
+  </summary>
+  <token key="Bpf">
+    <variant name="Process" summary="Process BPF"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Secagentd.Policy" enum="SecagentdPolicy"
+    expires_after="2023-05-18">
+  <owner>aashay@google.com</owner>
+  <owner>cros-enterprise-security@google.com</owner>
+  <summary>
+    Records whether the XDR event reporting policy was found enabled for a
+    device. Also provides an on-check enum for baseline. All of the
+    functionality of the CrOS secagentd daemon is gated by this enterprise
+    policy.
+
+    Note that even though the daemon regularly polls device policy for updates,
+    it will emit exactly one on-check value and at most one enabled value during
+    its lifetime (generally per device per boot).
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.SecurityAnomaly" enum="SecurityAnomaly"
     expires_after="2023-04-16">
   <owner>jorgelo@chromium.org</owner>
@@ -2204,7 +2256,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="ChromeOS.USB.ExternalDeviceAttached.{USBDeviceRecognized}.{USBDeviceClass}"
-    enum="ChromeOSUsbEventTiming" expires_after="2022-12-31">
+    enum="ChromeOSUsbEventTiming" expires_after="2023-09-30">
   <owner>wonchung@google.com</owner>
   <owner>allenwebb@chromium.org</owner>
   <owner>chromeos-usb@google.com</owner>

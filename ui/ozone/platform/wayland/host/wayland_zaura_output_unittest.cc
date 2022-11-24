@@ -6,6 +6,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/wayland/wayland_display_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
@@ -13,12 +14,19 @@
 #include "ui/ozone/platform/wayland/test/test_zaura_output.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 
+using ::testing::Values;
+
 namespace ui {
 
-class WaylandZAuraOutputTest : public WaylandTestSimple {
+class WaylandZAuraOutputTest : public WaylandTest {
  public:
+  WaylandZAuraOutputTest() = default;
+  WaylandZAuraOutputTest(const WaylandZAuraOutputTest&) = delete;
+  WaylandZAuraOutputTest& operator=(const WaylandZAuraOutputTest&) = delete;
+  ~WaylandZAuraOutputTest() override = default;
+
   void SetUp() override {
-    WaylandTestSimple::SetUp();
+    WaylandTest::SetUp();
 
     // Set default values for the output.
     PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -43,7 +51,7 @@ class WaylandZAuraOutputTest : public WaylandTestSimple {
   std::unique_ptr<WaylandScreen> platform_screen_;
 };
 
-TEST_F(WaylandZAuraOutputTest, HandleInsets) {
+TEST_P(WaylandZAuraOutputTest, HandleInsets) {
   WaylandOutput* wayland_output = output_manager_->GetPrimaryOutput();
   ASSERT_TRUE(wayland_output);
   EXPECT_TRUE(wayland_output->IsReady());
@@ -70,7 +78,7 @@ TEST_F(WaylandZAuraOutputTest, HandleInsets) {
   EXPECT_EQ(wayland_output->insets(), insets);
 }
 
-TEST_F(WaylandZAuraOutputTest, HandleLogicalTransform) {
+TEST_P(WaylandZAuraOutputTest, HandleLogicalTransform) {
   WaylandOutput* wayland_output = output_manager_->GetPrimaryOutput();
   ASSERT_TRUE(wayland_output);
   EXPECT_TRUE(wayland_output->IsReady());
@@ -89,14 +97,16 @@ TEST_F(WaylandZAuraOutputTest, HandleLogicalTransform) {
 }
 
 // Test edge case display ids are converted correctly.
-TEST_F(WaylandZAuraOutputTest, DisplayIdConversions) {
+TEST_P(WaylandZAuraOutputTest, DisplayIdConversions) {
   const int64_t kTestIds[] = {
       std::numeric_limits<int64_t>::min(),
       std::numeric_limits<int64_t>::min() + 1,
       static_cast<int64_t>(std::numeric_limits<int32_t>::min()) - 1,
       std::numeric_limits<int32_t>::min(),
       std::numeric_limits<int32_t>::min() + 1,
+      -1,
       0,
+      1,
       std::numeric_limits<int32_t>::max() - 1,
       std::numeric_limits<int32_t>::max(),
       static_cast<int64_t>(std::numeric_limits<int32_t>::max()) + 1,
@@ -104,13 +114,18 @@ TEST_F(WaylandZAuraOutputTest, DisplayIdConversions) {
       std::numeric_limits<int64_t>::max()};
 
   for (int64_t id : kTestIds) {
-    uint32_t display_id_hi = static_cast<uint32_t>(id >> 32);
-    uint32_t display_id_lo = static_cast<uint32_t>(id);
+    auto display_id = ui::wayland::ToWaylandDisplayIdPair(id);
     WaylandZAuraOutput aura_output;
-    WaylandZAuraOutput::OnDisplayId(&aura_output, nullptr, display_id_hi,
-                                    display_id_lo);
+    WaylandZAuraOutput::OnDisplayId(&aura_output, nullptr, display_id.high,
+                                    display_id.low);
     EXPECT_EQ(id, aura_output.display_id().value());
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    XdgVersionStableTest,
+    WaylandZAuraOutputTest,
+    Values(wl::ServerConfig{
+        .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled}));
 
 }  // namespace ui

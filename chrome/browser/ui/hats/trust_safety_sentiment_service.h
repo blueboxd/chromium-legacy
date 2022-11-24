@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -67,6 +68,13 @@ class TrustSafetySentimentService : public KeyedService,
   // the user uses a card on a website.
   virtual void SavedCard();
 
+  // Called when the user runs password check. Virtual to allow mocking in
+  // tests.
+  virtual void RanPasswordCheck();
+
+  // Called when the user deletes data from Clear Browsing Data dialog.
+  virtual void ClearedBrowsingData(browsing_data::BrowsingDataType datatype);
+
   // Profile Observer:
   void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
   void OnProfileWillBeDestroyed(Profile* profile) override;
@@ -93,7 +101,9 @@ class TrustSafetySentimentService : public KeyedService,
     kPrivacySandbox3NoticeSettings = 8,
     kPrivacySandbox3NoticeLearnMore = 9,
     kSafetyCheck = 10,
-    kMaxValue = kSafetyCheck,
+    kPasswordCheck = 11,
+    kBrowsingData = 12,
+    kMaxValue = kBrowsingData,
   };
 
   // Called when the user interacts with Privacy Sandbox 3, |feature_area|
@@ -121,6 +131,10 @@ class TrustSafetySentimentService : public KeyedService,
                            Eligibility_V1FeatureWhileV2Enabled);
   FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest, V2_SafetyCheck);
   FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest, V2_TrustedSurface);
+  FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest, V2_PasswordCheck);
+  FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest, V2_BrowsingData);
+  FRIEND_TEST_ALL_PREFIXES(TrustSafetySentimentServiceTest,
+                           V2_BrowsingData_NotInterested);
 
   // Struct representing a trigger (user action relevant to T&S) that previously
   // occurred, and is awaiting the appropriate eligibility steps before causing

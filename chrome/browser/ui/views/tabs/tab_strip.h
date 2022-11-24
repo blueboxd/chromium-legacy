@@ -166,7 +166,6 @@ class TabStrip : public views::View,
                              const tab_groups::TabGroupVisualData* new_visuals);
 
   // Handles animations relating to toggling the collapsed state of a group.
-  // TODO(1295774): Maybe move this functionality into TabContainer.
   void ToggleTabGroup(const tab_groups::TabGroupId& group,
                       bool is_collapsing,
                       ToggleTabGroupCollapsedStateOrigin origin);
@@ -260,7 +259,7 @@ class TabStrip : public views::View,
   void ShiftTabPrevious(Tab* tab) override;
   void MoveTabFirst(Tab* tab) override;
   void MoveTabLast(Tab* tab) override;
-  bool ToggleTabGroupCollapsedState(
+  void ToggleTabGroupCollapsedState(
       const tab_groups::TabGroupId group,
       ToggleTabGroupCollapsedStateOrigin origin =
           ToggleTabGroupCollapsedStateOrigin::kImplicitAction) override;

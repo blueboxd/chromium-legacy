@@ -343,8 +343,12 @@ void SavedDeskItemView::MaybeShowReplaceDialog(DeskTemplateType type,
                                                const base::GUID& uuid) {
   // Show replace template dialog. If accepted, replace old template and commit
   // name change.
+  auto* controller = saved_desk_util::GetSavedDeskDialogController();
+  if (!controller)
+    return;
+
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
-  saved_desk_util::GetSavedDeskDialogController()->ShowReplaceDialog(
+  controller->ShowReplaceDialog(
       root_window, name_view_->GetText(), type,
       base::BindOnce(&SavedDeskItemView::ReplaceTemplate,
                      weak_ptr_factory_.GetWeakPtr(), uuid),
@@ -540,7 +544,7 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
       saved_desk_util::GetSavedDeskPresenter()->FindOtherEntryWithName(
           name_view_->GetText(), desk_template().type(), uuid());
   if (template_to_replace) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&SavedDeskItemView::MaybeShowReplaceDialog,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   template_to_replace->type(),
@@ -716,7 +720,11 @@ void SavedDeskItemView::OnDeleteTemplate() {
 
 void SavedDeskItemView::OnDeleteButtonPressed() {
   // Show the dialog to confirm the deletion.
-  saved_desk_util::GetSavedDeskDialogController()->ShowDeleteDialog(
+  auto* controller = saved_desk_util::GetSavedDeskDialogController();
+  if (!controller)
+    return;
+
+  controller->ShowDeleteDialog(
       GetWidget()->GetNativeWindow()->GetRootWindow(),
       name_view_->GetAccessibleName(), desk_template_->type(),
       base::BindOnce(&SavedDeskItemView::OnDeleteTemplate,

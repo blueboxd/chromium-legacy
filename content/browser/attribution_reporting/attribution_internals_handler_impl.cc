@@ -26,6 +26,7 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
+#include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
@@ -60,6 +61,8 @@ using Empty = ::attribution_internals::mojom::Empty;
 using ReportStatus = ::attribution_internals::mojom::ReportStatus;
 using ReportStatusPtr = ::attribution_internals::mojom::ReportStatusPtr;
 
+using ::attribution_internals::mojom::WebUIDebugReport;
+
 attribution_internals::mojom::DebugKeyPtr WebUIDebugKey(
     absl::optional<uint64_t> debug_key) {
   return debug_key ? attribution_internals::mojom::DebugKey::New(*debug_key)
@@ -71,7 +74,8 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
     Attributability attributability,
     const std::vector<uint64_t>& dedup_keys,
     int64_t aggregatable_budget_consumed,
-    const std::vector<uint64_t>& aggregatable_dedup_keys) {
+    const std::vector<uint64_t>& aggregatable_dedup_keys,
+    bool debug_reporting_enabled) {
   DCHECK_GE(aggregatable_budget_consumed, 0);
   return attribution_internals::mojom::WebUISource::New(
       source.source_event_id(), source.source_origin(),
@@ -86,7 +90,8 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
             return std::make_pair(key.first,
                                   HexEncodeAggregationKey(key.second));
           }),
-      aggregatable_budget_consumed, aggregatable_dedup_keys, attributability);
+      aggregatable_budget_consumed, aggregatable_dedup_keys,
+      debug_reporting_enabled, attributability);
 }
 
 void ForwardSourcesToWebUI(
@@ -114,10 +119,13 @@ void ForwardSourcesToWebUI(
       }
     }
 
-    web_ui_sources.push_back(WebUISource(source.common_info(), attributability,
-                                         source.dedup_keys(),
-                                         source.aggregatable_budget_consumed(),
-                                         source.aggregatable_dedup_keys()));
+    // Note that debug reporting may be enabled when the source was registered
+    // but the value was not persisted in memory. Showing "disabled" in
+    // internals UI as the value is not relevant at this point.
+    web_ui_sources.push_back(WebUISource(
+        source.common_info(), attributability, source.dedup_keys(),
+        source.aggregatable_budget_consumed(), source.aggregatable_dedup_keys(),
+        /*debug_reporting_enabled=*/false));
   }
 
   std::move(web_ui_callback).Run(std::move(web_ui_sources));
@@ -332,7 +340,7 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
   auto web_ui_source =
       WebUISource(source.common_info(), attributability, /*dedup_keys=*/{},
                   /*aggregatable_budget_consumed=*/0,
-                  /*aggregatable_dedup_keys=*/{});
+                  /*aggregatable_dedup_keys=*/{}, source.debug_reporting());
 
   for (auto& observer : observers_) {
     observer->OnSourceRejected(web_ui_source.Clone());
@@ -366,6 +374,30 @@ void AttributionInternalsHandlerImpl::OnReportSent(
   for (auto& observer : observers_) {
     observer->OnReportSent(web_report.Clone());
   }
+}
+
+void AttributionInternalsHandlerImpl::OnDebugReportSent(
+    const AttributionDebugReport& report,
+    int status,
+    base::Time time) {
+  if (observers_.empty())
+    return;
+
+  auto web_report = WebUIDebugReport::New();
+  web_report->url = report.ReportURL();
+  web_report->time = time.ToJsTime();
+  web_report->body =
+      SerializeAttributionJson(report.ReportBody(), /*pretty_print=*/true);
+
+  web_report->status =
+      status > 0
+          ? attribution_internals::mojom::DebugReportStatus::
+                NewHttpResponseCode(status)
+          : attribution_internals::mojom::DebugReportStatus::NewNetworkError(
+                net::ErrorToShortString(status));
+
+  for (auto& observer : observers_)
+    observer->OnDebugReportSent(web_report.Clone());
 }
 
 // TODO(crbug/1351843): Consider surfacing this error in devtools instead of
@@ -518,6 +550,7 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
       registration.aggregatable_values.values();
   web_ui_trigger->aggregatable_dedup_key =
       CreateWebUIDedupKey(registration.aggregatable_dedup_key);
+  web_ui_trigger->debug_reporting_enabled = registration.debug_reporting;
 
   for (auto& observer : observers_) {
     observer->OnTriggerHandled(web_ui_trigger.Clone());

@@ -169,6 +169,38 @@ class CONTENT_EXPORT RenderFrameHostManager {
     virtual ~Delegate() = default;
   };
 
+  // Calling IsNavigationSameSite() many times is expensive
+  // (https://crbug.com/1380942). If kCacheIsNavigationSameSite is enabled,
+  // this struct will lazily cache the output of IsNavigationSameSite(). If
+  // there is no cached value, Get() will cache the output of
+  // IsNavigationSameSite(), and will return the cached value in subsequent
+  // calls. If kCacheIsNavigationSameSite is not enabled, Get() will always call
+  // IsNavigationSameSite(), no caching is done.
+  //
+  // This struct is used by passing it as a parameter throughout a callstack
+  // that contains IsNavigationSameSite(). It is only used for a given
+  // navigation event (for which IsNavigationSameSite() will not change), and
+  // should not be stored or used for other events in the same navigation
+  // (e.g., after redirects) or for other navigations.
+  struct IsSameSiteGetter {
+   public:
+    IsSameSiteGetter();
+    explicit IsSameSiteGetter(bool is_same_site);
+
+    IsSameSiteGetter(const IsSameSiteGetter&) = delete;
+
+    // Returns the (possibly cached) value of
+    // render_frame_host->IsNavigationSameSite(url_info). (For cached results,
+    // this includes DCHECKs that the value hasn't changed, so the optimization
+    // only reduces the number of calls in release builds without DCHECKs.)
+    bool Get(const RenderFrameHostImpl& render_frame_host,
+             const UrlInfo& url_info);
+
+   private:
+    absl::optional<bool> is_same_site_;
+    bool should_use_cached_value_;
+  };
+
   // The delegate pointer must be non-null and is not owned by this class. It
   // must outlive this class.
   //
@@ -367,12 +399,18 @@ class CONTENT_EXPORT RenderFrameHostManager {
   RenderFrameHostImpl* GetFrameHostForNavigation(NavigationRequest* request,
                                                  std::string* reason = nullptr);
 
-  // Clean up any state for any ongoing navigation.
-  void CleanUpNavigation(NavigationDiscardReason reason);
+  // Discards `speculative_render_frame_host_` if it exists, even if there are
+  // NavigationRequests associated with it, including pending commit
+  // navigations.
+  // TODO(https://crbug.com/1220337): Don't allow this to be called when there
+  // are pending commit cross-document navigations except for FrameTreeNode
+  // detach or when the renderer process is gone, so that we don't have to
+  // "undo" the commit that already happens in the renderer.
+  void DiscardSpeculativeRFH(NavigationDiscardReason reason);
 
   // Determines whether any active navigations are associated with
-  // |speculative_render_frame_host_| and if not, discards it.
-  void MaybeCleanUpNavigation(NavigationDiscardReason reason);
+  // `speculative_render_frame_host_` and if not, discards it.
+  void DiscardSpeculativeRFHIfUnused(NavigationDiscardReason reason);
 
   // Clears the speculative RFH when a navigation is cancelled (for example, by
   // being replaced by a new navigation), returning ownership of the
@@ -497,10 +535,22 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // GetProcess() is called on the SiteInstance. In particular, calling this
   // function will never lead to a process being created for the navigation.
   //
+  // |is_same_site| is a struct to cache the output of IsNavigationSameSite()
+  // if/when it gets called. The value is cached only when
+  // kCacheIsNavigationSameSite is enabled. See IsSameSiteGetter for more
+  // details.
+  //
   // |reason| is an optional out-parameter that will be populated with
   // engineer-readable information describing the reason for the method
   // behavior.  The returned |reason| should fit into
   // base::debug::CrashKeySize::Size256.
+  scoped_refptr<SiteInstance> GetSiteInstanceForNavigationRequest(
+      NavigationRequest* navigation_request,
+      IsSameSiteGetter& is_same_site,
+      std::string* reason = nullptr);
+
+  // Calls GetSiteInstanceForNavigationRequest with an IsSameSiteGetter that
+  // does not have a cached value.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigationRequest(
       NavigationRequest* navigation_request,
       std::string* reason = nullptr);
@@ -629,6 +679,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       bool is_failure,
       bool is_reload,
       bool is_same_document,
+      IsSameSiteGetter& is_same_site,
       bool cross_origin_opener_policy_mismatch,
       bool was_server_redirect,
       bool should_replace_current_entry);
@@ -636,6 +687,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
   ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
       const UrlInfo& destination_url_info,
       bool is_reload,
+      IsSameSiteGetter& is_same_site,
       bool should_replace_current_entry);
 
   // Returns the SiteInstance to use for the navigation.
@@ -650,6 +702,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       bool is_failure,
       bool is_reload,
       bool is_same_document,
+      IsSameSiteGetter& is_same_site,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool was_server_redirect,
@@ -679,11 +732,22 @@ class CONTENT_EXPORT RenderFrameHostManager {
       SiteInstance* dest_instance,
       ui::PageTransition transition,
       bool is_failure,
+      IsSameSiteGetter& is_same_site,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool force_browsing_instance_swap,
       bool was_server_redirect,
       std::string* reason);
+
+  // Returns whether we can use the given `dest_instance` or if it is not
+  // suitable anymore.
+  //
+  // This is a helper function for GetSiteInstanceForNavigation.
+  bool CanUseDestinationInstance(const UrlInfo& dest_url_info,
+                                 SiteInstance* current_instance,
+                                 SiteInstance* dest_instance,
+                                 bool is_failure,
+                                 bool force_browsing_instance_swap);
 
   // Returns true if a navigation to |dest_url| that uses the specified
   // PageTransition in the current frame is allowed to swap BrowsingInstances.

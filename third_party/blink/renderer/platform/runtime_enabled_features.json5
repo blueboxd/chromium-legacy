@@ -602,12 +602,6 @@
       name: "CorsRFC1918",
     },
     {
-      name: "CrossOriginOpenerPolicyReporting",
-      origin_trial_feature_name: "CrossOriginOpenerPolicyReporting",
-      origin_trial_allows_third_party: true,
-      status: "experimental",
-    },
-    {
       // Allows positioning a positioned element relative to another one.
       // https://drafts.csswg.org/css-anchor-1/
       name: "CSSAnchorPositioning",
@@ -808,6 +802,14 @@
     {
       name: "CSSPaintAPIArguments",
       status: "experimental",
+    },
+    {
+      // Use the new CSS-based painting for spelling and grammar errors,
+      // regardless of whether the new highlights or decorations are exposed
+      // to authors (see CSSSpellingGrammarErrors).
+      name: "CSSPaintingForSpellingGrammarErrors",
+      status: "stable",
+      base_feature: "CssPaintingForSpellingGrammarErrors",
     },
     {
       name: "CSSPictureInPicture",
@@ -1063,6 +1065,7 @@
         "default": "experimental",
       },
       settable_from_internals: true,
+      base_feature: "DocumentPictureInPictureAPI",
     },
     {
       name: "DocumentPolicy",
@@ -1161,6 +1164,16 @@
     {
       name: "FakeNoAllocDirectCallForTesting",
       status: "test",
+    },
+    {
+      name: "FastComparePositions",
+      status: "stable",
+      base_feature: "FastComparePositions",
+    },
+    {
+      name: "FastPositionIterator",
+      status: "stable",
+      base_feature: "FastPositionIterator",
     },
     {
       name: "FeaturePolicyReporting",
@@ -1272,6 +1285,7 @@
     },
     {
       name: "FirstPartySets",
+      status: "experimental",
     },
     {
       name: "FirstRectForRangeVertical",
@@ -1313,6 +1327,10 @@
       name: "FontSrcLocalMatching",
       // No status, as the web platform runtime enabled feature is controlled by
       // a Chromium level feature.
+    },
+    {
+      name: "FontVariantAlternates",
+      status: "test",
     },
     {
       name: "FontVariantPosition",
@@ -1366,6 +1384,16 @@
     {
       name: "FreezeFramesOnVisibility",
       status: "experimental",
+    },
+    {
+      // If enabled, `window.screen` always provides display dimensions.
+      // Otherwise, `window.screen` provides viewport dimensions in fullscreen
+      // as a speculative site compatibility measure, because web authors may
+      // assume that screen dimensions match window.innerWidth/innerHeight while
+      // a page is fullscreen, but that is not always true. crbug.com/1367416
+      name: "FullscreenScreenSizeMatchesDisplay",
+      status: "experimental",
+      base_feature: "FullscreenScreenSizeMatchesDisplay",
     },
     {
       name: "GamepadButtonAxisEvents",
@@ -1475,6 +1503,10 @@
       public: true,
       settable_from_internals: true,
       status: {"Android": "stable"},
+    },
+    {
+      name: "IncomingCallNotifications",
+      base_feature: "IncomingCallNotifications",
     },
     {
       name: "InertAttribute",
@@ -1794,6 +1826,7 @@
       name: "NavigationId",
       status: "experimental",
       base_feature: "NavigationId",
+      origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     {
       name: "NavigatorContentUtils",
@@ -1984,19 +2017,6 @@
       name: "Parakeet",
       origin_trial_feature_name: "Parakeet",
       base_feature: "Parakeet",
-    },
-    {
-      name: "ParallelPrimaryFont",
-      depends_on: ["ParallelTextShaping"],
-      // http://crbug.com/1315900
-      // Global DeviceScaleFactor prevents us to use this feature.
-      status: {"ChromeOS_Ash": "", "ChromeOS_Lacros": "", "Linux": "",
-               "default": ""},
-    },
-    {
-      name: "ParallelTextShaping",
-      depends_on: ["LayoutNG"],
-      // http://crbug.com/1264280
     },
     {
       name: "PartitionedCookies",
@@ -2544,6 +2564,7 @@
       status: "experimental",
       depends_on: ["NavigationId"],
       base_feature: "SoftNavigationHeuristics",
+      origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate
@@ -2594,7 +2615,8 @@
     {
       // Enabled when blink::features::kStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
-      status: "test",
+      status: "experimental",
+      implied_by: ["FirstPartySets"],
     },
     {
       name: "StorageAccessAPIForOriginExtension",

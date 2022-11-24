@@ -13,10 +13,9 @@
  * extended to override methods that extract lines for multiline fields
  * or to provide other customizations.
  */
-import {AbstractTts} from '../../common/abstract_tts.js';
 import {Msgs} from '../../common/msgs.js';
 import {TtsInterface} from '../../common/tts_interface.js';
-import {QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_types.js';
+import {Personality, QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_types.js';
 import {ChromeVoxState} from '../chromevox_state.js';
 
 /**
@@ -335,19 +334,11 @@ export class ChromeVoxEditableTextBase {
         this.speak(lineValue, evt.triggeredByUser);
       } else if (this.start === evt.start + 1 || this.start === evt.start - 1) {
         // Moved by one character; read it.
-        if (!ChromeVoxEditableTextBase.useIBeamCursor) {
-          if (evt.start === this.value.length) {
-            this.speak(Msgs.getMsg('end_of_text_verbose'), evt.triggeredByUser);
-          } else {
-            this.speak(
-                this.value.substr(evt.start, 1), evt.triggeredByUser,
-                new TtsSpeechProperties(
-                    {'phoneticCharacters': evt.triggeredByUser}));
-          }
+        if (evt.start === this.value.length) {
+          this.speak(Msgs.getMsg('end_of_text_verbose'), evt.triggeredByUser);
         } else {
           this.speak(
-              this.value.substr(Math.min(this.start, evt.start), 1),
-              evt.triggeredByUser,
+              this.value.substr(evt.start, 1), evt.triggeredByUser,
               new TtsSpeechProperties(
                   {'phoneticCharacters': evt.triggeredByUser}));
         }
@@ -415,7 +406,7 @@ export class ChromeVoxEditableTextBase {
   describeTextChanged(prev, evt) {
     let personality = new TtsSpeechProperties();
     if (evt.value.length < (prev.value.length - 1)) {
-      personality = AbstractTts.PERSONALITY_DELETED;
+      personality = Personality.DELETED;
     }
     if (this.isPassword) {
       this.speak(
@@ -469,8 +460,7 @@ export class ChromeVoxEditableTextBase {
       // Forward deletions causes reading of the character immediately to the
       // right of the caret or the deleted text depending on the iBeam cursor
       // setting.
-      if (prev.start === evt.start && prev.end === evt.end &&
-          !ChromeVoxEditableTextBase.useIBeamCursor) {
+      if (prev.start === evt.start && prev.end === evt.end) {
         this.speak(evt.value[evt.start], evt.triggeredByUser);
       } else {
         this.describeTextChangedHelper(
@@ -613,8 +603,8 @@ export class ChromeVoxEditableTextBase {
       utterance = deleted + ', deleted';
     } else if (deletedLen === 1) {
       utterance = deleted;
-      // Single-deleted characters should also use PERSONALITY_DELETED.
-      opt_personality = AbstractTts.PERSONALITY_DELETED;
+      // Single-deleted characters should also use Personality.DELETED.
+      opt_personality = Personality.DELETED;
     }
 
     if (autocompleteSuffix && utterance) {
@@ -692,27 +682,6 @@ export class ChromeVoxEditableTextBase {
     return false;
   }
 }
-
-
-/**
- * Whether or not moving the cursor from one character to another considers
- * the cursor to be a block (false) or an i-beam (true).
- *
- * If the cursor is a block, then the value of the character to the right
- * of the cursor index is always read when the cursor moves, no matter what
- * the previous cursor location was - this is how PC screenreaders work.
- *
- * If the cursor is an i-beam, moving the cursor by one character reads the
- * character that was crossed over, which may be the character to the left or
- * right of the new cursor index depending on the direction.
- *
- * If the current platform is a Mac, we will use an i-beam cursor. If not,
- * then we will use the block cursor.
- *
- * @type {boolean}
- */
-ChromeVoxEditableTextBase.useIBeamCursor =
-    localStorage['useIBeamCursor'] === String(true);
 
 /**
  * @type {boolean} Whether insertions (i.e. changes of greater than one

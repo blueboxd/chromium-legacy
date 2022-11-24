@@ -6,6 +6,8 @@
 
 #include <type_traits>
 
+#include "base/check_op.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
@@ -113,6 +115,55 @@ int SharedImageFormat::NumberOfPlanes() const {
       case PlaneConfig::kY_UV_A:
         return 3;
     }
+  }
+  NOTREACHED();
+  return 0;
+}
+
+bool SharedImageFormat::IsValidPlaneIndex(int plane_index) const {
+  return plane_index >= 0 && plane_index < NumberOfPlanes();
+}
+
+gfx::Size SharedImageFormat::GetPlaneSize(int plane_index,
+                                          const gfx::Size& size) const {
+  DCHECK(IsValidPlaneIndex(plane_index));
+  if (is_single_plane())
+    return size;
+
+  switch (plane_config()) {
+    case PlaneConfig::kY_V_U:
+      if (plane_index == 0) {
+        return size;
+      } else {
+        DCHECK_EQ(subsampling(), Subsampling::k420);
+        return gfx::ScaleToCeiledSize(size, 0.5);
+      }
+    case PlaneConfig::kY_UV:
+      if (plane_index == 1) {
+        DCHECK_EQ(subsampling(), Subsampling::k420);
+        return gfx::ScaleToCeiledSize(size, 0.5);
+      } else {
+        return size;
+      }
+    case PlaneConfig::kY_UV_A:
+      if (plane_index == 1) {
+        DCHECK_EQ(subsampling(), Subsampling::k420);
+        return gfx::ScaleToCeiledSize(size, 0.5);
+      } else {
+        return size;
+      }
+  }
+}
+
+int SharedImageFormat::NumChannelsInPlane(int plane_index) const {
+  DCHECK(IsValidPlaneIndex(plane_index));
+  switch (plane_config()) {
+    case PlaneConfig::kY_V_U:
+      return 1;
+    case PlaneConfig::kY_UV:
+      return plane_index == 1 ? 2 : 1;
+    case PlaneConfig::kY_UV_A:
+      return plane_index == 1 ? 2 : 1;
   }
   NOTREACHED();
   return 0;

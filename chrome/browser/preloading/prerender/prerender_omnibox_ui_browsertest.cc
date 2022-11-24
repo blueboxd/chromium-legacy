@@ -219,7 +219,7 @@ class PrerenderOmniboxUIBrowserTest : public InProcessBrowserTest,
   }
 
   void PressEnter() {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](const Browser* browser, bool ctrl_key) {
@@ -500,8 +500,7 @@ class PrerenderPreloaderHoldbackBrowserTest
  public:
   PrerenderPreloaderHoldbackBrowserTest() {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{blink::features::kPrerender2,
-                              features::kOmniboxTriggerForPrerender2,
+        /*enabled_features=*/{features::kOmniboxTriggerForPrerender2,
                               features::kPrerender2Holdback},
         /* disabled_features=*/{});
   }

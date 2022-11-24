@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "remoting/host/linux/wayland_manager.h"
+#include "remoting/base/logging.h"
 
 #include "base/no_destructor.h"
 #include "base/task/bind_post_task.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 
 namespace remoting {
 
@@ -23,8 +24,17 @@ WaylandManager* WaylandManager::Get() {
 void WaylandManager::Init(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   ui_task_runner_ = ui_task_runner;
+  const char* wayland_display = getenv("WAYLAND_DISPLAY");
+  if (!wayland_display) {
+    LOG(WARNING) << "WAYLAND_DISPLAY env variable is not set";
+    return;
+  }
   wayland_connection_ =
       std::make_unique<WaylandConnection>(getenv("WAYLAND_DISPLAY"));
+}
+
+void WaylandManager::CleanupRunnerForTest() {
+  ui_task_runner_ = nullptr;
 }
 
 void WaylandManager::AddCapturerMetadataCallback(
@@ -34,8 +44,9 @@ void WaylandManager::AddCapturerMetadataCallback(
         FROM_HERE,
         base::BindOnce(&WaylandManager::AddCapturerMetadataCallback,
                        base::Unretained(this),
-                       base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
-                                          std::move(callback))));
+                       base::BindPostTask(
+                           base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           std::move(callback))));
     return;
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -66,8 +77,9 @@ void WaylandManager::AddClipboardMetadataCallback(
         FROM_HERE,
         base::BindOnce(&WaylandManager::AddClipboardMetadataCallback,
                        base::Unretained(this),
-                       base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
-                                          std::move(callback))));
+                       base::BindPostTask(
+                           base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           std::move(callback))));
     return;
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -98,8 +110,9 @@ void WaylandManager::AddUpdateScreenResolutionCallback(
         FROM_HERE,
         base::BindOnce(&WaylandManager::AddUpdateScreenResolutionCallback,
                        base::Unretained(this),
-                       base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
-                                          std::move(callback))));
+                       base::BindPostTask(
+                           base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           std::move(callback))));
     return;
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -131,8 +144,9 @@ void WaylandManager::SetKeyboardLayoutCallback(
         FROM_HERE,
         base::BindOnce(&WaylandManager::SetKeyboardLayoutCallback,
                        base::Unretained(this),
-                       base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
-                                          std::move(callback))));
+                       base::BindPostTask(
+                           base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           std::move(callback))));
     return;
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -162,8 +176,9 @@ void WaylandManager::AddKeyboardModifiersCallback(
         FROM_HERE,
         base::BindOnce(&WaylandManager::AddKeyboardModifiersCallback,
                        base::Unretained(this),
-                       base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
-                                          std::move(callback))));
+                       base::BindPostTask(
+                           base::SingleThreadTaskRunner::GetCurrentDefault(),
+                           std::move(callback))));
     return;
   }
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

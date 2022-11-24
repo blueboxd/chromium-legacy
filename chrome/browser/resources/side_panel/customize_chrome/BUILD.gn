@@ -15,6 +15,9 @@ build_webui("build") {
   web_component_files = [
     "app.ts",
     "shortcuts.ts",
+    "categories.ts",
+    "appearance.ts",
+    "themes.ts",
   ]
 
   non_web_component_files = [ "customize_chrome_api_proxy.ts" ]
@@ -24,7 +27,7 @@ build_webui("build") {
     html_files += [ string_replace(f, ".ts", ".html") ]
   }
 
-  mojo_files_deps = [ "//chrome/browser/ui/webui/side_panel/customize_chrome:mojo_bindings_webui_js" ]
+  mojo_files_deps = [ "//chrome/browser/ui/webui/side_panel/customize_chrome:mojo_bindings_js__generator" ]
   mojo_files = [ "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom-webui.js" ]
 
   ts_composite = true

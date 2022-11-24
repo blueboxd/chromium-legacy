@@ -22,7 +22,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
@@ -496,10 +496,10 @@ struct CacheQueryResult {
     return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
   }
 
-  BluetoothDevice* device = nullptr;
-  BluetoothRemoteGattService* service = nullptr;
-  BluetoothRemoteGattCharacteristic* characteristic = nullptr;
-  BluetoothRemoteGattDescriptor* descriptor = nullptr;
+  raw_ptr<BluetoothDevice> device = nullptr;
+  raw_ptr<BluetoothRemoteGattService> service = nullptr;
+  raw_ptr<BluetoothRemoteGattCharacteristic> characteristic = nullptr;
+  raw_ptr<BluetoothRemoteGattDescriptor> descriptor = nullptr;
   CacheQueryOutcome outcome;
 };
 
@@ -852,7 +852,7 @@ void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
   // On Chrome OS and Linux, GattCharacteristicValueChanged is called before the
   // success callback for ReadRemoteCharacteristic is called, which could result
   // in an event being fired before the readValue promise is resolved.
-  if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
+  if (!base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               &WebBluetoothServiceImpl::NotifyCharacteristicValueChanged,

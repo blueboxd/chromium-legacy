@@ -613,10 +613,6 @@ static void UpdateCompositorViewportProperties(
         property_tree_manager.EnsureCompositorTransformNode(
             *properties.overscroll_elasticity_transform);
   }
-  if (properties.overscroll_elasticity_effect) {
-    ids.overscroll_elasticity_effect =
-        properties.overscroll_elasticity_effect->GetCompositorElementId();
-  }
   if (properties.page_scale) {
     ids.page_scale_transform =
         property_tree_manager.EnsureCompositorPageScaleTransformNode(
@@ -835,6 +831,12 @@ void PaintArtifactCompositor::UpdateRepaintedLayers(
 
   previous_update_for_testing_ = PreviousUpdateType::kRepaint;
   needs_update_ = false;
+
+  DVLOG(3) << "PaintArtifactCompositor::UpdateRepaintedLayers() done\n"
+           << "Composited layers:\n"
+           << GetLayersAsJSON(VLOG_IS_ON(3) ? 0xffffffff : 0)
+                  ->ToPrettyJSONString()
+                  .Utf8();
 }
 
 bool PaintArtifactCompositor::CanDirectlyUpdateProperties() const {

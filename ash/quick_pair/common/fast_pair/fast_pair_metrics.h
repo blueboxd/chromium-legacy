@@ -29,11 +29,13 @@ enum COMPONENT_EXPORT(QUICK_PAIR_COMMON) FastPairEngagementFlowEvent {
   kDiscoveryUiConnectPressed = 12,
   kDiscoveryUiDismissedByUser = 13,
   kDiscoveryUiLearnMorePressed = 14,
+  kDiscoveryUiDismissedByTimeout = 15,
   kPairingFailed = 121,
   kPairingSucceeded = 122,
   kDiscoveryUiConnectPressedAfterLearnMorePressed = 141,
   kDiscoveryUiDismissedByUserAfterLearnMorePressed = 142,
   kDiscoveryUiDismissedAfterLearnMorePressed = 143,
+  kDiscoveryUiDismissedByTimeoutAfterLearnMorePressed = 144,
   kErrorUiDismissed = 1211,
   kErrorUiSettingsPressed = 1212,
   kErrorUiDismissedByUser = 1213,
@@ -52,9 +54,25 @@ enum COMPONENT_EXPORT(QUICK_PAIR_COMMON)
       kAssociateAccountUiDismissed = 12,
       kAssociateAccountLearnMorePressed = 13,
       kAssociateAccountSavePressed = 14,
+      kAssociateAccountUiDismissedByTimeout = 15,
       kAssociateAccountSavePressedAfterLearnMorePressed = 131,
       kAssociateAccountDismissedByUserAfterLearnMorePressed = 132,
       kAssociateAccountDismissedAfterLearnMorePressed = 133,
+      kAssociateAccountDismissedByTimeoutAfterLearnMorePressed = 134,
+    };
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. The numbers here correspond to the
+// ordering of the flow. This enum should be kept in sync with the
+// FastPairSubsequentSuccessFunnelEvent enum in
+// src/tools/metrics/histograms/enums.xml.
+enum class COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+    FastPairSubsequentSuccessFunnelEvent {
+      kNotificationsClicked = 0,
+      kInitializationStarted = 1,
+      kPairingStarted = 2,
+      kProcessComplete = 3,
+      kMaxValue = kProcessComplete,
     };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -104,6 +122,10 @@ enum class COMPONENT_EXPORT(QUICK_PAIR_COMMON) FastPairHandshakeSteps {
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void AttemptRecordingFastPairEngagementFlow(const Device& device,
                                             FastPairEngagementFlowEvent event);
+
+COMPONENT_EXPORT(QUICK_PAIR_COMMON)
+void RecordSubsequentSuccessFunnelFlow(
+    FastPairSubsequentSuccessFunnelEvent event);
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)
 void AttemptRecordingTotalUxPairTime(const Device& device,

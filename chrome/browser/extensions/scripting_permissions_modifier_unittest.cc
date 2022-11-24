@@ -114,9 +114,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
             .Build();
 
     PermissionsUpdater(profile()).InitializePermissions(extension.get());
-
-    ScriptingPermissionsModifier modifier(profile(), extension);
-    ASSERT_TRUE(modifier.CanAffectExtension());
+    ASSERT_TRUE(
+        PermissionsManager::Get(profile())->CanAffectExtension(*extension));
 
     // By default, all permissions are granted.
     {
@@ -126,6 +125,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
     }
 
     // Then, withhold host permissions.
+    ScriptingPermissionsModifier modifier(profile(), extension);
     modifier.SetWithholdHostPermissions(true);
     {
       SCOPED_TRACE("After setting to withhold");
@@ -167,8 +167,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest, WithholdHostPermissionsOnInstall) {
   ExtensionPrefs::Get(profile())->OnExtensionInstalled(
       extension.get(), Extension::State::ENABLED, syncer::StringOrdinal(), "");
 
-  ScriptingPermissionsModifier modifier(profile(), extension);
-  ASSERT_TRUE(modifier.CanAffectExtension());
+  ASSERT_TRUE(
+      PermissionsManager::Get(profile())->CanAffectExtension(*extension));
 
   // With the flag present, permissions should have been withheld.
   {
@@ -179,6 +179,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest, WithholdHostPermissionsOnInstall) {
   }
 
   // Grant one of the permissions manually.
+  ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.GrantHostPermission(GURL(kHostChromium));
 
   {
@@ -504,33 +505,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   }
 }
 
-TEST_F(ScriptingPermissionsModifierUnitTest, CanAffectExtensionByLocation) {
-  InitializeEmptyExtensionService();
-
-  struct {
-    ManifestLocation location;
-    bool can_be_affected;
-  } test_cases[] = {
-      {ManifestLocation::kInternal, true},
-      {ManifestLocation::kExternalPref, true},
-      {ManifestLocation::kUnpacked, true},
-      {ManifestLocation::kExternalPolicyDownload, false},
-      {ManifestLocation::kComponent, false},
-  };
-
-  for (const auto& test_case : test_cases) {
-    scoped_refptr<const Extension> extension =
-        ExtensionBuilder("test")
-            .SetLocation(test_case.location)
-            .AddPermission("<all_urls>")
-            .Build();
-    EXPECT_EQ(test_case.can_be_affected,
-              ScriptingPermissionsModifier(profile(), extension.get())
-                  .CanAffectExtension())
-        << test_case.location;
-  }
-}
-
 TEST_F(ScriptingPermissionsModifierUnitTest,
        ExtensionsInitializedWithSavedRuntimeGrantedHostPermissionsAcrossLoad) {
   InitializeEmptyExtensionService();
@@ -806,6 +780,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   // At installation, all permissions granted.
   ScriptingPermissionsModifier modifier(profile(), extension);
+  PermissionsManager* manager = PermissionsManager::Get(profile());
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
               testing::UnorderedElementsAre("https://google.com/maps"));
 
@@ -821,23 +796,25 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   modifier.GrantHostPermission(GURL("https://google.com/maps"));
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
               testing::UnorderedElementsAre("https://google.com/maps"));
-  EXPECT_THAT(GetPatternsAsStrings(
-                  modifier.GetRevokablePermissions()->effective_hosts()),
-              // Subtle: revokable permissions include permissions either in
-              // the runtime granted permissions preference or active on the
-              // extension object. In this case, that includes both google.com/*
-              // and google.com/maps.
-              testing::UnorderedElementsAre("https://google.com/maps",
-                                            "https://google.com/*"));
+  EXPECT_THAT(
+      GetPatternsAsStrings(
+          manager->GetRevokablePermissions(*extension)->effective_hosts()),
+      // Subtle: revokable permissions include permissions either in
+      // the runtime granted permissions preference or active on the
+      // extension object. In this case, that includes both google.com/*
+      // and google.com/maps.
+      testing::UnorderedElementsAre("https://google.com/maps",
+                                    "https://google.com/*"));
 
   // Remove the granted permission. This should remove the permission from both
   // the active permissions on the extension object and the entry in the
   // preferences.
   modifier.RemoveAllGrantedHostPermissions();
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
-  EXPECT_THAT(GetPatternsAsStrings(
-                  modifier.GetRevokablePermissions()->effective_hosts()),
-              testing::IsEmpty());
+  EXPECT_THAT(
+      GetPatternsAsStrings(
+          manager->GetRevokablePermissions(*extension)->effective_hosts()),
+      testing::IsEmpty());
 }
 
 // TODO(crbug.com/1289441): Move test to PermissionsManager once permissions can

@@ -73,6 +73,8 @@ const char kFirstPartySetsStateHistogram[] = "Settings.FirstPartySets.State";
 const char kPrivacySandboxStartupHistogram[] =
     "Settings.PrivacySandbox.StartupState";
 
+const base::Version kFirstPartySetsVersion("1.2.3");
+
 class TestInterestGroupManager : public content::InterestGroupManager {
  public:
   void SetInterestGroupJoiningOrigins(const std::vector<url::Origin>& origins) {
@@ -1021,6 +1023,18 @@ TEST_F(PrivacySandboxServiceTest, PromptActionsUMAActions) {
                    "Settings.PrivacySandbox.Notice.LearnMore"));
 
   SetupPromptTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->PromptActionOccurred(
+      PrivacySandboxService::PromptAction::kNoticeMoreInfoOpened);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Notice.LearnMoreExpanded"));
+
+  SetupPromptTestState(feature_list(), prefs(),
                        {/*consent_required=*/true,
                         /*old_api_pref=*/true,
                         /*new_api_pref=*/false,
@@ -1894,8 +1908,6 @@ TEST_F(PrivacySandboxServiceTest, PrivacySandboxNoticeDisabled) {
 
 TEST_F(PrivacySandboxServiceTest, PrivacySandboxManuallyControlledEnabled) {
   base::HistogramTester histogram_tester;
-  feature_list()->InitAndEnableFeature(
-      privacy_sandbox::kPrivacySandboxSettings3);
   prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
                        std::make_unique<base::Value>(true));
   prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationManuallyControlled,
@@ -1909,8 +1921,6 @@ TEST_F(PrivacySandboxServiceTest, PrivacySandboxManuallyControlledEnabled) {
 
 TEST_F(PrivacySandboxServiceTest, PrivacySandboxManuallyControlledDisabled) {
   base::HistogramTester histogram_tester;
-  feature_list()->InitAndEnableFeature(
-      privacy_sandbox::kPrivacySandboxSettings3);
   prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
                        std::make_unique<base::Value>(false));
   prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationManuallyControlled,
@@ -1924,8 +1934,6 @@ TEST_F(PrivacySandboxServiceTest, PrivacySandboxManuallyControlledDisabled) {
 
 TEST_F(PrivacySandboxServiceTest, PrivacySandboxNoPromptDisabled) {
   base::HistogramTester histogram_tester;
-  feature_list()->InitAndEnableFeature(
-      privacy_sandbox::kPrivacySandboxSettings3);
   prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
                        std::make_unique<base::Value>(false));
   CreateService();
@@ -1936,8 +1944,6 @@ TEST_F(PrivacySandboxServiceTest, PrivacySandboxNoPromptDisabled) {
 
 TEST_F(PrivacySandboxServiceTest, PrivacySandboxNoPromptEnabled) {
   base::HistogramTester histogram_tester;
-  feature_list()->InitAndEnableFeature(
-      privacy_sandbox::kPrivacySandboxSettings3);
   prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
                        std::make_unique<base::Value>(true));
   CreateService();
@@ -2111,6 +2117,7 @@ TEST_F(PrivacySandboxServiceTest,
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
   net::GlobalFirstPartySets global_sets(
+      kFirstPartySetsVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
                                  0)}}},
@@ -2150,6 +2157,7 @@ TEST_F(PrivacySandboxServiceTest,
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
   net::GlobalFirstPartySets global_sets(
+      kFirstPartySetsVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
                                  0)}}},
@@ -2191,6 +2199,7 @@ TEST_F(PrivacySandboxServiceTest,
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
   net::GlobalFirstPartySets global_sets(
+      kFirstPartySetsVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
                                  0)}}},
@@ -2235,6 +2244,7 @@ TEST_F(PrivacySandboxServiceTest,
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
   net::GlobalFirstPartySets global_sets(
+      kFirstPartySetsVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
                                  0)}}},
@@ -2278,6 +2288,7 @@ TEST_F(PrivacySandboxServiceTest,
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
   net::GlobalFirstPartySets global_sets(
+      kFirstPartySetsVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
                                  0)}}},
@@ -2381,6 +2392,7 @@ TEST_F(PrivacySandboxServiceTest,
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test", "https://associate2.test"] }
   mock_first_party_sets_handler().SetGlobalSets(net::GlobalFirstPartySets(
+      kFirstPartySetsVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated, 0)}},
        {associate2_site,
@@ -2507,6 +2519,7 @@ TEST_F(PrivacySandboxServiceTest, UsesFpsSampleSetsWhenProvided) {
   net::SchemefulSite youtube_site(youtube_gurl);
 
   mock_first_party_sets_handler().SetGlobalSets(net::GlobalFirstPartySets(
+      kFirstPartySetsVersion,
       {{youtube_site,
         {net::FirstPartySetEntry(youtube_primary_site,
                                  net::SiteType::kAssociated, 0)}}},
@@ -2744,8 +2757,6 @@ TEST_F(PrivacySandboxServicePromptTest, ManuallyControlledNoPrompt) {
 TEST_F(PrivacySandboxServicePromptTest, NoParamNoPrompt) {
   // Confirm that if neither the consent or notice parameter is set, no prompt
   // is required.
-  feature_list()->InitAndEnableFeature(
-      privacy_sandbox::kPrivacySandboxSettings3);
   EXPECT_EQ(
       PrivacySandboxService::PromptType::kNone,
       PrivacySandboxService::GetRequiredPromptTypeInternal(

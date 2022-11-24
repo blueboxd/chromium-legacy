@@ -18,7 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
@@ -100,7 +100,7 @@ void CopyLockResult(base::RunLoop* loop,
 void CertCallbackSuccess(
     ash::attestation::AttestationFlow::CertificateCallback callback,
     std::string certificate) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), ash::attestation::ATTESTATION_SUCCESS,
                      std::move(certificate)));
@@ -204,15 +204,15 @@ class DeviceCloudPolicyManagerAshTest
     ash::InstallAttributesClient::InitializeFake();
     install_attributes_ = std::make_unique<ash::InstallAttributes>(
         ash::FakeInstallAttributesClient::Get());
-    store_ = new DeviceCloudPolicyStoreAsh(device_settings_service_.get(),
-                                           install_attributes_.get(),
-                                           base::ThreadTaskRunnerHandle::Get());
+    store_ = new DeviceCloudPolicyStoreAsh(
+        device_settings_service_.get(), install_attributes_.get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     auto external_data_manager =
         std::make_unique<MockCloudExternalDataManager>();
     external_data_manager_ = external_data_manager.get();
     manager_ = std::make_unique<TestingDeviceCloudPolicyManagerAsh>(
         base::WrapUnique(store_), std::move(external_data_manager),
-        base::ThreadTaskRunnerHandle::Get(), &state_keys_broker_);
+        base::SingleThreadTaskRunner::GetCurrentDefault(), &state_keys_broker_);
 
     RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);
@@ -596,8 +596,6 @@ class DeviceCloudPolicyManagerAshEnrollmentTest
     done_ = true;
   }
 
-  MOCK_METHOD1(OnUnregistered, void(bool));
-
  protected:
   DeviceCloudPolicyManagerAshEnrollmentTest()
       : register_status_(DM_STATUS_SUCCESS),
@@ -712,7 +710,7 @@ class DeviceCloudPolicyManagerAshEnrollmentTest
     enrollment_handler_ = std::make_unique<EnrollmentHandler>(
         store_, install_attributes_.get(), &state_keys_broker_,
         &mock_attestation_flow_, std::move(client),
-        base::ThreadTaskRunnerHandle::Get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault(),
         /*ad_join_delegate=*/nullptr, enrollment_config,
         policy::LicenseType::kEnterprise, std::move(auth),
         install_attributes_->GetDeviceId(),
@@ -1010,55 +1008,6 @@ TEST_P(DeviceCloudPolicyManagerAshEnrollmentTest, LoadError) {
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, status_.store_status());
-}
-
-TEST_P(DeviceCloudPolicyManagerAshEnrollmentTest, UnregisterSucceeds) {
-  // Enroll first.
-  RunTest();
-  ExpectSuccessfulEnrollment();
-
-  // Set up mock objects for the upcoming unregistration job.
-  em::DeviceManagementResponse response;
-  response.mutable_unregister_response();
-  DeviceManagementService::JobConfiguration::JobType job_type;
-  EXPECT_CALL(job_creation_handler_, OnJobCreation)
-      .WillOnce(DoAll(device_management_service_.CaptureJobType(&job_type),
-                      device_management_service_.SendJobOKAsync(response)));
-  AllowUninterestingRemoteCommandFetches();
-  EXPECT_CALL(*this, OnUnregistered(true));
-
-  // Start unregistering.
-  manager_->Unregister(
-      base::BindOnce(&DeviceCloudPolicyManagerAshEnrollmentTest::OnUnregistered,
-                     base::Unretained(this)));
-
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(DeviceManagementService::JobConfiguration::TYPE_UNREGISTRATION,
-            job_type);
-}
-
-TEST_P(DeviceCloudPolicyManagerAshEnrollmentTest, UnregisterFails) {
-  // Enroll first.
-  RunTest();
-  ExpectSuccessfulEnrollment();
-
-  // Set up mock objects for the upcoming unregistration job.
-  DeviceManagementService::JobConfiguration::JobType job_type;
-  EXPECT_CALL(job_creation_handler_, OnJobCreation)
-      .WillOnce(DoAll(device_management_service_.CaptureJobType(&job_type),
-                      device_management_service_.SendJobResponseAsync(
-                          net::ERR_FAILED, DeviceManagementService::kSuccess)));
-  AllowUninterestingRemoteCommandFetches();
-  EXPECT_CALL(*this, OnUnregistered(false));
-
-  // Start unregistering.
-  manager_->Unregister(
-      base::BindOnce(&DeviceCloudPolicyManagerAshEnrollmentTest::OnUnregistered,
-                     base::Unretained(this)));
-
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(DeviceManagementService::JobConfiguration::TYPE_UNREGISTRATION,
-            job_type);
 }
 
 TEST_P(DeviceCloudPolicyManagerAshEnrollmentTest, DisableMachineCertReq) {

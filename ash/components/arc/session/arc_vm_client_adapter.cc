@@ -48,11 +48,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
@@ -206,8 +206,7 @@ std::vector<std::string> GenerateKernelCmdline(const StartParams& start_params,
       base::StringPrintf("androidboot.zram_size=%d", guest_zram_size),
   };
 
-  const ArcVmUreadaheadMode mode =
-      GetArcVmUreadaheadMode(base::BindRepeating(&base::GetSystemMemoryInfo));
+  const ArcVmUreadaheadMode mode = GetArcVmUreadaheadMode();
   switch (mode) {
     case ArcVmUreadaheadMode::READAHEAD:
       result.push_back("androidboot.arcvm_ureadahead_mode=readahead");
@@ -611,8 +610,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       break;
   }
 
-  const ArcVmUreadaheadMode mode =
-      GetArcVmUreadaheadMode(base::BindRepeating(&base::GetSystemMemoryInfo));
+  const ArcVmUreadaheadMode mode = GetArcVmUreadaheadMode();
   switch (mode) {
     using StartArcVmRequest = vm_tools::concierge::StartArcVmRequest;
     case ArcVmUreadaheadMode::READAHEAD:
@@ -887,7 +885,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit) override {
     VLOG(2) << "Start trimming VM memory";
     if (user_id_hash_.empty()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback), /*success=*/false,
                          /*failure_reason=*/"user_id_hash_ is not set"));

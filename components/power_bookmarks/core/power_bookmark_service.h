@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_POWER_BOOKMARKS_CORE_POWER_BOOKMARK_SERVICE_H_
 #define COMPONENTS_POWER_BOOKMARKS_CORE_POWER_BOOKMARK_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/sequence_bound.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -26,6 +28,7 @@ class Power;
 class PowerOverview;
 class PowerBookmarkDataProvider;
 class PowerBookmarkBackend;
+struct SearchParams;
 
 using PowersCallback =
     base::OnceCallback<void(std::vector<std::unique_ptr<Power>> powers)>;
@@ -56,16 +59,6 @@ class PowerBookmarkService : public KeyedService,
 
   ~PowerBookmarkService() override;
 
-  // Initializes the power bookmarks backend.
-  // Should only be called in cases where the power is meant to be displayed
-  // to the user. This will also initialize sync for the power bookmarks data
-  // type in cases where another feature hasn't already called this. This
-  // should be called at startup to register the data type with sync as soon
-  // as possible. If this isn't called, then an in-memory database will be
-  // used instead. None of the data will be persisted/synced when using the
-  // in-memory database.
-  void InitPowerBookmarkDatabase();
-
   // Returns a vector of Powers for the given `url` through the given
   // `callback`. Use `power_type` to restrict which type is returned or use
   // POWER_TYPE_UNSPECIFIED to return everything.
@@ -77,6 +70,10 @@ class PowerBookmarkService : public KeyedService,
   // given `callback`.
   void GetPowerOverviewsForType(const PowerType& power_type,
                                 PowerOverviewsCallback callback);
+
+  // Returns a vector of Powers matching the given `search_params`. The results
+  // are ordered by the url they're associated with.
+  void Search(const SearchParams& search_params, PowersCallback callback);
 
   // Create the given `power` in the database. If it already exists, then it
   // will be updated. Success of the operation is returned through the given
@@ -122,7 +119,7 @@ class PowerBookmarkService : public KeyedService,
   void BookmarkModelChanged() override {}
 
  private:
-  bookmarks::BookmarkModel* model_;
+  raw_ptr<bookmarks::BookmarkModel> model_;
   base::SequenceBound<PowerBookmarkBackend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 

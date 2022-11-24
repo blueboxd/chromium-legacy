@@ -18,8 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
@@ -234,6 +234,7 @@ class VideoCaptureManagerTest : public testing::Test {
 
   void HandleEnumerationResult(
       base::OnceClosure quit_closure,
+      media::mojom::DeviceEnumerationResult result,
       const media::VideoCaptureDeviceDescriptors& descriptors) {
     blink::MediaStreamDevices devices;
     for (const auto& descriptor : descriptors) {
@@ -246,6 +247,7 @@ class VideoCaptureManagerTest : public testing::Test {
 
   void HandleEnumerationResultAsDisplayMediaDevices(
       base::OnceClosure quit_closure,
+      media::mojom::DeviceEnumerationResult result,
       const media::VideoCaptureDeviceDescriptors& descriptors) {
     blink::MediaStreamDevices devices;
     for (const auto& descriptor : descriptors) {
@@ -270,7 +272,8 @@ class VideoCaptureManagerTest : public testing::Test {
     auto video_capture_provider =
         std::make_unique<InProcessVideoCaptureProvider>(
             std::move(video_capture_system),
-            base::ThreadTaskRunnerHandle::Get(), kIgnoreLogMessageCB);
+            base::SingleThreadTaskRunner::GetCurrentDefault(),
+            kIgnoreLogMessageCB);
     screenlock_monitor_source_ = new ScreenlockMonitorTestSource();
     screenlock_monitor_ = std::make_unique<ScreenlockMonitor>(
         std::unique_ptr<ScreenlockMonitorSource>(screenlock_monitor_source_));

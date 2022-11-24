@@ -760,8 +760,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^chromecast/cast_core/runtime/browser',
        '^ios/chrome/test/earl_grey/chrome_egtest_plugin_client\.(mm|h)',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
-       '^base/fuchsia/filtered_service_directory\.(cc|h)',
-       '^base/fuchsia/service_directory_test_base\.h',
+       '^base/fuchsia/.*\.(cc|h)',
        '.*fuchsia.*test\.(cc|h)',
        # Needed for clang plugin tests
        '^tools/clang/plugins/tests/',
@@ -951,6 +950,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [
         # Needed to use liburlpattern API.
         r'third_party/blink/renderer/core/url_pattern/.*',
+        # Needed to use QUICHE API.
+        r'net/test/embedded_test_server/.*',
         # Not an error in third_party folders.
         _THIRD_PARTY_EXCEPT_BLINK
       ],
@@ -3226,10 +3227,9 @@ def CheckJavaStyle(input_api, output_api):
         # Restore sys.path to what it was before.
         sys.path = original_sys_path
 
-    return checkstyle.RunCheckstyle(
+    return checkstyle.run_presubmit(
         input_api,
         output_api,
-        'tools/android/checkstyle/chromium-style-5.0.xml',
         files_to_skip=_EXCLUDED_PATHS + input_api.DEFAULT_FILES_TO_SKIP)
 
 

@@ -18,8 +18,8 @@
 #include "base/containers/span.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
@@ -67,6 +67,7 @@
 #include "ui/views/widget/any_widget_observer.h"
 
 namespace ash {
+
 namespace {
 
 // The PIN code that the test certificate provider extension is configured to
@@ -196,7 +197,7 @@ class ChallengeResponseFakeUserDataAuthClient : public FakeUserDataAuthClient {
     if (error != net::OK || signature.empty())
       reply.set_error(
           ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_MOUNT_FATAL);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), reply));
   }
 
@@ -209,7 +210,7 @@ class ChallengeResponseFakeUserDataAuthClient : public FakeUserDataAuthClient {
       ::user_data_auth::AuthenticateAuthSessionReply reply;
       reply.set_error(
           ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_MOUNT_FATAL);
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), reply));
       return;
     }
@@ -226,7 +227,7 @@ class ChallengeResponseFakeUserDataAuthClient : public FakeUserDataAuthClient {
       ::user_data_auth::AuthenticateAuthFactorReply reply;
       reply.set_error(
           ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_MOUNT_FATAL);
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), reply));
       return;
     }
@@ -319,12 +320,10 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
         std::move(cryptohome_client));
 
     // TODO(b/239422391): Clean up after full migration to kUseAuthFactors.
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(ash::features::kUseAuthFactors);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          ash::features::kUseAuthFactors);
-    }
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(features::kUseAuthFactors);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kUseAuthFactors);
     // Don't shut down when no browser is open, since it breaks the test and
     // since it's not the real Chrome OS behavior.
     set_exit_when_last_browser_closes(false);

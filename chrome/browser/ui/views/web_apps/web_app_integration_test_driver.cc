@@ -396,8 +396,8 @@ class BrowserAddedWaiter final : public BrowserListObserver {
     BrowserList::RemoveObserver(this);
     // Post a task to ensure the Remove event has been dispatched to all
     // observers.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop_.QuitClosure());
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, run_loop_.QuitClosure());
   }
   Browser* browser_added() const { return browser_added_; }
 
@@ -470,12 +470,12 @@ class UninstallCompleteWaiter final : public BrowserListObserver,
     observation_.Reset();
     // Post a task to ensure the Remove event has been dispatched to all
     // observers.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop_.QuitClosure());
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, run_loop_.QuitClosure());
   }
 
  private:
-  const Profile* profile_;
+  raw_ptr<const Profile> profile_;
   const AppId app_id_;
   bool uninstall_complete_ = false;
   base::RunLoop run_loop_;

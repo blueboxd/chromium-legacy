@@ -339,6 +339,10 @@ BASE_FEATURE(kPrerender2InBackground,
              "Prerender2InBackground",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPrerender2InNewTab,
+             "Prerender2InNewTab",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsPrerender2Enabled() {
   return base::FeatureList::IsEnabled(blink::features::kPrerender2);
 }
@@ -922,13 +926,6 @@ BASE_FEATURE(kSanitizerAPINamespaces,
              "SanitizerAPINamespacesForTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Kill switch for the blocking of the navigation of top from a cross origin
-// iframe to a different protocol. TODO(https://crbug.com/1151507): Remove in
-// M92.
-BASE_FEATURE(kBlockCrossOriginTopNavigationToDiffentScheme,
-             "BlockCrossOriginTopNavigationToDiffentScheme",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Kill switch for the Interest Group API, i.e. if disabled, the
 // API exposure will be disabled regardless of the OT config.
 BASE_FEATURE(kInterestGroupStorage,
@@ -1492,7 +1489,7 @@ BASE_FEATURE(kEarlyExitOnNoopClassOrStyleChange,
 // TODO(mahesh.ma): Enable for supported Android versions once feature is ready.
 BASE_FEATURE(kStylusWritingToInput,
              "StylusWritingToInput",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDisableArrayBufferSizeLimitsForTesting,
              "DisableArrayBufferSizeLimitsForTesting",
@@ -1660,6 +1657,10 @@ BASE_FEATURE(kTextCodecCJKEnabled,
 BASE_FEATURE(kStartMediaStreamCaptureIndicatorInBrowser,
              "StartMediaStreamCaptureIndicatorInBrowser",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUseThreadPoolForMediaStreamVideoTaskRunner,
+             "UseThreadPoolForMediaStreamVideoTaskRunner",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace blink

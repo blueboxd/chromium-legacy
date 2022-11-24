@@ -21,6 +21,12 @@ export class FakePageHandler implements PageHandlerInterface {
   }
 
   uninstallApp(_appId: string) {}
+
+  showAppSettings(_appId: string) {}
+
+  createAppShortcut(_appId: string) {
+    return Promise.resolve();
+  }
 }
 
 export class TestAppHomeBrowserProxy implements BrowserProxy {

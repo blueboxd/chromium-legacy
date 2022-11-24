@@ -87,6 +87,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons);
                 add(ChromeFeatureList.sCctResizableForFirstParties);
                 add(ChromeFeatureList.sCctResizableForThirdParties);
+                add(ChromeFeatureList.sCctResizableSideSheet);
                 add(ChromeFeatureList.sCctRetainableStateInMemory);
                 add(ChromeFeatureList.sCctToolbarCustomizations);
                 add(ChromeFeatureList.sCloseTabSuggestions);
@@ -100,7 +101,6 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sDiscardOccludedBitmaps);
                 add(ChromeFeatureList.sDownloadsAutoResumptionNative);
                 add(ChromeFeatureList.sEarlyLibraryLoad);
-                add(ChromeFeatureList.sElasticOverscroll);
                 add(ChromeFeatureList.sFeedLoadingPlaceholder);
                 add(ChromeFeatureList.sFoldableJankFix);
                 add(ChromeFeatureList.sGridTabSwitcherForTablets);

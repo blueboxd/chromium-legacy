@@ -156,6 +156,12 @@ BASE_FEATURE(kDisambiguateEntitySuggestions,
              "DisambiguateEntitySuggestions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// If enabled, takes the search intent query params into account for triggering
+// switch to tab actions on matches.
+BASE_FEATURE(kDisambiguateTabMatchingForEntitySuggestions,
+             "DisambiguateTabMatchingForEntitySuggestions",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Used to adjust the relevance for the local history zero-prefix suggestions.
 // If enabled, the relevance is determined by this feature's companion
 // parameter, OmniboxFieldTrial::kLocalHistoryZeroSuggestRelevanceScore.
@@ -193,7 +199,7 @@ BASE_FEATURE(kFocusTriggersSRPZeroSuggest,
 // zero-prefix and prefix suggestions.
 BASE_FEATURE(kLocalHistorySuggestRevamp,
              "LocalHistorySuggestRevamp",
-             enabled_by_default_desktop_only);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables local history zero-prefix suggestions in every context in which the
 // remote zero-prefix suggestions are enabled.
@@ -208,7 +214,7 @@ BASE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP,
 // parameter, OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
 BASE_FEATURE(kOmniboxLocalZeroSuggestAgeThreshold,
              "OmniboxLocalZeroSuggestAgeThreshold",
-             enabled_by_default_desktop_only);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Mainly used to enable sending INTERACTION_CLOBBER focus type for zero-prefix
 // requests with an empty input on Web/SRP on Mobile. Enabled by default on

@@ -38,6 +38,8 @@ defaults.set(
     bucket = "reviver",
     list_view = "reviver",
     service_account = "reviver-builder@chops-service-accounts.iam.gserviceaccount.com",
+    os = os.LINUX_DEFAULT,
+    pool = ci.DEFAULT_POOL,
 
     # TODO(crbug.com/1362440): remove this.
     omit_python2 = False,
@@ -53,8 +55,51 @@ polymorphic.launcher(
     ],
     os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
-    # To avoid peak hours, we run it at 1 AM, 4 AM, 7 AM, 10AM, 1 PM UTC.
-    schedule = "0 1,4,7,10,13 * * *",
+    cores = 8,
+    # To avoid peak hours, we run it at 2 AM, 5 AM, 8 AM, 11AM, 2 PM UTC.
+    schedule = "0 2,5,8,11,14 * * *",
+)
+
+polymorphic.launcher(
+    name = "android-device-launcher",
+    runner = "reviver/runner",
+    target_builders = [
+        "ci/android-pie-arm64-rel",
+    ],
+    os = os.LINUX_DEFAULT,
+    pool = ci.DEFAULT_POOL,
+    # To avoid peak hours, we run it at 5 AM, 8 AM, 11AM UTC.
+    schedule = "0 5,8,11 * * *",
+)
+
+polymorphic.launcher(
+    name = "linux-launcher",
+    runner = "reviver/runner",
+    target_builders = [
+        "ci/Linux Tests",
+    ],
+    # To avoid peak hours, we run it at 5~11 UTC, 21~27 PST.
+    schedule = "0 5-11/3 * * *",
+)
+
+polymorphic.launcher(
+    name = "win-launcher",
+    runner = "reviver/runner",
+    target_builders = [
+        "ci/Win10 Tests x64",
+    ],
+    # To avoid peak hours, we run it at 5~11 UTC, 21~27 PST.
+    schedule = "0 5-11/3 * * *",
+)
+
+polymorphic.launcher(
+    name = "mac-launcher",
+    runner = "reviver/runner",
+    target_builders = [
+        "ci/Mac12 Tests",
+    ],
+    # To avoid peak hours, we run it at 5~11 UTC, 21~27 PST.
+    schedule = "0 5-11/3 * * *",
 )
 
 # A coordinator of slightly aggressive scheduling with effectively unlimited
@@ -70,7 +115,21 @@ polymorphic.launcher(
     os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
     # Avoid peak hours.
-    schedule = "0 1,3,5,7,9,11,13 * * *",
+    schedule = "0 2,4,6,8,10,12,14 * * *",
+)
+
+# A coordinator for lacros.
+polymorphic.launcher(
+    name = "lacros-coordinator",
+    runner = "reviver/runner",
+    target_builders = [
+        "ci/linux-lacros-tester-rel",
+    ],
+    os = os.LINUX_DEFAULT,
+    pool = ci.DEFAULT_POOL,
+    # To avoid peak hours, we run it from 8PM TO 4AM PST. It is
+    # 3 AM to 11 AM UTC.
+    schedule = "0 3,5,7,9 * * *",
 )
 
 builder(

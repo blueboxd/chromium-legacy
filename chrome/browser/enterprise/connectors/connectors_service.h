@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
@@ -57,15 +58,9 @@ class ConnectorsService : public KeyedService {
       const storage::FileSystemURL& destination_url,
       AnalysisConnector connector);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  absl::optional<FileSystemSettings> GetFileSystemGlobalSettings(
-      FileSystemConnector connector);
-  absl::optional<FileSystemSettings> GetFileSystemSettings(
-      const GURL& url,
-      FileSystemConnector connector);
 
   bool IsConnectorEnabled(AnalysisConnector connector) const;
   bool IsConnectorEnabled(ReportingConnector connector) const;
-  bool IsConnectorEnabled(FileSystemConnector connector) const;
 
   bool DelayUntilVerdict(AnalysisConnector connector);
 
@@ -113,6 +108,8 @@ class ConnectorsService : public KeyedService {
   ConnectorsManager* ConnectorsManagerForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ConnectorsServiceProfileTypeBrowserTest, IsEnabled);
+
   struct DmToken {
     DmToken(const std::string& value, policy::PolicyScope scope);
     DmToken(DmToken&&);

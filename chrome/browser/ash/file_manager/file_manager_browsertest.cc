@@ -703,7 +703,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
       // required from the test to issue the requests.
       saved_responses_.push_back(std::move(response));
     } else {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE, std::move(response), kResponseDelay);
     }
   }
@@ -715,7 +715,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     save_response_for_later_ = false;
     for (auto&& response : saved_responses_) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE, std::move(response), kResponseDelay);
     }
     saved_responses_.clear();
@@ -977,7 +977,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkContextMenusForInputElements"),
         TestCase("checkDeleteDisabledInRecents"),
         TestCase("checkGoToFileLocationEnabledInRecents"),
-        TestCase("checkGoToFileLocationDisabledInMultipleSelection")));
+        TestCase("checkGoToFileLocationDisabledInMultipleSelection"),
+        TestCase("checkDefaultTask")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */

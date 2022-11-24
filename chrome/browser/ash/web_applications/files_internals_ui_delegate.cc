@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/ash/file_manager/file_manager_pref_names.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -40,5 +41,30 @@ void ChromeFilesInternalsUIDelegate::SetSmbfsEnableVerboseLogging(
   if (profile) {
     profile->GetPrefs()->SetBoolean(
         file_manager::prefs::kSmbfsEnableVerboseLogging, enabled);
+  }
+}
+
+bool ChromeFilesInternalsUIDelegate::GetOfficeSetupComplete() const {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  return profile && file_manager::file_tasks::OfficeSetupComplete(profile);
+}
+
+void ChromeFilesInternalsUIDelegate::SetOfficeSetupComplete(bool complete) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  if (profile) {
+    file_manager::file_tasks::SetOfficeSetupComplete(profile, complete);
+  }
+}
+
+bool ChromeFilesInternalsUIDelegate::GetAlwaysMoveOfficeFiles() const {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  return profile && file_manager::file_tasks::AlwaysMoveOfficeFiles(profile);
+}
+
+void ChromeFilesInternalsUIDelegate::SetAlwaysMoveOfficeFiles(
+    bool always_move) {
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  if (profile) {
+    file_manager::file_tasks::SetAlwaysMoveOfficeFiles(profile, always_move);
   }
 }

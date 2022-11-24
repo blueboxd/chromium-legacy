@@ -603,36 +603,6 @@
           'junit_tests': 'cast_junit_tests',
         },
       },
-      'Marshmallow 64 bit Tester': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'marshmallow',
-          'bullhead',
-        ],
-        'test_suites': {
-          'gtest_tests': 'android_marshmallow_gtests',
-        },
-        'os_type': 'android',
-      },
-      'Marshmallow Tablet Tester': {
-        'test_suites': {
-          'gtest_tests': 'android_marshmallow_gtests',
-        },
-        'mixins': [
-          'has_native_resultdb_integration'
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MRA58Z',
-              'device_type': 'flo',
-              'os': 'Android',
-            },
-          ],
-          'expiration': 10800,
-        },
-        'os_type': 'android',
-      },
       'Nougat Phone Tester': {
         'test_suites': {
           'gtest_tests': 'android_nougat_gtests',
@@ -2743,22 +2713,6 @@
           '--test-launcher-print-test-stdio=always',
         ],
       },
-      'Linux MSan Focal': {
-        'mixins': [
-          'linux-focal',
-          'x86-64',
-        ],
-        'swarming': {
-          'expiration': 10800,
-          'hard_timeout': 7200,
-        },
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
-        },
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
       'Linux Viz': {
         'mixins': [
           'linux-bionic',
@@ -2980,7 +2934,7 @@
       },
 
       'android-perfetto-rel': {
-        'additional_compile_targets': [ 'chrome' ],
+        'additional_compile_targets': [ 'all' ],
         'mixins': [
           '12-x64-emulator',
           'emulator-8-cores',
@@ -2989,7 +2943,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'perfetto_gtests',
+          'gtest_tests': 'perfetto_gtests_android',
         },
       },
 
@@ -3440,21 +3394,6 @@
           'gtest_tests': 'linux_lacros_gtests',
         },
       },
-      'linux-lacros-tester-rel-reviver': {
-        'mixins': [
-          'isolate_profile_data',
-          'linux-bionic',
-          'gtest_run_disabled',
-        ],
-        'additional_compile_targets': [
-          'chrome',
-          'chrome_sandbox',
-          'symupload'
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_lacros_reviver_tests',
-        },
-      },
       'linux-lacros-version-skew-fyi': {
         'additional_compile_targets': [
           'chrome',
@@ -3467,7 +3406,7 @@
         },
       },
       'linux-perfetto-rel': {
-        'additional_compile_targets': [ 'chrome' ],
+        'additional_compile_targets': [ 'all' ],
         'mixins': [
           'linux-bionic',
         ],
@@ -3534,6 +3473,15 @@
           'isolated_scripts': 'wpt_web_tests_input',
         },
       },
+      'mac-12-wpt-fyi-rel': {
+        'mixins': [
+          'mac_12_x64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_content_shell',
+        },
+        'os_type': 'mac',
+      },
       # TODO(crbug.com/1252626): remove this after the migration.
       'mac-arm64-on-arm64-rel-reclient': {
         'additional_compile_targets': [
@@ -3589,7 +3537,7 @@
         },
       },
       'mac-perfetto-rel': {
-        'additional_compile_targets': [ 'chrome' ],
+        'additional_compile_targets': [ 'all' ],
         'mixins': [
           'mac_10.15',
         ],
@@ -3645,7 +3593,7 @@
         },
       },
       'win-perfetto-rel': {
-        'additional_compile_targets': [ 'chrome' ],
+        'additional_compile_targets': [ 'all' ],
         'mixins': [
           'win10',
         ],
@@ -5074,7 +5022,7 @@
       },
       'Linux MSan Tests': {
         'mixins': [
-          'linux-xenial',
+          'linux-focal',
           'x86-64',
         ],
         'test_suites': {
@@ -5174,6 +5122,7 @@
         },
         'args': [
           '--test-launcher-print-test-stdio=always',
+          '--combine-ash-logs-on-bots',
         ],
       },
       'linux-ubsan-vptr': {
@@ -5205,6 +5154,30 @@
     'mixins': ['chromium-tester-service-account'],
     'machines': {
       'Comparison Linux (reclient vs reclient remote links)': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
+      'Comparison Linux (reclient vs reclient remote links)(large)': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
+      'Comparison Linux (reclient vs reclient remote links)(medium)': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
+      'Comparison Linux (reclient vs reclient remote links)(small)': {
         'mixins': [
           'isolate_profile_data',
         ],
@@ -5404,8 +5377,7 @@
         'additional_compile_targets': [
           'mojo_rust',
           'rust_build_tests',
-          # TODO(https://crbug.com/1380857): reenable test coverage.
-          # 'rust_autocxx_tests',
+          'rust_autocxx_tests',
         ],
         'mixins': [ 'pie_fleet' ],
         'test_suites': {
@@ -5419,8 +5391,7 @@
         'additional_compile_targets': [
           'mojo_rust',
           'rust_build_tests',
-          # TODO(https://crbug.com/1380857): reenable test coverage.
-          # 'rust_autocxx_tests',
+          'rust_autocxx_tests',
         ],
         'mixins': [ 'marshmallow' ],
         'test_suites': {
@@ -5436,8 +5407,7 @@
           'mojo_rust',
           'mojo_rust_tests',
           'rust_build_tests',
-          # TODO(https://crbug.com/1380857): reenable test coverage.
-          # 'rust_autocxx_tests',
+          'rust_autocxx_tests',
         ],
         'mixins': [
           'linux-bionic'
@@ -5453,8 +5423,7 @@
           'mojo_rust',
           'mojo_rust_tests',
           'rust_build_tests',
-          # TODO(https://crbug.com/1380857): reenable test coverage.
-          # 'rust_autocxx_tests',
+          'rust_autocxx_tests',
         ],
         'mixins': [
           'linux-bionic'
@@ -5470,8 +5439,7 @@
           'mojo_rust',
           'mojo_rust_tests',
           'rust_build_tests',
-          # TODO(https://crbug.com/1380857): reenable test coverage.
-          # 'rust_autocxx_tests',
+          'rust_autocxx_tests',
         ],
         'mixins': [
           'linux-bionic'
@@ -6614,8 +6582,10 @@
     'machines': {
       'android_blink_rel': {
         'mixins': [
-          'marshmallow',
-          'bullhead',
+          '12-x64-emulator',
+          'emulator-8-cores',
+          'linux-bionic',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_webkit_gtests',

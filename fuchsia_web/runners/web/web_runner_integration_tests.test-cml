@@ -7,4 +7,13 @@
       protocol: "fuchsia.sys.Environment",
     },
   ],
+  facets: {
+      "fuchsia.test": {
+          "deprecated-allowed-packages": [
+             "cursor",
+             "web_engine",
+             "web_runner",
+          ],
+      },
+  },
 }

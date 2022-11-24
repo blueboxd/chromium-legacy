@@ -159,7 +159,7 @@ void WaylandScreen::OnOutputRemoved(WaylandOutput::Id output_id) {
       }
     }
   }
-  auto it = display_list_.FindDisplayById(output_id);
+  auto it = display_list_.FindDisplayById(display_id);
   if (it != display_list_.displays().end())
     display_list_.RemoveDisplay(display_id);
 }
@@ -272,16 +272,6 @@ uint32_t WaylandScreen::GetOutputIdForDisplayId(int64_t display_id) {
   if (iter != display_id_map_.end())
     return iter->first;
   return 0;
-}
-
-void WaylandScreen::OnTabletStateChanged(display::TabletState tablet_state) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  tablet_state_ = tablet_state;
-#endif
-
-  auto* observer_list = display_list_.observers();
-  for (auto& observer : *observer_list)
-    observer.OnDisplayTabletStateChanged(tablet_state);
 }
 
 base::WeakPtr<WaylandScreen> WaylandScreen::GetWeakPtr() {
@@ -509,6 +499,16 @@ base::Value::List WaylandScreen::GetGpuExtraInfo(
                                  base::JoinString(protocols, " ")));
   StorePlatformNameIntoListOfValues(values, "wayland");
   return values;
+}
+
+void WaylandScreen::OnTabletStateChanged(display::TabletState tablet_state) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  tablet_state_ = tablet_state;
+#endif
+
+  auto* observer_list = display_list_.observers();
+  for (auto& observer : *observer_list)
+    observer.OnDisplayTabletStateChanged(tablet_state);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

@@ -300,8 +300,7 @@ export class TaskController {
     return items;
   }
 
-
-  /** Executes default task.  */
+  /** Executes default task from the dropdown menu. */
   async executeDefaultTask() {
     try {
       const tasks = await this.getFileTasks();
@@ -477,9 +476,8 @@ export class TaskController {
   private updateContextMenuTaskItems_(
       openTasks: chrome.fileManagerPrivate.ResultingTasks) {
     const taskCount = openTasks.tasks.length;
+    const defaultTask = FileTasks.getDefaultTask(openTasks, this.taskHistory_);
     if (taskCount > 0) {
-      const defaultTask =
-          FileTasks.getDefaultTask(openTasks, this.taskHistory_);
       if (defaultTask) {
         const menuItem = this.ui_.defaultTaskMenuItem;
         /**
@@ -505,11 +503,10 @@ export class TaskController {
         menuItem.label = defaultTask.title;
         menuItem.descriptor = defaultTask.descriptor;
       }
-
-      this.canExecuteDefaultTask_ = defaultTask != null;
-      this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
     }
 
+    this.canExecuteDefaultTask_ = defaultTask != null;
+    this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
     this.canExecuteOpenActions_ = taskCount > 1;
     this.openWithCommand_.canExecuteChange(this.ui_.listContainer.element);
 

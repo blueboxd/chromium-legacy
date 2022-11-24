@@ -926,7 +926,7 @@ class WebContentsUIAParentNavigationInDestroyedWatcher
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestAlwaysFireFocusEventAfterNavigationComplete) {
-  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.mode());
+  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.flags());
 
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
@@ -962,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestLoadingAccessibilityTree) {
-  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.mode());
+  testing::ScopedContentAXModeSetter ax_mode_setter(ui::kAXModeBasic.flags());
 
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
@@ -1071,9 +1071,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kChildrenChanged);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::CHILDREN_CHANGED);
   ExecuteScript(u"document.body.innerHTML='<b>new text</b>'");
   ASSERT_TRUE(waiter.WaitForNotification());
 
@@ -1096,9 +1096,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kChildrenChanged);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::CHILDREN_CHANGED);
   ExecuteScript(u"document.body.children[0].style.visibility='visible'");
   ASSERT_TRUE(waiter.WaitForNotification());
 
@@ -2093,9 +2093,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   }
 
   // Delete the character in the input field.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kChildrenChanged);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::CHILDREN_CHANGED);
   ExecuteScript(u"document.querySelector('[contenteditable]').innerText='';");
   ASSERT_TRUE(waiter.WaitForNotification());
 
@@ -2568,9 +2568,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestPutAccValueInEditable) {
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
   base::win::ScopedBstr new_value(L"New value");
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kChildrenChanged);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::CHILDREN_CHANGED);
   EXPECT_HRESULT_SUCCEEDED(
       paragraph->put_accValue(childid_self, new_value.Get()));
   ASSERT_TRUE(waiter.WaitForNotification());
@@ -5341,7 +5341,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIASelectivelyEnabledBrowserTest,
   // (kAXModeBasic includes both kNativeAPIs and kWebContents). Importantly,
   // this combination of AXModes allows RenderFrameHostImpl to create
   // BrowserAccessibilityManagers.
-  ui::AXMode expected_mode = ui::kAXModeBasic.mode();
+  ui::AXMode expected_mode = ui::kAXModeBasic.flags();
   EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
                                ->GetAccessibilityMode());
 

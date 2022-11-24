@@ -8,7 +8,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/ranges/algorithm.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/compositor/layer.h"
@@ -149,6 +149,11 @@ void MessagePopupCollection::AnimateResize() {
 MessageView* MessagePopupCollection::GetMessageViewForNotificationId(
     const std::string& notification_id) {
   auto it = base::ranges::find_if(popup_items_, [&](const auto& child) {
+    // Exit early if the popup ptr has been set to nullptr by
+    // `NotifyPopupClosed` but has not been cleared from `popup_items_`.
+    if (!child.popup)
+      return false;
+
     auto* widget = child.popup->GetWidget();
     // Do not return popups that are in the process of closing, but have not
     // yet been removed from `popup_items_`.
@@ -404,7 +409,7 @@ void MessagePopupCollection::TransitionToAnimation() {
     // This function may be called by a child MessageView when a notification is
     // expanded by the user.  Deleting the pop-up should be delayed so we are
     // out of the child view's call stack. See crbug.com/957033.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&MessagePopupCollection::ClosePopupsOutsideWorkArea,
                        weak_ptr_factory_.GetWeakPtr()));

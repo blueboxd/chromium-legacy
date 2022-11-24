@@ -78,8 +78,6 @@ void ReportHeaderMismatch(const std::string& key,
       HeaderMismatchHasher(base::ToLowerASCII(key), mismatch_type));
 }
 
-}  // namespace
-
 // Called by MojoBinderPolicyApplier. This function records the Mojo interface
 // that causes MojoBinderPolicyApplier to cancel prerendering.
 void RecordPrerenderCancelledInterface(
@@ -105,20 +103,89 @@ void RecordPrerenderCancelledInterface(
   }
 }
 
-void RecordPrerenderReasonForInactivePageRestriction(uint16_t reason,
-                                                     RenderFrameHostImpl& rfh) {
-  FrameTreeNode* outermost_frame =
-      rfh.GetOutermostMainFrameOrEmbedder()->frame_tree_node();
-  PrerenderHost* prerender_host =
-      rfh.delegate()->GetPrerenderHostRegistry()->FindNonReservedHostById(
-          outermost_frame->frame_tree_node_id());
-  if (prerender_host) {
-    base::UmaHistogramSparse(
-        GenerateHistogramName("Prerender.CanceledForInactivePageRestriction."
-                              "DisallowActivationReason",
-                              prerender_host->trigger_type(),
-                              prerender_host->embedder_histogram_suffix()),
-        reason);
+void RecordPrerenderFinalStatusUma(
+    PrerenderFinalStatus final_status,
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix) {
+  base::UmaHistogramEnumeration(
+      GenerateHistogramName("Prerender.Experimental.PrerenderHostFinalStatus",
+                            trigger_type, embedder_histogram_suffix),
+      final_status);
+}
+
+}  // namespace
+
+// static
+PrerenderCancellationReason
+PrerenderCancellationReason::BuildForDisallowActivationState(
+    uint64_t disallow_activation_reason) {
+  return PrerenderCancellationReason(
+      PrerenderFinalStatus::kInactivePageRestriction,
+      disallow_activation_reason);
+}
+
+// static
+PrerenderCancellationReason
+PrerenderCancellationReason::BuildForMojoBinderPolicy(
+    const std::string& interface_name) {
+  return PrerenderCancellationReason(PrerenderFinalStatus::kMojoBinderPolicy,
+                                     interface_name);
+}
+
+PrerenderCancellationReason::PrerenderCancellationReason(
+    PrerenderFinalStatus final_status)
+    : PrerenderCancellationReason(final_status, DetailedReasonVariant()) {}
+
+PrerenderCancellationReason::PrerenderCancellationReason(
+    PrerenderCancellationReason&& reason) = default;
+
+PrerenderCancellationReason::~PrerenderCancellationReason() = default;
+
+PrerenderCancellationReason::PrerenderCancellationReason(
+    PrerenderFinalStatus final_status,
+    DetailedReasonVariant explanation)
+    : final_status_(final_status), explanation_(std::move(explanation)) {}
+
+void PrerenderCancellationReason::ReportMetrics(
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix) const {
+  switch (final_status_) {
+    case PrerenderFinalStatus::kInactivePageRestriction:
+      DCHECK(absl::holds_alternative<uint64_t>(explanation_));
+      base::UmaHistogramSparse(
+          GenerateHistogramName("Prerender.CanceledForInactivePageRestriction."
+                                "DisallowActivationReason",
+                                trigger_type, embedder_histogram_suffix),
+
+          absl::get<uint64_t>(explanation_));
+      break;
+    case PrerenderFinalStatus::kMojoBinderPolicy:
+      DCHECK(absl::holds_alternative<std::string>(explanation_));
+      RecordPrerenderCancelledInterface(absl::get<std::string>(explanation_),
+                                        trigger_type,
+                                        embedder_histogram_suffix);
+      break;
+    default:
+      DCHECK(absl::holds_alternative<absl::monostate>(explanation_));
+      // Other types need not to report.
+      break;
+  }
+}
+
+std::string PrerenderCancellationReason::ToDevtoolReasonString() const {
+  switch (final_status_) {
+    case PrerenderFinalStatus::kInactivePageRestriction:
+      DCHECK(absl::holds_alternative<uint64_t>(explanation_));
+      // TODO(https://crbug.com/1328365): It seems we have to return an integer.
+      // And devtool has to handle it based on the enum.xml, as the content
+      // layer cannot know about the enums added by the embedder layer.
+      return "";
+    case PrerenderFinalStatus::kMojoBinderPolicy:
+      DCHECK(absl::holds_alternative<std::string>(explanation_));
+      return absl::get<std::string>(explanation_);
+    default:
+      DCHECK(absl::holds_alternative<absl::monostate>(explanation_));
+      return "";
   }
 }
 
@@ -137,46 +204,55 @@ void RecordPrerenderActivationTime(
       delta);
 }
 
-void RecordPrerenderFinalStatus(PrerenderFinalStatus status,
-                                const PrerenderAttributes& attributes,
-                                ukm::SourceId prerendered_ukm_id) {
-  base::UmaHistogramEnumeration(
-      GenerateHistogramName("Prerender.Experimental.PrerenderHostFinalStatus",
-                            attributes.trigger_type,
-                            attributes.embedder_histogram_suffix),
-      status);
+void RecordFailedPrerenderFinalStatus(
+    const PrerenderCancellationReason& cancellation_reason,
+    const PrerenderAttributes& attributes) {
+  DCHECK_NE(cancellation_reason.final_status(),
+            PrerenderFinalStatus::kActivated);
+  RecordPrerenderFinalStatusUma(cancellation_reason.final_status(),
+                                attributes.trigger_type,
+                                attributes.embedder_histogram_suffix);
 
   if (attributes.initiator_ukm_id != ukm::kInvalidSourceId) {
     // `initiator_ukm_id` must be valid for the speculation rules.
     DCHECK_EQ(attributes.trigger_type, PrerenderTriggerType::kSpeculationRule);
     ukm::builders::PrerenderPageLoad(attributes.initiator_ukm_id)
-        .SetFinalStatus(static_cast<int>(status))
+        .SetFinalStatus(static_cast<int>(cancellation_reason.final_status()))
+        .Record(ukm::UkmRecorder::Get());
+  }
+
+  // Browser initiated prerendering doesn't report cancellation reasons to the
+  // DevTools as it doesn't have the initiator frame associated with DevTools
+  // agents.
+  if (!attributes.IsBrowserInitiated()) {
+    auto* ftn = FrameTreeNode::GloballyFindByID(
+        attributes.initiator_frame_tree_node_id);
+    DCHECK(ftn);
+    // TODO(https://crbug.com/1332377): Discuss with devtools to finalize the
+    // message protocol.
+    devtools_instrumentation::DidCancelPrerender(
+        attributes.prerendering_url, ftn, cancellation_reason.final_status(),
+        cancellation_reason.ToDevtoolReasonString());
+  }
+}
+
+void ReportSuccessActivation(const PrerenderAttributes& attributes,
+                             ukm::SourceId prerendered_ukm_id) {
+  RecordPrerenderFinalStatusUma(PrerenderFinalStatus::kActivated,
+                                attributes.trigger_type,
+                                attributes.embedder_histogram_suffix);
+  if (attributes.initiator_ukm_id != ukm::kInvalidSourceId) {
+    // `initiator_ukm_id` must be valid only for the speculation rules.
+    DCHECK_EQ(attributes.trigger_type, PrerenderTriggerType::kSpeculationRule);
+    ukm::builders::PrerenderPageLoad(attributes.initiator_ukm_id)
+        .SetFinalStatus(static_cast<int>(PrerenderFinalStatus::kActivated))
         .Record(ukm::UkmRecorder::Get());
   }
 
   if (prerendered_ukm_id != ukm::kInvalidSourceId) {
-    // `prerendered_ukm_id` must be valid only when the prerendered page gets
-    // activated.
-    DCHECK_EQ(status, PrerenderFinalStatus::kActivated);
     ukm::builders::PrerenderPageLoad(prerendered_ukm_id)
-        .SetFinalStatus(static_cast<int>(status))
+        .SetFinalStatus(static_cast<int>(PrerenderFinalStatus::kActivated))
         .Record(ukm::UkmRecorder::Get());
-  }
-
-  // The kActivated case is recorded in `PrerenderHost::Activate`, and the
-  // kMojoBinderPolicy case is recorded in
-  // RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy for storing the
-  // interface detail. Browser initiated prerendering doesn't report
-  // cancellation reasons to the DevTools as it doesn't have the initiator frame
-  // associated with DevTools agents.
-  if (!attributes.IsBrowserInitiated() &&
-      status != PrerenderFinalStatus::kActivated &&
-      status != PrerenderFinalStatus::kMojoBinderPolicy) {
-    auto* ftn = FrameTreeNode::GloballyFindByID(
-        attributes.initiator_frame_tree_node_id);
-    DCHECK(ftn);
-    devtools_instrumentation::DidCancelPrerender(attributes.prerendering_url,
-                                                 ftn, status, "");
   }
 }
 

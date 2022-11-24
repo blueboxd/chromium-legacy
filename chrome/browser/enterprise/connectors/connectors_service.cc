@@ -250,34 +250,6 @@ absl::optional<AnalysisSettings> ConnectorsService::GetCommonAnalysisSettings(
   return settings;
 }
 
-absl::optional<FileSystemSettings>
-ConnectorsService::GetFileSystemGlobalSettings(FileSystemConnector connector) {
-  if (!ConnectorsEnabled())
-    return absl::nullopt;
-
-  absl::optional<FileSystemSettings> settings =
-      connectors_manager_->GetFileSystemGlobalSettings(connector);
-
-  if (!settings.has_value())
-    return absl::nullopt;
-
-  return settings;
-}
-
-absl::optional<FileSystemSettings> ConnectorsService::GetFileSystemSettings(
-    const GURL& url,
-    FileSystemConnector connector) {
-  if (!ConnectorsEnabled())
-    return absl::nullopt;
-
-  absl::optional<FileSystemSettings> settings =
-      connectors_manager_->GetFileSystemSettings(url, connector);
-  if (!settings.has_value())
-    return absl::nullopt;
-
-  return settings;
-}
-
 bool ConnectorsService::IsConnectorEnabled(AnalysisConnector connector) const {
   if (!ConnectorsEnabled())
     return false;
@@ -286,14 +258,6 @@ bool ConnectorsService::IsConnectorEnabled(AnalysisConnector connector) const {
 }
 
 bool ConnectorsService::IsConnectorEnabled(ReportingConnector connector) const {
-  if (!ConnectorsEnabled())
-    return false;
-
-  return connectors_manager_->IsConnectorEnabled(connector);
-}
-
-bool ConnectorsService::IsConnectorEnabled(
-    FileSystemConnector connector) const {
   if (!ConnectorsEnabled())
     return false;
 
@@ -543,10 +507,28 @@ bool ConnectorsService::ConnectorsEnabled() const {
     return false;
 
   if (profiles::IsPublicSession() &&
-      !base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabledOnMGS))
+      !base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabledOnMGS)) {
     return false;
+  }
 
-  return !Profile::FromBrowserContext(context_)->IsOffTheRecord();
+  Profile* profile = Profile::FromBrowserContext(context_);
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  // On desktop, the guest profile is actually the primary OTR profile of
+  // the "regular" guest profile.  The regular guest profile is never used
+  // directly by users.  Also, user are not able to create child OTR profiles
+  // from guest profiles, the menu item "New incognito window" is not
+  // available.  So, if this is a guest session, allow it only if it is a
+  // child OTR profile as well.
+  if (profile->IsGuestSession())
+    return profile->GetOriginalProfile() != profile;
+
+  // Never allow system profiles.
+  if (profile->IsSystemProfile())
+    return false;
+#endif
+
+  return !profile->IsOffTheRecord();
 }
 
 std::unique_ptr<ClientMetadata> ConnectorsService::BuildClientMetadata(

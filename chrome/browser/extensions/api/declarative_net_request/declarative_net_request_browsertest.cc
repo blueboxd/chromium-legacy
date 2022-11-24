@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -33,7 +34,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -355,7 +355,7 @@ class DeclarativeNetRequestBrowserTest
     constexpr char kJSONRulesFilename[] = "rules_file.json";
     LoadExtensionWithRulesets(
         {TestRulesetInfo(kDefaultRulesetID, kJSONRulesFilename,
-                         *ToListValue(rules))},
+                         ToListValue(rules))},
         directory, hosts);
   }
 
@@ -2155,7 +2155,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, MultipleRulesets) {
     else
       expected_allowed_urls.push_back(GetURLForFilter(id));
 
-    rulesets.emplace_back(id, *ToListValue(rules), enabled);
+    rulesets.emplace_back(id, ToListValue(rules), enabled);
   }
 
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRulesets(
@@ -2542,7 +2542,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
     urls_for_indices.push_back(GetURLForFilter(id));
 
-    rulesets.emplace_back(id, *ToListValue(rules));
+    rulesets.emplace_back(id, ToListValue(rules));
   }
 
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRulesets(
@@ -2630,7 +2630,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   const int kNumStaticRulesets = 4;
   std::vector<TestRulesetInfo> rulesets;
   for (int i = 0; i < kNumStaticRulesets; ++i)
-    rulesets.emplace_back(base::NumberToString(i), *ToListValue({rule}));
+    rulesets.emplace_back(base::NumberToString(i), ToListValue({rule}));
 
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRulesets(
       rulesets, "extension_directory", {} /* hosts */));
@@ -4666,7 +4666,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                                         bool enabled,
                                         const std::string& filter) {
     std::vector<TestRule> rules = {CreateMainFrameBlockRule(filter)};
-    return TestRulesetInfo(ruleset_id_and_path, *ToListValue(rules), enabled);
+    return TestRulesetInfo(ruleset_id_and_path, ToListValue(rules), enabled);
   };
 
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
@@ -4782,7 +4782,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
                                         bool enabled,
                                         const std::string& filter) {
     std::vector<TestRule> rules = {CreateMainFrameBlockRule(filter)};
-    return TestRulesetInfo(ruleset_id_and_path, *ToListValue(rules), enabled);
+    return TestRulesetInfo(ruleset_id_and_path, ToListValue(rules), enabled);
   };
 
   std::vector<TestRulesetInfo> rulesets = {
@@ -5978,8 +5978,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
   const ExtensionId second_extension_id = last_loaded_extension_id();
 
   std::vector<TestRulesetInfo> rulesets;
-  rulesets.emplace_back("ruleset_1", *ToListValue({CreateGenericRule(1)}));
-  rulesets.emplace_back("ruleset_2", *ToListValue({CreateGenericRule(2)}));
+  rulesets.emplace_back("ruleset_1", ToListValue({CreateGenericRule(1)}));
+  rulesets.emplace_back("ruleset_2", ToListValue({CreateGenericRule(2)}));
 
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithRulesets(rulesets, "extension_3", {} /* hosts */));
@@ -6052,8 +6052,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
 
   std::vector<TestRulesetInfo> rulesets;
   rulesets.emplace_back(
-      "ruleset_1", *ToListValue({CreateGenericRule(1), CreateGenericRule(2)}));
-  rulesets.emplace_back("ruleset_2", *ToListValue({CreateGenericRule(3)}),
+      "ruleset_1", ToListValue({CreateGenericRule(1), CreateGenericRule(2)}));
+  rulesets.emplace_back("ruleset_2", ToListValue({CreateGenericRule(3)}),
                         false /* enabled */);
 
   ASSERT_NO_FATAL_FAILURE(
@@ -6105,14 +6105,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   std::vector<TestRulesetInfo> rulesets;
-  rulesets.emplace_back("ruleset_1", *ToListValue({CreateGenericRule(1)}));
-  rulesets.emplace_back("ruleset_2", *ToListValue({CreateGenericRule(2)}),
+  rulesets.emplace_back("ruleset_1", ToListValue({CreateGenericRule(1)}));
+  rulesets.emplace_back("ruleset_2", ToListValue({CreateGenericRule(2)}),
                         false /* enabled */);
-  rulesets.emplace_back(
-      "big_ruleset",
-      *ToListValue(
-          {CreateGenericRule(3), CreateGenericRule(4), CreateGenericRule(5)}),
-      false /* enabled */);
+  rulesets.emplace_back("big_ruleset",
+                        ToListValue({CreateGenericRule(3), CreateGenericRule(4),
+                                     CreateGenericRule(5)}),
+                        false /* enabled */);
 
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithRulesets(rulesets, "test_extension", {} /* hosts */));
@@ -6183,9 +6182,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestGlobalRulesBrowserTest_Packed,
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   std::vector<TestRulesetInfo> rulesets;
-  rulesets.emplace_back("ruleset_1", *ToListValue({CreateGenericRule(1)}));
-  rulesets.emplace_back("ruleset_2", *ToListValue({CreateGenericRule(2)}));
-  rulesets.emplace_back("ruleset_3", *ToListValue({CreateGenericRule(3)}),
+  rulesets.emplace_back("ruleset_1", ToListValue({CreateGenericRule(1)}));
+  rulesets.emplace_back("ruleset_2", ToListValue({CreateGenericRule(2)}));
+  rulesets.emplace_back("ruleset_3", ToListValue({CreateGenericRule(3)}),
                         false /* enabled */);
 
   ASSERT_NO_FATAL_FAILURE(
@@ -6590,7 +6589,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, FledgeAuctionScripts) {
   // for the bidder script to not be requested. Instead, just wait for an
   // addition "tiny timeout" delay, and make sure it was not requested.
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
   EXPECT_EQ(0u, GetAndResetRequestsToServer().count(bidder_report_url));
@@ -6707,8 +6706,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBackForwardCacheBrowserTest,
   set_config_flags(ConfigFlag::kConfig_HasBackgroundScript);
 
   std::vector<TestRulesetInfo> rulesets;
-  rulesets.emplace_back("ruleset_1", *ToListValue({CreateGenericRule(1)}));
-  rulesets.emplace_back("ruleset_2", *ToListValue({CreateGenericRule(2)}),
+  rulesets.emplace_back("ruleset_1", ToListValue({CreateGenericRule(1)}));
+  rulesets.emplace_back("ruleset_2", ToListValue({CreateGenericRule(2)}),
                         false /* enabled */);
 
   ASSERT_NO_FATAL_FAILURE(

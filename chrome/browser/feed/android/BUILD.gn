@@ -85,6 +85,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/feed/webfeed/WebFeedFollowIntroController.java",
     "java/src/org/chromium/chrome/browser/feed/webfeed/WebFeedFollowIntroView.java",
     "java/src/org/chromium/chrome/browser/feed/webfeed/WebFeedMainMenuItem.java",
+    "java/src/org/chromium/chrome/browser/feed/webfeed/WebFeedRecommendationFollowAcceleratorController.java",
     "java/src/org/chromium/chrome/browser/feed/webfeed/WebFeedSnackbarController.java",
   ]
   deps = [
@@ -174,7 +175,6 @@ android_resources("feed_java_resources") {
     "java/res/drawable-v24/header_title_tab_selected_background.xml",
     "java/res/drawable-xhdpi/follow_accelerator_shadow.9.png",
     "java/res/drawable-xxhdpi/follow_accelerator_shadow.9.png",
-    "java/res/drawable/back_arrow.xml",
     "java/res/drawable/back_to_top_arrow.xml",
     "java/res/drawable/crow_icon.xml",
     "java/res/drawable/header_title_section_tab_background.xml",

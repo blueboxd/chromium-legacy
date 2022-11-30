@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/branding_view_controller.h"
 
+#import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "base/threading/sequenced_task_runner_handle.h"
 #import "base/time/time.h"
@@ -57,8 +58,6 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
       NOTREACHED();
       break;
   }
-  UIImage* logo = [[UIImage imageNamed:logoName]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   if (@available(iOS 15.0, *)) {
     UIButtonConfiguration* buttonConfig =
@@ -69,13 +68,11 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
   } else {
     button.imageEdgeInsets = UIEdgeInsetsMake(0, kLeadingInset, 0, 0);
   }
-  [button setImage:logo forState:UIControlStateNormal];
-  [button setImage:logo forState:UIControlStateHighlighted];
   button.accessibilityIdentifier = kBrandingButtonAXId;
-  button.imageView.contentMode = UIViewContentModeScaleAspectFit;
   button.isAccessibilityElement = NO;  // Prevents VoiceOver users from tap.
   button.translatesAutoresizingMaskIntoConstraints = NO;
   self.view = button;
+  [self configureBrandingWithImageName:logoName];
 
   // Adds keyboard popup listener to show animation when keyboard is fully
   // settled.
@@ -84,6 +81,22 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
          selector:@selector(onKeyboardAnimationComplete)
              name:UIKeyboardDidShowNotification
            object:nil];
+}
+
+#pragma mark - UITraitEnvironment
+
+// UIImages with rendering mode UIImageRenderingModeAlwaysOriginal do not
+// automatically respond when the user interface mode changes. To fix this, the
+// view controller should get notified on these changes and update the image
+// accordingly. Similar issue and fix as crbug.com/998090.
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (self.traitCollection.userInterfaceStyle !=
+          previousTraitCollection.userInterfaceStyle &&
+      autofill::features::GetAutofillBrandingType() ==
+          autofill::features::AutofillBrandingType::kMonotone) {
+    [self configureBrandingWithImageName:@"monotone_branding_icon"];
+  }
 }
 
 #pragma mark - Accessors
@@ -101,13 +114,25 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
 - (void)setDelegate:(id<BrandingViewControllerDelegate>)delegate {
   _delegate = delegate;
   if (_delegate != nil) {
-    [(UIButton*)self.view addTarget:_delegate
-                             action:@selector(brandingIconPressed)
-                   forControlEvents:UIControlEventTouchUpInside];
+    [base::mac::ObjCCast<UIButton>(self.view)
+               addTarget:_delegate
+                  action:@selector(brandingIconPressed)
+        forControlEvents:UIControlEventTouchUpInside];
   }
 }
 
 #pragma mark - Private
+
+// Add the branding image with the correct size, and make sure it persists
+// across different button states.
+- (void)configureBrandingWithImageName:(NSString*)name {
+  UIImage* logo = [[UIImage imageNamed:name]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+  UIButton* button = base::mac::ObjCCast<UIButton>(self.view);
+  [button setImage:logo forState:UIControlStateNormal];
+  [button setImage:logo forState:UIControlStateHighlighted];
+  button.imageView.contentMode = UIViewContentModeScaleAspectFit;
+}
 
 // Check if the branding icon is visible and should perform an animation, and do
 // so if it should.

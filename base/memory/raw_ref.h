@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
@@ -121,6 +122,11 @@ class TRIVIAL_ABI GSL_POINTER raw_ref {
       p.inner_ = nullptr;
   }
 
+  static ALWAYS_INLINE raw_ref from_ptr(T* ptr) noexcept {
+    CHECK(ptr);
+    return raw_ref(*ptr);
+  }
+
   // Upcast assignment
   template <class U, class = std::enable_if_t<std::is_convertible_v<U&, T&>>>
   ALWAYS_INLINE raw_ref& operator=(const raw_ref<U, RawPtrType>& p) noexcept {
@@ -167,6 +173,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ref {
     swap(lhs.inner_, rhs.inner_);
   }
 
+#if BUILDFLAG(PA_USE_BASE_TRACING)
   // If T can be serialised into trace, its alias is also
   // serialisable.
   template <class U = T>
@@ -175,6 +182,7 @@ class TRIVIAL_ABI GSL_POINTER raw_ref {
     CHECK(inner_.get());  // Catch use-after-move.
     inner_.WriteIntoTrace(std::move(context));
   }
+#endif  // BUILDFLAG(PA_USE_BASE_TRACING)
 
   template <class U>
   friend ALWAYS_INLINE bool operator==(const raw_ref& lhs,

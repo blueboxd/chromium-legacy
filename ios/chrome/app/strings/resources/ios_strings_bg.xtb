@@ -109,6 +109,7 @@
 <translation id="1687475363370981210">Означаване на всичко като прочетено</translation>
 <translation id="1689333818294560261">Псевдоним</translation>
 <translation id="1700629756560807968">Избрахте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="1715515772563243997">Ако имате доверие на <ph name="SITE" />, можете да използвате запазена парола за влизане в профила.</translation>
 <translation id="1740468249224277719">Докоснете двукратно, за да инсталирате.</translation>
 <translation id="1752547299766512813">Запазени пароли</translation>
 <translation id="1753905327828125965">Ползвани</translation>
@@ -121,6 +122,7 @@
 <translation id="1832848789136765277">Потвърдете, че сте вие, за да имате постоянен достъп до синхронизираните си данни</translation>
 <translation id="1870148520156231997">Показване на паролата</translation>
 <translation id="1872096359983322073">Фенерче</translation>
+<translation id="1891796056033961979">Запазените ви отметки, пароли, настройки и др. са налице на този екран.</translation>
 <translation id="1910975740091000991">Chrome за iOS</translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
 <translation id="1923342640370224680">Последният час</translation>
@@ -151,6 +153,7 @@
 <translation id="2149973817440762519">Редактиране на отметката</translation>
 <translation id="2155145621546387786">Споделяне на Chrome</translation>
 <translation id="2175927920773552910">Код за бърза реакция</translation>
+<translation id="2178545675770638239">Избиране на парола</translation>
 <translation id="2218443599109088993">Отдалечаване</translation>
 <translation id="2230173723195178503">Уеб страницата се зареди</translation>
 <translation id="2239626343334228536">Данните за сърфирането се изчистват...</translation>
@@ -434,6 +437,8 @@
 <translation id="4502566650163919158">Проверка сега</translation>
 <translation id="4505980578794259603">Последна проверка: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Затваряне на подканата за вход</translation>
+<translation id="4514889972748124117">Предложение за надеждна парола...</translation>
+<translation id="4520798012560649652">Научете повече за режим „инкогнито“</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Преглед на синхронизираните ви данни</translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>
@@ -663,6 +668,7 @@
 <translation id="6231782223312638214">Предложени</translation>
 <translation id="6232329973559504466">Търсене в режим „инкогнито“</translation>
 <translation id="6232736989810857397">Това ви дава възможност лесно да създавате събития в календара посредством Google Обектив.</translation>
+<translation id="6247557882553405851">Google Мениджър на паролите</translation>
 <translation id="6254066287920239840">Отваряне на връзките в приложението вместо в браузъра.</translation>
 <translation id="6255097610484507482">Редактиране на кредитната карта</translation>
 <translation id="6277426346321820595">Без защита</translation>
@@ -1014,6 +1020,7 @@
 <translation id="8917490105272468696">Да, ще участвам</translation>
 <translation id="8928133177108699615">Настолна</translation>
 <translation id="8952559610785099500">Добавяне на парола</translation>
+<translation id="8953046091948372197">Тук ще се показват паролите ви</translation>
 <translation id="895541991026785598">Подаване на сигнал за проблем</translation>
 <translation id="8974714402877957201">1. Отворете настройките на iPad.</translation>
 <translation id="8976382372951310360">Помощ</translation>
@@ -1047,6 +1054,7 @@
 <translation id="9200875785104711666">Преди <ph name="TIME" /> дни</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Сигналите за сривове са изпратени.</translation>
+<translation id="941747855997058526">Избиране на парола…</translation>
 <translation id="952704832371081537">Отказ</translation>
 <translation id="953008885340860025">Не сте в профила си в Chrome</translation>
 <translation id="959066944189734975">Следвате <ph name="CHANNEL_NAME" /></translation>

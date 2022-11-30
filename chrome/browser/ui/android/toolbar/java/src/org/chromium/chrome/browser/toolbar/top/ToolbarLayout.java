@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -68,7 +69,8 @@ import org.chromium.url.GURL;
  * through {@link Toolbar} rather than using this class directly.
  */
 public abstract class ToolbarLayout
-        extends FrameLayout implements Destroyable, TintObserver, ThemeColorObserver {
+        extends FrameLayout implements Destroyable, TintObserver, ThemeColorObserver,
+                                       OmniboxSuggestionsDropdownScrollListener {
     private Callback<Runnable> mInvalidator;
 
     protected final ObserverList<UrlExpansionObserver> mUrlExpansionObservers =
@@ -629,9 +631,12 @@ public abstract class ToolbarLayout
     /**
      * Called when start surface state is changed.
      * @param shouldBeVisible Whether toolbar layout should be visible.
-     * @param isShowingStartSurface Whether start surface homepage is showing.
+     * @param isShowingStartSurfaceHomepage Whether start surface homepage is showing.
+     * @param isShowingStartSurfaceTabSwitcher Whether the StartSurface-controlled TabSwitcher is
+     *         showing.
      */
-    void onStartSurfaceStateChanged(boolean shouldBeVisible, boolean isShowingStartSurface) {}
+    void onStartSurfaceStateChanged(boolean shouldBeVisible, boolean isShowingStartSurfaceHomepage,
+            boolean isShowingStartSurfaceTabSwitcher) {}
 
     /**
      * Force to hide toolbar shadow.

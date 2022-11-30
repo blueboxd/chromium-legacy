@@ -123,6 +123,8 @@ class FuchsiaVideoDecoder::OutputMailbox {
         raster_context_provider_->SharedImageInterface()->CreateSharedImage(
             gmb.get(), nullptr, color_space, kTopLeft_GrSurfaceOrigin,
             kPremul_SkAlphaType, usage);
+    create_sync_token_ = raster_context_provider_->SharedImageInterface()
+                             ->GenVerifiedSyncToken();
   }
 
   OutputMailbox(const OutputMailbox&) = delete;
@@ -130,7 +132,7 @@ class FuchsiaVideoDecoder::OutputMailbox {
 
   ~OutputMailbox() {
     raster_context_provider_->SharedImageInterface()->DestroySharedImage(
-        sync_token_, mailbox_);
+        release_sync_token_, mailbox_);
   }
 
   const gpu::Mailbox& mailbox() { return mailbox_; }
@@ -151,8 +153,7 @@ class FuchsiaVideoDecoder::OutputMailbox {
 
     gpu::MailboxHolder mailboxes[VideoFrame::kMaxPlanes];
     mailboxes[0].mailbox = mailbox_;
-    mailboxes[0].sync_token = raster_context_provider_->SharedImageInterface()
-                                  ->GenUnverifiedSyncToken();
+    mailboxes[0].sync_token = create_sync_token_;
 
     auto frame = VideoFrame::WrapNativeTextures(
         pixel_format, mailboxes,
@@ -182,7 +183,7 @@ class FuchsiaVideoDecoder::OutputMailbox {
   void OnFrameDestroyed(const gpu::SyncToken& sync_token) {
     DCHECK(is_used_);
     is_used_ = false;
-    sync_token_ = sync_token;
+    release_sync_token_ = sync_token;
 
     if (!reuse_callback_) {
       // If the mailbox cannot be reused then we can just delete it.
@@ -191,13 +192,13 @@ class FuchsiaVideoDecoder::OutputMailbox {
     }
 
     raster_context_provider_->ContextSupport()->SignalSyncToken(
-        sync_token_,
+        release_sync_token_,
         BindToCurrentLoop(base::BindOnce(&OutputMailbox::OnSyncTokenSignaled,
                                          weak_factory_.GetWeakPtr())));
   }
 
   void OnSyncTokenSignaled() {
-    sync_token_.Clear();
+    release_sync_token_.Clear();
     std::move(reuse_callback_).Run();
   }
 
@@ -206,7 +207,9 @@ class FuchsiaVideoDecoder::OutputMailbox {
   gfx::Size size_;
 
   gpu::Mailbox mailbox_;
-  gpu::SyncToken sync_token_;
+
+  gpu::SyncToken create_sync_token_;
+  gpu::SyncToken release_sync_token_;
 
   // Set to true when the mailbox is referenced by a video frame.
   bool is_used_ = false;
@@ -218,7 +221,8 @@ class FuchsiaVideoDecoder::OutputMailbox {
 
 FuchsiaVideoDecoder::FuchsiaVideoDecoder(
     scoped_refptr<viz::RasterContextProvider> raster_context_provider,
-    media::mojom::FuchsiaMediaResourceProvider* media_resource_provider,
+    const mojo::SharedRemote<media::mojom::FuchsiaMediaResourceProvider>&
+        media_resource_provider,
     bool allow_overlays)
     : raster_context_provider_(raster_context_provider),
       media_resource_provider_(media_resource_provider),
@@ -228,8 +232,8 @@ FuchsiaVideoDecoder::FuchsiaVideoDecoder(
       sysmem_allocator_("CrFuchsiaVideoDecoder"),
       client_native_pixmap_factory_(
           ui::CreateClientNativePixmapFactoryOzone()) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(raster_context_provider_);
-  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 FuchsiaVideoDecoder::~FuchsiaVideoDecoder() {
@@ -260,6 +264,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(output_cb);
   DCHECK(decode_callbacks_.empty());
 
@@ -332,6 +337,8 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
 void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                  DecodeCB decode_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!decoder_) {
     // Post the callback to the current sequence as DecoderStream doesn't expect
     // Decode() to complete synchronously.
@@ -347,6 +354,8 @@ void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void FuchsiaVideoDecoder::Reset(base::OnceClosure closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DropInputQueue(DecoderStatus::Codes::kAborted);
   base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                    std::move(closure));
@@ -357,10 +366,12 @@ bool FuchsiaVideoDecoder::NeedsBitstreamConversion() const {
 }
 
 bool FuchsiaVideoDecoder::CanReadWithoutStalling() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return num_used_output_buffers_ < kMaxUsedOutputBuffers;
 }
 
 int FuchsiaVideoDecoder::GetMaxDecodeRequests() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return max_decoder_requests_;
 }
 
@@ -415,12 +426,14 @@ DecoderStatus FuchsiaVideoDecoder::InitializeSysmemBufferStream(
 
 void FuchsiaVideoDecoder::OnSysmemBufferStreamBufferCollectionToken(
     fuchsia::sysmem::BufferCollectionTokenPtr token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(decoder_);
   decoder_->SetInputBufferCollectionToken(std::move(token));
 }
 
 void FuchsiaVideoDecoder::OnSysmemBufferStreamOutputPacket(
     StreamProcessorHelper::IoPacket packet) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   packet.AddOnDestroyClosure(
       base::BindOnce(&FuchsiaVideoDecoder::CallNextDecodeCallback,
                      decode_callbacks_weak_factory_.GetWeakPtr()));
@@ -428,19 +441,24 @@ void FuchsiaVideoDecoder::OnSysmemBufferStreamOutputPacket(
 }
 
 void FuchsiaVideoDecoder::OnSysmemBufferStreamEndOfStream() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   decoder_->ProcessEos();
 }
 
 void FuchsiaVideoDecoder::OnSysmemBufferStreamError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnError();
 }
 
 void FuchsiaVideoDecoder::OnSysmemBufferStreamNoKey() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
 }
 
 void FuchsiaVideoDecoder::OnStreamProcessorAllocateOutputBuffers(
     const fuchsia::media::StreamBufferConstraints& output_constraints) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ReleaseOutputBuffers();
 
   output_buffer_collection_ = sysmem_allocator_.AllocateNewCollection();
@@ -499,6 +517,8 @@ void FuchsiaVideoDecoder::OnStreamProcessorAllocateOutputBuffers(
 }
 
 void FuchsiaVideoDecoder::OnStreamProcessorEndOfStream() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Decode() is not supposed to be called again after EOF.
   DCHECK_EQ(decode_callbacks_.size(), 1U);
   CallNextDecodeCallback();
@@ -506,6 +526,8 @@ void FuchsiaVideoDecoder::OnStreamProcessorEndOfStream() {
 
 void FuchsiaVideoDecoder::OnStreamProcessorOutputFormat(
     fuchsia::media::StreamOutputFormat output_format) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto* format = output_format.mutable_format_details();
   if (!format->has_domain() || !format->domain().is_video() ||
       !format->domain().video().is_uncompressed()) {
@@ -519,6 +541,8 @@ void FuchsiaVideoDecoder::OnStreamProcessorOutputFormat(
 
 void FuchsiaVideoDecoder::OnStreamProcessorOutputPacket(
     StreamProcessorHelper::IoPacket output_packet) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   fuchsia::sysmem::PixelFormatType sysmem_pixel_format =
       output_format_.image_format.pixel_format.type;
 
@@ -638,12 +662,15 @@ void FuchsiaVideoDecoder::OnStreamProcessorOutputPacket(
 }
 
 void FuchsiaVideoDecoder::OnStreamProcessorNoKey() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Decoder is not expected to produce NoKey() error.
   DLOG(ERROR) << "Video decoder failed with DECRYPTOR_NO_KEY expectedly";
   OnError();
 }
 
 void FuchsiaVideoDecoder::OnStreamProcessorError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnError();
 }
 
@@ -669,12 +696,11 @@ bool FuchsiaVideoDecoder::DropInputQueue(DecoderStatus status) {
     sysmem_buffer_stream_->Reset();
   }
 
-  auto weak_this = weak_this_;
+  // Get a fresh WeakPtr, to use to check whether any DecodeCB deletes |this|.
+  auto weak_this = decode_callbacks_weak_factory_.GetWeakPtr();
 
   for (auto& cb : decode_callbacks_) {
     std::move(cb).Run(status);
-
-    // DecodeCB may destroy |this|.
     if (!weak_this)
       return false;
   }

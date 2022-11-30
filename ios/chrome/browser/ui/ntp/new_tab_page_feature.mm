@@ -33,6 +33,15 @@ BASE_FEATURE(kEnableDiscoverFeedTopSyncPromo,
              "EnableDiscoverFeedTopSyncPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kFollowingFeedDefaultSortType,
+             "FollowingFeedDefaultSortType",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// A parameter value for the number of impressions before autodismissing the
+// promo.
+const char kDiscoverFeedTopSyncPromoAutodismissImpressions[] =
+    "autodismissImpressions";
+
 const char kDiscoverFeedSRSReconstructedTemplatesEnabled[] =
     "DiscoverFeedSRSReconstructedTemplatesEnabled";
 
@@ -43,11 +52,23 @@ BASE_FEATURE(kNTPViewHierarchyRepair,
              "NTPViewHierarchyRepair",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-const char kDiscoverFeedTopSyncPromoStyleParam[] = "FeedTopPromoStyle";
 const char kDiscoverFeedTopSyncPromoStyleFullWithTitle[] = "fullWithTitle";
 const char kDiscoverFeedTopSyncPromoStyleCompact[] = "compact";
+
+const char kFollowingFeedDefaultSortTypeSortByLatest[] = "SortByLatest";
+const char kFollowingFeedDefaultSortTypeGroupedByPublisher[] =
+    "GroupedByPublisher";
+
 BASE_FEATURE(kEnableFeedAblation,
              "FeedAblationEnabled",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableCheckVisibilityOnAttentionLogStart,
+             "EnableCheckVisibilityOnAttentionLogStart",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableRefineDataSourceReloadReporting,
+             "EnableRefineDataSourceReloadReporting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsDiscoverFeedPreviewEnabled() {
@@ -72,6 +93,22 @@ bool IsDiscoverFeedTopSyncPromoCompact() {
       false);
 }
 
+int FeedSyncPromoAutodismissCount() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kEnableDiscoverFeedTopSyncPromo,
+      kDiscoverFeedTopSyncPromoAutodismissImpressions, 10);
+}
+
+bool IsFollowingFeedDefaultSortTypeEnabled() {
+  return base::FeatureList::IsEnabled(kFollowingFeedDefaultSortType);
+}
+
+bool IsDefaultFollowingFeedSortTypeGroupedByPublisher() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kFollowingFeedDefaultSortType,
+      kFollowingFeedDefaultSortTypeGroupedByPublisher, true);
+}
+
 bool IsFeedAblationEnabled() {
   return base::FeatureList::IsEnabled(kEnableFeedAblation);
 }
@@ -79,4 +116,13 @@ bool IsFeedAblationEnabled() {
 bool IsContentSuggestionsForSupervisedUserEnabled(PrefService* pref_service) {
   return pref_service->GetBoolean(
       prefs::kNTPContentSuggestionsForSupervisedUserEnabled);
+}
+
+bool IsCheckVisibilityOnAttentionLogStartEnabled() {
+  return base::FeatureList::IsEnabled(
+      kEnableCheckVisibilityOnAttentionLogStart);
+}
+
+bool IsRefineDataSourceReloadReportingEnabled() {
+  return base::FeatureList::IsEnabled(kEnableRefineDataSourceReloadReporting);
 }

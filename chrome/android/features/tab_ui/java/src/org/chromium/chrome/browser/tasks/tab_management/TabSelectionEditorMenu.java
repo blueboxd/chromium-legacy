@@ -16,6 +16,7 @@ import androidx.annotation.IntDef;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorActionViewLayout.ActionViewLayoutDelegate;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -35,9 +36,9 @@ import java.util.Set;
  * {@link TabSelectionEditorActionViewLayout} for Action views. The menu contains a list of
  * {@link TabSelectionEditorMenuItem}s which hold optional action views if room is available.
  */
-public class TabSelectionEditorMenu implements ListMenu, OnItemClickListener,
-                                               SelectionDelegate.SelectionObserver<Integer>,
-                                               ActionViewLayoutDelegate {
+public class TabSelectionEditorMenu
+        implements ListMenu, OnItemClickListener, SelectionDelegate.SelectionObserver<Integer>,
+                   ActionViewLayoutDelegate, ListMenuButton.PopupMenuShownListener {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({ListItemType.MENU_ITEM})
     public static @interface ListItemType {
@@ -66,7 +67,17 @@ public class TabSelectionEditorMenu implements ListMenu, OnItemClickListener,
         mActionViewLayout.setActionViewLayoutDelegate(this);
 
         mModelList = new ModelList();
-        mAdapter = new ModelListAdapter(mModelList);
+        mAdapter = new ModelListAdapter(mModelList) {
+            @Override
+            public boolean isEnabled(int position) {
+                // For accessibility on Android Q and earlier even if the View for the item is
+                // disabled the list item may behave as though it is enabled. Pass back the model
+                // state for isEnabled() queries. This is also necessary in some testing frameworks
+                // such as Espresso.
+                return mModelList.get(position).model.get(
+                        TabSelectionEditorActionProperties.ENABLED);
+            }
+        };
         registerItemTypes();
         mContentView = LayoutInflater.from(mContext).inflate(R.layout.app_menu_layout, null);
         mListView = mContentView.findViewById(R.id.app_menu_list);
@@ -74,7 +85,7 @@ public class TabSelectionEditorMenu implements ListMenu, OnItemClickListener,
         mListView.setDivider(null);
         mListView.setOnItemClickListener(this);
 
-        mActionViewLayout.setListMenuButtonDelegate(() -> this);
+        mActionViewLayout.setListMenuButtonDelegate(this, () -> this);
     }
 
     private void registerItemTypes() {
@@ -83,6 +94,13 @@ public class TabSelectionEditorMenu implements ListMenu, OnItemClickListener,
             new LayoutViewBuilder(R.layout.list_menu_item),
             TabSelectionEditorMenuAdapter::bindMenuItem);
         // clang-format on
+    }
+
+    @Override
+    public void onPopupMenuShown() {
+        for (ListItem listItem : mModelList) {
+            listItem.model.get(TabSelectionEditorActionProperties.ON_SHOWN_IN_MENU).run();
+        }
     }
 
     private ListItem buildListItem(int menuItemId) {
@@ -156,7 +174,7 @@ public class TabSelectionEditorMenu implements ListMenu, OnItemClickListener,
 
         if (!item.onClick()) return;
 
-        mActionViewLayout.dismissMenu();
+        if (item.shouldDismissMenu()) mActionViewLayout.dismissMenu();
     }
 
     /**
@@ -164,6 +182,17 @@ public class TabSelectionEditorMenu implements ListMenu, OnItemClickListener,
      */
     @Override
     public void setVisibleActionViews(Set<TabSelectionEditorMenuItem> visibleActions) {
+        if (mModelList.size() == visibleActions.size()) {
+            boolean unchanged = true;
+            for (TabSelectionEditorMenuItem item : visibleActions) {
+                if (mModelList.indexOf(item.getListItem()) == -1) {
+                    unchanged = false;
+                    break;
+                }
+            }
+            if (unchanged) return;
+        }
+
         // Reset the entire list to maintain the correct ordering.
         mModelList.clear();
         for (TabSelectionEditorMenuItem item : mMenuItems.values()) {

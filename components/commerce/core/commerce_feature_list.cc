@@ -244,6 +244,15 @@ const base::FeatureParam<bool> kReadyToFetchMerchantWidePromotion{
     &commerce::kMerchantWidePromotion, kReadyToFetchMerchantWidePromotionParam,
     false};
 
+const char kCodeBasedRuleDiscountParam[] = "code-based-rbd";
+const base::FeatureParam<bool> kCodeBasedRuleDiscount{
+    &ntp_features::kNtpChromeCartModule, kCodeBasedRuleDiscountParam, false};
+
+const char kRevertIconOnFailureParam[] =
+    "shopping-list-revert-page-action-icon-on-failure";
+const base::FeatureParam<bool> kRevertIconOnFailure{
+    &kShoppingList, kRevertIconOnFailureParam, false};
+
 bool IsPartnerMerchant(const GURL& url) {
   return commerce::IsCouponDiscountPartnerMerchant(url) ||
          IsRuleDiscountPartnerMerchant(url);

@@ -62,6 +62,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
                : g_empty_atom,
           time_origin,
           cross_origin_isolated_capability,
+          info->CacheState(),
           base::Contains(url::GetSecureSchemes(),
                          window->Url().Protocol().Ascii()),
           std::move(server_timing),
@@ -384,6 +385,8 @@ void PerformanceNavigationTiming::BuildJSONValue(
           ExecutionContext::From(builder.GetScriptState()))) {
     builder.Add("notRestoredReasons",
                 notRestoredReasons(builder.GetScriptState()));
+    ExecutionContext::From(builder.GetScriptState())
+        ->CountUse(WebFeature::kBackForwardCacheNotRestoredReasons);
   }
 }
 

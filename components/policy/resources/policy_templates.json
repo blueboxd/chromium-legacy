@@ -4834,7 +4834,7 @@
 
       If this policy isn't set, all downloads where the file type is in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME">AutoOpenFileTypes</ph> will automatically open.
 
-      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blocklist-filter-format.''',
+      A URL pattern has to be formatted according to https://support.google.com/chrome/a?p=url_blocklist_filter_format.''',
     },
     {
       'name': 'AutoLaunchProtocolsFromOrigins',
@@ -5287,7 +5287,7 @@
       'tags': [],
       'desc': '''Setting the policy specifies for which origins to allow all the HTTP authentication schemes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> supports regardless of the <ph name="AUTH_SCHEMES_POLICY_NAME">AuthSchemes</ph> policy.
 
-      Format the origin pattern according to this format (<ph name="URL_SCHEME_FORMAT_LINK">https://www.chromium.org/administrators/url-blocklist-filter-format</ph>). Up to 1,000 exceptions can be defined in <ph name="ALL_HTTP_AUTH_ALLOWED_FOR_ORIGINS_POLICY_NAME">AllHttpAuthSchemesAllowedForOrigins</ph>.
+      Format the origin pattern according to this format (<ph name="URL_SCHEME_FORMAT_LINK">https://support.google.com/chrome/a?p=url_blocklist_filter_format</ph>). Up to 1,000 exceptions can be defined in <ph name="ALL_HTTP_AUTH_ALLOWED_FOR_ORIGINS_POLICY_NAME">AllHttpAuthSchemesAllowedForOrigins</ph>.
       Wildcards are allowed for the whole origin or parts of the origin, either the scheme, host, port.''',
     },
     {
@@ -10446,7 +10446,7 @@
       'tags': ['filtering'],
       'desc': '''This policy is deprecated, please use the '<ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>' policy instead.
 
-      Setting the policy prevents webpages with prohibited URLs from loading. It provides a list of URL patterns that specify forbidden URLs. Leaving the policy unset means no URLs are prohibited in the browser. Format the URL pattern according to this format ( https://www.chromium.org/administrators/url-blocklist-filter-format ). Up to 1,000 exceptions can be defined in <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>.
+      Setting the policy prevents webpages with prohibited URLs from loading. It provides a list of URL patterns that specify forbidden URLs. Leaving the policy unset means no URLs are prohibited in the browser. Format the URL pattern according to this format ( https://support.google.com/chrome/a?p=url_blocklist_filter_format ). Up to 1,000 exceptions can be defined in <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>.
 
       From <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 73, you can block javascript://* URLs. However, it affects only JavaScript entered in the address bar (or, for example, bookmarklets). In-page JavaScript URLs with dynamically loaded data aren't subject to this policy. For example, if you block example.com/abc, then example.com can still load example.com/abc using XMLHTTPRequest.
 
@@ -10478,7 +10478,7 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>' policy instead.
 
-      Setting the policy provides access to the listed URLs, as exceptions to the URL blocklist. See that policy's description for the format of entries of this list. For example, setting <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph> to * will block all requests, and you can use this policy to allow access to a limited list of URLs. Use it to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths, using the format specified at ( https://www.chromium.org/administrators/url-blocklist-filter-format ). The most specific filter determines if a URL is blocked or allowed. The allowlist takes precedence over blocklist. This policy is limited to 1,000 entries.
+      Setting the policy provides access to the listed URLs, as exceptions to the URL blocklist. See that policy's description for the format of entries of this list. For example, setting <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph> to * will block all requests, and you can use this policy to allow access to a limited list of URLs. Use it to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths, using the format specified at ( https://support.google.com/chrome/a?p=url_blocklist_filter_format ). The most specific filter determines if a URL is blocked or allowed. The allowlist takes precedence over blocklist. This policy is limited to 1,000 entries.
 
       This policy also allows enabling the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:".
 
@@ -10511,7 +10511,7 @@
       'id': 736,
       'caption': '''Block access to a list of URLs''',
       'tags': ['filtering'],
-      'desc': '''Setting the policy prevents webpages with prohibited URLs from loading. It provides a list of URL patterns that specify forbidden URLs. Leaving the policy unset means no URLs are prohibited in the browser. Format the URL pattern according to this format ( https://www.chromium.org/administrators/url-blocklist-filter-format ). Up to 1,000 exceptions can be defined in <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>.
+      'desc': '''Setting the policy prevents webpages with prohibited URLs from loading. It provides a list of URL patterns that specify forbidden URLs. Leaving the policy unset means no URLs are prohibited in the browser. Format the URL pattern according to this format ( https://support.google.com/chrome/a?p=url_blocklist_filter_format ). Up to 1,000 exceptions can be defined in <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph>.
 
       From <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 73, you can block javascript://* URLs. However, it affects only JavaScript entered in the address bar (or, for example, bookmarklets). In-page JavaScript URLs with dynamically loaded data aren't subject to this policy. For example, if you block example.com/abc, then example.com can still load example.com/abc using XMLHTTPRequest.
 
@@ -10544,7 +10544,7 @@
       'id': 737,
       'caption': '''Allow access to a list of URLs''',
       'tags': [],
-      'desc': '''Setting the policy provides access to the listed URLs, as exceptions to <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>. See that policy's description for the format of entries of this list. For example, setting <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph> to * will block all requests, and you can use this policy to allow access to a limited list of URLs. Use it to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths, using the format specified at ( https://www.chromium.org/administrators/url-blocklist-filter-format ). The most specific filter determines if a URL is blocked or allowed. The <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph> policy takes precedence over <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>. This policy is limited to 1,000 entries.
+      'desc': '''Setting the policy provides access to the listed URLs, as exceptions to <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>. See that policy's description for the format of entries of this list. For example, setting <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph> to * will block all requests, and you can use this policy to allow access to a limited list of URLs. Use it to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths, using the format specified at ( https://support.google.com/chrome/a?p=url_blocklist_filter_format ). The most specific filter determines if a URL is blocked or allowed. The <ph name="URL_ALLOWLIST_POLICY_NAME">URLAllowlist</ph> policy takes precedence over <ph name="URL_BLOCKLIST_POLICY_NAME">URLBlocklist</ph>. This policy is limited to 1,000 entries.
 
       This policy also allows enabling the automatic invocation by the browser of external application registered as protocol handlers for the listed protocols like "tel:" or "ssh:".
 
@@ -13479,7 +13479,7 @@
     },
     {
       'name': 'DeviceRollbackToTargetVersion',
-      'owners': ['file://components/policy/resources/OWNERS', 'anqing@chromium.org'],
+      'owners': ['mpolzer@google.com', 'crisguerrero@chromium.com', 'file://components/policy/resources/OWNERS'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -13489,18 +13489,13 @@
         {
           'name': 'RollbackDisabled',
           'value': 1,
-          'caption': '''Do not roll back to target version if OS version is newer than target. Updates are also disabled.''',
-        },
-        {
-          'name': 'RollbackAndPowerwash',
-          'value': 2,
-          'caption': '''Roll back and stay on target version if OS version is newer than target. Do a powerwash during the process.''',
+          'caption': '''Do not roll back OS to target version.''',
         },
         {
           'name': 'RollbackAndRestoreIfPossible',
           'value': 3,
-          'caption': '''Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
-          Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> version 75 and higher. For older clients, this value means that rollback is disabled.''',
+          'caption': '''Roll back device to target version if current OS version is newer than target. The device is powerwashed but device-wide network configurations without certificates are preserved and it automatically re-enrolls.
+          Supported on rollback to <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> version 106 and higher. For older clients, the preservation of networks may not work and the device will not automatically re-enroll.''',
         },
       ],
       'supported_on': ['chrome_os:67-'],
@@ -13510,7 +13505,7 @@
       },
       'example_value': 1,
       'id': 427,
-      'caption': '''Rollback to target version''',
+      'caption': '''Roll back OS to target version''',
       'tags': ['system-security'],
       'desc': '''Specifies whether the device should roll back to the version set by <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME">DeviceTargetVersionPrefix</ph> if it's already running a later version.
 
@@ -15056,7 +15051,7 @@
       'tags': [],
       'desc': '''Configure a list of URLs that are allowed to stay in full screen mode without showing a notification when the device returns from the lock screen.
 
-          Normally, full screen mode is turned off when returning from the lock screen in order to reduce the risk of phishing attacks. This policy allows to specify URLs that will be considered trusted sources which are permitted to continue full screen mode on unlock. It is set by specifying a list of URL patterns formatted according to this format ( https://www.chromium.org/administrators/url-blocklist-filter-format ). E.g., it is possible to always keep full screen mode on unlock and disable the notifications altogether by specifying the wildcard character <ph name="WILDCARD_VALUE">*</ph> matching all URLs.
+          Normally, full screen mode is turned off when returning from the lock screen in order to reduce the risk of phishing attacks. This policy allows to specify URLs that will be considered trusted sources which are permitted to continue full screen mode on unlock. It is set by specifying a list of URL patterns formatted according to this format ( https://support.google.com/chrome/a?p=url_blocklist_filter_format ). E.g., it is possible to always keep full screen mode on unlock and disable the notifications altogether by specifying the wildcard character <ph name="WILDCARD_VALUE">*</ph> matching all URLs.
 
           Setting this policy to an empty list or leaving it unset means no URLs are allowed to continue full screen mode without a notification.''',
     },
@@ -17221,7 +17216,6 @@
       ],
       'default': True,
       'example_value': True,
-      'default_for_enterprise_users': False,
       'id': 1015,
       'caption': '''Enable <ph name="GOOGLE_CALENDAR_NAME">Google Calendar</ph> Integration''',
       'tags': [],
@@ -17231,7 +17225,7 @@
 
           If this policy is disabled, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> device cannot retrieve <ph name="GOOGLE_CALENDAR_NAME">Google Calendar</ph> events to populate <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph> calendar widget in system status bar for the logged in user.
 
-          If this policy is left unset, the <ph name="GOOGLE_CALENDAR_NAME">Google Calendar</ph> feature is disabled by default for enterprise users.''',
+          If this policy is left unset, the <ph name="GOOGLE_CALENDAR_NAME">Google Calendar</ph> feature is enabled by default for enterprise users.''',
     },
     {
       'name': 'DeviceLoginScreenDefaultScreenMagnifierType',
@@ -18836,7 +18830,7 @@
 
       Leaving the policy unset means that if certificates requiring disclosure through Certificate Transparency aren't disclosed, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> doesn't trust those certificates.
 
-      A URL pattern follows this format ( https://www.chromium.org/administrators/url-blocklist-filter-format ). However, because the validity of certificates for a given hostname is independent of the scheme, port, or path, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> only considers the hostname portion of the URL. Wildcard hosts aren't supported.''',
+      A URL pattern follows this format ( https://support.google.com/chrome/a?p=url_blocklist_filter_format ). However, because the validity of certificates for a given hostname is independent of the scheme, port, or path, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> only considers the hostname portion of the URL. Wildcard hosts aren't supported.''',
     },
     {
       'name': 'CertificateTransparencyEnforcementDisabledForCas',
@@ -21573,7 +21567,7 @@
       'tags': [],
       'desc': '''Setting the policy to Enabled allows weak PINs. Some characteristics of weak PINs: only one digit (1111), digits increase by 1 (1234), digits decrease by 1 (4321), and common PINs. Setting the policy to Disabled means users can't set weak, easy-to-guess PINs.
 
-      By default, users get a warning, not an error, for a weak PIN.''',
+      If policy is not set, users get a warning, not an error, for a weak PIN.''',
     },
     {
       'name': 'DeviceWallpaperImage',
@@ -27208,7 +27202,7 @@
 
       For ChromeOS, this policy is related to remote attestation where a certificate is automatically generated and uploaded to the Device Management Server.
 
-      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://www.chromium.org/administrators/url-blocklist-filter-format.''',
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://support.google.com/chrome/a?p=url_blocklist_filter_format.''',
     },
     {
       'name': 'DeviceLoginScreenContextAwareAccessSignalsAllowlist',
@@ -27238,7 +27232,7 @@
 
       This policy will only impact the attestation flow on the login and lock screen. To change the in-session attestation flow, please use the <ph name="CONTEXT_AWARE_ACCESS_SIGNALS_ALLOWLIST_POLICY_NAME">ContextAwareAccessSignalsAllowlist</ph> policy.
 
-      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://www.chromium.org/administrators/url-blocklist-filter-format.''',
+      For detailed information on valid <ph name="URL_LABEL">URL</ph> patterns, please see https://support.google.com/chrome/a?p=url_blocklist_filter_format.''',
     },
     {
       'name': 'DeviceQuickFixBuildToken',
@@ -31210,15 +31204,17 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 718,
       'caption': '''Enable PIN auto-submit feature on the lock and login screen.''',
       'tags': [],
-      'desc': '''The PIN auto-submit feature changes how PINs are entered in ChromeOS.
+      'desc': '''The PIN auto-submit feature changes how PINs are entered in <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></ph>.
           Instead of showing the same textfield that is used for password input, this
           feature shows a special UI that clearly shows to the user how many
           digits are necessary for their PIN. As a consequence, the user's PIN length
           will be stored outside the user encrypted data. Only supports PINs that are
           between 6 and 12 digits long.
 
-          If this policy is set to false, users will not have the option of enabling
-          the feature on the Settings page.''',
+          If the policy is set to true, users will have PIN auto-submit on the lock and login screen.
+          If the policy is set to false or not set, users will not have PIN auto-submit on the lock and login screen.
+
+          If this policy is set, users will not have the option of enabling the feature.''',
     },
     {
       'name': 'EmojiSuggestionEnabled',
@@ -31829,7 +31825,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       - PRIVACY_SCREEN restriction doesn't block the ability to turn on privacy screen, but enforces it when the restriction class is set to BLOCK.
       - Destinations cannot be empty in case one of the restrictions is CLIPBOARD or FILES, but they don't make any difference for the remaining restrictions.
       - DRIVE and USB destinations are ignored for CLIPBOARD restriction.
-      - Format the URL patterns according to this format ( https://www.chromium.org/administrators/url-blocklist-filter-format ).
+      - Format the URL patterns according to this format ( https://support.google.com/chrome/a?p=url_blocklist_filter_format ).
 
       If the policy is left not set, no restrictions will be applied.''',
     },
@@ -34517,7 +34513,7 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'features' : {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'items': [
@@ -35126,7 +35122,7 @@ This is the same behavior as <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_KEEP_EXISTIN
 
       If there is no valid app installed to handle authentication url on the device, navigation will continue in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>.
 
-      Authentication URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blocklist-filter-format.
+      Authentication URL pattern has to be formatted according to https://support.google.com/chrome/a?p=url_blocklist_filter_format.
       '''
     },
     {
@@ -35402,7 +35398,7 @@ This policy has no effect if the option to keep existing browsing data is not av
       'caption': 'Enable High Efficiency Mode',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome.*' ],
+      'supported_on': [ 'chrome.*:108-', 'chrome_os:108-', ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -35438,7 +35434,7 @@ This policy has no effect if the option to keep existing browsing data is not av
         'type': 'integer',
         'enum': [ 0, 1, 2 ],
       },
-      'future_on': ['chrome.*' ],
+      'supported_on': [ 'chrome.*:108-', 'chrome_os:108-', ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -35482,7 +35478,7 @@ This policy has no effect if the option to keep existing browsing data is not av
         'type': 'array',
         'items': { 'type': 'string' }
       },
-      'future_on': ['chrome.*' ],
+      'supported_on': [ 'chrome.*:108-', 'chrome_os:108-', ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -35660,7 +35656,7 @@ This policy has no effect if the option to keep existing browsing data is not av
       'owners': ['andruud@chromium.org', 'bokan@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['android'],
+      'supported_on': ['android:108-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

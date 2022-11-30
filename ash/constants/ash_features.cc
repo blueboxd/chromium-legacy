@@ -363,7 +363,7 @@ BASE_FEATURE(kCameraAppDocScanDlc,
 // camera app.
 BASE_FEATURE(kCameraAppMultiPageDocScan,
              "CameraAppMultiPageDocScan",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
@@ -430,12 +430,6 @@ BASE_FEATURE(kCrosPrivacyHubV0,
 BASE_FEATURE(kCrosPrivacyHubV2,
              "CrosPrivacyHubV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables generation of attestation certificates used by Cross Device features,
-// including Eche and Phone Hub.
-BASE_FEATURE(kCrossDeviceAttestationCertificateGeneration,
-             "CrossDeviceAttestationCertificateGeneration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
 // with a button to close desk and windows and a button to combine desks (the
@@ -515,7 +509,7 @@ BASE_FEATURE(kBruschettaAlphaMigrate,
 // notifications, network details page, quick settings, and portal signin UI.
 BASE_FEATURE(kCaptivePortalUI2022,
              "CaptivePortalUI2022",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables always using device-activity-status data to filter
 // eligible host phones.
@@ -632,7 +626,7 @@ BASE_FEATURE(kDockedMagnifier,
 // Enables dragging an unpinned open app to pinned app side to pin.
 BASE_FEATURE(kDragUnpinnedAppToPin,
              "DragUnpinnedAppToPin",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables dragging and dropping an existing window to new desk in overview.
 BASE_FEATURE(kDragWindowToNewDesk,
@@ -1637,8 +1631,13 @@ BASE_FEATURE(kProjectorUseApiKeyForTranslation,
              "ProjectorUseApiKeyForTranslation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable or disable quick settings revamped view.
+// Enable or disable quick settings revamped view. This flag only works when the
+// `QsRevampWip` flag is enabled.
 BASE_FEATURE(kQsRevamp, "QsRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable or disable quick settings revamped wip view.
+// TODO(b/257541368): remove this flag once the wip view is finished.
+BASE_FEATURE(kQsRevampWip, "QsRevampWip", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the Projector Viewer supports the user experience for
 // secondary account.
@@ -1652,16 +1651,6 @@ BASE_FEATURE(kQuickDim, "QuickDim", base::FEATURE_ENABLED_BY_DEFAULT);
 // Controls whether the vc background blur is enabled.
 BASE_FEATURE(kVCBackgroundBlur,
              "VCBackgroundBlur",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether the vc background replace is enabled.
-BASE_FEATURE(kVCBackgroundReplace,
-             "VCBackgroundReplace",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether the vc portrait relighting is enabled.
-BASE_FEATURE(kVCPortraitRelighting,
-             "VCPortraitRelighting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the Quick Settings Network revamp, which updates Network
@@ -1885,9 +1874,9 @@ BASE_FEATURE(kSystemExtensions,
              "SystemExtensions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables or disables the OEM diagnostics and control System Extensions type.
-BASE_FEATURE(kSystemExtensionsOemDiagnosticsAndControl,
-             "SystemExtensionsOemDiagnosticsAndControl",
+// Enables or disables the managed device health service System Extensions type.
+BASE_FEATURE(kSystemExtensionsManagedDeviceHealthServices,
+             "SystemExtensionsManagedDeviceHealthServices",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables using the system input engine for physical typing in
@@ -2312,11 +2301,6 @@ bool IsClipboardHistoryNudgeSessionResetEnabled() {
 
 bool IsClipboardHistoryReorderEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryReorder);
-}
-
-bool IsCrossDeviceAttestationCertificateGenerationEnabled() {
-  return base::FeatureList::IsEnabled(
-      kCrossDeviceAttestationCertificateGeneration);
 }
 
 bool IsDesksCloseAllEnabled() {
@@ -2888,7 +2872,8 @@ bool IsProjectorUseApiKeyForTranslationEnabled() {
 }
 
 bool IsQsRevampEnabled() {
-  return base::FeatureList::IsEnabled(kQsRevamp);
+  return base::FeatureList::IsEnabled(kQsRevamp) &&
+         base::FeatureList::IsEnabled(kQsRevampWip);
 }
 
 bool IsProjectorViewerUseSecondaryAccountEnabled() {
@@ -3019,14 +3004,6 @@ bool IsUseStorkSmdsServerAddressEnabled() {
 
 bool IsVCBackgroundBlurEnabled() {
   return base::FeatureList::IsEnabled(kVCBackgroundBlur);
-}
-
-bool IsVCBackgroundReplaceEnabled() {
-  return base::FeatureList::IsEnabled(kVCBackgroundReplace);
-}
-
-bool IsVCPortraitRelightingEnabled() {
-  return base::FeatureList::IsEnabled(kVCPortraitRelighting);
 }
 
 bool IsVcControlsUiEnabled() {

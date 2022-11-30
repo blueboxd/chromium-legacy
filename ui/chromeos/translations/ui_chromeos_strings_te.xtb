@@ -114,7 +114,7 @@
 <translation id="1972984168337863910">అభిప్రాయ ప్యానెల్‌ల ఫైళ్లు విస్తరించు</translation>
 <translation id="1995337122023280937">ఫైల్ లొకేషన్‌కు వెళ్ళు</translation>
 <translation id="1999709132469742660">అన్ని URLలకు ఫైల్ యాక్సెస్</translation>
-<translation id="2001796770603320721">డిస్క్‌లో నిర్వహించు</translation>
+<translation id="2001796770603320721">డిస్క్‌లో మేనేజ్ చేయండి</translation>
 <translation id="2009067268969781306">డ్రైవ్‌ను ఫార్మాట్ చేయడం వలన దానిలో నిల్వ చేయబడిన మొత్తం డేటా తొలగించబడుతుంది. ఈ చర్యను రద్దు చేయలేరు.</translation>
 <translation id="2025955442973426285">టైగ్రిన్యా</translation>
 <translation id="2037845485764049925">రష్యన్</translation>
@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">జున్ను</translation>
 <translation id="2781645665747935084">బెల్జియన్</translation>
 <translation id="2782104745158847185">Linux అప్లికేషన్‌ను ఇన్‌స్టాల్ చేయడంలో ఎర్రర్</translation>
+<translation id="2802583107108007218">ఈ పరిమితుల గురించి మరింత తెలుసుకోండి</translation>
 <translation id="2803375539583399270">PINను నమోదు చేయండి</translation>
 <translation id="2820957248982571256">స్కాన్ చేస్తోంది...</translation>
 <translation id="2830077785865012357">చైనీస్ జుయిన్</translation>
@@ -281,7 +282,6 @@
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="3486821258960016770">మంగోలియన్</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> లోపాలు.</translation>
-<translation id="3495810061346586977">ఈ ఫైల్ గోప్యమైనది, అడ్మినిస్ట్రేటర్ పాలసీ పరిమితులకు లోబడి ఉంటుంది. <ph name="BEGIN_LINK_HELP" />మరింత తెలుసుకోండి<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, వివరాలు</translation>
 <translation id="3522708245912499433">పోర్చుగీస్</translation>
 <translation id="3524311639100184459">హెచ్చరిక: ఈ ఫైల్స్ తాత్కాలికమైనవి, డిస్క్ స్పేస్‌ను ఖాళీ చేయడం కోసం ఆటోమేటిక్‌గా ఇవి తొలగించబడవచ్చు.  <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
@@ -319,7 +319,7 @@
 <translation id="3798449238516105146">వెర్షన్</translation>
 <translation id="3801082500826908679">ఫారోస్</translation>
 <translation id="3809272675881623365">కుందేలు</translation>
-<translation id="3810973564298564668">నిర్వహించు</translation>
+<translation id="3810973564298564668">మేనేజ్ చేయండి</translation>
 <translation id="3811494700605067549">1 ఫైల్ ఎంచుకోబడింది</translation>
 <translation id="3817579325494460411">అందించబడలేదు</translation>
 <translation id="3819448694985509187">పిన్ తప్పు. మీకు 1 ప్రయత్నం మిగిలి ఉంది.</translation>
@@ -456,6 +456,7 @@
 <translation id="4900532980794411603">Parallels Desktopతో షేర్ చేయండి</translation>
 <translation id="4902546322522096650"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, కనెక్ట్ చేయండి</translation>
 <translation id="4906580650526544301"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, ఫోన్ బ్యాటరీ <ph name="BATTERY_STATUS" />%, వివరాలు</translation>
+<translation id="4929673617759421391">ఈ ఫైల్‌ను పేస్ట్ చేయడాన్ని అడ్మినిస్ట్రేటర్ పాలసీ బ్లాక్ చేసింది</translation>
 <translation id="4935975195727477204">గజేనియా పుష్పం</translation>
 <translation id="4943368462779413526">ఫుట్‌బాల్</translation>
 <translation id="4961158930123534723">Parallels Desktopతో 1 ఫోల్డర్ షేర్ చేయబడింది</translation>
@@ -513,6 +514,7 @@
 <translation id="5286194356314741248">స్కాన్ చేస్తోంది</translation>
 <translation id="5288441970121584418">బర్గర్</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
+<translation id="5293615890992542006">ఈ ఫైల్‌ను బదిలీ చేయడాన్ని అడ్మినిస్ట్రేటర్ పాలసీ బ్లాక్ చేసింది</translation>
 <translation id="5305688511332277257">ఏవి వ్యవస్థాపించబడలేదు</translation>
 <translation id="5317780077021120954">సేవ్ చేయండి</translation>
 <translation id="5318819489018851358">Linuxతో షేర్ చేయి</translation>
@@ -647,6 +649,7 @@
 <translation id="642282551015776456">ఈ పేరును ఫైల్ యొక్క ఫోల్డర్ పేరుగా ఉపయోగించలేము.</translation>
 <translation id="6423031066725912715">TCVN కీబోర్డ్‌తో వియత్నామీస్</translation>
 <translation id="6430271654280079150">మీకు 1 ప్రయత్నం మిగిలి ఉంది.</translation>
+<translation id="643243556292470964">తొలగించబడిన ఫైల్స్ ఇప్పుడు ట్రాష్‌కు తరలించబడ్డాయి</translation>
 <translation id="6485131920355264772">ఖాళీ సమాచారాన్ని తిరిగి పొందడం విఫలమైంది</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ ద్వారా నిర్వహించబడుతోంది, వివరాలు</translation>
 <translation id="649877868557234318"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" />‌కు సంగ్రహించబడుతోంది</translation>
@@ -713,6 +716,7 @@
 <translation id="6993826899923627728">ఈ ఐటెమ్‌లు మీ ట్రాష్‌లో ఉన్నాయి</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ఫోల్డర్‌లు ఎంచుకోబడ్డాయి</translation>
 <translation id="7008426324576352165">అప్‌లోడ్‌ను పూర్తి చేయడానికి మీ సంస్థకు మరింత స్టోరేజ్ అవసరం.</translation>
+<translation id="7009985720488544166"><ph name="COUNT" /> ఫైల్స్‌ను బదిలీ చేయడాన్ని అడ్మినిస్ట్రేటర్ పాలసీ బ్లాక్ చేసింది</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">వ్యవస్థాపన విఫలమైంది.</translation>
 <translation id="7031639531908619281">టర్కిష్</translation>
@@ -918,6 +922,7 @@
 <translation id="8656768832129462377">తనిఖీ చేయవద్దు</translation>
 <translation id="8688591111840995413">పాస్‌వర్డ్ చెల్లదు</translation>
 <translation id="8698464937041809063">Google డ్రాయింగ్</translation>
+<translation id="8698877009525468705">ఈ ఫైల్ గోప్యమైనది, అడ్మినిస్ట్రేటర్ పాలసీ పరిమితులకు లోబడి ఉంటుంది.</translation>
 <translation id="8712637175834984815">అర్థమైంది</translation>
 <translation id="8713112442029511308">మాల్టీస్</translation>
 <translation id="8714406895390098252">సైకిల్</translation>
@@ -972,6 +977,7 @@
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">కజక్</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> ఐటెమ్‌లు సంగ్రహించబడ్డాయి.</translation>
+<translation id="9210751050717126865"><ph name="COUNT" /> ఫైల్స్‌ను పేస్ట్ చేయడాన్ని అడ్మినిస్ట్రేటర్ పాలసీ బ్లాక్ చేసింది</translation>
 <translation id="9213073329713032541">ఇన్‌స్టాలేషన్ విజయవంతంగా ప్రారంభించబడింది.</translation>
 <translation id="9219103736887031265">ఇమేజ్‌లు</translation>
 <translation id="9219908252191632183">లూనార్</translation>

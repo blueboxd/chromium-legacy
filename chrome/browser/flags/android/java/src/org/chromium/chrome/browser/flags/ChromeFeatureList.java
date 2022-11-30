@@ -359,6 +359,7 @@ public abstract class ChromeFeatureList {
     public static final String FEATURE_NOTIFICATION_GUIDE = "FeatureNotificationGuide";
     public static final String FEED_BACK_TO_TOP = "FeedBackToTop";
     public static final String FEED_CLEAR_IMAGE_MEMORY_CACHE = "FeedClearImageMemoryCache";
+    public static final String FEED_CLIENT_GOOD_VISITS = "FeedClientGoodVisits";
     public static final String FEED_IMAGE_MEMORY_CACHE_SIZE_PERCENTAGE =
             "FeedImageMemoryCacheSizePercentage";
     public static final String FEED_INTERACTIVE_REFRESH = "FeedInteractiveRefresh";
@@ -448,6 +449,8 @@ public abstract class ChromeFeatureList {
             "OmniboxMostVisitedTilesDynamicSpacing";
     public static final String OMNIBOX_MOST_VISITED_TILES_TITLE_WRAP_AROUND =
             "OmniboxMostVisitedTilesTitleWrapAround";
+    public static final String OMNIBOX_REMOVE_EXCESSIVE_RECYCLED_VIEW_CLEAR_CALLS =
+            "OmniboxRemoveExcessiveRecycledViewClearCalls";
     public static final String OMNIBOX_REMOVE_SUGGESTION_HEADER_CHEVRON =
             "OmniboxRemoveSuggestionHeaderChevron";
     public static final String OMNIBOX_REMOVE_SUGGESTION_HEADER_CAPITALIZATION =
@@ -705,6 +708,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(OMAHA_MIN_SDK_VERSION_ANDROID, false);
     public static final CachedFlag sOmniboxModernizeVisualUpdate =
             new CachedFlag(OMNIBOX_MODERNIZE_VISUAL_UPDATE, false);
+    public static final CachedFlag sOmniboxRemoveExcessiveRecycledViewClearCalls =
+            new CachedFlag(OMNIBOX_REMOVE_EXCESSIVE_RECYCLED_VIEW_CLEAR_CALLS, false);
     public static final CachedFlag sOptimizationGuidePushNotifications =
             new CachedFlag(OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false);
     public static final CachedFlag sOSKResizesVisualViewportByDefault =

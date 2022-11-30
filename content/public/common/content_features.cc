@@ -378,6 +378,11 @@ BASE_FEATURE(kFedCmManifestValidation,
              "FedCmManifestValidation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables usage of the FedCM API with metrics endpoint at the same time.
+BASE_FEATURE(kFedCmMetricsEndpoint,
+             "FedCmMetricsEndpoint",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables usage of the FedCM API with multiple identity providers at the same
 // time.
 BASE_FEATURE(kFedCmMultipleIdentityProviders,
@@ -425,12 +430,7 @@ BASE_FEATURE(kFontSrcLocalMatching,
 // to the GPU process.
 BASE_FEATURE(kForwardMemoryPressureEventsToGpuProcess,
              "ForwardMemoryPressureEventsToGpuProcess",
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // If enabled, limits the number of FLEDGE auctions that can be run between page
@@ -556,7 +556,7 @@ const base::FeatureParam<IsolateSandboxedIframesGrouping>
 // Enables the TC39 Array grouping proposal.
 BASE_FEATURE(kJavaScriptArrayGrouping,
              "JavaScriptArrayGrouping",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables experimental JavaScript shared memory features.
 BASE_FEATURE(kJavaScriptExperimentalSharedMemory,
@@ -1226,7 +1226,7 @@ BASE_FEATURE(kWebAssemblyBaseline,
 // Enable memory protection for code JITed for WebAssembly.
 BASE_FEATURE(kWebAssemblyCodeProtection,
              "WebAssemblyCodeProtection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
 // Use memory protection keys in userspace (PKU) (if available) to protect code

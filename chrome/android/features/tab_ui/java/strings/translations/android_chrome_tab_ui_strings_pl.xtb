@@ -5,7 +5,6 @@
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="125153950246128346">Kliknij, by zobaczyć inną kartę</translation>
 <translation id="1302104331113804646">Ustawienia monitorowania cen</translation>
-<translation id="1310482092992808703">Grupuj karty</translation>
 <translation id="1378979118429748177">Otrzymuj powiadomienia o obniżkach cen</translation>
 <translation id="1403228085774130835">Zamknięte karty znajdziesz w sekcji Ostatnie karty w menu głównym Chrome</translation>
 <translation id="1455506303394048917">Twoja aktywność na tych kartach incognito zostanie usunięta z tego urządzenia</translation>
@@ -14,6 +13,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> karta}few{<ph name="TABS_COUNT_MANY" /> karty}many{<ph name="TABS_COUNT_MANY" /> kart}other{<ph name="TABS_COUNT_MANY" /> karty}}</translation>
 <translation id="2118649612461486615">Informacje o sklepie</translation>
 <translation id="2162620598375156287">Teraz za <ph name="CURRENT_PRICE" /> na <ph name="SOURCE_WEBSITE" /></translation>
+<translation id="22623456902492423">{TABS_COUNT,plural, =1{Usuń kartę z grupy}few{Usuń karty z grupy}many{Usuń karty z grupy}other{Usuń karty z grupy}}</translation>
 <translation id="2277224997687551299">Edytuj nazwę grupy</translation>
 <translation id="228946090561406413">{TABS_COUNT,plural, =1{Usuń <ph name="TABS_COUNT_ONE" /> wybraną kartę z grupy.}few{Usuń <ph name="TABS_COUNT_MANY" /> wybrane karty z grupy.}many{Usuń <ph name="TABS_COUNT_MANY" /> wybranych kart z grupy.}other{Usuń <ph name="TABS_COUNT_MANY" /> wybranej karty z grupy.}}</translation>
 <translation id="2479148705183875116">Otwórz Ustawienia</translation>
@@ -33,11 +33,11 @@
 <translation id="3194464645767632461">ocena</translation>
 <translation id="3291470810748040983">Otrzymasz alert, gdy cena na otwartej karcie będzie niższa</translation>
 <translation id="3328308545011660196">Sugestia: liczba prawdopodobnie powiązanych kart wynosi <ph name="NUMBER_OF_TABS" />. Czy chcesz je pogrupować?</translation>
-<translation id="3499853001094440183">Rozgrupuj karty</translation>
 <translation id="3652027618765638838"><ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" /></translation>
 <translation id="3819916404117584598">{TABS_COUNT,plural, =1{Zwiń <ph name="TABS_COUNT_ONE" /> kartę.}few{Zwiń grupę kart <ph name="TITLE_OF_GROUP" /> z <ph name="TABS_COUNT_MANY" /> kartami.}many{Zwiń grupę kart <ph name="TITLE_OF_GROUP" /> z <ph name="TABS_COUNT_MANY" /> kartami.}other{Zwiń grupę kart <ph name="TITLE_OF_GROUP" /> z <ph name="TABS_COUNT_MANY" /> karty.}}</translation>
 <translation id="3882834874697329510">Aby otrzymywać alert, gdy na otwartej karcie cena będzie niższa, włącz powiadomienia w ustawieniach.</translation>
 <translation id="3940195383040445971">Monitoruj ceny na kartach</translation>
+<translation id="3954615705217314756">{TABS_COUNT,plural, =1{Dodaj kartę do grupy}few{Dodaj karty do grupy}many{Dodaj karty do grupy}other{Dodaj karty do grupy}}</translation>
 <translation id="3996880007329611795">Powiadamiaj mnie</translation>
 <translation id="4133493477912226187">Liczba prawdopodobnie powiązanych kart wynosi <ph name="NUMBER_OF_TABS" />. Czy chcesz je pogrupować?</translation>
 <translation id="4212246570487010370">Przeglądaj dalej</translation>
@@ -46,12 +46,12 @@
 <translation id="4788280460033928884">{REVIEWS,plural, =1{(<ph name="REVIEWS_COUNT_ONE" /> opinia)}few{(<ph name="REVIEWS_COUNT_MANY" /> opinie)}many{(<ph name="REVIEWS_COUNT_MANY" /> opinii)}other{(<ph name="REVIEWS_COUNT_MANY" /> opinii)}}</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4870911314065352661">Zamknąć wszystkie karty?</translation>
+<translation id="4895402777090717310">{TABS_COUNT,plural, =1{Zamknij kartę}few{Zamknij karty}many{Zamknij karty}other{Zamknij karty}}</translation>
 <translation id="492284538114688557">Wykryto obniżkę ceny</translation>
 <translation id="5007392906805964215">Sprawdź</translation>
 <translation id="5073204694187207510">Ukryj siatkę pełnego ekranu</translation>
 <translation id="5076161749301278626">Wyświetlić opinie o sklepie?</translation>
 <translation id="5082793167783849073">Możesz szybko porównać strony, tworząc ich grupę. Aby to zrobić, naciśnij i przytrzymaj link.</translation>
-<translation id="5453029940327926427">Zamknij karty</translation>
 <translation id="5490235265819901748">Grupa kart została rozwinięta</translation>
 <translation id="5494920125229734069">Wybierz wszystko</translation>
 <translation id="5533021382642990449">Pokaż później</translation>
@@ -75,6 +75,7 @@
 <translation id="6615455863669487791">Pokaż mi</translation>
 <translation id="6840760312327750441">Aby pogrupować karty, naciśnij i przytrzymaj jedną z nich. Następnie przeciągnij ją na inną kartę.</translation>
 <translation id="6856809498882026482">Ukryj tryb wielokrotnego wyboru</translation>
+<translation id="7100731960740376323">{TABS_COUNT,plural, =1{Udostępnij kartę}few{Udostępnij karty}many{Udostępnij karty}other{Udostępnij karty}}</translation>
 <translation id="7129458170538955174">Informacje o tym sklepie zostały otwarte na połowę wysokości</translation>
 <translation id="7151209024774799310">Usuń karty z grupy</translation>
 <translation id="7204204600596740190">Tryb wielokrotnego wyboru</translation>
@@ -83,6 +84,7 @@
 <translation id="753732157349120914">Przełącznik kart</translation>
 <translation id="7545727119051420814">{REVIEWS,plural, =1{<ph name="REVIEWS_COUNT_ONE" /> opinia z Google}few{<ph name="REVIEWS_COUNT_MANY" /> opinie z Google}many{<ph name="REVIEWS_COUNT_MANY" /> opinii z Google}other{<ph name="REVIEWS_COUNT_MANY" /> opinii z Google}}</translation>
 <translation id="7559245342362162951">Pokazuj karty grupy na siatce pełnego ekranu</translation>
+<translation id="7699041944097291312">{TABS_COUNT,plural, =1{Udostępnij <ph name="TABS_COUNT_ONE" /> wybraną kartę}few{Udostępnij <ph name="TABS_COUNT_MANY" /> wybrane karty}many{Udostępnij <ph name="TABS_COUNT_MANY" /> wybranych kart}other{Udostępnij <ph name="TABS_COUNT_MANY" /> wybranej karty}}</translation>
 <translation id="7792771145871471484">Sprawdź sugestie.</translation>
 <translation id="7838146321400849846">{TABS_COUNT,plural, =1{Dodaj <ph name="TABS_COUNT_ONE" /> wybraną kartę do grupy}few{Dodaj <ph name="TABS_COUNT_MANY" /> wybrane kart do grupy}many{Dodaj <ph name="TABS_COUNT_MANY" /> wybranych kart do grupy}other{Dodaj <ph name="TABS_COUNT_MANY" /> wybranej karty do grupy}}</translation>
 <translation id="7854360405711302755">{REVIEWS,plural, =1{ Ocena <ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" />, <ph name="REVIEWS_COUNT_ONE" /> opinia}few{Ocena <ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" />, <ph name="REVIEWS_COUNT_MANY" /> opinie}many{Ocena <ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" />, <ph name="REVIEWS_COUNT_MANY" /> opinii}other{Ocena <ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" />, <ph name="REVIEWS_COUNT_MANY" /> opinii}}</translation>

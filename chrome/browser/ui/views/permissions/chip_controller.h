@@ -46,7 +46,9 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
   // PermissionRequestManager::Observer:
   void OnPermissionRequestManagerDestructed() override;
 
-  void OnBubbleRemoved() override;
+  void OnPromptRemoved() override;
+
+  void OnWebContentsChanged();
 
   // OnBubbleRemoved only triggers when a request chip (bubble) is removed, when
   // the user navigates while a confirmation chip is showing, the request is
@@ -67,7 +69,8 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
   // manager and observes the prompt bubble.
   void InitializePermissionPrompt(
       content::WebContents* web_contents,
-      permissions::PermissionPrompt::Delegate* delegate);
+      permissions::PermissionPrompt::Delegate* delegate,
+      base::OnceCallback<void()>);
 
   // Displays a permission prompt using the chip UI.
   void ShowPermissionPrompt(content::WebContents* web_contents,
@@ -126,6 +129,7 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
   }
 
  private:
+  bool ShouldWaitForConfirmationToComplete();
   void AnimateExpand(
       base::RepeatingCallback<void()> expand_anmiation_ended_callback);
 
@@ -204,6 +208,8 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
       active_chip_permission_request_manager_;
 
   views::ViewTracker bubble_tracker;
+
+  base::WeakPtrFactory<ChipController> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PERMISSIONS_CHIP_CONTROLLER_H_

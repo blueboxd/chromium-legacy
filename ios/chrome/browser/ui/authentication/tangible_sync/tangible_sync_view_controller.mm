@@ -59,7 +59,6 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
       subtitleStringID = IDS_IOS_TANGIBLE_SYNC_SUBTITLE_SYNC;
       break;
     case NewMobileIdentityConsistencyFRE::kTwoSteps:
-    case NewMobileIdentityConsistencyFRE::kUMADialog:
     case NewMobileIdentityConsistencyFRE::kOld:
       NOTREACHED();
       break;
@@ -130,7 +129,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   }
 }
 
-- (void)setprimaryIdentityAvatarAccessibilityLabel:
+- (void)setPrimaryIdentityAvatarAccessibilityLabel:
     (NSString*)primaryIdentityAvatarAccessibilityLabel {
   if (_primaryIdentityAvatarAccessibilityLabel !=
       primaryIdentityAvatarAccessibilityLabel) {

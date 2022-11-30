@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_page_handler.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/side_panel_resources.h"
@@ -93,6 +95,17 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
   source->AddBoolean("readAnythingEnabled", features::IsReadAnythingEnabled());
   source->AddBoolean("unifiedSidePanel",
                      base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
+
+  source->AddBoolean(
+      "showPowerBookmarks",
+      base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel));
+
+  bool shouldShowBookmark =
+      prefs->GetBoolean(prefs::kShouldShowSidePanelBookmarkTab);
+  source->AddBoolean("shouldShowBookmark", shouldShowBookmark);
+  if (shouldShowBookmark) {
+    prefs->SetBoolean(prefs::kShouldShowSidePanelBookmarkTab, false);
+  }
 
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
@@ -170,9 +183,11 @@ void ReadingListUI::CreateShoppingListHandler(
       BookmarkModelFactory::GetForBrowserContext(profile);
   commerce::ShoppingService* shopping_service =
       commerce::ShoppingServiceFactory::GetForBrowserContext(profile);
+  feature_engagement::Tracker* const tracker =
+      feature_engagement::TrackerFactory::GetForBrowserContext(profile);
   shopping_list_handler_ = std::make_unique<commerce::ShoppingListHandler>(
       std::move(page), std::move(receiver), bookmark_model, shopping_service,
-      g_browser_process->GetApplicationLocale());
+      profile->GetPrefs(), tracker, g_browser_process->GetApplicationLocale());
 }
 
 void ReadingListUI::SetActiveTabURL(const GURL& url) {

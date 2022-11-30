@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
@@ -72,7 +73,11 @@ ChipController::ChipController(Browser* browser, OmniboxChipButton* chip_view)
   chip_->SetVisible(false);
 }
 
-ChipController::~ChipController() = default;
+ChipController::~ChipController() {
+  if (active_chip_permission_request_manager_.has_value()) {
+    active_chip_permission_request_manager_.value()->RemoveObserver(this);
+  }
+}
 
 void ChipController::OnPermissionRequestManagerDestructed() {
   ResetPermissionPromptChip();
@@ -82,13 +87,25 @@ void ChipController::OnPermissionRequestManagerDestructed() {
   }
 }
 
+void ChipController::OnWebContentsChanged() {
+  if (active_chip_permission_request_manager_.has_value() &&
+      active_chip_permission_request_manager_.value()->IsRequestInProgress()) {
+    chip_->AnimateExpand(kExpandDuration);
+  } else {
+    // Because the web contents changed, we should no longer display any chip
+    // that was displayed for the previous web contents.
+    ResetChip();
+  }
+}
+
 void ChipController::OnNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsSameDocument()) {
     ResetPermissionPromptChip();
   }
 }
-void ChipController::OnBubbleRemoved() {
+
+void ChipController::OnPromptRemoved() {
   bool is_tab_hidden = active_chip_permission_request_manager_.value()
                            ->GetWebContents()
                            .GetVisibility() == content::Visibility::HIDDEN;
@@ -154,10 +171,25 @@ void ChipController::OnWidgetDestroying(views::Widget* widget) {
   CollapsePrompt(/*allow_restart=*/false);
 }
 
+bool ChipController::ShouldWaitForConfirmationToComplete() {
+  return is_confirmation_showing_ && collapse_timer_.IsRunning();
+}
+
 void ChipController::InitializePermissionPrompt(
     content::WebContents* web_contents,
-    permissions::PermissionPrompt::Delegate* delegate) {
+    permissions::PermissionPrompt::Delegate* delegate,
+    base::OnceCallback<void()> callback) {
   DCHECK(delegate);
+  if (ShouldWaitForConfirmationToComplete()) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ChipController::InitializePermissionPrompt,
+                       weak_factory_.GetWeakPtr(), web_contents, delegate,
+                       std::move(callback)),
+        collapse_timer_.GetCurrentDelay());
+    return;
+  }
+
   ResetChip();
 
   // Here we just initialize the controller with the current request. We might
@@ -175,13 +207,23 @@ void ChipController::InitializePermissionPrompt(
   active_chip_permission_request_manager_ =
       permissions::PermissionRequestManager::FromWebContents(web_contents);
   active_chip_permission_request_manager_.value()->AddObserver(this);
+  std::move(callback).Run();
 }
 
 void ChipController::ShowPermissionPrompt(
     content::WebContents* web_contents,
     permissions::PermissionPrompt::Delegate* delegate) {
   DCHECK(delegate);
-  InitializePermissionPrompt(web_contents, delegate);
+  if (ShouldWaitForConfirmationToComplete()) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ChipController::ShowPermissionPrompt,
+                       weak_factory_.GetWeakPtr(), web_contents, delegate),
+        collapse_timer_.GetCurrentDelay());
+    return;
+  }
+
+  InitializePermissionPrompt(web_contents, delegate, base::DoNothing());
 
   request_chip_shown_time_ = base::TimeTicks::Now();
 
@@ -237,7 +279,6 @@ void ChipController::RemoveBubbleObserverAndResetTimersAndChipCallbacks() {
 
 void ChipController::ResetPermissionPromptChip() {
   RemoveBubbleObserverAndResetTimersAndChipCallbacks();
-  is_confirmation_showing_ = false;
   if (permission_prompt_model_) {
     // permission_request_manager_ is empty if the PermissionRequestManager
     // instance has destructed, which triggers the observer method
@@ -264,6 +305,7 @@ void ChipController::ResetPermissionPromptChip() {
   }
 
   HideChip();
+  is_confirmation_showing_ = false;
 }
 
 void ChipController::ShowPageInfoDialog() {
@@ -327,7 +369,9 @@ void ChipController::AnimateExpand(
 void ChipController::HandleConfirmation(
     permissions::PermissionAction user_decision) {
   SyncChipWithModel();
-  if (active_chip_permission_request_manager_.has_value() &&
+  if (user_decision != permissions::PermissionAction::IGNORED &&
+      user_decision != permissions::PermissionAction::DISMISSED &&
+      active_chip_permission_request_manager_.has_value() &&
       !active_chip_permission_request_manager_.value()
            ->has_pending_requests() &&
       permission_prompt_model_->CanDisplayConfirmation()) {
@@ -433,7 +477,7 @@ void ChipController::OpenPermissionPromptBubble() {
   // displayed.
   if (permission_prompt_model_ && IsBubbleShowing()) {
     GetBubbleWidget()->AddObserver(this);
-    permission_prompt_model_->GetDelegate().value()->SetBubbleShown();
+    permission_prompt_model_->GetDelegate().value()->SetPromptShown();
   }
 }
 

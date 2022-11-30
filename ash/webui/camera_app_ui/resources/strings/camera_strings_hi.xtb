@@ -1,14 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
+<translation id="1057925581724305206">फ़ुल एचडी (1080 पिक्सल)</translation>
+<translation id="1076394037877376434">पेज <ph name="PAGE_NUMBER" /> मिटाएं</translation>
 <translation id="1113173431709655881">कैमरा मोड</translation>
 <translation id="1153190633558910465">'ग्रिड' बटन बंद कर दिया गया है</translation>
 <translation id="1175958423215084756">लिंक पहचाना गया. <ph name="HOSTNAME" /></translation>
+<translation id="1197694886744716213">पेज <ph name="PAGE_NUMBER" /> मिटाया गया</translation>
 <translation id="1258009455399840361">घड़ी की दिशा में 90 डिग्री घुमाएं</translation>
 <translation id="1276998909102132017">गैलरी की इमेज</translation>
 <translation id="1300209025925956156">अपना दस्तावेज़ स्कैन करें</translation>
 <translation id="1309250603447638106">दस्तावेज़ को स्कैन करने की सुविधा से जुड़े अपडेट डाउनलोड हो रहे हैं</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. ऐक्सेस करने के लिए, खोज बटन + लेफ़्ट ऐरो दबाएं.</translation>
+<translation id="1417314334557041815">पेज <ph name="INDEX" /> में बदलाव करें</translation>
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> अनप्लग किया गया.</translation>
 <translation id="1473110567575736769">तीन सेकंड का टाइमर</translation>
@@ -18,8 +22,10 @@
 <translation id="1588438908519853928">सामान्य</translation>
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1627744224761163218">4 x 4</translation>
+<translation id="1644345013557678440">एचडी (720 पिक्सल)</translation>
 <translation id="1664224225747386870">कुछ भी रिकॉर्ड नहीं हुआ</translation>
 <translation id="1838104802459806957">ऊपर झुकाएं</translation>
+<translation id="1843105061469674856">अतिरिक्त पेज को स्कैन करें</translation>
 <translation id="1851169887664797861">कैमरे के लिए अतिरिक्त कंट्रोल उपलब्ध हैं</translation>
 <translation id="1851616744363735765">रिकॉर्डिंग रोकी गई</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> को एक्सपोर्ट नहीं किया जा सका</translation>
@@ -77,6 +83,7 @@
 <translation id="414641094616694804">कैमरे का रिज़ॉल्यूशन नहीं बदला जा सकता</translation>
 <translation id="4269820728363426813">लिंक पते को कॉपी करें</translation>
 <translation id="4281620174117014503">मीडियम रिज़ॉल्यूशन</translation>
+<translation id="428234092390943511">पेज का थंबनेल</translation>
 <translation id="4329152592498422850">चौकोर फ़ोटो खींचने के लिए स्विच करें</translation>
 <translation id="4340659173795395806">अब आपके पास कई पेजों वाली PDF बनाने की सुविधा उपलब्ध है</translation>
 <translation id="4383571725254449280">परफ़ॉर्मेंस लॉग प्रिंट करें</translation>
@@ -90,6 +97,7 @@
 <translation id="4705093842003735294">फ़ुल रिज़ॉल्यूशन</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="491895758387112773">मल्टीस्ट्रीम वीडियो रिकॉर्डिंग</translation>
+<translation id="4984613436295737187">क्वाड एचडी (1440 पिक्सल)</translation>
 <translation id="5034763830503483128">फ़ोटो का आसपेक्ट रेशियो</translation>
 <translation id="5057360777601936059">फ़िलहाल आपका कैमरा उपलब्ध नहीं है.
         कृपया देखें कि कैमरा ठीक तरह से कनेक्ट है या नहीं.</translation>
@@ -98,6 +106,7 @@
 <translation id="5266635337630551423">दस्तावेज़ का सबसे ऊपर वाला बायां कोना</translation>
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5320594929574852403">बाईं ओर जा रहा है</translation>
+<translation id="5374917190292010970">4K (2160 पिक्सल)</translation>
 <translation id="5444515100983837161">दस्तावेज़ के सभी कोने फ़्रेम के अंदर रखें. दस्तावेज़ और बैकग्राउंड का रंग अलग-अलग होने पर स्कैन बेहतर होता है.</translation>
 <translation id="5662366948659129155">पेज <ph name="COUNT" /> को स्कैन किया जा रहा है</translation>
 <translation id="5671277269877808209">वर्ग</translation>
@@ -107,7 +116,6 @@
 <translation id="5775960006311140197">एक्सपर्ट मोड</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5869546221129391014">ग्रिड</translation>
-<translation id="5903928279335207406">पेज मिटाएं</translation>
 <translation id="5916664084637901428">चालू है</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
 <translation id="5976160379964388480">अन्य</translation>

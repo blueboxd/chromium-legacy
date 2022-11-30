@@ -21,12 +21,6 @@ const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
     "users.";
 
-const char kAppStoreRatingIgnoreEligibilityCheckTestName[] =
-    "Overrides App Store rating trigger requirements.";
-const char kAppStoreRatingIgnoreEligibilityCheckTestDescription[] =
-    "Overrides the app store rating trigger requirements to show the prompt"
-    "on the next startup. Used for testing.";
-
 const char kAutofillBrandingIOSName[] = "Autofill Branding on iOS";
 const char kAutofillBrandingIOSDescription[] =
     "Adds the Chrome logo in the form input suggestions bar. Full color by "
@@ -172,7 +166,8 @@ extern const char kEnableExpKitCalendarTextClassifierDescription[] =
 extern const char kMapsExperienceKitName[] = "Experience Kit Maps";
 extern const char kMapsExperienceKitDescription[] =
     "When enabled, long pressing on an address will trigger Experience Kit Maps"
-    "location and directions handling";
+    "location and directions handling. Requires "
+    "#enable-long-press-surrounding-text to be enabled";
 
 extern const char kLongPressSurroundingTextName[] =
     "Enable Long Press Surrounding Text";
@@ -254,6 +249,11 @@ const char kEnableCBDSignOutName[] = "Enable Clear Browsing Data Sign-out";
 const char kEnableCBDSignOutDescription[] =
     "Offer signed-in user to sign-out from Clear Browsing Data settings.";
 
+const char kEnableCheckVisibilityOnAttentionLogStartName[] =
+    "Enable Check Feed Visibility On Attention Log Start";
+const char kEnableCheckVisibilityOnAttentionLogStartDescription[] =
+    "Enable checking feed visibility on attention log start.";
+
 const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
     "Enable discover feed discofeed";
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
@@ -309,6 +309,12 @@ const char kPasswordsGroupingDescription[] =
 const char kEnableOpenInDownloadName[] = "Enable Open In download";
 const char kEnableOpenInDownloadDescription[] =
     "Enable new download for Open In menu (iOS 14.5+).";
+
+const char kEnableRefineDataSourceReloadReportingName[] =
+    "Enable Refine Data Source Reload Reporting";
+const char kEnableRefineDataSourceReloadReportingDescription[] =
+    "Enable refining data source reload reporting when having a very short "
+    "attention log";
 
 const char kEnableUnicornAccountSupportName[] =
     "Enable Unicorn account support";
@@ -366,6 +372,11 @@ const char kFillingAcrossAffiliatedWebsitesName[] =
 const char kFillingAcrossAffiliatedWebsitesDescription[] =
     "Enables filling password on a website when there is saved "
     "password on affiliated website.";
+
+const char kFollowingFeedDefaultSortTypeName[] =
+    "Following feed default sort type.";
+const char kFollowingFeedDefaultSortTypeDescription[] =
+    "Sets the default sort type for Following feed content.";
 
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =

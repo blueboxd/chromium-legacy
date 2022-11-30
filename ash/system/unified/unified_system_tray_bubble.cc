@@ -109,7 +109,7 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
     bubble_widget_->Close();
   }
 
-  CHECK(!IsInObserverList());
+  CHECK(!TrayBubbleBase::IsInObserverList());
 }
 
 void UnifiedSystemTrayBubble::InitializeObservers() {
@@ -332,10 +332,12 @@ void UnifiedSystemTrayBubble::RecordTimeToClick() {
 
 void UnifiedSystemTrayBubble::OnTabletModeStarted() {
   UpdateBubbleBounds();
+  tray_->CloseBubble();
 }
 
 void UnifiedSystemTrayBubble::OnTabletModeEnded() {
   UpdateBubbleBounds();
+  tray_->CloseBubble();
 }
 
 void UnifiedSystemTrayBubble::OnAutoHideStateChanged(

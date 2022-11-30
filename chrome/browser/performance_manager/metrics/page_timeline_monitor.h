@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/page_node.h"
 
 namespace performance_manager::metrics {
@@ -19,11 +20,9 @@ class PageTimelineMonitorUnitTest;
 
 // Periodically reports tab state via UKM, to enable analysis of usage patterns
 // over time.
-//
-// TODO(crbug.com/1367052): Report whether high-efficiency mode and/or
-// battery-saver mode are enabled.
 class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
-                            public GraphOwned {
+                            public GraphOwned,
+                            public GraphRegisteredImpl<PageTimelineMonitor> {
  public:
   // Keep in sync with PageState in enums.xml
   enum class PageState {
@@ -58,6 +57,8 @@ class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
                      PageType previous_state) override;
   void OnTitleUpdated(const PageNode* page_node) override;
   void OnFaviconUpdated(const PageNode* page_node) override;
+
+  void SetBatterySaverEnabled(bool enabled);
 
  private:
   friend PageTimelineMonitorUnitTest;
@@ -109,6 +110,8 @@ class PageTimelineMonitor : public PageNode::ObserverDefaultImpl,
   // Function which is called to determine whether a PageTimelineState slice
   // should be collected. Overridden in tests.
   base::RepeatingCallback<bool()> should_collect_slice_callback_;
+
+  bool battery_saver_enabled_ = false;
 
   // WeakPtrFactory for the RepeatingTimer to call a method on this object.
   base::WeakPtrFactory<PageTimelineMonitor> weak_factory_{this};

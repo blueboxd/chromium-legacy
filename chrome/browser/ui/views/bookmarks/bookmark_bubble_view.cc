@@ -232,10 +232,11 @@ void BookmarkBubbleView::ShowBubble(
                                   base::Unretained(bubble_delegate))))
       .SetInitiallyFocusedField(kBookmarkName);
 
-  if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
+  commerce::ShoppingService* shopping_service =
+      commerce::ShoppingServiceFactory::GetForBrowserContext(profile);
+  if (shopping_service->IsShoppingListEligible()) {
     absl::optional<commerce::ProductInfo> product_info =
-        commerce::ShoppingServiceFactory::GetForBrowserContext(profile)
-            ->GetAvailableProductInfoForUrl(url);
+        shopping_service->GetAvailableProductInfoForUrl(url);
     auto* tab_helper =
         commerce::ShoppingListUiTabHelper::FromWebContents(web_contents);
     CHECK(tab_helper);
@@ -247,8 +248,7 @@ void BookmarkBubbleView::ShowBubble(
       dialog_model_builder.AddSeparator().AddCustomField(
           std::make_unique<views::BubbleDialogModelHost::CustomView>(
               std::make_unique<PriceTrackingView>(
-                  profile, url, ui::ImageModel::FromImage(product_image),
-                  is_price_tracked),
+                  profile, url, *product_image.ToImageSkia(), is_price_tracked),
               views::BubbleDialogModelHost::FieldType::kControl),
           kPriceTrackingBookmarkViewElementId);
     }

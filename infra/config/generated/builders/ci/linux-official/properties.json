@@ -21,8 +21,7 @@
               },
               "legacy_gclient_config": {
                 "apply_configs": [
-                  "checkout_pgo_profiles",
-                  "enable_reclient"
+                  "checkout_pgo_profiles"
                 ],
                 "config": "chromium"
               }
@@ -58,5 +57,8 @@
     ]
   },
   "builder_group": "chromium",
-  "recipe": "chromium"
+  "recipe": "chromium",
+  "sheriff_rotations": [
+    "chrome_browser_release"
+  ]
 }

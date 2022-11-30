@@ -16,20 +16,18 @@ import '../site_favicon.js';
 
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {FocusRowMixin} from 'chrome://resources/js/focus_row_mixin.js';
-import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
+import {FocusRowMixin} from 'chrome://resources/js/focus_row_mixin.js';
 import {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
-import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 
 import {AllSitesAction2, SortMethod} from './constants.js';
-import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
 import {getTemplate} from './site_entry.html.js';
 import {SiteSettingsMixin} from './site_settings_mixin.js';
 import {OriginInfo, SiteGroup} from './site_settings_prefs_browser_proxy.js';
@@ -132,12 +130,6 @@ export class SiteEntryElement extends SiteEntryElementBase {
        * The selected sort method.
        */
       sortMethod: {type: String, observer: 'updateOrigins_'},
-
-      enableConsolidatedSiteStorageControls_: {
-        type: Boolean,
-        value: () =>
-            loadTimeData.getBoolean('consolidatedSiteStorageControlsEnabled'),
-      },
     };
   }
 
@@ -157,12 +149,9 @@ export class SiteEntryElement extends SiteEntryElementBase {
   private originUsages_: string[];
   private cookiesNum_: string[];
   sortMethod?: SortMethod;
-  private enableConsolidatedSiteStorageControls_: boolean;
   private fpsEnterprisePref_: chrome.settingsPrivate.PrefObject;
 
   private button_: Element|null = null;
-  private localDataBrowserProxy_: LocalDataBrowserProxy =
-      LocalDataBrowserProxyImpl.getInstance();
   private eventTracker_: EventTracker = new EventTracker();
 
   override disconnectedCallback() {
@@ -338,7 +327,7 @@ export class SiteEntryElement extends SiteEntryElementBase {
     if (numCookies === 0) {
       return Promise.resolve('');
     }
-    return this.localDataBrowserProxy_.getNumCookiesString(numCookies);
+    return this.browserProxy.getNumCookiesString(numCookies);
   }
 
   /**
@@ -350,7 +339,7 @@ export class SiteEntryElement extends SiteEntryElementBase {
     if (!this.siteGroup.fpsOwner) {
       this.fpsMembershipLabel_ = '';
     } else {
-      this.localDataBrowserProxy_
+      this.browserProxy
           .getFpsMembershipLabel(
               this.siteGroup.fpsNumMembers!, this.siteGroup.fpsOwner!)
           .then(label => this.fpsMembershipLabel_ = label);
@@ -359,11 +348,11 @@ export class SiteEntryElement extends SiteEntryElementBase {
 
   /**
    * Evaluates whether the policy icon should be shown.
-   * @returns False when `fpsEnterprisePref_` is undefined, otherwise true.
+   * @returns True when `this.siteGroup.fpsEnterpriseManaged` is true,
+   * otherwise false.
    */
   private shouldShowPolicyPrefIndicator_(): boolean {
-    this.updatePolicyPref_();
-    return !!this.fpsEnterprisePref_;
+    return !!this.siteGroup.fpsEnterpriseManaged;
   }
 
   /**
@@ -375,7 +364,10 @@ export class SiteEntryElement extends SiteEntryElementBase {
           enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
           controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
         }) :
-        undefined;
+        Object.assign({
+          enforcement: undefined,
+          controlledBy: undefined,
+        });
   }
 
   /**
@@ -494,6 +486,10 @@ export class SiteEntryElement extends SiteEntryElementBase {
         'siteSettingsCookieRemoveSite', this.originRepresentation(origin));
   }
 
+  private getMoreActionsLabel_(): string {
+    return this.i18n(
+        'firstPartySetsMoreActionsTitle', this.siteGroup.etldPlus1);
+  }
   /**
    * Update the order and data display text for origins.
    */

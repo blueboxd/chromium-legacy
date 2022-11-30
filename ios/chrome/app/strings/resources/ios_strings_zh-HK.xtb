@@ -109,6 +109,7 @@
 <translation id="1687475363370981210">全部標示為已閱讀</translation>
 <translation id="1689333818294560261">暱稱</translation>
 <translation id="1700629756560807968">已選取 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
+<translation id="1715515772563243997">如果您信任 <ph name="SITE" />，可使用已儲存的密碼登入。</translation>
 <translation id="1740468249224277719">輕按兩下即可安裝。</translation>
 <translation id="1752547299766512813">儲存密碼</translation>
 <translation id="1753905327828125965">最常瀏覽</translation>
@@ -121,6 +122,7 @@
 <translation id="1832848789136765277">為確保您可隨時存取同步資料，請驗證您的身分</translation>
 <translation id="1870148520156231997">顯示密碼</translation>
 <translation id="1872096359983322073">閃光燈</translation>
+<translation id="1891796056033961979">您儲存嘅書籤、密碼、設定同其他內容會喺呢度顯示。</translation>
 <translation id="1910975740091000991">Chrome iOS 版</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
 <translation id="1923342640370224680">前一個小時</translation>
@@ -151,6 +153,7 @@
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2155145621546387786">分享 Chrome</translation>
 <translation id="2175927920773552910">二維條碼</translation>
+<translation id="2178545675770638239">選取密碼</translation>
 <translation id="2218443599109088993">縮小</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
 <translation id="2239626343334228536">正在清除瀏覽資料…</translation>
@@ -434,6 +437,8 @@
 <translation id="4502566650163919158">立即檢查</translation>
 <translation id="4505980578794259603">上次檢查時間：<ph name="TIME" />。</translation>
 <translation id="4508750114462689118">閂登入宣傳元素</translation>
+<translation id="4514889972748124117">建議安全度高的密碼…</translation>
+<translation id="4520798012560649652">進一步瞭解無痕模式</translation>
 <translation id="4526249700380860531">檢視及管理您在 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 中已儲存的密碼</translation>
 <translation id="452750746583162491">查看您已同步的資料</translation>
 <translation id="4536418791685807335">請嘗試再次登入。</translation>
@@ -663,6 +668,7 @@
 <translation id="6231782223312638214">建議</translation>
 <translation id="6232329973559504466">無痕搜尋</translation>
 <translation id="6232736989810857397">此操作讓您可透過「Google 智能鏡頭」輕鬆建立日曆活動。</translation>
+<translation id="6247557882553405851">Google 密碼管理工具</translation>
 <translation id="6254066287920239840">在應用程式 (而非瀏覽器) 中開啟連結。</translation>
 <translation id="6255097610484507482">編輯信用卡</translation>
 <translation id="6277426346321820595">沒有保護</translation>
@@ -1012,6 +1018,7 @@
 <translation id="8917490105272468696">係，我同意</translation>
 <translation id="8928133177108699615">桌面模式</translation>
 <translation id="8952559610785099500">新增密碼</translation>
+<translation id="8953046091948372197">這裡會顯示您的密碼</translation>
 <translation id="895541991026785598">回報問題</translation>
 <translation id="8974714402877957201">1. 開啟 iPad 的「設定」</translation>
 <translation id="8976382372951310360">說明</translation>
@@ -1045,6 +1052,7 @@
 <translation id="9200875785104711666"><ph name="TIME" /> 天前</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">當機報告已送出。</translation>
+<translation id="941747855997058526">選取密碼…</translation>
 <translation id="952704832371081537">取消</translation>
 <translation id="953008885340860025">您已登出 Chrome</translation>
 <translation id="959066944189734975">您正在追蹤「<ph name="CHANNEL_NAME" />」</translation>

@@ -91,7 +91,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private static final int SPINNER_FADEIN_DURATION_MS = 100;
     private static final int SPINNER_FADEOUT_DURATION_MS = 400;
     private static final int NAVBAR_BUTTON_RESTORE_DELAY_MS = 400;
-    private static final int NAVBAR_BUTTON_HIDE_SHOW_DELAY_MS = 50;
+    private static final int NAVBAR_BUTTON_HIDE_SHOW_DELAY_MS = 150;
     private static final String PARAM_LOG_IMMERSIVE_MODE_CONFIRMATIONS =
             "log_immersive_mode_confirmations";
     @VisibleForTesting
@@ -121,6 +121,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private final boolean mIsFixedHeight;
     private final @Px int mUnclampedInitialHeight;
     private final FullscreenManager mFullscreenManager;
+    private final boolean mAlwaysShowNavbarButtons;
 
     private static boolean sHasLoggedImmersiveModeConfirmationSetting;
 
@@ -159,6 +160,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private View mToolbarCoordinator;
     private int mToolbarColor;
     private Runnable mPositionUpdater;
+    private Runnable mSoftKeyboardRunnable;
     private boolean mStopShowingSpinner;
 
     // Window attributes backed up for HTML fullscreen mode.
@@ -210,6 +212,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             OnResizedCallback onResizedCallback, ActivityLifecycleDispatcher lifecycleDispatcher,
             FullscreenManager fullscreenManager, boolean isTablet) {
         mWindowAboveNavbar = ChromeFeatureList.sCctResizableWindowAboveNavbar.isEnabled();
+        mAlwaysShowNavbarButtons = mWindowAboveNavbar
+                && ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons.isEnabled();
         mActivity = activity;
         mDisplayHeight = getDisplayHeight();
         mUnclampedInitialHeight = initialHeight;
@@ -290,10 +294,15 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         mPositionUpdater.run();
     }
 
-    public void onShowSoftInput() {
-        if (isFullHeight() || mStatus != HeightStatus.INITIAL_HEIGHT) return;
+    public void onShowSoftInput(Runnable softKeyboardRunnable) {
+        // Expands to full height to avoid the tab being hidden by the soft keyboard.
+        // Necessary only if we're at the initial height status.
+        if (isFullHeight() || mStatus != HeightStatus.INITIAL_HEIGHT) {
+            softKeyboardRunnable.run();
+            return;
+        }
+        mSoftKeyboardRunnable = softKeyboardRunnable;
 
-        // Expands to full height.
         int start = mActivity.getWindow().getAttributes().y;
         int end = getFullyExpandedYWithAdjustment();
         mAnimator.setIntValues(start, end);
@@ -512,8 +521,12 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
                 mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
             }
         } else {
-            height = initialHeightInPortraitMode();
-            mStatus = HeightStatus.INITIAL_HEIGHT;
+            if (mStatus == HeightStatus.INITIAL_HEIGHT) {
+                height = initialHeightInPortraitMode();
+            } else if (mStatus == HeightStatus.TOP) {
+                height = mDisplayHeight - maxExpandedY;
+            }
+
             if (!mWindowAboveNavbar) {
                 mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
             }
@@ -701,22 +714,32 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         hideSpinnerView();
         if (mWindowAboveNavbar) {
             showNavbarButtons(true);
-            new Handler().postDelayed(() -> {
+            if (mAlwaysShowNavbarButtons) {
+                finishResizing();
+            } else {
                 // Give a small delay in restoring the window to avoid the flashing artifact
                 // at the navigation bar area.
-                Window window = mActivity.getWindow();
-                window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-                positionAtHeight(mDisplayHeight - window.getAttributes().y);
-                maybeInvokeResizeCallback();
-                mStatus = mTargetStatus;
-            }, NAVBAR_BUTTON_RESTORE_DELAY_MS);
+                new Handler().postDelayed(this::finishResizing, NAVBAR_BUTTON_RESTORE_DELAY_MS);
 
-            // Temporarily disables user input until the window is restored.
-            mTargetStatus = mStatus;
-            mStatus = HeightStatus.TRANSITION;
+                // Temporarily disables user input until the window is restored.
+                mTargetStatus = mStatus;
+                mStatus = HeightStatus.TRANSITION;
+            }
         } else {
             updateNavbarVisibility(true);
         }
+        if (mSoftKeyboardRunnable != null) {
+            mSoftKeyboardRunnable.run();
+            mSoftKeyboardRunnable = null;
+        }
+    }
+
+    private void finishResizing() {
+        Window window = mActivity.getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        positionAtHeight(mDisplayHeight - window.getAttributes().y);
+        maybeInvokeResizeCallback();
+        mStatus = mTargetStatus;
     }
 
     private void hideSpinnerView() {
@@ -898,16 +921,19 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
             controller.hide(WindowInsetsCompat.Type.navigationBars());
         }
 
-        // Take over the control of insets animation after the #show / #hide. This call needs to
-        // happen after the #show / #hide call to work correctly.
-        mNavbarTransitionController.setShow(show);
-        controller.controlWindowInsetsAnimation(WindowInsetsCompat.Type.navigationBars(),
-                /*durationMillis*/ 1, null, null, mNavbarTransitionController);
+        // If we are no longer hiding the navbar buttons we don't need to take control over the
+        // insets animation.
+        if (!mAlwaysShowNavbarButtons) {
+            // Take over the control of insets animation after the #show / #hide. This call needs to
+            // happen after the #show / #hide call to work correctly.
+            mNavbarTransitionController.setShow(show);
+            controller.controlWindowInsetsAnimation(WindowInsetsCompat.Type.navigationBars(),
+                    /*durationMillis*/ 1, null, null, mNavbarTransitionController);
+        }
     }
 
     private void showNavbarButtons(boolean show) {
-        if (mWindowAboveNavbar
-                && ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons.isEnabled()) {
+        if (mAlwaysShowNavbarButtons) {
             // Resizing while the navbar buttons are visible, at times, flashes the host app.
             // http://crbug/1360425 fixed this for when the navbar buttons are hidden, so taking
             // advantage of that fix by hiding for a bit the navigation buttons, during the time the

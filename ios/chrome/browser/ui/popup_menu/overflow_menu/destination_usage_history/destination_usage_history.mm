@@ -40,20 +40,16 @@ const char kRankingKey[] = "ranking";
 
 // The default destinations ranking, based on statistical usage of the old
 // overflow menu.
-std::vector<overflow_menu::Destination> DefaultDestinationsRanking() {
-  std::vector<overflow_menu::Destination> default_ranking = {
-      overflow_menu::Destination::Bookmarks,
-      overflow_menu::Destination::History,
-      overflow_menu::Destination::ReadingList,
-      overflow_menu::Destination::Passwords,
-      overflow_menu::Destination::Downloads,
-      overflow_menu::Destination::RecentTabs,
-      overflow_menu::Destination::SiteInfo,
-      overflow_menu::Destination::Settings,
-  };
-
-  return default_ranking;
-}
+const overflow_menu::Destination kDefaultRanking[] = {
+    overflow_menu::Destination::Bookmarks,
+    overflow_menu::Destination::History,
+    overflow_menu::Destination::ReadingList,
+    overflow_menu::Destination::Passwords,
+    overflow_menu::Destination::Downloads,
+    overflow_menu::Destination::RecentTabs,
+    overflow_menu::Destination::SiteInfo,
+    overflow_menu::Destination::Settings,
+};
 
 // The number of days since the Unix epoch; one day, in this context, runs from
 // UTC midnight to UTC midnight.
@@ -154,9 +150,10 @@ std::vector<overflow_menu::Destination> Vector(
   return vec;
 }
 
-// Converts std::vector<overflow_menu::Destination> ranking into
+// Converts iterable of overflow_menu::Destination `ranking` into
 // base::Value::List ranking.
-base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
+template <typename Range>
+base::Value::List List(Range&& ranking) {
   base::Value::List list;
 
   for (overflow_menu::Destination destination : ranking) {
@@ -186,11 +183,23 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 // B's numClicks exceeds A's.
 @implementation DestinationUsageHistory
 
+#pragma mark - Initializers
+
 - (instancetype)initWithPrefService:(PrefService*)prefService {
   if (self = [super init])
     _prefService = prefService;
 
   return self;
+}
+
+- (void)dealloc {
+  DCHECK(!self.prefService) << "-disconnect needs to be called before -dealloc";
+}
+
+#pragma mark - Disconnect
+
+- (void)disconnect {
+  self.prefService = nullptr;
 }
 
 #pragma mark - Public
@@ -237,8 +246,8 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 // Track click for `destination` and associate it with TodaysDay().
 - (void)trackDestinationClick:(overflow_menu::Destination)destination
      numAboveFoldDestinations:(int)numAboveFoldDestinations {
-  DCHECK(self.prefService);
-  // Exit early if there's no pref service; this is not expected to happen.
+  // Exit early if there's no pref service. May happen during the application
+  // shutdown.
   if (!self.prefService)
     return;
 
@@ -272,6 +281,11 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 // Injects a default number of clicks for all destinations in the history
 // dictonary.
 - (void)injectDefaultNumClicksForAllDestinations {
+  // Exit early if there's no pref service. May happen during the application
+  // shutdown.
+  if (!self.prefService)
+    return;
+
   DCHECK_GT(kDampening, 1.0);
   DCHECK_GT(kInitialBufferNumClicks, 1);
 
@@ -283,10 +297,7 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
   const base::Value::Dict& history =
       self.prefService->GetDict(prefs::kOverflowMenuDestinationUsageHistory);
 
-  std::vector<overflow_menu::Destination> defaultRanking =
-      DefaultDestinationsRanking();
-
-  for (overflow_menu::Destination destination : defaultRanking) {
+  for (overflow_menu::Destination destination : kDefaultRanking) {
     const std::string path =
         today + "." + overflow_menu::StringNameForDestination(destination);
     update->SetByDottedPath(
@@ -298,6 +309,11 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 // saves back to prefs. Returns true if expired usage data was found/removed,
 // false otherwise.
 - (void)deleteExpiredData {
+  // Exit early if there's no pref service. May happen during the application
+  // shutdown.
+  if (!self.prefService)
+    return;
+
   const base::Value::Dict& history =
       self.prefService->GetDict(prefs::kOverflowMenuDestinationUsageHistory);
 
@@ -318,6 +334,11 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 
 // Fetches the current ranking saved in prefs and returns it.
 - (const base::Value::List*)fetchCurrentRanking {
+  // Exit early if there's no pref service. May happen during the application
+  // shutdown.
+  if (!self.prefService)
+    return nullptr;
+
   const base::Value::Dict& history =
       self.prefService->GetDict(prefs::kOverflowMenuDestinationUsageHistory);
 
@@ -339,10 +360,7 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
                                (const base::Value::List*)previousRanking
                       numAboveFoldDestinations:(int)numAboveFoldDestinations {
   if (!previousRanking) {
-    std::vector<overflow_menu::Destination> defaultRanking =
-        DefaultDestinationsRanking();
-
-    return List(defaultRanking);
+    return List(kDefaultRanking);
   }
 
   if (numAboveFoldDestinations >= static_cast<int>(previousRanking->size()))
@@ -361,10 +379,15 @@ base::Value::List List(std::vector<overflow_menu::Destination>& ranking) {
 // (int). Only usage data within previous `window` days will be included in the
 // returned result.
 - (base::Value::Dict)flattenedHistoryWithinWindow:(int)window {
+  base::Value::Dict flatHistory;
+
+  // Exit early if there's no pref service. May happen during the application
+  // shutdown.
+  if (!self.prefService)
+    return flatHistory;
+
   const base::Value::Dict& history =
       self.prefService->GetDict(prefs::kOverflowMenuDestinationUsageHistory);
-
-  base::Value::Dict flatHistory;
 
   for (auto&& [day, dayHistory] : history) {
     // Skip over entry corresponding to previous ranking.

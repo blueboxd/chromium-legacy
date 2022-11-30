@@ -167,13 +167,8 @@ bool HasScrolledEnough(const LayoutObject& object) {
       DCHECK(scrollable_area);
       gfx::Vector2dF delta = -scroll_translation->Translation2D() -
                              scrollable_area->LastCullRectUpdateScrollOffset();
-      if (!delta.IsZero()) {
-        // See CullRectUpdater::ShouldSkipChangedEnough().
-        if (scrollable_area->Layer()->SelfOrDescendantNeedsRepaint())
-          return true;
-        return object.FirstFragment().GetContentsCullRect().HasScrolledEnough(
-            delta, *scroll_translation);
-      }
+      return object.FirstFragment().GetContentsCullRect().HasScrolledEnough(
+          delta, *scroll_translation);
     }
   }
   return false;
@@ -245,11 +240,15 @@ void CullRectUpdater::UpdateRecursively(const Context& parent_context,
   if (object.IsFixedPositioned())
     context.current = context.fixed;
 
+  bool should_proactively_update = ShouldProactivelyUpdate(context, layer);
   bool force_update_self = context.current.force_update_children;
-  context.current.force_update_children = layer.ForcesChildrenCullRectUpdate();
+  context.current.force_update_children =
+      should_proactively_update || layer.ForcesChildrenCullRectUpdate();
 
-  if (force_update_self || layer.NeedsCullRectUpdate())
+  if (force_update_self || should_proactively_update ||
+      layer.NeedsCullRectUpdate()) {
     context.current.force_update_children |= UpdateForSelf(context, layer);
+  }
 
   if (!context.current.subtree_is_out_of_cull_rect &&
       object.ShouldClipOverflowAlongBothAxis() &&
@@ -423,12 +422,12 @@ CullRect CullRectUpdater::ComputeFragmentCullRect(
     absl::optional<CullRect> old_cull_rect;
     // Not using |old_cull_rect| will force the cull rect to be updated
     // (skipping |ChangedEnough|) in |ApplyPaintProperties|.
-    if (!ShouldSkipChangedEnough(context, layer))
+    if (!ShouldProactivelyUpdate(context, layer))
       old_cull_rect = fragment.GetCullRect();
     bool expanded = cull_rect.ApplyPaintProperties(root_state_, parent_state,
                                                    local_state, old_cull_rect);
     if (expanded && fragment.GetCullRect() != cull_rect)
-      context.current.subtree_should_skip_changed_enough = true;
+      context.current.force_proactive_update = true;
   }
   return cull_rect;
 }
@@ -445,27 +444,27 @@ CullRect CullRectUpdater::ComputeFragmentContentsCullRect(
     absl::optional<CullRect> old_contents_cull_rect;
     // Not using |old_cull_rect| will force the cull rect to be updated
     // (skipping |CullRect::ChangedEnough|) in |ApplyPaintProperties|.
-    if (!ShouldSkipChangedEnough(context, layer))
+    if (!ShouldProactivelyUpdate(context, layer))
       old_contents_cull_rect = fragment.GetContentsCullRect();
     bool expanded = contents_cull_rect.ApplyPaintProperties(
         root_state_, local_state, contents_state, old_contents_cull_rect);
     if (expanded && fragment.GetContentsCullRect() != contents_cull_rect)
-      context.current.subtree_should_skip_changed_enough = true;
+      context.current.force_proactive_update = true;
   }
   return contents_cull_rect;
 }
 
-bool CullRectUpdater::ShouldSkipChangedEnough(const Context& context,
+bool CullRectUpdater::ShouldProactivelyUpdate(const Context& context,
                                               const PaintLayer& layer) const {
-  if (context.current.subtree_should_skip_changed_enough)
+  if (context.current.force_proactive_update)
     return true;
 
-  // If we will repaint anyway, proactively refresh cull rect by skipping the
-  // |CullRect::ChangedEnough| logic. That logic manages a sliding window (aka
-  // hysteresis) to avoid frequent cull rect updates because they force a
-  // repaint (see: |CullRectUpdater::SetFragmentCullRects|). Proactively
-  // updating the cull rect resets the sliding window which will minimize
-  // the need to update the cull rect again.
+  // If we will repaint anyway, proactively refresh cull rect. A sliding
+  // window (aka hysteresis, see: CullRect::ChangedEnough()) is used to
+  // avoid frequent cull rect updates because they force a repaint (see:
+  // |CullRectUpdater::SetFragmentCullRects|). Proactively updating the cull
+  // rect resets the sliding window which will minimize the need to update
+  // the cull rect again.
   return layer.SelfOrDescendantNeedsRepaint();
 }
 
@@ -561,6 +560,9 @@ OverriddenCullRectScope::OverriddenCullRectScope(PaintLayer& starting_layer,
                                                  const CullRect& cull_rect) {
   if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
     return;
+
+  outer_original_cull_rects_ = g_original_cull_rects;
+
   if (starting_layer.IsRootLayer() &&
       starting_layer.GetLayoutObject().GetFrame()->IsLocalRoot() &&
       !starting_layer.NeedsCullRectUpdate() &&
@@ -571,7 +573,6 @@ OverriddenCullRectScope::OverriddenCullRectScope(PaintLayer& starting_layer,
     return;
   }
 
-  DCHECK(!g_original_cull_rects);
   g_original_cull_rects = &original_cull_rects_;
   CullRectUpdater(starting_layer).UpdateInternal(cull_rect);
 }
@@ -579,11 +580,12 @@ OverriddenCullRectScope::OverriddenCullRectScope(PaintLayer& starting_layer,
 OverriddenCullRectScope::~OverriddenCullRectScope() {
   if (!RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
     return;
-  if (!g_original_cull_rects)
+
+  if (outer_original_cull_rects_ == g_original_cull_rects)
     return;
 
   DCHECK_EQ(g_original_cull_rects, &original_cull_rects_);
-  g_original_cull_rects = nullptr;
+  g_original_cull_rects = outer_original_cull_rects_;
   for (FragmentCullRects& cull_rects : original_cull_rects_) {
     cull_rects.fragment->SetCullRect(cull_rects.cull_rect);
     cull_rects.fragment->SetContentsCullRect(cull_rects.contents_cull_rect);

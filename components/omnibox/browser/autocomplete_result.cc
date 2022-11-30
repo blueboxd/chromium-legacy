@@ -173,7 +173,9 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
   // particularly noticeable when the user types the next char before the
   // copied matches are expired leading to outdated matches surviving multiple
   // input changes, e.g. 'gooooooooo[oogle.com]'.
-  if (OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.Get()) {
+  static bool dont_copy_done_providers =
+      OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.Get();
+  if (dont_copy_done_providers) {
     old_matches->matches_.erase(
         base::ranges::remove_if(*old_matches,
                                 [](const auto& old_match) {
@@ -247,7 +249,8 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
   // `SetAllowedToBeDefault()` here is only intended to make
   // `allowed_to_be_default` more conservative (true -> false, not vice versa).
   static bool prevent_default_previous_matches =
-      OmniboxFieldTrial::kPreventDefaultPreviousMatches.Get();
+      OmniboxFieldTrial::kAutocompleteStabilityPreventDefaultPreviousMatches
+          .Get();
   for (auto& m : matches_) {
     if (!m.from_previous)
       continue;
@@ -319,7 +322,8 @@ void AutocompleteResult::SortAndCull(
             // Don't preserve suggestions that are not default-able; e.g.,
             // typing 'xy' shouldn't preserve default 'xz.com/xy'.
             static bool prevent_default_previous_matches =
-                OmniboxFieldTrial::kPreventDefaultPreviousMatches.Get();
+                OmniboxFieldTrial::
+                    kAutocompleteStabilityPreventDefaultPreviousMatches.Get();
             return default_match_fields == GetMatchComparisonFields(match) &&
                    preserve_default_match->fill_into_edit ==
                        match.fill_into_edit &&
@@ -1254,6 +1258,12 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
       begin, end, [](int a, int b) { return a < b; },
       [](const auto& m) {
         if (AutocompleteMatch::IsStarterPackType(m.type))
+          return 0;
+        // Group history cluster suggestions with searches. If the
+        // `omnibox_history_cluster_provider_free_ranking` feature is disabled,
+        // they'll be pushed back to last position, and grouping here will have
+        // no effect.
+        if (m.type == AutocompleteMatchType::HISTORY_CLUSTER)
           return 0;
         if (AutocompleteMatch::IsSearchType(m.type))
           return 1;

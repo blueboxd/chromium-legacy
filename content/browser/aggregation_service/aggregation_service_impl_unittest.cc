@@ -44,6 +44,9 @@ namespace {
 using aggregation_service::RequestIdIs;
 using testing::_;
 using testing::ElementsAre;
+using testing::Eq;
+using testing::Optional;
+using testing::StrictMock;
 }  // namespace
 
 // TODO(alexmt): Consider rewriting these tests using gmock.
@@ -146,9 +149,13 @@ class TestAggregatableReportScheduler : public AggregatableReportScheduler {
     completed_requests_status_[request_id] = true;
   }
 
-  void NotifyInProgressRequestFailed(
-      AggregationServiceStorage::RequestId request_id) override {
+  bool NotifyInProgressRequestFailed(
+      AggregationServiceStorage::RequestId request_id,
+      int previous_failed_attempts) override {
     completed_requests_status_[request_id] = false;
+    failed_attempts_[request_id] = previous_failed_attempts + 1;
+
+    return previous_failed_attempts < kMaxRetries;
   }
 
   void TriggerReportingTime(
@@ -174,6 +181,13 @@ class TestAggregatableReportScheduler : public AggregatableReportScheduler {
     return completed_requests_status_[request_id];
   }
 
+  int FailedAttempts(AggregationServiceStorage::RequestId request_id) {
+    if (!base::Contains(failed_attempts_, request_id)) {
+      return 0;
+    }
+    return failed_attempts_[request_id];
+  }
+
  private:
   base::RepeatingCallback<void(
       std::vector<AggregationServiceStorage::RequestAndId>)>
@@ -187,6 +201,10 @@ class TestAggregatableReportScheduler : public AggregatableReportScheduler {
   // successfully.
   base::flat_map<AggregationServiceStorage::RequestId, bool>
       completed_requests_status_;
+  // Each failed request's ID is the key, with value the number of times it
+  // failed to send. Only contains entries for requests with at least one
+  // failure.
+  base::flat_map<AggregationServiceStorage::RequestId, int> failed_attempts_;
 };
 
 class MockAggregationServiceObserver : public AggregationServiceObserver {
@@ -198,7 +216,8 @@ class MockAggregationServiceObserver : public AggregationServiceObserver {
 
   MOCK_METHOD(void,
               OnReportHandled,
-              (const AggregationServiceStorage::RequestAndId& request_and_id,
+              (const AggregatableReportRequest& request,
+               absl::optional<AggregationServiceStorage::RequestId> id,
                const absl::optional<AggregatableReport>& report,
                base::Time report_handle_time,
                ReportStatus status),
@@ -261,6 +280,10 @@ class AggregationServiceImplTest : public testing::Test {
 
   void ScheduleReport(AggregatableReportRequest request) {
     service()->ScheduleReport(std::move(request));
+  }
+
+  void AssembleAndSendReport(AggregatableReportRequest request) {
+    service()->AssembleAndSendReport(std::move(request));
   }
 
   void StoreReport(AggregatableReportRequest request) {
@@ -400,12 +423,13 @@ TEST_F(AggregationServiceImplTest, ScheduleReport_Success) {
 }
 
 TEST_F(AggregationServiceImplTest, ScheduleReport_FailedAssembly) {
-  AggregatableReportRequest request =
-      aggregation_service::CreateExampleRequest();
+  AggregatableReportRequest request = aggregation_service::CreateExampleRequest(
+      /*aggregation_mode=*/mojom::AggregationServiceMode::kDefault,
+      /*failed_send_attempts=*/AggregatableReportScheduler::kMaxRetries);
 
   ScheduleReport(std::move(request));
 
-  MockAggregationServiceObserver observer;
+  StrictMock<MockAggregationServiceObserver> observer;
   base::ScopedObservation<AggregationService, AggregationServiceObserver>
       observation(&observer);
   observation.Observe(service());
@@ -416,7 +440,7 @@ TEST_F(AggregationServiceImplTest, ScheduleReport_FailedAssembly) {
   EXPECT_CALL(observer, OnRequestStorageModified);
   EXPECT_CALL(observer,
               OnReportHandled(
-                  RequestIdIs(request_id), _, _,
+                  _, Optional(request_id), _, _,
                   AggregationServiceObserver::ReportStatus::kFailedToAssemble));
 
   scheduler()->TriggerReportingTime(/*request_ids=*/{request_id});
@@ -434,6 +458,7 @@ TEST_F(AggregationServiceImplTest, ScheduleReport_FailedAssembly) {
 
   ASSERT_TRUE(scheduler()->WasRequestSuccessful(request_id).has_value());
   EXPECT_FALSE(scheduler()->WasRequestSuccessful(request_id).value());
+  EXPECT_EQ(scheduler()->FailedAttempts(request_id), 3);
 }
 
 TEST_F(AggregationServiceImplTest, ScheduleReport_FailedSending) {
@@ -442,7 +467,7 @@ TEST_F(AggregationServiceImplTest, ScheduleReport_FailedSending) {
 
   ScheduleReport(std::move(request));
 
-  MockAggregationServiceObserver observer;
+  StrictMock<MockAggregationServiceObserver> observer;
   base::ScopedObservation<AggregationService, AggregationServiceObserver>
       observation(&observer);
   observation.Observe(service());
@@ -451,10 +476,13 @@ TEST_F(AggregationServiceImplTest, ScheduleReport_FailedSending) {
   AggregationServiceStorage::RequestId request_id(1);
 
   EXPECT_CALL(observer, OnRequestStorageModified);
+  // The report should not be considered handled when it is scheduled for a
+  // retry
   EXPECT_CALL(
       observer,
-      OnReportHandled(RequestIdIs(request_id), _, _,
-                      AggregationServiceObserver::ReportStatus::kFailedToSend));
+      OnReportHandled(_, Optional(request_id), _, _,
+                      AggregationServiceObserver::ReportStatus::kFailedToSend))
+      .Times(0);
 
   scheduler()->TriggerReportingTime(/*request_ids=*/{request_id});
 
@@ -474,6 +502,7 @@ TEST_F(AggregationServiceImplTest, ScheduleReport_FailedSending) {
 
   ASSERT_TRUE(scheduler()->WasRequestSuccessful(request_id).has_value());
   EXPECT_FALSE(scheduler()->WasRequestSuccessful(request_id).value());
+  EXPECT_EQ(scheduler()->FailedAttempts(request_id), 1);
 }
 
 TEST_F(AggregationServiceImplTest,
@@ -531,6 +560,106 @@ TEST_F(AggregationServiceImplTest,
           .value());
 }
 
+TEST_F(AggregationServiceImplTest, AssembleAndSendReport_Success) {
+  AggregatableReportRequest request =
+      aggregation_service::CreateExampleRequest();
+
+  AssembleAndSendReport(std::move(request));
+
+  StrictMock<MockAggregationServiceObserver> observer;
+  base::ScopedObservation<AggregationService, AggregationServiceObserver>
+      observation(&observer);
+  observation.Observe(service());
+
+  std::vector<AggregatableReport::AggregationServicePayload> payloads;
+  payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
+                        /*key_id=*/"key_1",
+                        /*debug_cleartext_payload=*/absl::nullopt);
+  AggregatableReport report(std::move(payloads), "example_shared_info",
+                            /*debug_key=*/absl::nullopt);
+
+  assembler()->TriggerResponse(
+      /*report_id=*/0, std::move(report),
+      AggregatableReportAssembler::AssemblyStatus::kOk);
+
+  EXPECT_CALL(observer,
+              OnReportHandled(_, Eq(absl::nullopt), _, _,
+                              AggregationServiceObserver::ReportStatus::kSent));
+
+  sender()->TriggerResponse(/*report_id=*/0,
+                            AggregatableReportSender::RequestStatus::kOk);
+
+  // The scheduler should not have been interacted with.
+  EXPECT_FALSE(
+      scheduler()
+          ->WasRequestSuccessful(AggregationServiceStorage::RequestId(1))
+          .has_value());
+}
+
+TEST_F(AggregationServiceImplTest, AssembleAndSendReport_FailedAssembly) {
+  AggregatableReportRequest request =
+      aggregation_service::CreateExampleRequest();
+
+  AssembleAndSendReport(std::move(request));
+
+  StrictMock<MockAggregationServiceObserver> observer;
+  base::ScopedObservation<AggregationService, AggregationServiceObserver>
+      observation(&observer);
+  observation.Observe(service());
+
+  EXPECT_CALL(observer,
+              OnReportHandled(
+                  _, Eq(absl::nullopt), _, _,
+                  AggregationServiceObserver::ReportStatus::kFailedToAssemble));
+
+  assembler()->TriggerResponse(
+      /*report_id=*/0, /*report=*/absl::nullopt,
+      AggregatableReportAssembler::AssemblyStatus::kAssemblyFailed);
+
+  // The scheduler should not have been interacted with.
+  EXPECT_FALSE(
+      scheduler()
+          ->WasRequestSuccessful(AggregationServiceStorage::RequestId(1))
+          .has_value());
+}
+
+TEST_F(AggregationServiceImplTest, AssembleAndSendReport_FailedSender) {
+  AggregatableReportRequest request =
+      aggregation_service::CreateExampleRequest();
+
+  AssembleAndSendReport(std::move(request));
+
+  StrictMock<MockAggregationServiceObserver> observer;
+  base::ScopedObservation<AggregationService, AggregationServiceObserver>
+      observation(&observer);
+  observation.Observe(service());
+
+  std::vector<AggregatableReport::AggregationServicePayload> payloads;
+  payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
+                        /*key_id=*/"key_1",
+                        /*debug_cleartext_payload=*/absl::nullopt);
+  AggregatableReport report(std::move(payloads), "example_shared_info",
+                            /*debug_key=*/absl::nullopt);
+
+  assembler()->TriggerResponse(
+      /*report_id=*/0, std::move(report),
+      AggregatableReportAssembler::AssemblyStatus::kOk);
+
+  EXPECT_CALL(
+      observer,
+      OnReportHandled(_, Eq(absl::nullopt), _, _,
+                      AggregationServiceObserver::ReportStatus::kFailedToSend));
+
+  sender()->TriggerResponse(
+      /*report_id=*/0, AggregatableReportSender::RequestStatus::kNetworkError);
+
+  // The scheduler should not have been interacted with.
+  EXPECT_FALSE(
+      scheduler()
+          ->WasRequestSuccessful(AggregationServiceStorage::RequestId(1))
+          .has_value());
+}
+
 TEST_F(AggregationServiceImplTest, GetPendingReportRequestsForWebUI) {
   StoreReport(aggregation_service::CreateExampleRequest());
   StoreReport(aggregation_service::CreateExampleRequest());
@@ -555,13 +684,13 @@ TEST_F(AggregationServiceImplTest, SendReportsForWebUI) {
   // IDs autoincrement from 1.
   AggregationServiceStorage::RequestId request_id(1);
 
-  MockAggregationServiceObserver observer;
+  StrictMock<MockAggregationServiceObserver> observer;
   base::ScopedObservation<AggregationService, AggregationServiceObserver>
       observation(&observer);
   observation.Observe(service());
 
   EXPECT_CALL(observer, OnRequestStorageModified);
-  EXPECT_CALL(observer, OnReportHandled(RequestIdIs(request_id), _, _,
+  EXPECT_CALL(observer, OnReportHandled(_, Optional(request_id), _, _,
                                         AggregationServiceObserver::kSent));
 
   service()->SendReportsForWebUI({request_id}, base::DoNothing());
@@ -584,7 +713,7 @@ TEST_F(AggregationServiceImplTest, SendReportsForWebUI) {
 }
 
 TEST_F(AggregationServiceImplTest, ClearData_NotifyObservers) {
-  MockAggregationServiceObserver observer;
+  StrictMock<MockAggregationServiceObserver> observer;
   base::ScopedObservation<AggregationService, AggregationServiceObserver>
       observation(&observer);
   observation.Observe(service());

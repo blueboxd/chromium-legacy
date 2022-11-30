@@ -641,17 +641,29 @@ void ShoppingService::HandleOptGuideMerchantInfoResponse(
 void ShoppingService::Subscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
-  CHECK(subscriptions_manager_);
-  subscriptions_manager_->Subscribe(std::move(subscriptions),
-                                    std::move(callback));
+  // TODO(crbug.com/1377515): When calling this api, we should always have a
+  // valid subscriptions_manager_ and there is no need to do the null check. We
+  // can build an internal system for error logging.
+  if (subscriptions_manager_) {
+    subscriptions_manager_->Subscribe(std::move(subscriptions),
+                                      std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
 }
 
 void ShoppingService::Unsubscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
-  CHECK(subscriptions_manager_);
-  subscriptions_manager_->Unsubscribe(std::move(subscriptions),
-                                      std::move(callback));
+  // TODO(crbug.com/1377515): When calling this api, we should always have a
+  // valid subscriptions_manager_ and there is no need to do the null check. We
+  // can build an internal system for error logging.
+  if (subscriptions_manager_) {
+    subscriptions_manager_->Unsubscribe(std::move(subscriptions),
+                                        std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
 }
 
 void ShoppingService::FetchPriceEmailPref() {
@@ -662,6 +674,29 @@ void ShoppingService::FetchPriceEmailPref() {
 
 void ShoppingService::ScheduleSavedProductUpdate() {
   bookmark_update_manager_->ScheduleUpdate();
+}
+
+bool ShoppingService::IsShoppingListEligible() {
+  return IsShoppingListEligible(account_checker_.get(), pref_service_);
+}
+
+bool ShoppingService::IsShoppingListEligible(AccountChecker* account_checker,
+                                             PrefService* prefs) {
+  if (!base::FeatureList::IsEnabled(kShoppingList))
+    return false;
+
+  if (!prefs || !IsShoppingListAllowedForEnterprise(prefs))
+    return false;
+
+  // Make sure the user allows subscriptions to be made and that we can fetch
+  // store data.
+  if (!account_checker || !account_checker->IsSignedIn() ||
+      !account_checker->IsAnonymizedUrlDataCollectionEnabled() ||
+      !account_checker->IsWebAndAppActivityEnabled()) {
+    return false;
+  }
+
+  return true;
 }
 
 base::WeakPtr<ShoppingService> ShoppingService::AsWeakPtr() {

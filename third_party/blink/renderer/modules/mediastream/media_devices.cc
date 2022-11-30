@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
@@ -20,9 +21,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle_config.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_display_media_stream_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_supported_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_domexception_overconstrainederror.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_user_media_stream_constraints.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -169,6 +172,36 @@ void RecordEnumerateDevicesLatency(base::TimeTicks start_time) {
   base::UmaHistogramTimes("WebRTC.EnumerateDevices.Latency", elapsed);
 }
 
+MediaStreamConstraints* ToMediaStreamConstraints(
+    const UserMediaStreamConstraints* source) {
+  MediaStreamConstraints* options = MediaStreamConstraints::Create();
+  if (source->hasAudio())
+    options->setAudio(source->audio());
+  if (source->hasVideo())
+    options->setVideo(source->video());
+  return options;
+}
+
+MediaStreamConstraints* ToMediaStreamConstraints(
+    const DisplayMediaStreamOptions* source) {
+  MediaStreamConstraints* options = MediaStreamConstraints::Create();
+  if (source->hasAudio())
+    options->setAudio(source->audio());
+  if (source->hasVideo())
+    options->setVideo(source->video());
+  if (source->hasPreferCurrentTab())
+    options->setPreferCurrentTab(source->preferCurrentTab());
+  if (source->hasAutoSelectAllScreens())
+    options->setAutoSelectAllScreens(source->autoSelectAllScreens());
+  if (source->hasSystemAudio())
+    options->setSystemAudio(source->systemAudio());
+  if (source->hasSelfBrowserSurface())
+    options->setSelfBrowserSurface(source->selfBrowserSurface());
+  if (source->hasSurfaceSwitching())
+    options->setSurfaceSwitching(source->surfaceSwitching());
+  return options;
+}
+
 }  // namespace
 
 const char MediaDevices::kSupplementName[] = "MediaDevices";
@@ -220,11 +253,13 @@ MediaTrackSupportedConstraints* MediaDevices::getSupportedConstraints() const {
   return MediaTrackSupportedConstraints::Create();
 }
 
-ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
-                                         const MediaStreamConstraints* options,
-                                         ExceptionState& exception_state) {
+ScriptPromise MediaDevices::getUserMedia(
+    ScriptState* script_state,
+    const UserMediaStreamConstraints* options,
+    ExceptionState& exception_state) {
   return SendUserMediaRequest(script_state, UserMediaRequestType::kUserMedia,
-                              options, exception_state);
+                              ToMediaStreamConstraints(options),
+                              exception_state);
 }
 
 ScriptPromise MediaDevices::SendUserMediaRequest(
@@ -294,7 +329,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
 
 ScriptPromise MediaDevices::getDisplayMediaSet(
     ScriptState* script_state,
-    const MediaStreamConstraints* options,
+    const DisplayMediaStreamOptions* options,
     ExceptionState& exception_state) {
   ExecutionContext* const context = GetExecutionContext();
   if (!context) {
@@ -304,14 +339,14 @@ ScriptPromise MediaDevices::getDisplayMediaSet(
     return ScriptPromise();
   }
 
-  return SendUserMediaRequest(script_state,
-                              UserMediaRequestType::kDisplayMediaSet, options,
-                              exception_state);
+  return SendUserMediaRequest(
+      script_state, UserMediaRequestType::kDisplayMediaSet,
+      ToMediaStreamConstraints(options), exception_state);
 }
 
 ScriptPromise MediaDevices::getDisplayMedia(
     ScriptState* script_state,
-    const MediaStreamConstraints* options,
+    const DisplayMediaStreamOptions* options,
     ExceptionState& exception_state) {
   LocalDOMWindow* const window = DomWindow();
   if (!window) {
@@ -339,7 +374,8 @@ ScriptPromise MediaDevices::getDisplayMedia(
           : DisplayCapturePolicyResult::kDisallowed);
 
   if (!capture_allowed_by_permissions_policy) {
-    exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      kFeaturePolicyBlocked);
     return ScriptPromise();
   }
 
@@ -350,8 +386,16 @@ ScriptPromise MediaDevices::getDisplayMedia(
     return ScriptPromise();
   }
 
+  MediaStreamConstraints* const constraints = ToMediaStreamConstraints(options);
+  if (base::FeatureList::IsEnabled(
+          blink::features::kNewGetDisplayMediaPickerOrder) &&
+      !options->hasSelfBrowserSurface() &&
+      (!options->hasPreferCurrentTab() || !options->preferCurrentTab())) {
+    constraints->setSelfBrowserSurface("exclude");
+  }
+
   return SendUserMediaRequest(script_state, UserMediaRequestType::kDisplayMedia,
-                              options, exception_state);
+                              constraints, exception_state);
 }
 
 void MediaDevices::setCaptureHandleConfig(ScriptState* script_state,

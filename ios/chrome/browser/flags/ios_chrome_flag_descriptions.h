@@ -22,11 +22,6 @@ extern const char kAdaptiveSuggestionsCountDescription[];
 extern const char kAppStoreRatingName[];
 extern const char kAppStoreRatingDescription[];
 
-// Title and description for the flag that overrides the App Store Rating
-// trigger requirements.
-extern const char kAppStoreRatingIgnoreEligibilityCheckTestName[];
-extern const char kAppStoreRatingIgnoreEligibilityCheckTestDescription[];
-
 // Title and description for the flag to enable Chrome branding on form input
 // suggestions.
 extern const char kAutofillBrandingIOSName[];
@@ -193,6 +188,11 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
 
+// Title and description for the flag to enable checking feed visibility on
+// attention log start.
+extern const char kEnableCheckVisibilityOnAttentionLogStartName[];
+extern const char kEnableCheckVisibilityOnAttentionLogStartDescription[];
+
 // Title and description for the flag to enable the sync promotion on top of the
 // discover feed.
 extern const char kEnableDiscoverFeedTopSyncPromoName[];
@@ -288,6 +288,11 @@ extern const char kPasswordsGroupingDescription[];
 extern const char kEnableOpenInDownloadName[];
 extern const char kEnableOpenInDownloadDescription[];
 
+// Title and description for the flag to enable refining data source reload
+// reporting when having a very short attention log.
+extern const char kEnableRefineDataSourceReloadReportingName[];
+extern const char kEnableRefineDataSourceReloadReportingDescription[];
+
 // Title and description for the flag to enable omnibox suggestions scrolling on
 // iPad.
 extern const char kEnableSuggestionsScrollingOnIPadName[];
@@ -314,6 +319,11 @@ extern const char kFeedBackgroundRefreshDescription[];
 // websites.
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
+
+// Title and description for the flag to set the default Following feed sort
+// type.
+extern const char kFollowingFeedDefaultSortTypeName[];
+extern const char kFollowingFeedDefaultSortTypeDescription[];
 
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];

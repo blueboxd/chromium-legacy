@@ -34,6 +34,7 @@ import com.google.android.material.color.MaterialColors;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
@@ -69,6 +70,7 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
     private int mBackgroundColorFilter;
     private Runnable mOnBeforeHideTransitionCallback;
     private Callback<Transition> mFakeBeginTransitionForTesting;
+    private Handler mHandler;
     private Handler mHandlerForTesting;
 
     private @State int mState;
@@ -283,7 +285,11 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
             return mHandlerForTesting;
         }
 
-        return super.getHandler();
+        if (mHandler == null) {
+            mHandler = new Handler(ThreadUtils.getUiThreadLooper());
+        }
+
+        return mHandler;
     }
 
     @Override
@@ -584,12 +590,16 @@ class OptionalButtonView extends FrameLayout implements TransitionListener {
         mActionChipLabel.setVisibility(VISIBLE);
         mBackground.setVisibility(VISIBLE);
 
-        // TODO(salg): Add a check to avoid expanding too much.
         float actionChipLabelTextWidth =
                 mActionChipLabel.getPaint().measureText(mActionChipLabelString);
 
-        int expandedStateWidthPx =
-                (int) (mCollapsedStateWidthPx + actionChipLabelTextWidth + mExpandedStatePaddingPx);
+        int maxExpandedStateWidthPx = getResources().getDimensionPixelSize(
+                R.dimen.toolbar_phone_optional_button_action_chip_max_width);
+
+        int expandedStateWidthPx = Math.min(
+                (int) (mCollapsedStateWidthPx + actionChipLabelTextWidth + mExpandedStatePaddingPx),
+                maxExpandedStateWidthPx);
+
         setWidth(expandedStateWidthPx);
 
         mState = State.RUNNING_ACTION_CHIP_EXPANSION_TRANSITION;

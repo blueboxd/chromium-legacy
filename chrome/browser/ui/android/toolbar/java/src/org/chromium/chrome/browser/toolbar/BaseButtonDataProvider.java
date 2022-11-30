@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -35,6 +36,7 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
     private ModalDialogManagerObserver mModalDialogObserver;
 
     private boolean mShouldShowOnIncognitoTabs;
+    private @StringRes int mActionChipResourceId;
 
     /**
      * Creates a new instance of {@code BaseButtonDataProvider}.
@@ -51,8 +53,8 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
      */
     public BaseButtonDataProvider(Supplier<Tab> activeTabSupplier,
             @Nullable ModalDialogManager modalDialogManager, Drawable buttonDrawable,
-            @StringRes int contentDescriptionResId, boolean supportsTinting,
-            @Nullable IPHCommandBuilder iphCommandBuilder,
+            @StringRes int contentDescriptionResId, @StringRes int actionChipLabelResId,
+            boolean supportsTinting, @Nullable IPHCommandBuilder iphCommandBuilder,
             @AdaptiveToolbarButtonVariant int adaptiveButtonVariant) {
         mActiveTabSupplier = activeTabSupplier;
         mModalDialogManager = modalDialogManager;
@@ -73,8 +75,14 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
             mModalDialogManager.addObserver(mModalDialogObserver);
         }
 
+        if (!AdaptiveToolbarFeatures.isDynamicAction(adaptiveButtonVariant)) {
+            assert actionChipLabelResId
+                    == Resources.ID_NULL : "Action chip should only be used on dynamic actions";
+        }
+
         mButtonData = new ButtonDataImpl(/*canShow=*/false, buttonDrawable,
-                /* onClickListener= */ this, contentDescriptionResId, supportsTinting,
+                /* onClickListener= */ this, contentDescriptionResId, actionChipLabelResId,
+                supportsTinting,
                 /* iphCommandBuilder= */ iphCommandBuilder, /*isEnabled=*/true,
                 adaptiveButtonVariant);
     }
@@ -107,12 +115,22 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
      */
     private void maybeSetIphCommandBuilder(Tab tab) {
         if (mButtonData.getButtonSpec().getIPHCommandBuilder() != null || tab == null
-                || !FeatureList.isInitialized()
-                || !AdaptiveToolbarFeatures.isCustomizationEnabled()) {
+                || !FeatureList.isInitialized() || !AdaptiveToolbarFeatures.isCustomizationEnabled()
+                || AdaptiveToolbarFeatures.shouldShowActionChip()) {
             return;
         }
 
         mButtonData.updateIPHCommandBuilder(getIphCommandBuilder(tab));
+    }
+
+    private void maybeSetActionChipResourceId() {
+        if (!mButtonData.getButtonSpec().isDynamicAction() || !FeatureList.isInitialized()
+                || !AdaptiveToolbarFeatures.shouldShowActionChip()
+                || mButtonData.getButtonSpec().getActionChipLabelResId() != Resources.ID_NULL) {
+            return;
+        }
+
+        mButtonData.updateActionChipResourceId(mActionChipResourceId);
     }
 
     /**
@@ -120,6 +138,15 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
      */
     protected void setShouldShowOnIncognitoTabs(boolean shouldShowOnIncognitoTabs) {
         mShouldShowOnIncognitoTabs = shouldShowOnIncognitoTabs;
+    }
+
+    /**
+     * Sets a string resource ID to be used when the action chip variant is enabled, only used on
+     * dynamic actions.
+     * @param actionChipResourceId A string resource to use as the action chip label.
+     */
+    protected void setActionChipResourceId(@StringRes int actionChipResourceId) {
+        mActionChipResourceId = actionChipResourceId;
     }
 
     /**
@@ -148,6 +175,7 @@ public abstract class BaseButtonDataProvider implements ButtonDataProvider, OnCl
     public ButtonData get(Tab tab) {
         mButtonData.setCanShow(shouldShowButton(tab));
         maybeSetIphCommandBuilder(tab);
+        maybeSetActionChipResourceId();
 
         return mButtonData;
     }

@@ -508,6 +508,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(
         PasswordDropdownSelectedOption::kPassword,
         password_client_->IsIncognito());
 
+    CancelBiometricReauthIfOngoing();
     scoped_refptr<device_reauth::BiometricAuthenticator> authenticator =
         password_client_->GetBiometricAuthenticator();
     // Note: this is currently only implemented on Android, Mac and Windows. For
@@ -536,15 +537,20 @@ void PasswordAutofillManager::DidAcceptSuggestion(
           base::UTF8ToUTF16(GetShownOrigin(url::Origin::Create(
               password_manager_driver_->GetLastCommittedURL())));
 
+      auto on_reath_complete =
+          base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
+                         base::Unretained(this), suggestion.main_text.value,
+                         suggestion.frontend_id);
+
       // `this` cancels the authentication when it is destructed, which
       // invalidates the callback, so using base::Unretained here is safe.
       authenticator_->AuthenticateWithMessage(
           device_reauth::BiometricAuthRequester::kAutofillSuggestion,
           l10n_util::GetStringFUTF16(IDS_PASSWORD_MANAGER_FILLING_REAUTH,
                                      origin),
-          base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
-                         base::Unretained(this), suggestion.main_text.value,
-                         suggestion.frontend_id));
+          metrics_util::TimeCallback(
+              std::move(on_reath_complete),
+              "PasswordManager.PasswordFilling.AuthenticationTime"));
 #endif
     }
   }
@@ -725,25 +731,23 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
   WebAuthnCredentialsDelegate* delegate =
       password_client_->GetWebAuthnCredentialsDelegateForDriver(
           password_manager_driver_);
-  bool should_show_webauthn_suggestions = show_webauthn_credentials &&
-                                          delegate &&
-                                          delegate->IsWebAuthnAutofillEnabled();
-  if (should_show_webauthn_suggestions) {
-    absl::optional<std::vector<autofill::Suggestion>> webauthn_suggestions =
-        delegate->GetWebAuthnSuggestions();
-    if (webauthn_suggestions.has_value()) {
-      for (auto& suggestion : *webauthn_suggestions) {
-        suggestion.custom_icon = page_favicon_;
-      }
-      suggestions.insert(suggestions.end(), webauthn_suggestions->begin(),
-                         webauthn_suggestions->end());
+  absl::optional<std::vector<autofill::Suggestion>> webauthn_suggestions;
+  if (show_webauthn_credentials && delegate &&
+      delegate->IsWebAuthnAutofillEnabled()) {
+    webauthn_suggestions = delegate->GetWebAuthnSuggestions();
+  }
+  if (webauthn_suggestions.has_value()) {
+    for (auto& suggestion : *webauthn_suggestions) {
+      suggestion.custom_icon = page_favicon_;
     }
+    suggestions.insert(suggestions.end(), webauthn_suggestions->begin(),
+                       webauthn_suggestions->end());
   }
 
   if (!fill_data_ && !show_account_storage_optin &&
       !show_account_storage_resignin &&
 #if !BUILDFLAG(IS_ANDROID)
-      !should_show_webauthn_suggestions &&
+      !webauthn_suggestions.has_value() &&
 #endif  // !BUILDFLAG(IS_ANDROID)
       suggestions.empty()) {
     // Probably the credential was deleted in the mean time.
@@ -759,7 +763,7 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
 
 #if !BUILDFLAG(IS_ANDROID)
   // Add "Sign in with another device" button.
-  if (should_show_webauthn_suggestions) {
+  if (webauthn_suggestions.has_value()) {
     suggestions.push_back(CreateWebAuthnEntry());
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -961,6 +965,8 @@ void PasswordAutofillManager::OnBiometricReauthCompleted(
     int frontend_id,
     bool auth_succeeded) {
   authenticator_.reset();
+  base::UmaHistogramBoolean(
+      "PasswordManager.PasswordFilling.AuthenticationResult", auth_succeeded);
   if (!auth_succeeded)
     return;
   bool success = FillSuggestion(GetUsernameFromSuggestion(value), frontend_id);

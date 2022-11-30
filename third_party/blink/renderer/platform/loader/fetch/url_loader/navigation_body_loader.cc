@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "services/network/public/cpp/features.h"
@@ -33,6 +34,20 @@
 
 namespace blink {
 namespace {
+
+bool ShouldSendDirectlyToPreloadScanner() {
+  static const base::FeatureParam<bool> kSendToScannerParam{
+      &features::kThreadedBodyLoader, "send-to-scanner", true};
+  return kSendToScannerParam.Get();
+}
+
+// Returns the maximum data size to process in TakeData(). Returning 0 means
+// process all the data available.
+size_t GetMaxDataToProcessPerTask() {
+  static const base::FeatureParam<int> kMaxDataToProcessParam{
+      &features::kThreadedBodyLoader, "max-data-to-process", 0};
+  return kMaxDataToProcessParam.Get();
+}
 
 // A chunk of data read by the OffThreadBodyReader. This will be created on a
 // background thread and processed on the main thread.
@@ -124,15 +139,56 @@ class NavigationBodyLoader::OffThreadBodyReader : public BodyReader {
     DCHECK(reader_task_runner_->RunsTasksInCurrentSequence());
   }
 
-  std::vector<DataChunk> TakeData() {
+  std::vector<DataChunk> TakeData(size_t max_data_to_process) {
     DCHECK(IsMainThread());
     base::AutoLock lock(lock_);
-    return std::move(data_chunks_);
+    if (max_data_to_process == 0)
+      return std::move(data_chunks_);
+
+    std::vector<DataChunk> data;
+    size_t data_processed = 0;
+    while (!data_chunks_.empty() && data_processed < max_data_to_process) {
+      data.emplace_back(std::move(data_chunks_.front()));
+      data_processed += data.back().encoded_data_size;
+      data_chunks_.erase(data_chunks_.begin());
+    }
+    if (!data_chunks_.empty()) {
+      PostCrossThreadTask(
+          *main_thread_task_runner_, FROM_HERE,
+          CrossThreadBindOnce(&NavigationBodyLoader::ProcessOffThreadData,
+                              body_loader_));
+    }
+    return data;
+  }
+
+  void StoreProcessBackgroundDataCallback(Client* client) {
+    DCHECK(IsMainThread());
+    if (background_callback_set_)
+      return;
+
+    auto callback = client->TakeProcessBackgroundDataCallback();
+    if (!callback)
+      return;
+
+    background_callback_set_ = true;
+
+    base::AutoLock lock(lock_);
+    process_background_data_callback_ = std::move(callback);
+
+    // Process any existing data to make sure we don't miss any.
+    for (const auto& chunk : data_chunks_)
+      process_background_data_callback_.Run(chunk.decoded_data);
   }
 
   void Delete() const {
     DCHECK(IsMainThread());
     reader_task_runner_->DeleteSoon(FROM_HERE, this);
+  }
+
+  void FlushForTesting() {
+    base::RunLoop run_loop;
+    reader_task_runner_->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
   }
 
  private:
@@ -185,6 +241,9 @@ class NavigationBodyLoader::OffThreadBodyReader : public BodyReader {
     bool post_task;
     {
       base::AutoLock lock(lock_);
+      if (decoded_data && process_background_data_callback_)
+        process_background_data_callback_.Run(decoded_data);
+
       // If |data_chunks_| is not empty, there is already a task posted which
       // will consume the data, so no need to post another one.
       post_task = data_chunks_.empty();
@@ -214,6 +273,11 @@ class NavigationBodyLoader::OffThreadBodyReader : public BodyReader {
   bool has_seen_end_of_data_ = false;
 
   base::Lock lock_;
+  // This bool is used on the main thread to avoid locking when the callback has
+  // already been set.
+  bool background_callback_set_ = false;
+  Client::ProcessBackgroundDataCallback process_background_data_callback_
+      GUARDED_BY(lock_);
   std::vector<DataChunk> data_chunks_ GUARDED_BY(lock_);
 };
 
@@ -269,7 +333,10 @@ NavigationBodyLoader::NavigationBodyLoader(
                       task_runner_),
       resource_load_info_notifier_wrapper_(
           std::move(resource_load_info_notifier_wrapper)),
-      original_url_(original_url) {}
+      original_url_(original_url),
+      should_send_directly_to_preload_scanner_(
+          ShouldSendDirectlyToPreloadScanner()),
+      max_data_to_process_per_task_(GetMaxDataToProcessPerTask()) {}
 
 NavigationBodyLoader::~NavigationBodyLoader() {
   if (!has_received_completion_ || !has_seen_end_of_data_) {
@@ -360,6 +427,12 @@ void NavigationBodyLoader::StartLoadingBodyInBackground(
       should_keep_encoded_data));
 }
 
+void NavigationBodyLoader::FlushOffThreadBodyReaderForTesting() {
+  if (!off_thread_body_reader_)
+    return;
+  off_thread_body_reader_->FlushForTesting();
+}
+
 void NavigationBodyLoader::BindURLLoaderAndContinue() {
   url_loader_.Bind(std::move(endpoints_->url_loader), task_runner_);
   url_loader_client_receiver_.Bind(std::move(endpoints_->url_loader_client),
@@ -400,7 +473,8 @@ void NavigationBodyLoader::ProcessOffThreadData() {
     return;
   }
 
-  auto chunks = off_thread_body_reader_->TakeData();
+  auto chunks =
+      off_thread_body_reader_->TakeData(max_data_to_process_per_task_);
   auto weak_self = weak_factory_.GetWeakPtr();
   for (const auto& chunk : chunks) {
     client_->DecodedBodyDataReceived(
@@ -418,6 +492,9 @@ void NavigationBodyLoader::ProcessOffThreadData() {
       break;
     }
   }
+  if (weak_self && should_send_directly_to_preload_scanner_)
+    off_thread_body_reader_->StoreProcessBackgroundDataCallback(client_);
+
   NotifyCompletionIfAppropriate();
 }
 

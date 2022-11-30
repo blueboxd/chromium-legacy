@@ -11,6 +11,9 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/same-document-traversal-same-document-traversal-hashchange.html [ Timeout ]
+crbug.com/626703 external/wpt/html/browsers/browsing-the-web/overlapping-navigations-and-traversals/same-document-traversal-same-document-traversal-pushstate.html [ Timeout ]
+crbug.com/626703 external/wpt/screen-orientation/non-fully-active.html [ Timeout ]
 crbug.com/626703 external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
 crbug.com/626703 virtual/orb-v01/external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Timeout ]
@@ -160,7 +163,7 @@ crbug.com/829028 external/wpt/css/css-break/borders-002.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-003.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-004.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/borders-005.html [ Failure ]
-crbug.com/269061 external/wpt/css/css-break/box-shadow.html [ Failure ]
+crbug.com/269061 external/wpt/css/css-break/box-shadow-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-002.html [ Failure ]
@@ -429,6 +432,8 @@ crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-048.htm
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-004.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-005.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-007.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-009.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-010.html [ Failure ]
 
 ### external/wpt/css/css-flexbox/
 crbug.com/591099 external/wpt/css/css-flexbox/abspos/flex-abspos-staticpos-align-self-001.html [ Failure ]
@@ -1242,6 +1247,7 @@ crbug.com/591099 external/wpt/quirks/line-height-trailing-collapsable-whitespace
 
 ### fast/box-decoration-break/
 crbug.com/612641 fast/box-decoration-break/box-decoration-break-min-max.html [ Failure ]
+crbug.com/682173 fast/box-decoration-break/box-decoration-break-rendering.html [ Failure ]
 
 ### fast/css/
 crbug.com/591099 fast/css/absolute-inline-alignment-2.html [ Failure ]
@@ -2169,6 +2175,7 @@ crbug.com/1147859 paint/markers/inline-spelling-markers-hidpi-composited.html [ 
 crbug.com/1147859 paint/markers/inline-spelling-markers-hidpi.html [ Failure ]
 crbug.com/1147859 paint/markers/marker-early-break-bug.html [ Failure ]
 crbug.com/1147859 paint/markers/markers-zoomed.html [ Failure ]
+crbug.com/1121942 printing/abspos-multicol-with-abspos.html [ Failure ]
 crbug.com/1121942 printing/block-with-overflow-in-bottom-aligned-fixedpos.html [ Pass ]
 crbug.com/1311165 printing/fixed-positioned-but-static-headers-and-footers.html [ Failure ]
 crbug.com/1121942 printing/fixed-positioned-headers-and-footers-clipped.html [ Pass ]

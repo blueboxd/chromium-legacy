@@ -1231,7 +1231,7 @@ BASE_FEATURE(kMaxUnthrottledTimeoutNestingLevel,
              "MaxUnthrottledTimeoutNestingLevel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int> kMaxUnthrottledTimeoutNestingLevelParam{
-    &kMaxUnthrottledTimeoutNestingLevel, "nesting", 10};
+    &kMaxUnthrottledTimeoutNestingLevel, "nesting", 15};
 bool IsMaxUnthrottledTimeoutNestingLevelEnabled() {
   auto policy = GetUnthrottledNestedTimeoutPolicyOverride();
   if (policy != UnthrottledNestedTimeoutPolicyOverride::kNoOverride)
@@ -1596,7 +1596,7 @@ BASE_FEATURE(kWebRtcMetronome,
 
 BASE_FEATURE(kSyncAccessHandleAllSyncSurface,
              "SyncAccessHandleAllSyncSurface",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNoCentralWebCacheLimitControl,
              "NoCentralWebCacheLimitControl",
@@ -1630,6 +1630,10 @@ BASE_FEATURE(kThreadedBodyLoader,
 
 BASE_FEATURE(kDocumentEventNodePathCaching,
              "DocumentEventNodePathCaching",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNewGetDisplayMediaPickerOrder,
+             "NewGetDisplayMediaPickerOrder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kDocumentMaxEventNodePathCachedEntries{

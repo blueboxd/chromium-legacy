@@ -55,7 +55,7 @@
 <translation id="1442433966118452622">Izvor slike</translation>
 <translation id="1451536289672181509">Uređaj je tastatura.</translation>
 <translation id="1459693405370120464">Vrijeme</translation>
-<translation id="1468664791493211953">Ponude</translation>
+<translation id="1468664791493211953">Akcijske ponude</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> upravlja ovim uređajem i moguće je da može pratiti vaše aktivnosti.</translation>
 <translation id="1478594628797167447">Skener</translation>
 <translation id="1483493594462132177">Pošalji</translation>
@@ -470,6 +470,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="5502931783115429516">Android nije pokrenut</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5559898619118303662">Automatski prebacite na tamnu temu prilikom zalaska sunca</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Skeniraj ponovo</translation>
 <translation id="5583640892426849032">Tipka za brisanje</translation>

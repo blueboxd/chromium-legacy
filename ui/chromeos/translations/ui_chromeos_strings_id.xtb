@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Keju</translation>
 <translation id="2781645665747935084">Belgia</translation>
 <translation id="2782104745158847185">Error saat menginstal aplikasi Linux</translation>
+<translation id="2802583107108007218">Pelajari pembatasan ini lebih lanjut</translation>
 <translation id="2803375539583399270">Masukkan PIN</translation>
 <translation id="2820957248982571256">Memindai...</translation>
 <translation id="2830077785865012357">Zhuyin China</translation>
@@ -281,7 +282,6 @@
 <translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="3486821258960016770">Mongolia</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> kesalahan.</translation>
-<translation id="3495810061346586977">File ini bersifat rahasia dan tunduk pada pembatasan oleh kebijakan administrator. <ph name="BEGIN_LINK_HELP" />Pelajari lebih lanjut<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Detail</translation>
 <translation id="3522708245912499433">Portugis</translation>
 <translation id="3524311639100184459">Perhatian: File ini bersifat sementara dan dapat dihapus secara otomatis untuk mengosongkan ruang disk.  <ph name="BEGIN_LINK" />Pelajari Lebih Lanjut<ph name="END_LINK" /></translation>
@@ -456,6 +456,7 @@
 <translation id="4900532980794411603">Bagikan ke Parallels Desktop</translation>
 <translation id="4902546322522096650">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Sambungkan</translation>
 <translation id="4906580650526544301">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Baterai Ponsel <ph name="BATTERY_STATUS" />%, Detail</translation>
+<translation id="4929673617759421391">Penempelan file ini diblokir oleh kebijakan administrator</translation>
 <translation id="4935975195727477204">Bunga Gazania</translation>
 <translation id="4943368462779413526">Sepak bola</translation>
 <translation id="4961158930123534723">1 folder dibagikan ke Parallels Desktop</translation>
@@ -513,6 +514,7 @@
 <translation id="5286194356314741248">Memindai</translation>
 <translation id="5288441970121584418">Burger</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
+<translation id="5293615890992542006">Pemindahan file ini diblokir oleh kebijakan administrator</translation>
 <translation id="5305688511332277257">Tidak ada yang dipasang</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5318819489018851358">Bagikan dengan Linux</translation>
@@ -647,6 +649,7 @@
 <translation id="642282551015776456">Nama ini tidak dapat digunakan sebagai nama file atau folder</translation>
 <translation id="6423031066725912715">Vietnam dengan keyboard TCVN</translation>
 <translation id="6430271654280079150">Tersisa 1 upaya lagi.</translation>
+<translation id="643243556292470964">File yang dihapus sekarang dipindahkan ke sampah</translation>
 <translation id="6485131920355264772">Gagal mengambil info ruang</translation>
 <translation id="6495925982925244349">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Dikelola oleh Administrator Anda, Detail</translation>
 <translation id="649877868557234318">Mengekstrak <ph name="FILE_NAME" /> ke <ph name="FOLDER_NAME" /></translation>
@@ -713,6 +716,7 @@
 <translation id="6993826899923627728">Item ini ada di sampah Anda</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folder dipilih</translation>
 <translation id="7008426324576352165">Organisasi Anda memerlukan penyimpanan ekstra untuk menyelesaikan upload.</translation>
+<translation id="7009985720488544166">Pemindahan <ph name="COUNT" /> file diblokir oleh kebijakan administrator</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Pemasangan gagal.</translation>
 <translation id="7031639531908619281">Turki</translation>
@@ -918,6 +922,7 @@
 <translation id="8656768832129462377">Jangan periksa</translation>
 <translation id="8688591111840995413">Sandi lemah</translation>
 <translation id="8698464937041809063">Gambar Google</translation>
+<translation id="8698877009525468705">File ini bersifat rahasia dan tunduk pada pembatasan oleh kebijakan administrator.</translation>
 <translation id="8712637175834984815">Mengerti</translation>
 <translation id="8713112442029511308">Malta</translation>
 <translation id="8714406895390098252">Sepeda</translation>
@@ -972,6 +977,7 @@
 <translation id="9183302530794969518">Google Dokumen</translation>
 <translation id="9189836632794948435">Kazak</translation>
 <translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> item diekstrak.</translation>
+<translation id="9210751050717126865">Penempelan <ph name="COUNT" /> file diblokir oleh kebijakan administrator</translation>
 <translation id="9213073329713032541">Penginstalan berhasil dimulai.</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="9219908252191632183">Lunar</translation>

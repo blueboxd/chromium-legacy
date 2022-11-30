@@ -48,7 +48,11 @@ TEST_F(WhatsNewTableViewBannerItemTest, ItemProperties) {
   EXPECT_EQ(
       NO,
       banner_cell.sectionTextLabel.translatesAutoresizingMaskIntoConstraints);
-  EXPECT_EQ([UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
+  UIFont* sectionLabelFont = [UIFont systemFontOfSize:15
+                                               weight:UIFontWeightSemibold];
+  UIFontMetrics* sectionLabelfontMetrics =
+      [UIFontMetrics metricsForTextStyle:UIFontTextStyleSubheadline];
+  EXPECT_EQ([sectionLabelfontMetrics scaledFontForFont:sectionLabelFont],
             banner_cell.sectionTextLabel.font);
   EXPECT_EQ(1, banner_cell.sectionTextLabel.numberOfLines);
 
@@ -56,10 +60,10 @@ TEST_F(WhatsNewTableViewBannerItemTest, ItemProperties) {
   EXPECT_NSEQ(title, banner_cell.textLabel.text);
   EXPECT_EQ(NO,
             banner_cell.textLabel.translatesAutoresizingMaskIntoConstraints);
-  UIFont* font = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle];
-  UIFontDescriptor* boldFontDescriptor = [font.fontDescriptor
-      fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-  EXPECT_EQ([UIFont fontWithDescriptor:boldFontDescriptor size:0],
+  UIFont* textLabelFont = [UIFont systemFontOfSize:28 weight:UIFontWeightBold];
+  UIFontMetrics* textLabelfontMetrics =
+      [UIFontMetrics metricsForTextStyle:UIFontTextStyleTitle1];
+  EXPECT_EQ([textLabelfontMetrics scaledFontForFont:textLabelFont],
             banner_cell.textLabel.font);
   EXPECT_EQ(2, banner_cell.textLabel.numberOfLines);
 
@@ -68,15 +72,18 @@ TEST_F(WhatsNewTableViewBannerItemTest, ItemProperties) {
   EXPECT_EQ(
       NO,
       banner_cell.detailTextLabel.translatesAutoresizingMaskIntoConstraints);
-  EXPECT_EQ([UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
+  EXPECT_EQ([[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+                fontWithSize:15],
             banner_cell.detailTextLabel.font);
-  EXPECT_EQ(2, banner_cell.detailTextLabel.numberOfLines);
+  EXPECT_EQ(5, banner_cell.detailTextLabel.numberOfLines);
 
   // Check that the banner image is at the top of the stack view.
   UIStackView* stack_view = base::mac::ObjCCastStrict<UIStackView>(
       banner_cell.contentView.subviews[0]);
+  UIView* banner_view =
+      base::mac::ObjCCastStrict<UIView>(stack_view.arrangedSubviews[0]);
   UIImageView* banner_image_view =
-      base::mac::ObjCCastStrict<UIImageView>(stack_view.arrangedSubviews[0]);
+      base::mac::ObjCCastStrict<UIImageView>(banner_view.subviews[0]);
   EXPECT_NSEQ([ChromeIcon searchIcon], banner_image_view.image);
 }
 
@@ -109,7 +116,11 @@ TEST_F(WhatsNewTableViewBannerItemTest, ItemPropertiesBannerAtBottom) {
   EXPECT_EQ(
       NO,
       banner_cell.sectionTextLabel.translatesAutoresizingMaskIntoConstraints);
-  EXPECT_EQ([UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
+  UIFont* sectionLabelFont = [UIFont systemFontOfSize:15
+                                               weight:UIFontWeightSemibold];
+  UIFontMetrics* sectionLabelfontMetrics =
+      [UIFontMetrics metricsForTextStyle:UIFontTextStyleSubheadline];
+  EXPECT_EQ([sectionLabelfontMetrics scaledFontForFont:sectionLabelFont],
             banner_cell.sectionTextLabel.font);
   EXPECT_EQ(1, banner_cell.sectionTextLabel.numberOfLines);
 
@@ -117,10 +128,10 @@ TEST_F(WhatsNewTableViewBannerItemTest, ItemPropertiesBannerAtBottom) {
   EXPECT_NSEQ(title, banner_cell.textLabel.text);
   EXPECT_EQ(NO,
             banner_cell.textLabel.translatesAutoresizingMaskIntoConstraints);
-  UIFont* font = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle];
-  UIFontDescriptor* boldFontDescriptor = [font.fontDescriptor
-      fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-  EXPECT_EQ([UIFont fontWithDescriptor:boldFontDescriptor size:0],
+  UIFont* textLabelFont = [UIFont systemFontOfSize:28 weight:UIFontWeightBold];
+  UIFontMetrics* textLabelfontMetrics =
+      [UIFontMetrics metricsForTextStyle:UIFontTextStyleTitle1];
+  EXPECT_EQ([textLabelfontMetrics scaledFontForFont:textLabelFont],
             banner_cell.textLabel.font);
   EXPECT_EQ(2, banner_cell.textLabel.numberOfLines);
 
@@ -129,15 +140,18 @@ TEST_F(WhatsNewTableViewBannerItemTest, ItemPropertiesBannerAtBottom) {
   EXPECT_EQ(
       NO,
       banner_cell.detailTextLabel.translatesAutoresizingMaskIntoConstraints);
-  EXPECT_EQ([UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
+  EXPECT_EQ([[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+                fontWithSize:15],
             banner_cell.detailTextLabel.font);
-  EXPECT_EQ(2, banner_cell.detailTextLabel.numberOfLines);
+  EXPECT_EQ(5, banner_cell.detailTextLabel.numberOfLines);
 
   // Check that the banner image is at the top of the stack view.
   UIStackView* stack_view = base::mac::ObjCCastStrict<UIStackView>(
       banner_cell.contentView.subviews[0]);
   int stack_view_size = [stack_view.arrangedSubviews count];
-  UIImageView* banner_image_view = base::mac::ObjCCastStrict<UIImageView>(
+  UIView* banner_view = base::mac::ObjCCastStrict<UIView>(
       stack_view.arrangedSubviews[stack_view_size - 1]);
+  UIImageView* banner_image_view =
+      base::mac::ObjCCastStrict<UIImageView>(banner_view.subviews[0]);
   EXPECT_NSEQ([ChromeIcon searchIcon], banner_image_view.image);
 }

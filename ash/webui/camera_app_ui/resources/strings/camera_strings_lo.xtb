@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lo">
+<translation id="1057925581724305206">Full HD (1080p)</translation>
+<translation id="1076394037877376434">ລຶບໜ້າທີ <ph name="PAGE_NUMBER" /></translation>
 <translation id="1113173431709655881">ໂໝດກ້ອງຖ່າຍຮູບ</translation>
 <translation id="1153190633558910465">ປິດເສັ້ນຕາຕະລາງແລ້ວ</translation>
 <translation id="1175958423215084756">ກວດພົບລິ້ງ. <ph name="HOSTNAME" /></translation>
+<translation id="1197694886744716213">ລຶບໜ້າທີ <ph name="PAGE_NUMBER" /> ແລ້ວ</translation>
 <translation id="1258009455399840361">ໝຸນ 90 ອົງສາຕາມເຂັມໂມງ</translation>
 <translation id="1276998909102132017">ຮູບພາບໃນຄັງ</translation>
 <translation id="1300209025925956156">ສະແກນເອກະສານຂອງທ່ານ</translation>
@@ -19,6 +22,7 @@
 <translation id="1588438908519853928">ປົກ​ກະ​ຕິ</translation>
 <translation id="1620510694547887537">ກ້ອງ​ຖ່າຍ​ຮູບ</translation>
 <translation id="1627744224761163218">4 x 4</translation>
+<translation id="1644345013557678440">HD (720p)</translation>
 <translation id="1664224225747386870">ບໍ່ໄດ້ບັນທຶກຫຍັງໄວ້</translation>
 <translation id="1838104802459806957">ອຽງຂຶ້ນ</translation>
 <translation id="1843105061469674856">ສະແກນໜ້າເພີ່ມເຕີມ</translation>
@@ -93,6 +97,7 @@
 <translation id="4705093842003735294">ຄວາມລະອຽດເຕັມ</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="491895758387112773">ການບັນທຶກວິດີໂອແບບຫຼາຍສະຕຣີມ</translation>
+<translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">ອັດຕາສ່ວນຮູບພາບ</translation>
 <translation id="5057360777601936059">ກ້ອງຖ່າຍຮູບຂອງທ່ານບໍ່ສາມາດໃຊ້ໄດ້ໃນຂະນະນີ້.
         ກະລຸນາກວດເບິ່ງວ່າໄດ້ເຊື່ອມຕໍ່ກ້ອງຖ່າຍຮູບຢ່າງຖືກຕ້ອງຫຼືບໍ່.</translation>
@@ -101,6 +106,7 @@
 <translation id="5266635337630551423">ມຸມຊ້າຍເທິງຂອງເອກະສານ</translation>
 <translation id="5317780077021120954">ບັນທຶກ</translation>
 <translation id="5320594929574852403">ກຳລັງຍ້າຍໄປທາງຊ້າຍ</translation>
+<translation id="5374917190292010970">4K (2160p)</translation>
 <translation id="5444515100983837161">ວາງຂອບທັງໝົດຂອງເອກະສານໄວ້ພາຍໃນເຟຣມ. ການສະແກນເຮັດວຽກໄດ້ດີທີ່ສຸດຫາກເອກະສານ ແລະ ພື້ນຫຼັງເປັນຄົນລະສີກັນ.</translation>
 <translation id="5662366948659129155">ກຳລັງສະແກນໜ້າ <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">ສີ່ຫຼ່ຽມ</translation>
@@ -110,7 +116,6 @@
 <translation id="5775960006311140197">ໂໝດຜູ້ຊ່ຽວຊານ</translation>
 <translation id="5860033963881614850">ປິດ</translation>
 <translation id="5869546221129391014">ຕາຂ່າຍ</translation>
-<translation id="5903928279335207406">ລຶບຫນ້າ</translation>
 <translation id="5916664084637901428">ເປີດ</translation>
 <translation id="5975083100439434680">ຊູມອອກ</translation>
 <translation id="5976160379964388480">ອື່ນໆ</translation>

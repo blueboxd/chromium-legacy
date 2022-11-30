@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="af">
-<translation id="1005794457625275818">Webkoekies toegelaat vir <ph name="FPS_MEMBERS_COUNT" /> werwe in die <ph name="FPS_OWNER" />-groep, insluitend <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Maak aanlyn oop</translation>
 <translation id="1044891598689252897">Werwe sal normaalweg werk</translation>
 <translation id="1124090076051167250">Dit sal <ph name="DATASIZE" /> se data en webkoekies uitvee wat deur werwe of deur programme op jou tuisskerm geberg is.</translation>
@@ -35,6 +34,7 @@
 <translation id="1785415724048343560">Aanbeveel vir beste ervaring</translation>
 <translation id="1818308510395330587">Om <ph name="APP_NAME" /> AR te laat gebruik, moet jy kamera ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="1864927262126810325">Vanaf <ph name="SOURCE_NAME" /></translation>
+<translation id="187227595286001730">Verwante werwe kan jou aktiwiteit in die groep sien</translation>
 <translation id="1887786770086287077">Liggingtoegang is af vir hierdie toestel. Skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
 <translation id="1915307458270490472">Sit neer</translation>
 <translation id="1919345977826869612">Advertensies</translation>
@@ -73,6 +73,7 @@
 <translation id="2490684707762498678">Bestuur deur <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Hulp en terugvoer</translation>
 <translation id="2501278716633472235">Gaan terug</translation>
+<translation id="2546283357679194313">Webkoekies en werfdata</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 webkoekie word geblokkeer}other{# webkoekies word geblokkeer}}</translation>
 <translation id="2570922361219980984">Liggingtoegang is ook af vir hierdie toestel. Skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
 <translation id="257931822824936280">Uitgevou – klik om in te vou.</translation>
@@ -82,12 +83,10 @@
 <translation id="2653659639078652383">Dien in</translation>
 <translation id="2677748264148917807">Gaan uit</translation>
 <translation id="2687403674020088961">Blokkeer alle webkoekies (nie aanbeveel nie)</translation>
-<translation id="2692299144678073135">Laat verwante werwe toe om jou oor werwe heen te onthou</translation>
 <translation id="2704606927547763573">Gekopieer</translation>
 <translation id="2713106313042589954">Skakel kamera af</translation>
 <translation id="2717722538473713889">E-posadresse</translation>
 <translation id="2750481671343847896">Werwe kan vir jou aanmeldporboodskappe van identiteitsdienste af wys.</translation>
-<translation id="2785051990912111074">Hierdie keuse sal webkoekies uitvee vir <ph name="WEBSITE" /></translation>
 <translation id="2822354292072154809">Is jy seker jy wil alle werftoestemmings vir <ph name="CHOSEN_OBJECT_NAME" /> terugstel?</translation>
 <translation id="2870560284913253234">Werf</translation>
 <translation id="2874939134665556319">Vorige snit</translation>
@@ -112,6 +111,7 @@
 <translation id="3227137524299004712">Mikrofoon</translation>
 <translation id="3248611290851046188">Hierdie werf definieer belangstellings wat ander werwe kan gebruik om vir jou advertensies te wys. Hierdie werf kry ook jou belangstellings van Chrome af om vir jou relevanter advertensies te wys.</translation>
 <translation id="3277252321222022663">Laat werwe toegang tot sensors toe (aanbeveel)</translation>
+<translation id="3285500645985761267">Laat verwante werwe toe om jou aktiwiteit in die groep te sien</translation>
 <translation id="3295602654194328831">Versteek inligting</translation>
 <translation id="3328801116991980348">Werfinligting</translation>
 <translation id="3333961966071413176">Alle kontakte</translation>
@@ -119,6 +119,7 @@
 <translation id="3386292677130313581">Vra voordat werwe toegelaat word om jou ligging te ken (aanbeveel)</translation>
 <translation id="3521663503435878242">Werwe onder <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Verhoed werwe om 'n 3D-kaart van jou omgewing te skep of kameraposisie na te spoor</translation>
+<translation id="3544058026430919413">’n Maatskappy kan ’n groep werwe definieer wat webkoekies kan gebruik om jou aktiwiteit in die groep te deel. Dit is af in Incognito.</translation>
 <translation id="3551268116566418498">Verlaat Incognitomodus?</translation>
 <translation id="3586500876634962664">Kamera- en mikrofoongebruik</translation>
 <translation id="358794129225322306">Laat 'n werf toe om outomaties veelvuldige lêers af te laai</translation>
@@ -144,7 +145,6 @@
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Laat webkoekies vir 'n spesifieke werf toe.</translation>
 <translation id="4046123991198612571">Volgende snit</translation>
-<translation id="4048876521107516222">Verwante werwe gebruik webkoekies om te help met dinge soos om jou aangemeld te hou</translation>
 <translation id="4149994727733219643">Vereenvoudigde aansig vir webbladsye</translation>
 <translation id="4165986682804962316">Werfinstellings</translation>
 <translation id="4169549551965910670">Aan ’n USB-toestel gekoppel</translation>
@@ -162,6 +162,7 @@
 <translation id="4434045419905280838">Opspringers en herleidings</translation>
 <translation id="445467742685312942">Laat werwe toe om beskermde inhoud te speel</translation>
 <translation id="4468959413250150279">Demp klank vir 'n spesifieke werf.</translation>
+<translation id="4475912480633855319">{COOKIES,plural, =1{# webkoekie}other{# webkoekies}}</translation>
 <translation id="4479647676395637221">Vra eers voordat werwe toegelaat word om jou kamera te gebruik (aanbeveel)</translation>
 <translation id="4505788138578415521">URL is uitgevou</translation>
 <translation id="4534723447064627427">Om <ph name="APP_NAME" /> toegang tot jou mikrofoon te gee, moet jy mikrofoon ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
@@ -175,16 +176,17 @@
 <translation id="483914009762354899">Sluit alle werwe in hierdie domein in</translation>
 <translation id="4883854917563148705">Bestuurde instellings kan nie teruggestel word nie</translation>
 <translation id="4887024562049524730">Vra voordat werwe toegelaat word om jou virtuelerealiteittoestel en -data te gebruik (aanbeveel)</translation>
+<translation id="4955223779495905865">’n Werf wat jy tans bekyk, kan inhoud van ander werwe af inbed, byvoorbeeld prente, advertensies en teks. Enige van hierdie werwe kan webkoekies en ander data stoor om jou ervaring te personaliseer.</translation>
 <translation id="4962975101802056554">Herroep alle toestemmings vir toestel</translation>
 <translation id="497421865427891073">Gaan vorentoe</translation>
 <translation id="4976702386844183910">Laas besoek op <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Geen kontakte gevind nie</translation>
 <translation id="4996978546172906250">Deel via</translation>
-<translation id="5014906230196386306">Vee webkoekies uit?</translation>
 <translation id="5039804452771397117">Laat toe</translation>
 <translation id="5048398596102334565">Laat werwe toegang tot bewegingsensors toe (aanbeveel)</translation>
 <translation id="5050380848339752099">Hierdie werf is op die punt om inligting met 'n program buite Incognitomodus te deel.</translation>
 <translation id="5063480226653192405">Gebruik</translation>
+<translation id="5082281938627763039">Dit vee webkoekies en ander werfdata vir <ph name="FPS_MEMBER" /> en vir werwe in <ph name="FPS_OWNER" /> se groep werwe uit.</translation>
 <translation id="5091013926750941408">Mobiele werf</translation>
 <translation id="509133520954049755">Versoek rekenaaraansig</translation>
 <translation id="5100237604440890931">Ingevou – klik om uit te vou.</translation>
@@ -221,6 +223,7 @@
 <translation id="5677928146339483299">Geblokkeer</translation>
 <translation id="5689516760719285838">Ligging</translation>
 <translation id="5690795753582697420">Kamera is afgeskakel in Android-instellings</translation>
+<translation id="5706552988683188916">Dit vee webkoekies en ander werfdata vir <ph name="WEBSITE" /> uit</translation>
 <translation id="5719847187258001597">Dit sal alle data en webkoekies uitvee wat deur <ph name="ORIGIN" /> of deur sy program op jou tuisskerm geberg is.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> word geblokkeer</translation>
 <translation id="5804241973901381774">Toestemmings</translation>
@@ -263,7 +266,6 @@
 <translation id="6554732001434021288">Laas <ph name="NUM_DAYS" /> dae gelede besoek</translation>
 <translation id="6561560012278703671">Gebruik stiller boodskappe (keer dat kennisgewingporboodskappe jou onderbreek)</translation>
 <translation id="6593061639179217415">Werkskermwerf</translation>
-<translation id="6608211702542341247">Hierdie werf is in <ph name="FPS_OWNER" /> se groep werwe wat jou aktiwiteit in die groep kan sien</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Beskermde inhoud</translation>
 <translation id="662080504995468778">Bly</translation>
@@ -314,9 +316,7 @@
 <translation id="7791543448312431591">Voeg by</translation>
 <translation id="780301667611848630">Nee, dankie</translation>
 <translation id="7804248752222191302">'n Werf gebruik tans jou kamera</translation>
-<translation id="7816129586531226979">Verwante werwe sal jou dalk oor werwe heen onthou</translation>
 <translation id="7817023149356982970">Jy sal op hierdie werf afgemeld word.</translation>
-<translation id="7828557259026017104">Webkoekies is lêers wat geskep word deur webwerwe wat jy besoek. Werwe kan hulle gebruik om jou voorkeure te onthou. Derdepartywebkoekies word deur ander werwe geskep. Hierdie werwe besit van die inhoud, soos advertensies of prente, wat jy sien op die webbladsy wat jy besoek.</translation>
 <translation id="7835852323729233924">Speel tans media</translation>
 <translation id="783819812427904514">Ontdemp video</translation>
 <translation id="7846076177841592234">Kanselleer keuse</translation>
@@ -324,6 +324,7 @@
 <translation id="7882806643839505685">Laat klank toe vir 'n spesifieke werf.</translation>
 <translation id="789180354981963912">Blokkeer derdepartywebkoekies in Incognito:</translation>
 <translation id="7940722705963108451">Herinner my</translation>
+<translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> werf in <ph name="FPS_OWNER" /> se groep werwe wat jou aktiwiteit in die groep kan sien}other{<ph name="FPS_MEMBERS_COUNT" /> werwe in <ph name="FPS_OWNER" /> se groep werwe wat jou aktiwiteit in die groep kan sien}}</translation>
 <translation id="7986741934819883144">Kies 'n kontak</translation>
 <translation id="7999064672810608036">Is jy seker dat jy alle plaaslike data, insluitend webkoekies, wil uitvee en alle toestemmings vir hierdie webwerf wil terugstel?</translation>
 <translation id="8007176423574883786">Afgeskakel vir hierdie toestel</translation>
@@ -362,6 +363,7 @@
 <translation id="8499083585497694743">Ontdemp mikrofoon</translation>
 <translation id="851751545965956758">Keer dat werwe aan toestelle koppel</translation>
 <translation id="8525306231823319788">Volskerm</translation>
+<translation id="8564613706851221529">{COUNT,plural, =1{Webkoekies word toegelaat vir <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-werf}other{Webkoekies word toegelaat vir <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-werwe}}</translation>
 <translation id="857943718398505171">Toegelaat (aanbeveel)</translation>
 <translation id="8609465669617005112">Skuif op</translation>
 <translation id="8676374126336081632">Vee invoer uit</translation>
@@ -387,6 +389,8 @@
 <translation id="8986362086234534611">Vergeet</translation>
 <translation id="9019902583201351841">Deur jou ouers bestuur</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9090268041676521955">Hierdie werf is in ’n groep wat jou aktiwiteit kan sien. Die groep word gedefinieer deur <ph name="FPS_OWNER" /></translation>
+<translation id="9106233582039520022">Vee webkoekies uit?</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> en nog <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> en nog <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289">Skakel toestemmings vir <ph name="APP_NAME" /> in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
 <translation id="9162462602695099906">Hierdie bladsy is gevaarlik</translation>

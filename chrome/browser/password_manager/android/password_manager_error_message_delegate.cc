@@ -11,6 +11,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/messages/android/message_dispatcher_bridge.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
 #include "ui/aura/window.h"
@@ -23,15 +25,33 @@ PasswordManagerErrorMessageDelegate::PasswordManagerErrorMessageDelegate(
 PasswordManagerErrorMessageDelegate::~PasswordManagerErrorMessageDelegate() =
     default;
 
+void PasswordManagerErrorMessageDelegate::DismissPasswordManagerErrorMessage(
+    messages::DismissReason dismiss_reason) {
+  if (message_) {
+    messages::MessageDispatcherBridge::Get()->DismissMessage(message_.get(),
+                                                             dismiss_reason);
+  }
+}
+
 void PasswordManagerErrorMessageDelegate::MaybeDisplayErrorMessage(
     content::WebContents* web_contents,
+    PrefService* pref_service,
     password_manager::ErrorMessageFlowType flow_type,
     password_manager::PasswordStoreBackendErrorType error_type,
     base::OnceCallback<void()> dismissal_callback) {
   DCHECK(web_contents);
 
-  if (!helper_bridge_->ShouldShowErrorUI())
+  if (!helper_bridge_->ShouldShowErrorUI()) {
+    // Even if no message was technically shown, the owner of `this` should know
+    // that it has served its purpose and can be safely destroyed.
+    std::move(dismissal_callback).Run();
     return;
+  }
+
+  int times_shown = pref_service->GetInteger(
+      password_manager::prefs::kTimesUPMAuthErrorShown);
+  pref_service->SetInteger(password_manager::prefs::kTimesUPMAuthErrorShown,
+                           times_shown + 1);
 
   DCHECK(!message_);
 
@@ -42,15 +62,6 @@ void PasswordManagerErrorMessageDelegate::MaybeDisplayErrorMessage(
       messages::MessagePriority::kUrgent);
   helper_bridge_->SaveErrorUIShownTimestamp();
   dismissal_callback_ = std::move(dismissal_callback);
-}
-
-void PasswordManagerErrorMessageDelegate::DismissPasswordManagerErrorMessage(
-    messages::DismissReason dismiss_reason) {
-  if (message_ != nullptr) {
-    messages::MessageDispatcherBridge::Get()->DismissMessage(message_.get(),
-                                                             dismiss_reason);
-    std::move(dismissal_callback_).Run();
-  }
 }
 
 void PasswordManagerErrorMessageDelegate::CreateMessage(
@@ -96,12 +107,14 @@ void PasswordManagerErrorMessageDelegate::HandleMessageDismissed(
     messages::DismissReason dismiss_reason) {
   RecordDismissalReasonMetrics(dismiss_reason);
   message_.reset();
+  // Running this callback results in `this` being destroyed, so no other
+  // code should be added beyond this point.
+  std::move(dismissal_callback_).Run();
 }
 
 void PasswordManagerErrorMessageDelegate::HandleSignInButtonClicked(
     content::WebContents* web_contents) {
   helper_bridge_->StartUpdateAccountCredentialsFlow(web_contents);
-  DismissPasswordManagerErrorMessage(messages::DismissReason::PRIMARY_ACTION);
 }
 
 void PasswordManagerErrorMessageDelegate::RecordDismissalReasonMetrics(

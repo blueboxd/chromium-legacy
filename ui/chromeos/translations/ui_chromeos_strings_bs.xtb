@@ -202,6 +202,7 @@
 <translation id="2771816809568414714">Sir</translation>
 <translation id="2781645665747935084">belgijska</translation>
 <translation id="2782104745158847185">Greška prilikom instalacije Linux aplikacije</translation>
+<translation id="2802583107108007218">Saznajte više o ovim ograničenjima</translation>
 <translation id="2803375539583399270">Unesite PIN</translation>
 <translation id="2820957248982571256">Skeniranje...</translation>
 <translation id="2830077785865012357">kineski zhuyin</translation>
@@ -281,7 +282,6 @@
 <translation id="3479552764303398839">Ne sada</translation>
 <translation id="3486821258960016770">mongolski</translation>
 <translation id="3495304270784461826">Broj grešaka: <ph name="COUNT" /></translation>
-<translation id="3495810061346586977">Fajl je povjerljiv i podložan ograničenjima po pravilima administratora. <ph name="BEGIN_LINK_HELP" />Saznajte više<ph name="END_LINK_HELP" /></translation>
 <translation id="3509680540198371098">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, detalji</translation>
 <translation id="3522708245912499433">portugalski</translation>
 <translation id="3524311639100184459">Oprez: Ovi fajlovi su privremeni i moguće je da će se automatski izbrisati radi oslobađanja prostora na disku.  <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
@@ -456,6 +456,7 @@
 <translation id="4900532980794411603">Dijeli pomoću aplikacije Parallels Desktop</translation>
 <translation id="4902546322522096650">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, poveži</translation>
 <translation id="4906580650526544301">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, baterija telefona <ph name="BATTERY_STATUS" />%, detalji</translation>
+<translation id="4929673617759421391">Administratorska pravila blokiraju lijepljenje fajla</translation>
 <translation id="4935975195727477204">Cvijet gazanije</translation>
 <translation id="4943368462779413526">Nogomet</translation>
 <translation id="4961158930123534723">1 folder je podijeljen pomoću aplikacije Parallels Desktop</translation>
@@ -513,6 +514,7 @@
 <translation id="5286194356314741248">Skeniranje</translation>
 <translation id="5288441970121584418">Pljeskavica</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
+<translation id="5293615890992542006">Administratorska pravila blokiraju premještanje fajla</translation>
 <translation id="5305688511332277257">Nijedan nije instaliran</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5318819489018851358">Dijeli s Linuxom</translation>
@@ -647,6 +649,7 @@
 <translation id="642282551015776456">Ovo ime se ne može koristiti za naziv fajla ili foldera.</translation>
 <translation id="6423031066725912715">vijetnamski s tastaturom TCVN</translation>
 <translation id="6430271654280079150">Imate još 1 pokušaj.</translation>
+<translation id="643243556292470964">Izbrisani fajlovi su sada premješteni u otpad</translation>
 <translation id="6485131920355264772">Preuzimanje informacije o prostoru nije uspjelo</translation>
 <translation id="6495925982925244349">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, upravlja vaš administrator, detalji</translation>
 <translation id="649877868557234318">Izdvajanje fajla <ph name="FILE_NAME" /> u folder <ph name="FOLDER_NAME" /></translation>
@@ -713,6 +716,7 @@
 <translation id="6993826899923627728">Ovi artikli su u otpadu</translation>
 <translation id="6998711733709403587">Broj odabranih foldera: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="7008426324576352165">Vašoj organizaciji treba više pohrane da dovrši otpremanje.</translation>
+<translation id="7009985720488544166">Administratorska pravila blokiraju premještanje fajlova (njih<ph name="COUNT" />)</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Instalacija nije uspjela:</translation>
 <translation id="7031639531908619281">turski</translation>
@@ -918,6 +922,7 @@
 <translation id="8656768832129462377">Nemoj provjeravati</translation>
 <translation id="8688591111840995413">Pogrešna zaporka</translation>
 <translation id="8698464937041809063">Google crtež</translation>
+<translation id="8698877009525468705">Fajl je povjerljiv i podložan ograničenjima po pravilima administratora.</translation>
 <translation id="8712637175834984815">Razumijem</translation>
 <translation id="8713112442029511308">malteški</translation>
 <translation id="8714406895390098252">Biciklo</translation>
@@ -972,6 +977,7 @@
 <translation id="9183302530794969518">Google Dokumenti</translation>
 <translation id="9189836632794948435">kazaški</translation>
 <translation id="9200427192836333033">Broj izdvojenih stavki: <ph name="NUMBER_OF_ITEMS" /></translation>
+<translation id="9210751050717126865">Administratorska pravila blokiraju lijepljenje fajlova (njih<ph name="COUNT" />)</translation>
 <translation id="9213073329713032541">Instalacija uspješno pokrenuta.</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="9219908252191632183">Lunarno</translation>

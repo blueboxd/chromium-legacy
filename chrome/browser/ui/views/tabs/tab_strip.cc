@@ -136,8 +136,8 @@ std::unique_ptr<TabContainer> MakeTabContainer(
     TabDragContext* drag_context) {
   if (base::FeatureList::IsEnabled(features::kSplitTabStrip)) {
     return std::make_unique<CompoundTabContainer>(
-        raw_ref<TabContainerController>(*tab_strip), hover_card_controller,
-        drag_context, *tab_strip, tab_strip);
+        raw_ref<TabContainerController>::from_ptr(tab_strip),
+        hover_card_controller, drag_context, *tab_strip, tab_strip);
   }
   return std::make_unique<TabContainerImpl>(
       *tab_strip, hover_card_controller, drag_context, *tab_strip, tab_strip);
@@ -164,8 +164,11 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
 
   gfx::Size CalculatePreferredSize() const override {
     int max_child_x = 0;
-    for (views::View* child : children())
+    for (views::View* child : children()) {
+      if (!views::IsViewClass<TabSlotView>(child))
+        continue;
       max_child_x = std::max(max_child_x, child->bounds().right());
+    }
 
     return gfx::Size(max_child_x, GetLayoutConstant(TAB_HEIGHT));
   }

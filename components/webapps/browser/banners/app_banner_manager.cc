@@ -136,6 +136,25 @@ class NullStatusReporter : public AppBannerManager::StatusReporter {
   }
 };
 
+void TrackBeforeInstallEventPrompt(AppBannerManager::State state) {
+  switch (state) {
+    case AppBannerManager::State::SENDING_EVENT_GOT_EARLY_PROMPT:
+      TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_EARLY_PROMPT);
+      break;
+    case AppBannerManager::State::PENDING_PROMPT_CANCELED:
+      TrackBeforeInstallEvent(
+          BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
+      break;
+    case AppBannerManager::State::PENDING_PROMPT_NOT_CANCELED:
+      TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PROMPT_CALLED_NOT_CANCELED);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  TrackBeforeInstallEvent(
+      BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
+}
 }  // anonymous namespace
 
 // static
@@ -338,7 +357,8 @@ bool AppBannerManager::DidRetryInstallableManagerRequest(
     case State::PENDING_ENGAGEMENT:
     case State::SENDING_EVENT:
     case State::SENDING_EVENT_GOT_EARLY_PROMPT:
-    case State::PENDING_PROMPT:
+    case State::PENDING_PROMPT_CANCELED:
+    case State::PENDING_PROMPT_NOT_CANCELED:
     case State::COMPLETE:
       NOTREACHED();
       return false;
@@ -445,6 +465,15 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
         InstallableWebAppCheckResult::kYes_ByUserRequest);
   }
 
+  if (features::SkipServiceWorkerForInstallPromotion()) {
+    PerformWorkerCheckForAmbientBadge();
+
+    SetInstallableWebAppCheckResult(
+        InstallableWebAppCheckResult::kYes_Promotable);
+    CheckSufficientEngagement();
+    return;
+  }
+
   PerformServiceWorkerCheck();
 }
 
@@ -469,19 +498,27 @@ void AppBannerManager::OnDidPerformWorkerCheck(const InstallableData& data) {
 
     SetInstallableWebAppCheckResult(
         InstallableWebAppCheckResult::kYes_Promotable);
-
-    // If we triggered the installability check on page load, then it's
-    // possible we don't have enough engagement yet. If that's the case,
-    // return here but don't call Terminate(). We wait for OnEngagementEvent
-    // to tell us that we should trigger.
-    if (!HasSufficientEngagement()) {
-      UpdateState(State::PENDING_ENGAGEMENT);
-      return;
-    }
-
-    SendBannerPromptRequest();
+    CheckSufficientEngagement();
   }
 }
+
+void AppBannerManager::CheckSufficientEngagement() {
+  // If we triggered the installability check on page load, then it's
+  // possible we don't have enough engagement yet. If that's the case,
+  // return here but don't call Terminate(). We wait for OnEngagementEvent
+  // to tell us that we should trigger.
+  if (!HasSufficientEngagement()) {
+    UpdateState(State::PENDING_ENGAGEMENT);
+    return;
+  }
+
+  SendBannerPromptRequest();
+}
+
+void AppBannerManager::PerformWorkerCheckForAmbientBadge() {}
+
+void AppBannerManager::OnDidPerformWorkerCheckForAmbientBadge(
+    const InstallableData& data) {}
 
 void AppBannerManager::RecordDidShowBanner() {
   content::WebContents* contents = web_contents();
@@ -517,23 +554,34 @@ void AppBannerManager::ResetCurrentPageData() {
 }
 
 void AppBannerManager::Terminate() {
-  if (state_ == State::PENDING_PROMPT) {
-    TrackBeforeInstallEvent(
-        BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
+  switch (state_) {
+    case State::PENDING_PROMPT_CANCELED:
+      TrackBeforeInstallEvent(
+          BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
+      break;
+    case State::PENDING_PROMPT_NOT_CANCELED:
+      TrackBeforeInstallEvent(
+          BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_NOT_CANCELLED);
+      break;
+    case State::PENDING_WORKER:
+      if (!passed_worker_check_)
+        TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
+      break;
+    case State::PENDING_ENGAGEMENT:
+      if (!has_sufficient_engagement_)
+        TrackDisplayEvent(DISPLAY_EVENT_NOT_VISITED_ENOUGH);
+      break;
+    default:
+      break;
   }
-
-  if (state_ == State::PENDING_WORKER && !passed_worker_check_)
-    TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
-
-  if (state_ == State::PENDING_ENGAGEMENT && !has_sufficient_engagement_)
-    TrackDisplayEvent(DISPLAY_EVENT_NOT_VISITED_ENOUGH);
 
   Stop(TerminationCode());
 }
 
 InstallableStatusCode AppBannerManager::TerminationCode() const {
   switch (state_) {
-    case State::PENDING_PROMPT:
+    case State::PENDING_PROMPT_CANCELED:
+    case State::PENDING_PROMPT_NOT_CANCELED:
       return RENDERER_CANCELLED;
     case State::PENDING_WORKER:
       return passed_worker_check_ ? NO_ERROR_DETECTED
@@ -740,7 +788,8 @@ void AppBannerManager::DidUpdateWebManifestURL(
     case State::PENDING_ENGAGEMENT:
     case State::SENDING_EVENT:
     case State::SENDING_EVENT_GOT_EARLY_PROMPT:
-    case State::PENDING_PROMPT:
+    case State::PENDING_PROMPT_CANCELED:
+    case State::PENDING_PROMPT_NOT_CANCELED:
       Terminate();
       [[fallthrough]];
     case State::COMPLETE:
@@ -801,7 +850,8 @@ void AppBannerManager::OnEngagementEvent(
 bool AppBannerManager::IsRunning() const {
   switch (state_) {
     case State::INACTIVE:
-    case State::PENDING_PROMPT:
+    case State::PENDING_PROMPT_CANCELED:
+    case State::PENDING_PROMPT_NOT_CANCELED:
     case State::PENDING_ENGAGEMENT:
     case State::COMPLETE:
       return false;
@@ -946,9 +996,12 @@ void AppBannerManager::OnBannerPromptReply(
   }
 
   if (state_ == State::SENDING_EVENT) {
-    if (!event_canceled)
+    if (!event_canceled) {
       MaybeShowAmbientBadge();
-    UpdateState(State::PENDING_PROMPT);
+      UpdateState(State::PENDING_PROMPT_NOT_CANCELED);
+    } else {
+      UpdateState(State::PENDING_PROMPT_CANCELED);
+    }
     return;
   }
 
@@ -966,8 +1019,8 @@ void AppBannerManager::ShowBanner() {
   content::WebContents* contents = web_contents();
   WebappInstallSource install_source;
 
-  TrackBeforeInstallEvent(
-      BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
+  TrackBeforeInstallEventPrompt(state_);
+
   install_source =
       status_reporter_->GetInstallSource(contents, InstallTrigger::API);
 
@@ -996,7 +1049,8 @@ void AppBannerManager::DisplayAppBanner() {
   // Prevent this from being called multiple times on the same connection.
   receiver_.reset();
 
-  if (state_ == State::PENDING_PROMPT) {
+  if (state_ == State::PENDING_PROMPT_CANCELED ||
+      state_ == State::PENDING_PROMPT_NOT_CANCELED) {
     ShowBanner();
   } else if (state_ == State::SENDING_EVENT) {
     // Log that the prompt request was made for when we get the prompt reply.

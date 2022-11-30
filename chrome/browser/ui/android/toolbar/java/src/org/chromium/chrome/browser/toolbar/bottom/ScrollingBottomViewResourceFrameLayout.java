@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.os.Looper;
 import android.util.AttributeSet;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.ConstraintsChecker;
 import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.ToolbarCaptureType;
+import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
@@ -49,8 +51,7 @@ public class ScrollingBottomViewResourceFrameLayout extends ViewResourceFrameLay
         return new ViewResourceAdapter(this) {
             @Override
             public boolean isDirty() {
-                if (ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.TOOLBAR_SCROLL_ABLATION_ANDROID)) {
+                if (ToolbarFeatures.shouldBlockCapturesForAblation()) {
                     return false;
                 }
 
@@ -120,6 +121,7 @@ public class ScrollingBottomViewResourceFrameLayout extends ViewResourceFrameLay
      */
     public void setConstraintsSupplier(ObservableSupplier<Integer> constraintsSupplier) {
         assert mConstraintsChecker == null;
-        mConstraintsChecker = new ConstraintsChecker(getResourceAdapter(), constraintsSupplier);
+        mConstraintsChecker = new ConstraintsChecker(
+                getResourceAdapter(), constraintsSupplier, Looper.getMainLooper());
     }
 }

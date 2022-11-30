@@ -3646,7 +3646,7 @@ enum WebFeature {
   kV8PendingGetBeacon_SetURL_Method = 4325,
   kV8PendingPostBeacon_Constructor = 4326,
   kV8PendingPostBeacon_SetData_Method = 4327,
-  kContentVisibilityAutoStateChangedHandlerRegistered = 4328,
+  kContentVisibilityAutoStateChangeHandlerRegistered = 4328,
   kReplacedElementPaintedWithLargeOverflow = 4329,
   kFlexboxAbsPosJustifyContent = 4330,
   kMultipleFetchHandlersInServiceWorker = 4331,
@@ -3689,6 +3689,8 @@ enum WebFeature {
   kInteractiveWidgetResizesVisual = 4368,
   kSerivceWorkerFallbackMainResource = 4369,
   kGetDisplayMediaWithoutUserActivation = 4370,
+  kBackForwardCacheNotRestoredReasons = 4371,
+  kViewportDependentLazyLoadedImageWithoutSizesAttribute = 4381,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

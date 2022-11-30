@@ -94,7 +94,18 @@ class InputStreamReaderWrapper
       // 0. In that case we still want to do a blocking read until there's data
       // or EOF.
       if (input_stream_->BytesAvailable(&available) && available > 0) {
-        // Make sure a bad app doesn't lead to reading past the buffer.
+        // Some implementations might return 1 even when there's more data. To
+        // avoid slowdowns in that case use a minimum of 1KB to read.
+        if (available <
+            net::features::
+                kOptimizeNetworkBuffersMinInputStreamAvailableValueToIgnore
+                    .Get()) {
+          available =
+              net::features::kOptimizeNetworkBuffersMinInputStreamReadSize
+                  .Get();
+        }
+
+        // Make sure a we don't read past the buffer size.
         buffer_size = std::min(available, buffer_size);
       } else {
         // `buffer_size' could be large since it comes from the size of the data

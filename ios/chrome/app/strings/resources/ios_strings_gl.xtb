@@ -109,6 +109,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1687475363370981210">Marcar todo como lido</translation>
 <translation id="1689333818294560261">Alcume</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionados</translation>
+<translation id="1715515772563243997">Se confías en <ph name="SITE" />, podes usar un contrasinal gardado para iniciar sesión.</translation>
 <translation id="1740468249224277719">Toca dúas veces para instalar.</translation>
 <translation id="1752547299766512813">Gardar contras.</translation>
 <translation id="1753905327828125965">Máis visitados</translation>
@@ -121,6 +122,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1832848789136765277">Para asegurarte de poder acceder sempre aos teus datos sincronizados, verifica a túa identidade</translation>
 <translation id="1870148520156231997">Mostrar contrasinal</translation>
 <translation id="1872096359983322073">Lanterna</translation>
+<translation id="1891796056033961979">Agora os teus marcadores, contrasinais, configuración e demais están dispoñibles nesta pantalla.</translation>
 <translation id="1910975740091000991">Chrome para iOS</translation>
 <translation id="1911619930368729126">Cargar en Google Drive</translation>
 <translation id="1923342640370224680">Última hora</translation>
@@ -151,6 +153,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2155145621546387786">Compartir Chrome</translation>
 <translation id="2175927920773552910">Código QR</translation>
+<translation id="2178545675770638239">Selecciona un contrasinal</translation>
 <translation id="2218443599109088993">Afastar</translation>
 <translation id="2230173723195178503">Cargouse a páxina web</translation>
 <translation id="2239626343334228536">Borrando datos de navegación…</translation>
@@ -434,6 +437,8 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="4502566650163919158">Comprobar agora</translation>
 <translation id="4505980578794259603">Última comprobación: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Pecha a promoción de inicio de sesión</translation>
+<translation id="4514889972748124117">Suxerir contrasinal seguro…</translation>
+<translation id="4520798012560649652">Máis información sobre o modo de incógnito</translation>
 <translation id="4526249700380860531">Ver e xestionar os contrasinais gardados en <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Revisar os datos sincronizados</translation>
 <translation id="4536418791685807335">Proba a volver iniciar sesión.</translation>
@@ -663,6 +668,7 @@ Handoff tamén debe estar activado na sección Xeral da configuración e os teus
 <translation id="6231782223312638214">Suxerido</translation>
 <translation id="6232329973559504466">Busca do modo de incógnito</translation>
 <translation id="6232736989810857397">Permíteche crear facilmente eventos do calendario con Google Lens.</translation>
+<translation id="6247557882553405851">Xestor de contrasinais de Google</translation>
 <translation id="6254066287920239840">Abre as ligazóns na aplicación en vez de no navegador.</translation>
 <translation id="6255097610484507482">Editar tarxeta</translation>
 <translation id="6277426346321820595">Sen protección</translation>
@@ -1014,6 +1020,7 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="8917490105272468696">Si, acepto</translation>
 <translation id="8928133177108699615">Ordenador</translation>
 <translation id="8952559610785099500">Engadir un contrasinal</translation>
+<translation id="8953046091948372197">Aquí atoparás os teus contrasinais</translation>
 <translation id="895541991026785598">Informar dun problema</translation>
 <translation id="8974714402877957201">1. Abre a configuración do iPad</translation>
 <translation id="8976382372951310360">Axuda</translation>
@@ -1047,6 +1054,7 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="9200875785104711666">Hai <ph name="TIME" /> d</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Enviouse o informe de erros.</translation>
+<translation id="941747855997058526">Seleccionar contrasinal…</translation>
 <translation id="952704832371081537">Cancelar</translation>
 <translation id="953008885340860025">Pechouse sesión en Chrome</translation>
 <translation id="959066944189734975">Segues a <ph name="CHANNEL_NAME" /></translation>

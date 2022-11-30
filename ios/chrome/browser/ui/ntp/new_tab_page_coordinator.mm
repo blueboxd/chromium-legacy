@@ -429,6 +429,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   // When the visible feed has been updated, recalculate the minimum NTP height.
   if (feedType == self.selectedFeed) {
     [self.ntpViewController updateFeedInsetsForMinimumHeight];
+    [self.ntpViewController updateStickyElements];
   }
 }
 
@@ -453,7 +454,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
         self.feedMetricsRecorder.feedControlDelegate = self;
         self.feedMetricsRecorder.followDelegate = self;
       }
-      [self.feedMetricsRecorder recordNTPBecameVisible];
     }
     if (!visible) {
       // Unfocus omnibox, to prevent it from lingering when it should be
@@ -464,7 +464,16 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
           self.browser->GetCommandDispatcher(), OmniboxCommands);
       [omniboxCommandHandler cancelOmniboxEdit];
     }
+    // Check if feed is visible before reporting NTP visibility as the feed
+    // needs to be visible in order to use for metrics.
+    // TODO(crbug.com/1373650) Move isFeedVisible check to the metrics recorder
+    if (IsGoodVisitsMetricEnabled()) {
+      if (self.started && [self isFeedVisible]) {
+        [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
+      }
+    }
   }
+
   self.viewPresented = visible;
   [self updateVisible];
 }
@@ -673,8 +682,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
       self.feedWrapperViewController;
   self.ntpViewController.overscrollDelegate = self;
   self.ntpViewController.ntpContentDelegate = self;
-  self.ntpViewController.identityDiscButton =
-      [self.headerController identityDiscButton];
 
   self.ntpViewController.headerController = self.headerController;
 
@@ -835,6 +842,18 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 #pragma mark - FeedControlDelegate
 
 - (FollowingFeedSortType)followingFeedSortType {
+  if (IsFollowingFeedDefaultSortTypeEnabled()) {
+    BOOL hasDefaultBeenChanged = self.prefService->GetBoolean(
+        prefs::kDefaultFollowingFeedSortTypeChanged);
+    if (hasDefaultBeenChanged) {
+      return (FollowingFeedSortType)self.prefService->GetInteger(
+          prefs::kNTPFollowingFeedSortType);
+    } else {
+      return IsDefaultFollowingFeedSortTypeGroupedByPublisher()
+                 ? FollowingFeedSortTypeByPublisher
+                 : FollowingFeedSortTypeByLatest;
+    }
+  }
   // TODO(crbug.com/1352935): Add a DCHECK to make sure the coordinator isn't
   // stopped when we check this. That would require us to use the NTPHelper to
   // get this information.
@@ -844,6 +863,8 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
 - (void)handleFeedSelected:(FeedType)feedType {
   DCHECK([self isFollowingFeedAvailable]);
+
+  self.selectedFeed = feedType;
 
   // Saves scroll position before changing feed.
   CGFloat scrollPosition = [self.ntpViewController scrollPosition];
@@ -856,11 +877,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
     self.discoverFeedService->SetFollowingFeedContentSeen();
   }
 
-  self.selectedFeed = feedType;
   [self updateNTPForFeed];
-  [self updateFeedLayout];
-
-  [self.ntpViewController updateFeedInsetsForMinimumHeight];
 
   // Scroll position resets when changing the feed, so we set it back to what it
   // was.
@@ -874,15 +891,21 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
     return;
   }
 
+  // Save the scroll position before changing sort type.
+  CGFloat scrollPosition = [self.ntpViewController scrollPosition];
+
   [self.feedMetricsRecorder recordFollowingFeedSortTypeSelected:sortType];
-  [self.ntpViewController setContentOffsetToTop];
   self.prefService->SetInteger(prefs::kNTPFollowingFeedSortType, sortType);
+  self.prefService->SetBoolean(prefs::kDefaultFollowingFeedSortTypeChanged,
+                               true);
   self.discoverFeedService->SetFollowingFeedSortType(sortType);
   self.feedHeaderViewController.followingFeedSortType = sortType;
 
-  // Changing the sort type affects the scroll position, so update the feed
-  // layout.
-  [self updateFeedLayout];
+  [self updateNTPForFeed];
+
+  // Scroll position resets when changing the feed, so we set it back to what it
+  // was.
+  [self.ntpViewController setContentOffsetToTopOfFeed:scrollPosition];
 }
 
 - (BOOL)shouldFeedBeVisible {
@@ -1261,6 +1284,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
       self.feedWrapperViewController;
 
   [self.ntpViewController layoutContentInParentCollectionView];
+
   [self updateFeedLayout];
 }
 

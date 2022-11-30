@@ -376,9 +376,6 @@ extern const char kChromeLabsDescription[];
 extern const char kCommerceHintAndroidName[];
 extern const char kCommerceHintAndroidDescription[];
 
-extern const char kConsolidatedSiteStorageControlsName[];
-extern const char kConsolidatedSiteStorageControlsDescription[];
-
 extern const char kConsumerAutoUpdateToggleAllowedName[];
 extern const char kConsumerAutoUpdateToggleAllowedDescription[];
 
@@ -841,6 +838,9 @@ extern const char kFractionalScrollOffsetsDescription[];
 extern const char kFedCmName[];
 extern const char kFedCmDescription[];
 
+extern const char kFedCmMetricsEndpointName[];
+extern const char kFedCmMetricsEndpointDescription[];
+
 extern const char kFedCmMultiIdpName[];
 extern const char kFedCmMultiIdpDescription[];
 
@@ -932,6 +932,9 @@ extern const char kTabSelectionEditorV2Description[];
 
 extern const char kTabSwitcherOnReturnName[];
 extern const char kTabSwitcherOnReturnDescription[];
+
+extern const char kStartSurfaceReturnTimeName[];
+extern const char kStartSurfaceReturnTimeDescription[];
 
 extern const char kHiddenNetworkMigrationName[];
 extern const char kHiddenNetworkMigrationDescription[];
@@ -1160,6 +1163,9 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
+
+extern const char kOmniboxRemoveExcessiveRecycledViewClearCallsName[];
+extern const char kOmniboxRemoveExcessiveRecycledViewClearCallsDescription[];
 
 extern const char kOmniboxRemoveSuggestionHeaderChevronName[];
 extern const char kOmniboxRemoveSuggestionHeaderChevronDescription[];
@@ -1736,17 +1742,14 @@ extern const char kUnsafeFastJSCallsDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
+extern const char kUseNAT64ForIPv4LiteralName[];
+extern const char kUseNAT64ForIPv4LiteralDescription[];
+
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
 
 extern const char kVCBackgroundBlurName[];
 extern const char kVCBackgroundBlurDescription[];
-
-extern const char kVCBackgroundReplaceName[];
-extern const char kVCBackgroundReplaceDescription[];
-
-extern const char kVCPortraitRelightingName[];
-extern const char kVCPortraitRelightingDescription[];
 
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
@@ -2498,6 +2501,12 @@ extern const char kNtpCacheOneGoogleBarDescription[];
 
 extern const char kNtpChromeCartModuleName[];
 extern const char kNtpChromeCartModuleDescription[];
+
+extern const char kNtpComprehensiveThemeRealboxName[];
+extern const char kNtpComprehensiveThemeRealboxDescription[];
+
+extern const char kNtpComprehensiveThemingName[];
+extern const char kNtpComprehensiveThemingDescription[];
 
 extern const char kNtpDesktopLensName[];
 extern const char kNtpDesktopLensDescription[];

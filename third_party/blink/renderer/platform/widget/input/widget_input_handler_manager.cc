@@ -1111,4 +1111,14 @@ void WidgetInputHandlerManager::ClearClient() {
   input_event_queue_->ClearClient();
 }
 
+void WidgetInputHandlerManager::UpdateBrowserControlsState(
+    cc::BrowserControlsState constraints,
+    cc::BrowserControlsState current,
+    bool animate) {
+  DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
+  DCHECK(input_handler_proxy_);
+  input_handler_proxy_->UpdateBrowserControlsState(constraints, current,
+                                                   animate);
+}
+
 }  // namespace blink

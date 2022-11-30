@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/whats_new/whats_new_table_view_controller.h"
 
+#import "base/metrics/histogram_functions.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -12,7 +13,10 @@
 #import "ios/chrome/browser/ui/whats_new/cells/whats_new_table_view_item.h"
 #import "ios/chrome/browser/ui/whats_new/data_source/whats_new_item.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_detail_view_controller.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_table_view_action_handler.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_table_view_delegate.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -26,6 +30,7 @@ NSString* const kWhatsNewListViewID = @"kWhatsNewListViewId";
 const CGFloat kEstimatedTableViewRowHeight = 56;
 const CGFloat kEstimatedSectionHeaderHeight = 56;
 const CGFloat kEstimatedsectionFooterHeight = 0.0;
+const CGFloat kCellIconWidth = 64;
 
 // List of sections.
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -59,6 +64,9 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 // based.
 @property(nonatomic, assign) BOOL isModuleTableView;
 
+// Indicates whether a scroll happened.
+@property(nonatomic, assign) BOOL viewDidScroll;
+
 @end
 
 @implementation WhatsNewTableViewController
@@ -85,6 +93,17 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 #pragma mark - UIViewController
 
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  base::UmaHistogramBoolean("IOS.WhatsNew.TableViewDidScroll",
+                            self.viewDidScroll);
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  self.viewDidScroll = NO;
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -100,7 +119,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   self.tableView.sectionFooterHeight = kEstimatedsectionFooterHeight;
 }
 
-#pragma mark - UITableViewDelegate
+#pragma mark - UITableViewactionHandler
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -110,6 +129,11 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
   if (item.type == ItemTypeHeader) {
     cell.separatorInset = UIEdgeInsetsMake(0.0f, 0.0f, 0.0f, CGFLOAT_MAX);
+  } else {
+    cell.separatorInset = UIEdgeInsetsMake(
+        0,
+        kTableViewHorizontalSpacing + kTableViewImagePadding + kCellIconWidth,
+        0, 0);
   }
   return cell;
 }
@@ -136,8 +160,10 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
       [self.tableViewModel sectionIdentifierForSectionIndex:indexPath.section];
   switch (sectionID) {
     case SectionFeatureBannerIdentifier: {
-      [self.delegate recordWhatsNewInteraction:self.highlightedFeatureItem];
-      [self openWhatsNewDetailView:self.highlightedFeatureItem];
+      [self.actionHandler
+          recordWhatsNewInteraction:self.highlightedFeatureItem];
+      [self.delegate detailViewController:self
+          openDetailViewControllerForItem:self.highlightedFeatureItem];
       break;
     }
     case SectionFeaturesIdentifier: {
@@ -145,18 +171,26 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
       if (self.isModuleTableView) {
         index--;
       }
-      [self.delegate recordWhatsNewInteraction:self.featureItems[index]];
-      [self openWhatsNewDetailView:self.featureItems[index]];
+      [self.actionHandler recordWhatsNewInteraction:self.featureItems[index]];
+      [self.delegate detailViewController:self
+          openDetailViewControllerForItem:self.featureItems[index]];
       break;
     }
     case SectionChromeTipIdenfitier: {
-      [self.delegate recordWhatsNewInteraction:self.chromeTipItem];
-      [self openWhatsNewDetailView:self.chromeTipItem];
+      [self.actionHandler recordWhatsNewInteraction:self.chromeTipItem];
+      [self.delegate detailViewController:self
+          openDetailViewControllerForItem:self.chromeTipItem];
       break;
     }
   }
 
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  self.viewDidScroll = YES;
 }
 
 #pragma mark - ChromeTableViewController
@@ -293,18 +327,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
       break;
   }
   return header;
-}
-
-- (void)openWhatsNewDetailView:(WhatsNewItem*)item {
-  WhatsNewDetailViewController* detailView =
-      [[WhatsNewDetailViewController alloc]
-              initWithParams:item.bannerImage
-                       title:item.title
-                    subtitle:item.subtitle
-          primaryActionTitle:item.primaryActionTitle
-            instructionSteps:item.instructionSteps
-            hasPrimaryAction:item.hasPrimaryAction];
-  [self.navigationController pushViewController:detailView animated:YES];
 }
 
 @end

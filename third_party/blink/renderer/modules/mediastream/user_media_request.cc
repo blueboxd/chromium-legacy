@@ -64,6 +64,8 @@
 
 namespace blink {
 
+using mojom::blink::MediaStreamType;
+
 namespace {
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -405,18 +407,19 @@ UserMediaRequest* UserMediaRequest::Create(
 
   std::string display_surface_constraint;
 
-  if (media_type == UserMediaRequestType::kUserMedia && !video.IsNull()) {
-    if (video.Basic().pan.HasMandatory()) {
-      error_state.ThrowTypeError("Mandatory pan constraint is not supported");
+  if (media_type == UserMediaRequestType::kUserMedia) {
+    if (audio.IsNull() && video.IsNull()) {
+      error_state.ThrowTypeError(
+          "At least one of audio and video must be requested");
       return nullptr;
-    }
-    if (video.Basic().tilt.HasMandatory()) {
-      error_state.ThrowTypeError("Mandatory tilt constraint is not supported");
-      return nullptr;
-    }
-    if (video.Basic().zoom.HasMandatory()) {
-      error_state.ThrowTypeError("Mandatory zoom constraint is not supported");
-      return nullptr;
+    } else if (!video.IsNull()) {
+      if (video.Basic().pan.HasMandatory() ||
+          video.Basic().tilt.HasMandatory() ||
+          video.Basic().zoom.HasMandatory()) {
+        error_state.ThrowTypeError(
+            "Mandatory pan-tilt-zoom constraints are not supported");
+        return nullptr;
+      }
     }
   } else if (media_type == UserMediaRequestType::kDisplayMedia ||
              media_type == UserMediaRequestType::kDisplayMediaSet) {
@@ -433,8 +436,6 @@ UserMediaRequest* UserMediaRequest::Create(
     //   newly created TypeError.
     // 3. Let requestedMediaTypes be the set of media types in constraints with
     // either a dictionary value or a value of true.
-    // 4. If requestedMediaTypes is the empty set, set requestedMediaTypes to a
-    // set containing "video".
     if (media_type == UserMediaRequestType::kDisplayMediaSet) {
       if (!audio.IsNull()) {
         error_state.ThrowTypeError("Audio requests are not supported");
@@ -445,44 +446,33 @@ UserMediaRequest* UserMediaRequest::Create(
       }
     }
 
+    if (video.IsNull()) {
+      error_state.ThrowTypeError("video must be requested");
+      return nullptr;
+    }
+
     if ((!audio.IsNull() && !audio.Advanced().empty()) ||
-        (!video.IsNull() && !video.Advanced().empty())) {
+        !video.Advanced().empty()) {
       error_state.ThrowTypeError("Advanced constraints are not supported");
       return nullptr;
     }
-    if ((!audio.IsNull() && audio.Basic().HasMin()) ||
-        (!video.IsNull() && video.Basic().HasMin())) {
+
+    if ((!audio.IsNull() && audio.Basic().HasMin()) || video.Basic().HasMin()) {
       error_state.ThrowTypeError("min constraints are not supported");
       return nullptr;
     }
+
     if ((!audio.IsNull() && audio.Basic().HasExact()) ||
-        (!video.IsNull() && video.Basic().HasExact())) {
+        video.Basic().HasExact()) {
       error_state.ThrowTypeError("exact constraints are not supported");
       return nullptr;
     }
-    if (!audio.IsNull() && video.IsNull()) {
-      error_state.ThrowTypeError("Audio only requests are not supported");
-      return nullptr;
-    }
-    if (audio.IsNull() && video.IsNull()) {
-      video = ParseOptions(
-          context,
-          MakeGarbageCollected<V8UnionBooleanOrMediaTrackConstraints>(true),
-          error_state);
-      if (error_state.HadException())
-        return nullptr;
-    }
+
     if (video.Basic().display_surface.HasIdeal() &&
         video.Basic().display_surface.Ideal().size() > 0) {
       display_surface_constraint =
           video.Basic().display_surface.Ideal()[0].Utf8();
     }
-  }
-
-  if (audio.IsNull() && video.IsNull()) {
-    error_state.ThrowTypeError(
-        "At least one of audio and video must be requested");
-    return nullptr;
   }
 
   if (!audio.IsNull())
@@ -598,6 +588,73 @@ MediaConstraints UserMediaRequest::AudioConstraints() const {
 
 MediaConstraints UserMediaRequest::VideoConstraints() const {
   return video_;
+}
+
+MediaStreamType UserMediaRequest::AudioMediaStreamType() const {
+  if (!Audio()) {
+    return MediaStreamType::NO_SERVICE;
+  }
+  if (MediaRequestType() == UserMediaRequestType::kDisplayMedia) {
+    return MediaStreamType::DISPLAY_AUDIO_CAPTURE;
+  }
+  if (MediaRequestType() == UserMediaRequestType::kDisplayMediaSet) {
+    return MediaStreamType::NO_SERVICE;
+  }
+  DCHECK_EQ(UserMediaRequestType::kUserMedia, MediaRequestType());
+
+  // Check if this is a getUserMedia display capture.
+  const MediaConstraints& constraints = AudioConstraints();
+  String source_constraint =
+      constraints.Basic().media_stream_source.Exact().empty()
+          ? String()
+          : String(constraints.Basic().media_stream_source.Exact()[0]);
+  if (!source_constraint.empty()) {
+    // This is a getUserMedia display capture call.
+    if (source_constraint == blink::kMediaStreamSourceTab) {
+      return MediaStreamType::GUM_TAB_AUDIO_CAPTURE;
+    } else if (source_constraint == blink::kMediaStreamSourceDesktop ||
+               source_constraint == blink::kMediaStreamSourceSystem) {
+      return MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE;
+    }
+    return MediaStreamType::NO_SERVICE;
+  }
+
+  return MediaStreamType::DEVICE_AUDIO_CAPTURE;
+}
+
+MediaStreamType UserMediaRequest::VideoMediaStreamType() const {
+  if (!Video()) {
+    return MediaStreamType::NO_SERVICE;
+  }
+  if (MediaRequestType() == UserMediaRequestType::kDisplayMedia) {
+    return should_prefer_current_tab()
+               ? MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB
+               : MediaStreamType::DISPLAY_VIDEO_CAPTURE;
+  }
+  if (MediaRequestType() == UserMediaRequestType::kDisplayMediaSet) {
+    DCHECK(!should_prefer_current_tab());
+    return MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET;
+  }
+  DCHECK_EQ(UserMediaRequestType::kUserMedia, MediaRequestType());
+
+  // Check if this is a getUserMedia display capture.
+  const MediaConstraints& constraints = VideoConstraints();
+  String source_constraint =
+      constraints.Basic().media_stream_source.Exact().empty()
+          ? String()
+          : String(constraints.Basic().media_stream_source.Exact()[0]);
+  if (!source_constraint.empty()) {
+    // This is a getUserMedia display capture call.
+    if (source_constraint == blink::kMediaStreamSourceTab) {
+      return MediaStreamType::GUM_TAB_VIDEO_CAPTURE;
+    } else if (source_constraint == blink::kMediaStreamSourceDesktop ||
+               source_constraint == blink::kMediaStreamSourceScreen) {
+      return MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE;
+    }
+    return MediaStreamType::NO_SERVICE;
+  }
+
+  return MediaStreamType::DEVICE_VIDEO_CAPTURE;
 }
 
 bool UserMediaRequest::ShouldDisableHardwareNoiseSuppression() const {

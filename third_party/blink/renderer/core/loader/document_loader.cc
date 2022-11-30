@@ -147,6 +147,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -1029,6 +1030,17 @@ void DocumentLoader::DecodedBodyDataReceived(
   BodyDataReceivedImpl(body_data);
 }
 
+DocumentLoader::ProcessBackgroundDataCallback
+DocumentLoader::TakeProcessBackgroundDataCallback() {
+  auto callback = parser_->TakeBackgroundScanCallback();
+  if (!callback)
+    return ProcessBackgroundDataCallback();
+  return CrossThreadBindRepeating(
+      [](const DocumentParser::BackgroundScanCallback& callback,
+         const WebString& data) { callback.Run(data); },
+      std::move(callback));
+}
+
 void DocumentLoader::BodyDataReceivedImpl(BodyData& data) {
   TRACE_EVENT0("loading", "DocumentLoader::BodyDataReceived");
   base::span<const char> encoded_data = data.EncodedData();
@@ -1341,7 +1353,7 @@ void DocumentLoader::CommitData(BodyData& data) {
   // TODO(dgozman): we should stop body loader when stopping the parser to
   // avoid unnecessary work. This may happen, for example, when we abort current
   // committed document which is still loading when initiating a new navigation.
-  if (!frame_ || !frame_->GetDocument()->Parsing())
+  if (!frame_ || !frame_->GetDocument()->Parsing() || !parser_)
     return;
 
   base::AutoReset<bool> reentrancy_protector(&in_commit_data_, true);

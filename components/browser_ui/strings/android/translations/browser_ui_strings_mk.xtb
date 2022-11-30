@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
-<translation id="1005794457625275818">Колачиња дозволени за <ph name="FPS_MEMBERS_COUNT" /> сајтови во групата <ph name="FPS_OWNER" />, вклучително <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Отвори онлајн</translation>
 <translation id="1044891598689252897">Сајтовите ќе работат нормално</translation>
 <translation id="1124090076051167250">Овa ќе ги избрише податоците и колачињата (<ph name="DATASIZE" />) складирани од сајтови или апликации на почетниот екран.</translation>
@@ -35,6 +34,7 @@
 <translation id="1785415724048343560">Препорачано за најдобро доживување</translation>
 <translation id="1818308510395330587">За да овозможите <ph name="APP_NAME" /> да користи AR, вклучете ја дозволата за камерата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Од <ph name="SOURCE_NAME" /></translation>
+<translation id="187227595286001730">Слични сајтов може да ја гледаат вашата активност во групата</translation>
 <translation id="1887786770086287077">Пристапот до локацијата е исклучен за уредов. Вклучете го во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Спушти</translation>
 <translation id="1919345977826869612">Реклами</translation>
@@ -73,6 +73,7 @@
 <translation id="2490684707762498678">Управувани од <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Помош и повратни информации</translation>
 <translation id="2501278716633472235">Врати се</translation>
+<translation id="2546283357679194313">Колачиња и податоци од сајтот</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 колаче е блокирано}one{# колаче е блокирано}other{# колачиња се блокирани}}</translation>
 <translation id="2570922361219980984">Пристапот до локацијата е исклучен и за уредов. Вклучете го во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Проширено - кликни да се сокрие.</translation>
@@ -82,12 +83,10 @@
 <translation id="2653659639078652383">Испрати</translation>
 <translation id="2677748264148917807">Напушти</translation>
 <translation id="2687403674020088961">Блокирај ги сите колачиња (не се препорачува)</translation>
-<translation id="2692299144678073135">Дозволете поврзаните сајтови да ве памтат на сајтовите</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2713106313042589954">Исклучи ја камерата</translation>
 <translation id="2717722538473713889">Адреси за е-пошта</translation>
 <translation id="2750481671343847896">Сајтовите може да прикажуваат prompt за најавување од услуги за идентификација.</translation>
-<translation id="2785051990912111074">Изборов ќе ги избрише колачињата за <ph name="WEBSITE" /></translation>
 <translation id="2822354292072154809">Сигурно ли сакате да ги ресетирате сите дозволи на сајтот за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Локација</translation>
 <translation id="2874939134665556319">Претходна песна</translation>
@@ -112,6 +111,7 @@
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3248611290851046188">Сајтов ги дефинира интересите што другите сајтови може да ги користат за да ви прикажуваат реклами. Сајтов ги добива вашите интереси и од Chrome за да ви прикажува порелевантни реклами.</translation>
 <translation id="3277252321222022663">Дозволете сајтовите да пристапуваат до сензорите (препорачано)</translation>
+<translation id="3285500645985761267">Дозволувај поврзаните сајтови да ја гледаат мојата активност во групата</translation>
 <translation id="3295602654194328831">Сокриј ги информациите</translation>
 <translation id="3328801116991980348">Информации за веб-локација</translation>
 <translation id="3333961966071413176">Сите контакти</translation>
@@ -119,6 +119,7 @@
 <translation id="3386292677130313581">Прашај пред да дозволиш сајтовите да ја дознаат локацијата (се препорачува)</translation>
 <translation id="3521663503435878242">Сајт под <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Не дозволувај им на сајтовите да создаваат 3D-карта на опкружувањето или да ја следат позицијата на камерата</translation>
+<translation id="3544058026430919413">Компанијата може да дефинира група на сајтови што може да користат колачиња за да ја споделуваат вашата активност во групата. Ова е исклучено во „Инкогнито“.</translation>
 <translation id="3551268116566418498">Да се излезе од „Инкогнито“?</translation>
 <translation id="3586500876634962664">Користење камера и микрофон</translation>
 <translation id="358794129225322306">Дозволете сајтот автоматски да презема повеќе датотеки.</translation>
@@ -144,7 +145,6 @@
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4008040567710660924">Дозволете колачиња за конкретен сајт.</translation>
 <translation id="4046123991198612571">Следна песна</translation>
-<translation id="4048876521107516222">Поврзани сајтови користат колачиња за да ви помогнат со нешта, како да ве задржат најавени</translation>
 <translation id="4149994727733219643">Поедноставен приказ за веб-страници</translation>
 <translation id="4165986682804962316">Поставки на локација</translation>
 <translation id="4169549551965910670">Поврзано со USB-уред</translation>
@@ -162,6 +162,7 @@
 <translation id="4434045419905280838">Скокачки прозорци/пренасочувања</translation>
 <translation id="445467742685312942">Дозволи сајтовите да пуштаат заштитени содржини</translation>
 <translation id="4468959413250150279">Исклучете го звукот за одреден сајт.</translation>
+<translation id="4475912480633855319">{COOKIES,plural, =1{# колаче}one{# колаче}other{# колачиња}}</translation>
 <translation id="4479647676395637221">Прво прашај пред да дозволиш сајтовите да ја користат камерата (се препорачува)</translation>
 <translation id="4505788138578415521">URL-адресата е проширена</translation>
 <translation id="4534723447064627427">За да овозможите <ph name="APP_NAME" /> да пристапува до вашиот микрофон, вклучете ја дозволата за микрофонот и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
@@ -175,16 +176,17 @@
 <translation id="483914009762354899">Вклучете ги сите сајтови од доменов</translation>
 <translation id="4883854917563148705">Управуваните поставки не може да се ресетираат</translation>
 <translation id="4887024562049524730">Прашувај пред да им дозволиш на сајтовите да ги користат уредот и податоците за виртуелна реалност (препорачано)</translation>
+<translation id="4955223779495905865">Сајтот што го посетувате може да вметне содржини од други сајтови, на пример, слики, реклами и текст. Кој било од сајтовиве може да има колачиња и други податоци за персонализирање на вашето доживување.</translation>
 <translation id="4962975101802056554">Повлечи ги сите дозволи за уредот</translation>
 <translation id="497421865427891073">Оди напред</translation>
 <translation id="4976702386844183910">Последно посетено на <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Не се најдени контакти</translation>
 <translation id="4996978546172906250">Сподели преку</translation>
-<translation id="5014906230196386306">Да се избришат колачињата?</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="5048398596102334565">Дозволете сајтовите да пристапуваат до сензорите за движење (препорачано)</translation>
 <translation id="5050380848339752099">Сајтов ќе сподели информации со апликација надвор од режимот „Инкогнито“.</translation>
 <translation id="5063480226653192405">Користење</translation>
+<translation id="5082281938627763039">Ова ги брише колачињата и другите податоци од сајтот за <ph name="FPS_MEMBER" /> и за сајтовите во групата сајтови на <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Сајт за мобилен</translation>
 <translation id="509133520954049755">Побарајте приказ на компјутер</translation>
 <translation id="5100237604440890931">Проширено - кликни да се прошири.</translation>
@@ -221,6 +223,7 @@
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5689516760719285838">Локација</translation>
 <translation id="5690795753582697420">Камерата е исклучена во поставките за Android</translation>
+<translation id="5706552988683188916">Ова ги брише колачињата и другите податоците од сајтот за <ph name="WEBSITE" /></translation>
 <translation id="5719847187258001597">Ова ќе ги избрише сите податоци и колачиња складирани од сајтот <ph name="ORIGIN" /> или од неговата апликација на почетниот екран.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> е блокирана</translation>
 <translation id="5804241973901381774">Дозволи</translation>
@@ -263,7 +266,6 @@
 <translation id="6554732001434021288">Последно посетено пред <ph name="NUM_DAYS" /> дена</translation>
 <translation id="6561560012278703671">Користете потивки пораки (не дозволува известувањата да ве попречуваат)</translation>
 <translation id="6593061639179217415">Сајт за десктоп</translation>
-<translation id="6608211702542341247">Сајтов е во групата на сајтови на <ph name="FPS_OWNER" /> што може да ја видат вашата активност во групата</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Заштитена содржина</translation>
 <translation id="662080504995468778">Остани</translation>
@@ -314,9 +316,7 @@
 <translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7804248752222191302">Сајтот ја користи камерата</translation>
-<translation id="7816129586531226979">Поврзаните сајтови може да ве памтат на сајтовите</translation>
 <translation id="7817023149356982970">Ќе ве одјавиме од сајтов.</translation>
-<translation id="7828557259026017104">Колачињата се датотеки создадени од веб-сајтовите што ги посетувате. Сајтовите ги користат за да ги запомнат вашите поставки. Колачињата од трети страни се создадени од други сајтови. Овие сајтови се сопственици на дел од содржините, како рекламите или сликите што ги гледате на веб-страницата што ја посетувате.</translation>
 <translation id="7835852323729233924">Пуштање аудиовизуелни содржини</translation>
 <translation id="783819812427904514">Вклучете звук на видео</translation>
 <translation id="7846076177841592234">Откажи избор</translation>
@@ -324,6 +324,7 @@
 <translation id="7882806643839505685">Дозволете го звукот за одреден сајт.</translation>
 <translation id="789180354981963912">Блокирајте колачиња од трети страни во „Инкогнито“:</translation>
 <translation id="7940722705963108451">Потсети ме</translation>
+<translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> сајт во групата сајтови на <ph name="FPS_OWNER" /> што може да ја гледаат вашата активност во групата}one{<ph name="FPS_MEMBERS_COUNT" /> сајт во групата сајтови на <ph name="FPS_OWNER" /> што може да ја гледаат вашата активност во групата}other{<ph name="FPS_MEMBERS_COUNT" /> сајтови во групата сајтови на <ph name="FPS_OWNER" /> што може да ја гледаат вашата активност во групата}}</translation>
 <translation id="7986741934819883144">Изберете контакт</translation>
 <translation id="7999064672810608036">Дали сте сигурни дека сакате да ги исчистите сите локални податоци, вклучувајќи ги колачињата, и да ги ресетирате сите дозволи за веб-локацијата?</translation>
 <translation id="8007176423574883786">Исклучена за овој уред</translation>
@@ -362,6 +363,7 @@
 <translation id="8499083585497694743">Вклучи го звукот на микрофонот</translation>
 <translation id="851751545965956758">Блокирај ги сајтовите од поврзување со уреди</translation>
 <translation id="8525306231823319788">Цел екран</translation>
+<translation id="8564613706851221529">{COUNT,plural, =1{Колачињата се дозволени за <ph name="FPS_MEMBERS_COUNT" /> сајт на <ph name="FPS_OWNER" />}one{Колачињата се дозволени за <ph name="FPS_MEMBERS_COUNT" /> сајт на <ph name="FPS_OWNER" />}other{Колачињата се дозволени за <ph name="FPS_MEMBERS_COUNT" /> сајтови на <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Дозволено (препорачано)</translation>
 <translation id="8609465669617005112">Премести нагоре</translation>
 <translation id="8676374126336081632">Јасно внесување</translation>
@@ -387,6 +389,8 @@
 <translation id="8986362086234534611">Заборави</translation>
 <translation id="9019902583201351841">Управувано од вашите родители</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9090268041676521955">Сајтов е во група што може да ја гледа вашата активност. Групата ја дефинираше <ph name="FPS_OWNER" /></translation>
+<translation id="9106233582039520022">Да се избришат колачињата?</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и уште <ph name="NUM_MORE" /> друго}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и уште <ph name="NUM_MORE" /> друго}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и уште <ph name="NUM_MORE" /> други}}</translation>
 <translation id="913657688200966289">Вклучете ги дозволите за <ph name="APP_NAME" /> во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="9162462602695099906">Страницава е опасна</translation>

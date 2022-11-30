@@ -9,6 +9,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/dynamic_type_util.h"
+#import "ios/chrome/common/ui/util/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,7 +20,7 @@ namespace {
 constexpr CGFloat kStepNumberLabelSize = 20;
 constexpr CGFloat kLeadingMargin = 15;
 constexpr CGFloat kSpacing = 14;
-constexpr CGFloat kVerticalMargin = 12;
+constexpr CGFloat kVerticalMargin = 9;
 constexpr CGFloat kTrailingMargin = 16;
 constexpr CGFloat kCornerRadius = 12;
 constexpr CGFloat kSeparatorLeadingMargin = 60;
@@ -125,7 +126,8 @@ constexpr CGFloat kIconLabelWidth = 30;
     [separator.trailingAnchor constraintEqualToAnchor:liner.trailingAnchor],
     [separator.topAnchor constraintEqualToAnchor:liner.topAnchor],
     [separator.bottomAnchor constraintEqualToAnchor:liner.bottomAnchor],
-    [liner.heightAnchor constraintEqualToConstant:kSeparatorHeight]
+    [liner.heightAnchor
+        constraintEqualToConstant:AlignValueToPixel(kSeparatorHeight)],
   ]];
 
   return liner;
@@ -146,6 +148,9 @@ constexpr CGFloat kIconLabelWidth = 30;
   instructionLabel.numberOfLines = 0;
   instructionLabel.adjustsFontForContentSizeCategory = YES;
   instructionLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  [instructionLabel
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
+                                      forAxis:UILayoutConstraintAxisVertical];
 
   UIView* line = [[UIView alloc] init];
   [line addSubview:bulletPointView];
@@ -153,18 +158,18 @@ constexpr CGFloat kIconLabelWidth = 30;
 
   // Add constraints for bulletPointView and instructionLabel vertical margins
   // to make sure that they are as small as possible.
-  NSLayoutConstraint* minimunBulletPointTopMargin =
+  NSLayoutConstraint* minimumBulletPointTopMargin =
       [bulletPointView.topAnchor constraintEqualToAnchor:line.topAnchor
                                                 constant:kVerticalMargin];
-  minimunBulletPointTopMargin.priority = UILayoutPriorityDefaultHigh;
+  minimumBulletPointTopMargin.priority = UILayoutPriorityDefaultHigh;
   NSLayoutConstraint* minimumBulletPointBottomMargin =
       [bulletPointView.bottomAnchor constraintEqualToAnchor:line.bottomAnchor
                                                    constant:-kVerticalMargin];
   minimumBulletPointBottomMargin.priority = UILayoutPriorityDefaultHigh;
-  NSLayoutConstraint* minimunLabelTopMargin =
+  NSLayoutConstraint* minimumLabelTopMargin =
       [instructionLabel.topAnchor constraintEqualToAnchor:line.topAnchor
                                                  constant:kVerticalMargin];
-  minimunLabelTopMargin.priority = UILayoutPriorityDefaultHigh;
+  minimumLabelTopMargin.priority = UILayoutPriorityDefaultHigh;
   NSLayoutConstraint* minimumLabelBottomMargin =
       [instructionLabel.bottomAnchor constraintEqualToAnchor:line.bottomAnchor
                                                     constant:-kVerticalMargin];
@@ -177,8 +182,8 @@ constexpr CGFloat kIconLabelWidth = 30;
         constraintEqualToAnchor:bulletPointView.trailingAnchor
                        constant:kSpacing],
     [instructionLabel.centerYAnchor constraintEqualToAnchor:line.centerYAnchor],
-    minimunBulletPointTopMargin, minimumBulletPointBottomMargin,
-    minimunLabelTopMargin, minimumLabelBottomMargin,
+    minimumBulletPointTopMargin, minimumBulletPointBottomMargin,
+    minimumLabelTopMargin, minimumLabelBottomMargin,
     [bulletPointView.bottomAnchor
         constraintLessThanOrEqualToAnchor:line.bottomAnchor
                                  constant:-kVerticalMargin],
@@ -253,6 +258,10 @@ constexpr CGFloat kIconLabelWidth = 30;
 - (UIView*)createIconView:(UIImage*)icon {
   UIImageView* iconImageView = [[UIImageView alloc] initWithImage:icon];
   iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [iconImageView.widthAnchor constraintEqualToConstant:kIconLabelWidth],
+    [iconImageView.heightAnchor constraintEqualToConstant:kIconLabelWidth],
+  ]];
   return iconImageView;
 }
 

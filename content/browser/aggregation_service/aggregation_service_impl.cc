@@ -158,6 +158,26 @@ void AggregationServiceImpl::ScheduleReport(
   NotifyRequestStorageModified();
 }
 
+void AggregationServiceImpl::AssembleAndSendReport(
+    AggregatableReportRequest report_request) {
+  AssembleAndSendReportImpl(std::move(report_request), /*id=*/absl::nullopt,
+                            /*done=*/base::DoNothing());
+}
+
+void AggregationServiceImpl::AssembleAndSendReportImpl(
+    AggregatableReportRequest report_request,
+    absl::optional<AggregationServiceStorage::RequestId> request_id,
+    base::OnceClosure done) {
+  GURL reporting_url = report_request.GetReportingUrl();
+  AssembleReport(
+      std::move(report_request),
+      base::BindOnce(
+          &AggregationServiceImpl::OnReportAssemblyComplete,
+          // `base::Unretained` is safe as the assembler is owned by `this`.
+          base::Unretained(this), std::move(done), request_id,
+          std::move(reporting_url)));
+}
+
 void AggregationServiceImpl::OnScheduledReportTimeReached(
     std::vector<AggregationServiceStorage::RequestAndId> requests_and_ids) {
   AssembleAndSendReports(std::move(requests_and_ids),
@@ -166,7 +186,7 @@ void AggregationServiceImpl::OnScheduledReportTimeReached(
 
 void AggregationServiceImpl::OnReportAssemblyComplete(
     base::OnceClosure done,
-    AggregationServiceStorage::RequestId request_id,
+    absl::optional<AggregationServiceStorage::RequestId> request_id,
     GURL reporting_url,
     AggregatableReportRequest report_request,
     absl::optional<AggregatableReport> report,
@@ -176,15 +196,19 @@ void AggregationServiceImpl::OnReportAssemblyComplete(
   if (!report.has_value()) {
     std::move(done).Run();
 
-    scheduler_->NotifyInProgressRequestFailed(request_id);
-    NotifyReportHandled(
-        AggregationServiceStorage::RequestAndId{
-            .request = std::move(report_request),
-            .id = request_id,
-        },
-        /*report=*/absl::nullopt,
-        AggregationServiceObserver::ReportStatus::kFailedToAssemble);
-    NotifyRequestStorageModified();
+    bool will_retry =
+        request_id.has_value() &&
+        scheduler_->NotifyInProgressRequestFailed(
+            request_id.value(), report_request.failed_send_attempts());
+    if (!will_retry) {
+      NotifyReportHandled(
+          std::move(report_request), request_id,
+          /*report=*/absl::nullopt,
+          AggregationServiceObserver::ReportStatus::kFailedToAssemble);
+    }
+    if (request_id.has_value()) {
+      NotifyRequestStorageModified();
+    }
     return;
   }
 
@@ -198,36 +222,43 @@ void AggregationServiceImpl::OnReportAssemblyComplete(
                  &AggregationServiceImpl::OnReportSendingComplete,
                  // `base::Unretained` is safe as the sender is owned by `this`.
                  base::Unretained(this), std::move(done),
-                 AggregationServiceStorage::RequestAndId{
-                     .request = std::move(report_request),
-                     .id = request_id,
-                 },
-                 std::move(*report)));
+                 std::move(report_request), request_id, std::move(*report)));
 }
 
 void AggregationServiceImpl::OnReportSendingComplete(
     base::OnceClosure done,
-    AggregationServiceStorage::RequestAndId request_and_id,
+    AggregatableReportRequest report_request,
+    absl::optional<AggregationServiceStorage::RequestId> request_id,
     AggregatableReport report,
     AggregatableReportSender::RequestStatus status) {
   std::move(done).Run();
 
   AggregationServiceObserver::ReportStatus observer_status;
+  bool will_retry;
   switch (status) {
     case AggregatableReportSender::RequestStatus::kOk:
       observer_status = AggregationServiceObserver::ReportStatus::kSent;
-      scheduler_->NotifyInProgressRequestSucceeded(request_and_id.id);
+      if (request_id.has_value()) {
+        scheduler_->NotifyInProgressRequestSucceeded(request_id.value());
+      }
+      will_retry = false;
       break;
     case AggregatableReportSender::RequestStatus::kNetworkError:
     case AggregatableReportSender::RequestStatus::kServerError:
       observer_status = AggregationServiceObserver::ReportStatus::kFailedToSend;
-      scheduler_->NotifyInProgressRequestFailed(request_and_id.id);
+      will_retry =
+          request_id.has_value() &&
+          scheduler_->NotifyInProgressRequestFailed(
+              request_id.value(), report_request.failed_send_attempts());
       break;
   }
-
-  NotifyReportHandled(std::move(request_and_id), std::move(report),
-                      observer_status);
-  NotifyRequestStorageModified();
+  if (!will_retry) {
+    NotifyReportHandled(std::move(report_request), request_id,
+                        std::move(report), observer_status);
+  }
+  if (request_id.has_value()) {
+    NotifyRequestStorageModified();
+  }
 }
 
 void AggregationServiceImpl::SetPublicKeysForTesting(
@@ -241,13 +272,7 @@ void AggregationServiceImpl::AssembleAndSendReports(
     std::vector<AggregationServiceStorage::RequestAndId> requests_and_ids,
     base::RepeatingClosure done) {
   for (AggregationServiceStorage::RequestAndId& elem : requests_and_ids) {
-    GURL reporting_url = elem.request.GetReportingUrl();
-    AssembleReport(
-        std::move(elem.request),
-        base::BindOnce(
-            &AggregationServiceImpl::OnReportAssemblyComplete,
-            // `base::Unretained` is safe as the assembler is owned by `this`.
-            base::Unretained(this), done, elem.id, std::move(reporting_url)));
+    AssembleAndSendReportImpl(std::move(elem.request), elem.id, done);
   }
 }
 
@@ -294,12 +319,13 @@ void AggregationServiceImpl::RemoveObserver(
 }
 
 void AggregationServiceImpl::NotifyReportHandled(
-    AggregationServiceStorage::RequestAndId request_and_id,
-    absl::optional<AggregatableReport> report,
+    const AggregatableReportRequest& request,
+    absl::optional<AggregationServiceStorage::RequestId> request_id,
+    const absl::optional<AggregatableReport>& report,
     AggregationServiceObserver::ReportStatus status) {
   base::Time now = base::Time::Now();
   for (auto& observer : observers_) {
-    observer.OnReportHandled(request_and_id, report,
+    observer.OnReportHandled(request, request_id, report,
                              /*report_handled_time=*/now, status);
   }
 }

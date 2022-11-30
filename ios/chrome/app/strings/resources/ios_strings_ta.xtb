@@ -109,6 +109,7 @@
 <translation id="1687475363370981210">அனைத்தையும் படித்ததாகக் குறி</translation>
 <translation id="1689333818294560261">புனைப்பெயர்</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> தேர்ந்தெடுக்கப்பட்டன</translation>
+<translation id="1715515772563243997"><ph name="SITE" /> தளம் நம்பகமானது என நீங்கள் கருதினால் சேமித்த கடவுச்சொல்லை உள்நுழைவதற்குப் பயன்படுத்தலாம்.</translation>
 <translation id="1740468249224277719">நிறுவ, இருமுறை தட்டவும்.</translation>
 <translation id="1752547299766512813">கடவுச்சொற்களைச் சேமி</translation>
 <translation id="1753905327828125965">அதிகமாகப் பார்க்கப்பட்டவை</translation>
@@ -121,6 +122,7 @@
 <translation id="1832848789136765277">நீங்கள் ஒத்திசைத்த தரவை எப்போது வேண்டுமானாலும் அணுக இது நீங்கள்தான் என உறுதிசெய்யவும்</translation>
 <translation id="1870148520156231997">கடவுச்சொல்லைக் காட்டும்</translation>
 <translation id="1872096359983322073">டார்ச்</translation>
+<translation id="1891796056033961979">நீங்கள் சேமித்த புக்மார்க்குகள், கடவுச்சொற்கள், அமைப்புகள் மற்றும் பலவற்றை இந்தத் திரையில் பார்க்கலாம்.</translation>
 <translation id="1910975740091000991">iOSக்கான Chrome</translation>
 <translation id="1911619930368729126">Google இயக்ககத்தில் பதிவேற்றுக</translation>
 <translation id="1923342640370224680">கடந்த மணிநேரம்</translation>
@@ -151,6 +153,7 @@
 <translation id="2149973817440762519">புக்மார்க்கை மாற்றுக</translation>
 <translation id="2155145621546387786">Chromeமைப் பகிர்</translation>
 <translation id="2175927920773552910">QR குறியீடு</translation>
+<translation id="2178545675770638239">கடவுச்சொல்லைத் தேர்ந்தெடுங்கள்</translation>
 <translation id="2218443599109088993">சிறிதாக்கு</translation>
 <translation id="2230173723195178503">இணையப் பக்கம் ஏற்றப்பட்டது</translation>
 <translation id="2239626343334228536">உலாவிய தரவை அழிக்கிறது...</translation>
@@ -434,6 +437,8 @@
 <translation id="4502566650163919158">இப்போது சரிபார்</translation>
 <translation id="4505980578794259603">கடைசியாகச் சரிபார்த்தது: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">உள்நுழைவு விளம்பரத்தை மூடு</translation>
+<translation id="4514889972748124117">வலுவான கடவுச்சொல்லைப் பரிந்துரை...</translation>
+<translation id="4520798012560649652">மறைநிலைப் பயன்முறை குறித்து மேலும் அறிக</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> இல் சேமித்த கடவுச்சொற்களைப் பார்க்கலாம் மற்றும் நிர்வகிக்கலாம்.</translation>
 <translation id="452750746583162491">ஒத்திசைத்த தரவை மதிப்பாய்வு செய்க</translation>
 <translation id="4536418791685807335">மீண்டும் உள்நுழைந்து முயலவும்.</translation>
@@ -663,6 +668,7 @@
 <translation id="6231782223312638214">பரிந்துரைக்கப்படுவது</translation>
 <translation id="6232329973559504466">மறைநிலையில் தேடுக</translation>
 <translation id="6232736989810857397">Google Lensஸைப் பயன்படுத்தி கேலெண்டர் நிகழ்வுகளை எளிதாக உருவாக்க இது உதவும்.</translation>
+<translation id="6247557882553405851">Google Password Manager</translation>
 <translation id="6254066287920239840">உலாவியில் திறப்பதற்குப் பதிலாக இணைப்புகளைப் பயன்பாட்டில் திற.</translation>
 <translation id="6255097610484507482">கடன் அட்டையைத் திருத்துக</translation>
 <translation id="6277426346321820595">பாதுகாப்பு இல்லை</translation>
@@ -1014,6 +1020,7 @@
 <translation id="8917490105272468696">ஏற்கிறேன்</translation>
 <translation id="8928133177108699615">டெஸ்க்டாப்</translation>
 <translation id="8952559610785099500">கடவுச்சொல்லைச் சேருங்கள்</translation>
+<translation id="8953046091948372197">உங்கள் கடவுச்சொற்களை இங்கே பார்க்கலாம்</translation>
 <translation id="895541991026785598">சிக்கலைப் புகார் செய்க</translation>
 <translation id="8974714402877957201">1. iPad அமைப்புகளைத் திறக்கவும்</translation>
 <translation id="8976382372951310360">உதவி</translation>
@@ -1047,6 +1054,7 @@
 <translation id="9200875785104711666"><ph name="TIME" /> நா. முன்பு</translation>
 <translation id="9203116392574189331">ஹேண்ட்ஆஃப்</translation>
 <translation id="9223358826628549784">சிதைவு அறிக்கை அனுப்பப்பட்டது.</translation>
+<translation id="941747855997058526">கடவுச்சொற்களைக் காட்டு...</translation>
 <translation id="952704832371081537">ரத்துசெய்</translation>
 <translation id="953008885340860025">Chromeமில் இருந்து வெளியேறிவிட்டீர்கள்</translation>
 <translation id="959066944189734975"><ph name="CHANNEL_NAME" /> ஐப் பின்தொடர்கிறீர்கள்</translation>

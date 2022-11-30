@@ -14,8 +14,16 @@
 
 namespace {
 
+// Obsolete-system checks get the system version from kernel32.dll's version, to
+// avoid getting an incorrect version reported by App Compatibility mode. This
+// prevents obsolete-system warnings from appearing when Chrome is run in
+// compatibility mode on modern versions of Windows.
+base::win::Version GetRealOSVersion() {
+  return base::win::OSInfo::GetInstance()->Kernel32Version();
+}
+
 bool IsObsoleteOsVersion() {
-  return base::win::GetVersion() < base::win::Version::WIN7;
+  return GetRealOSVersion() < base::win::Version::WIN10;
 }
 
 }  // namespace
@@ -27,6 +35,13 @@ bool ObsoleteSystem::IsObsoleteNowOrSoon() {
 
 // static
 std::u16string ObsoleteSystem::LocalizedObsoleteString() {
+  const auto version = GetRealOSVersion();
+  if (version == base::win::Version::WIN7)
+    return l10n_util::GetStringUTF16(IDS_WIN_7_OBSOLETE);
+  if (version == base::win::Version::WIN8)
+    return l10n_util::GetStringUTF16(IDS_WIN_8_OBSOLETE);
+  if (version == base::win::Version::WIN8_1)
+    return l10n_util::GetStringUTF16(IDS_WIN_8_1_OBSOLETE);
   return l10n_util::GetStringUTF16(IDS_WIN_XP_VISTA_OBSOLETE);
 }
 
@@ -37,5 +52,8 @@ bool ObsoleteSystem::IsEndOfTheLine() {
 
 // static
 const char* ObsoleteSystem::GetLinkURL() {
-  return chrome::kWindowsXPVistaDeprecationURL;
+  const auto version = GetRealOSVersion();
+  if (version < base::win::Version::WIN7)
+    return chrome::kWindowsXPVistaDeprecationURL;
+  return chrome::kWindows78DeprecationURL;
 }

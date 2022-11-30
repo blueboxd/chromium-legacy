@@ -372,6 +372,12 @@ NET_EXPORT
 extern const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit;
 
 NET_EXPORT extern const base::FeatureParam<int>
+    kOptimizeNetworkBuffersMinInputStreamAvailableValueToIgnore;
+
+NET_EXPORT extern const base::FeatureParam<int>
+    kOptimizeNetworkBuffersMinInputStreamReadSize;
+
+NET_EXPORT extern const base::FeatureParam<int>
     kOptimizeNetworkBuffersMaxInputStreamBytesToReadWhenAvailableUnknown;
 
 NET_EXPORT extern const base::FeatureParam<int>
@@ -417,6 +423,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kShouldKillSessionOnAcceptChMalformed);
 NET_EXPORT BASE_DECLARE_FEATURE(kCaseInsensitiveCookiePrefix);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableWebsocketsOverHttp3);
+
+// Whether to do IPv4 to IPv6 address translation for IPv4 literals.
+NET_EXPORT BASE_DECLARE_FEATURE(kUseNAT64ForIPv4Literal);
 
 }  // namespace net::features
 

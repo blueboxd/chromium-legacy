@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
-<translation id="1005794457625275818">Piškotki so dovoljeni za toliko spletnih mest v skupini <ph name="FPS_OWNER" />: <ph name="FPS_MEMBERS_COUNT" />, vključno s tem: <ph name="FPS_MEMBER" />.</translation>
 <translation id="1006017844123154345">Odpri v spletu</translation>
 <translation id="1044891598689252897">Spletna mesta bodo delovala normalno</translation>
 <translation id="1124090076051167250">S tem boste izbrisali <ph name="DATASIZE" /> podatkov in piškotkov, ki so jih shranila spletna mesta ali aplikacije na začetnem zaslonu.</translation>
@@ -35,6 +34,7 @@
 <translation id="1785415724048343560">Priporočljivo za najboljšo izkušnjo</translation>
 <translation id="1818308510395330587">Če želite aplikaciji <ph name="APP_NAME" /> dovoliti uporabo razširjene resničnosti, prav tako vklopite fotoaparat v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Iz: <ph name="SOURCE_NAME" /></translation>
+<translation id="187227595286001730">Povezana spletna mesta si lahko ogledajo vašo dejavnost v skupini.</translation>
 <translation id="1887786770086287077">Dostop do lokacije je izklopljen za to napravo. Vklopite ga lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Prekini</translation>
 <translation id="1919345977826869612">Oglasi</translation>
@@ -73,6 +73,7 @@
 <translation id="2490684707762498678">Upravlja aplikacija <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Pomoč in povratne inform.</translation>
 <translation id="2501278716633472235">Nazaj</translation>
+<translation id="2546283357679194313">Piškotki in podatki o spletnih mestih</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Blokiran je en piškotek}one{Blokiran je # piškotek}two{Blokirana sta # piškotka}few{Blokirani so # piškotki}other{Blokiranih je # piškotkov}}</translation>
 <translation id="2570922361219980984">Dostop do lokacije je tudi izklopljen za to napravo. Vklopite ga lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Razširjeno – kliknite, če želite strniti.</translation>
@@ -82,12 +83,10 @@
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2677748264148917807">Zapusti</translation>
 <translation id="2687403674020088961">Blokiranje vseh piškotkov (ni priporočljivo)</translation>
-<translation id="2692299144678073135">Dovolite, da si vas povezana spletna mesta zapomnijo na več spletnih mestih</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2713106313042589954">Izklopi kamero</translation>
 <translation id="2717722538473713889">E-poštni naslovi</translation>
 <translation id="2750481671343847896">Spletna mesta lahko prikazujejo pozive za prijavo zunanjih ponudnikov.</translation>
-<translation id="2785051990912111074">S to izbiro bodo izbrisani piškotki za spletno mesto <ph name="WEBSITE" />.</translation>
 <translation id="2822354292072154809">Ali ste prepričani, da želite ponastaviti vsa dovoljenja za spletna mesta za <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2874939134665556319">Prejšnja skladba</translation>
@@ -112,6 +111,7 @@
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">To spletno mesto določa zanimanja, ki jih druga spletna mesta lahko uporabijo pri prikazovanju oglasov. To spletno mesto tudi pridobi vaša zanimanja iz Chroma, da vam prikaže ustreznejše oglase.</translation>
 <translation id="3277252321222022663">Spletnim mestom dovoli dostop do tipal (priporočeno)</translation>
+<translation id="3285500645985761267">Sorodnim spletnim mestom dovolite ogled vaše dejavnosti v skupini</translation>
 <translation id="3295602654194328831">Skrij informacije</translation>
 <translation id="3328801116991980348">Podatki o mestu</translation>
 <translation id="3333961966071413176">Vsi stiki</translation>
@@ -119,6 +119,7 @@
 <translation id="3386292677130313581">Prikaži poziv, preden se spletnim mestom razkrije vaša lokacija (priporočeno)</translation>
 <translation id="3521663503435878242">Spletna mesta domene <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Preprečevanje, da bi spletna mesta ustvarila 3D-zemljevid vaše okolice ali spremljala položaj kamere</translation>
+<translation id="3544058026430919413">Podjetje lahko določi skupino spletnih mest, ki lahko uporabljajo piškotke za deljenje vaše dejavnosti v skupini. V anonimnem načinu je to izklopljeno.</translation>
 <translation id="3551268116566418498">Izklop anonimnega načina?</translation>
 <translation id="3586500876634962664">Uporaba kamere in mikrofona</translation>
 <translation id="358794129225322306">Dovoli spletnemu mestu samodejni prenos več datotek.</translation>
@@ -144,7 +145,6 @@
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4008040567710660924">Omogočanje piškotkov za določeno spletno mesto.</translation>
 <translation id="4046123991198612571">Naslednja skladba</translation>
-<translation id="4048876521107516222">Povezana spletna mesta uporabljajo piškotke za zagotavljanje na primer tega, da ste prijavljeni.</translation>
 <translation id="4149994727733219643">Poenostavljen pogled za spletne strani</translation>
 <translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
 <translation id="4169549551965910670">Povezano z napravo USB</translation>
@@ -162,6 +162,7 @@
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
 <translation id="445467742685312942">Spletnim mestom dovoli predvajanje zaščitene vsebine</translation>
 <translation id="4468959413250150279">Izklop zvoka za določeno spletno mesto.</translation>
+<translation id="4475912480633855319">{COOKIES,plural, =1{# piškotek}one{# piškotek}two{# piškotka}few{# piškotki}other{# piškotkov}}</translation>
 <translation id="4479647676395637221">Prikaži poziv, preden se spletnim mestom dovoli uporaba kamere (priporočeno)</translation>
 <translation id="4505788138578415521">URL je razširjen</translation>
 <translation id="4534723447064627427">Če želite aplikaciji <ph name="APP_NAME" /> omogočiti dostop do mikrofona, mikrofon vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
@@ -175,16 +176,17 @@
 <translation id="483914009762354899">Vključi vsa spletna mesta v tej domeni</translation>
 <translation id="4883854917563148705">Upravljanih nastavitev ni mogoče ponastaviti</translation>
 <translation id="4887024562049524730">Vprašaj, preden se spletnim mestom dovoli uporaba naprav in podatkov za navidezno resničnost (priporočeno)</translation>
+<translation id="4955223779495905865">Spletno mesto, ki ga obiščete, lahko vdela vsebino z drugih spletnih mest, na primer slike, oglase in besedilo. Vsako od teh spletnih mest lahko shranjuje piškotke in druge podatke zaradi osebnega prilagajanja izkušnje.</translation>
 <translation id="4962975101802056554">Umik vseh dovoljenj za napravo</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="4976702386844183910">Nazadnje obiskano: <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Ni najdenih stikov</translation>
 <translation id="4996978546172906250">Skupna raba prek</translation>
-<translation id="5014906230196386306">Želite izbrisati piškotke?</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5048398596102334565">Spletnim mestom dovoli dostop do tipal gibanja (priporočeno)</translation>
 <translation id="5050380848339752099">To spletno mesto bo delilo podatke z aplikacijo zunaj anonimnega načina.</translation>
 <translation id="5063480226653192405">Uporaba</translation>
+<translation id="5082281938627763039">S tem izbrišete piškotke in druge podatke spletnega mesta za <ph name="FPS_MEMBER" /> ter za spletna mesta v skupini spletnih mest <ph name="FPS_OWNER" />.</translation>
 <translation id="5091013926750941408">Spletno mesto za mobilne naprave</translation>
 <translation id="509133520954049755">Zahtevaj pogled za namizni računalnik</translation>
 <translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
@@ -221,6 +223,7 @@
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5689516760719285838">Lokacija</translation>
 <translation id="5690795753582697420">Fotoaparat je izklopljen v nastavitvah za Android</translation>
+<translation id="5706552988683188916">S tem izbrišete piškotke in druge podatke spletnega mesta za <ph name="WEBSITE" />.</translation>
 <translation id="5719847187258001597">S tem boste izbrisali vse podatke in piškotke, ki jih je shranilo spletno mesto <ph name="ORIGIN" /> ali njegova aplikacija na vašem začetnem zaslonu.</translation>
 <translation id="5771720122942595109">Blokirano: <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Dovoljenja</translation>
@@ -263,7 +266,6 @@
 <translation id="6554732001434021288">Nazadnje obiskano pred toliko dnevi: <ph name="NUM_DAYS" /></translation>
 <translation id="6561560012278703671">Uporaba manj vsiljivih sporočil (preprečuje, da bi vas motili pozivi za pošiljanje obvestil)</translation>
 <translation id="6593061639179217415">Mesto za namizne račun.</translation>
-<translation id="6608211702542341247">To spletno mesto je v skupini spletnih mest <ph name="FPS_OWNER" />, ki si lahko ogledajo vašo dejavnost v skupini.</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="662080504995468778">Ostani</translation>
@@ -314,9 +316,7 @@
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7804248752222191302">Spletno mesto uporablja kamero</translation>
-<translation id="7816129586531226979">Povezana spletna mesta si vas lahko zapomnijo na več spletnih mestih.</translation>
 <translation id="7817023149356982970">Odjavljeni boste s tega spletnega mesta.</translation>
-<translation id="7828557259026017104">Piškotki so datoteke, ki jih ustvarijo spletna mesta, ki jih obiščete. Spletna mesta jih uporabljajo, da si zapomnijo vaše nastavitve. Piškotke drugih spletnih mest ustvarijo druga spletna mesta. Ta spletna mesta imajo v lasti nekatero vsebino, na primer oglase ali slike, ki jo vidite na spletni strani, ki jo obiščete.</translation>
 <translation id="7835852323729233924">Predvajanje predstavnosti</translation>
 <translation id="783819812427904514">Vklop videa</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>
@@ -324,6 +324,7 @@
 <translation id="7882806643839505685">Dovolitev zvoka za določeno spletno mesto.</translation>
 <translation id="789180354981963912">Blokiranje piškotkov tretjih oseb v anonimnem načinu:</translation>
 <translation id="7940722705963108451">Opomni me</translation>
+<translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> spletno mesto v skupini spletnih mest <ph name="FPS_OWNER" />, ki si lahko ogledajo vašo dejavnost v skupini.}one{<ph name="FPS_MEMBERS_COUNT" /> spletno mesto v skupini spletnih mest <ph name="FPS_OWNER" />, ki si lahko ogledajo vašo dejavnost v skupini.}two{<ph name="FPS_MEMBERS_COUNT" /> spletni mesti v skupini spletnih mest <ph name="FPS_OWNER" />, ki si lahko ogledajo vašo dejavnost v skupini.}few{<ph name="FPS_MEMBERS_COUNT" /> spletna mesta v skupini spletnih mest <ph name="FPS_OWNER" />, ki si lahko ogledajo vašo dejavnost v skupini.}other{<ph name="FPS_MEMBERS_COUNT" /> spletnih mest v skupini spletnih mest <ph name="FPS_OWNER" />, ki si lahko ogledajo vašo dejavnost v skupini.}}</translation>
 <translation id="7986741934819883144">Izberite stik</translation>
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
@@ -362,6 +363,7 @@
 <translation id="8499083585497694743">Vklopi mikrofon</translation>
 <translation id="851751545965956758">Spletnim mestom prepreči povezovanje z napravami</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
+<translation id="8564613706851221529">{COUNT,plural, =1{Piškotki so dovoljeni za <ph name="FPS_MEMBERS_COUNT" /> spletno mesto <ph name="FPS_OWNER" />.}one{Piškotki so dovoljeni za <ph name="FPS_MEMBERS_COUNT" /> spletno mesto <ph name="FPS_OWNER" />.}two{Piškotki so dovoljeni za <ph name="FPS_MEMBERS_COUNT" /> spletni mesti <ph name="FPS_OWNER" />.}few{Piškotki so dovoljeni za <ph name="FPS_MEMBERS_COUNT" /> spletna mesta <ph name="FPS_OWNER" />.}other{Piškotki so dovoljeni za <ph name="FPS_MEMBERS_COUNT" /> spletnih mest <ph name="FPS_OWNER" />.}}</translation>
 <translation id="857943718398505171">Dovoljeno (priporočeno)</translation>
 <translation id="8609465669617005112">Premakni navzgor</translation>
 <translation id="8676374126336081632">Izbriši vnos</translation>
@@ -387,6 +389,8 @@
 <translation id="8986362086234534611">Pozabi</translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9090268041676521955">To spletno mesto je v skupini, ki si lahko ogleda vašo dejavnost. Definiral(-a) jo je <ph name="FPS_OWNER" />.</translation>
+<translation id="9106233582039520022">Želite izbrisati piškotke?</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}two{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}few{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenja za aplikacijo <ph name="APP_NAME" />.</translation>
 <translation id="9162462602695099906">Ta stran je nevarna.</translation>

@@ -140,6 +140,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feature_engagement::kUseClientConfigIPH,
     &feature_guide::features::kFeatureNotificationGuide,
     &feature_guide::features::kSkipCheckForLowEngagedUsers,
+    &feed::kClientGoodVisits,
     &feed::kFeedBackToTop,
     &feed::kFeedClearImageMemoryCache,
     &feed::kFeedImageMemoryCacheSizePercentage,
@@ -368,6 +369,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kMostVisitedTilesTitleWrapAround,
     &omnibox::kOmniboxAssistantVoiceSearch,
     &omnibox::kOmniboxHeaderPaddingUpdate,
+    &omnibox::kOmniboxRemoveExcessiveRecycledViewClearCalls,
     &omnibox::kOmniboxRemoveSuggestionHeaderCapitalization,
     &omnibox::kOmniboxRemoveSuggestionHeaderChevron,
     &omnibox::kOmniboxMostVisitedTilesFadingOnTablet,
@@ -1051,7 +1053,7 @@ BASE_FEATURE(kToolbarMicIphAndroid,
 
 BASE_FEATURE(kToolbarPhoneOptimizations,
              "ToolbarPhoneOptimizations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kToolbarScrollAblationAndroid,
              "ToolbarScrollAblationAndroid",

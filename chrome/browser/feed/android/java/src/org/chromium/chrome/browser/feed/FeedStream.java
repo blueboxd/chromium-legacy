@@ -34,7 +34,10 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedAvailabilityStatus;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedRecommendationFollowAcceleratorController;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSubscriptionRequestStatus;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -70,6 +73,7 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,19 +109,21 @@ public class FeedStream implements Stream {
                     FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
                             mMakeGURL.apply(url), getSliceIdFromView(options.actionSourceView()),
                             OpenActionType.DEFAULT);
-                    openSuggestionUrl(url, WindowOpenDisposition.CURRENT_TAB, /*inGroup=*/false);
+                    openSuggestionUrl(
+                            url, WindowOpenDisposition.CURRENT_TAB, /*inGroup=*/false, options);
                     break;
                 case OpenMode.NEW_TAB:
                     FeedStreamJni.get().reportOpenAction(mNativeFeedStream, FeedStream.this,
                             mMakeGURL.apply(url), getSliceIdFromView(options.actionSourceView()),
                             OpenActionType.NEW_TAB);
-                    openSuggestionUrl(
-                            url, WindowOpenDisposition.NEW_BACKGROUND_TAB, /*inGroup=*/false);
+                    openSuggestionUrl(url, WindowOpenDisposition.NEW_BACKGROUND_TAB,
+                            /*inGroup=*/false, options);
                     break;
                 case OpenMode.INCOGNITO_TAB:
                     FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
                             FeedUserActionType.TAPPED_OPEN_IN_NEW_INCOGNITO_TAB);
-                    openSuggestionUrl(url, WindowOpenDisposition.OFF_THE_RECORD, /*inGroup=*/false);
+                    openSuggestionUrl(
+                            url, WindowOpenDisposition.OFF_THE_RECORD, /*inGroup=*/false, options);
                     break;
                 case OpenMode.DOWNLOAD_LINK:
                     FeedStreamJni.get().reportOtherUserAction(
@@ -139,7 +145,7 @@ public class FeedStream implements Stream {
                             mMakeGURL.apply(url), getSliceIdFromView(options.actionSourceView()),
                             OpenActionType.NEW_TAB_IN_GROUP);
                     openSuggestionUrl(url, WindowOpenDisposition.NEW_BACKGROUND_TAB,
-                            /*inGroup=*/true);
+                            /*inGroup=*/true, options);
                     break;
             }
 
@@ -286,28 +292,37 @@ public class FeedStream implements Stream {
                 Log.i(TAG, "Invalid webFeedName", e);
                 return;
             }
+            WebFeedFollowUpdate.Callback updateCallback = update.callback();
             if (update.isFollow()) {
-                WebFeedBridge.followFromId(
-                        webFeedId, update.isDurable(), update.webFeedChangeReason(), results -> {
-                            WebFeedFollowUpdate.Callback callback = update.callback();
-                            if (callback != null) {
-                                callback.requestComplete(results.requestStatus
-                                        == WebFeedSubscriptionRequestStatus.SUCCESS);
-                            }
-                        });
+                Callback<WebFeedBridge.FollowResults> followCallback = results -> {
+                    boolean successfulFollow =
+                            results.requestStatus == WebFeedSubscriptionRequestStatus.SUCCESS;
+                    if (updateCallback != null) {
+                        updateCallback.requestComplete(successfulFollow);
+                    }
+                    if (successfulFollow && results.metadata != null) {
+                        mWebFeedSnackbarController.showPostSuccessfulFollowHelp(
+                                results.metadata.title,
+                                results.metadata.availabilityStatus
+                                        == WebFeedAvailabilityStatus.ACTIVE,
+                                mStreamKind);
+                    }
+                };
+                WebFeedBridge.followFromId(webFeedId, update.isDurable(),
+                        update.webFeedChangeReason(), followCallback);
             } else {
                 WebFeedBridge.unfollow(
                         webFeedId, update.isDurable(), update.webFeedChangeReason(), results -> {
-                            WebFeedFollowUpdate.Callback callback = update.callback();
-                            if (callback != null) {
-                                callback.requestComplete(results.requestStatus
+                            if (updateCallback != null) {
+                                updateCallback.requestComplete(results.requestStatus
                                         == WebFeedSubscriptionRequestStatus.SUCCESS);
                             }
                         });
             }
         }
 
-        private void openSuggestionUrl(String url, int disposition, boolean inGroup) {
+        private void openSuggestionUrl(
+                String url, int disposition, boolean inGroup, OpenUrlOptions openOptions) {
             boolean inNewTab = (disposition == WindowOpenDisposition.NEW_BACKGROUND_TAB
                     || disposition == WindowOpenDisposition.OFF_THE_RECORD);
 
@@ -317,12 +332,19 @@ public class FeedStream implements Stream {
                 mLaunchReliabilityLogger.logLaunchFinished(SystemClock.elapsedRealtimeNanos(),
                         DiscoverLaunchResult.CARD_TAPPED.getNumber());
             }
+
+            LoadUrlParams params = new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
+            if (openOptions.shouldShowWebFeedAccelerator()) {
+                WebFeedRecommendationFollowAcceleratorController
+                        .updateUrlParamsForRecommendedWebFeed(
+                                params, openOptions.webFeedName().getBytes(StandardCharsets.UTF_8));
+            }
+
             // This postTask is necessary so that other click-handlers have a chance
             // to run before we begin navigating. On start surface, navigation immediately
             // triggers unbind, which can break event handling.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                mActionDelegate.openSuggestionUrl(disposition,
-                        new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK), inGroup,
+                mActionDelegate.openSuggestionUrl(disposition, params, inGroup, /*onPageLoaded=*/
                         ()
                                 -> FeedStreamJni.get().reportPageLoaded(
                                         mNativeFeedStream, FeedStream.this, inNewTab),
@@ -572,6 +594,9 @@ public class FeedStream implements Stream {
     private final FeedAutoplaySettingsDelegate mFeedAutoplaySettingsDelegate;
     private UnreadContentObserver mUnreadContentObserver;
     FeedContentFirstLoadWatcher mFeedContentFirstLoadWatcher;
+    // Snackbar (and post-Follow dialog) controller used exclusively for handling in-feed
+    // post-Follow and post-Unfollow UX.
+    WebFeedSnackbarController mWebFeedSnackbarController;
 
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
@@ -627,8 +652,9 @@ public class FeedStream implements Stream {
             WindowAndroid windowAndroid, Supplier<ShareDelegate> shareDelegateSupplier,
             int streamKind, FeedAutoplaySettingsDelegate feedAutoplaySettingsDelegate,
             FeedActionDelegate actionDelegate, HelpAndFeedbackLauncher helpAndFeedbackLauncher,
-            FeedContentFirstLoadWatcher feedContentFirstLoadWatcher) {
-        this.mActivity = activity;
+            FeedContentFirstLoadWatcher feedContentFirstLoadWatcher,
+            Stream.StreamsMediator streamsMediator) {
+        mActivity = activity;
         mStreamKind = streamKind;
         mReliabilityLoggingBridge = new FeedReliabilityLoggingBridge();
         mNativeFeedStream = FeedStreamJni.get().init(
@@ -643,6 +669,12 @@ public class FeedStream implements Stream {
         mFeedAutoplaySettingsDelegate = feedAutoplaySettingsDelegate;
         mRotationObserver = new RotationObserver();
         mFeedContentFirstLoadWatcher = feedContentFirstLoadWatcher;
+        WebFeedSnackbarController.FeedLauncher switchToFollowing = () -> {
+            // Note: for now there's no need to store streamsMediator as an instance variable.
+            streamsMediator.switchToStreamKind(StreamKind.FOLLOWING);
+        };
+        mWebFeedSnackbarController = new WebFeedSnackbarController(activity, switchToFollowing,
+                windowAndroid.getModalDialogManager(), snackbarManager);
 
         mHandlersMap = new HashMap<>();
         mHandlersMap.put(SurfaceActionsHandler.KEY, new FeedSurfaceActionsHandler(actionDelegate));
@@ -718,7 +750,7 @@ public class FeedStream implements Stream {
 
         mScrollStateToRestore = savedInstanceState;
         manager.setHandlers(mHandlersMap);
-        mSliceViewTracker = new FeedSliceViewTracker(rootView, manager,
+        mSliceViewTracker = new FeedSliceViewTracker(rootView, mActivity, manager,
                 renderer.getListLayoutHelper(), new FeedStream.ViewTrackerObserver());
         mSliceViewTracker.bind();
 
@@ -1273,6 +1305,11 @@ public class FeedStream implements Stream {
             FeedStreamJni.get().reportSliceViewed(mNativeFeedStream, FeedStream.this, sliceId);
         }
         @Override
+        public void reportContentSliceVisibleTime(long elapsedMs) {
+            FeedStreamJni.get().reportContentSliceVisibleTimeForGoodVisits(
+                    mNativeFeedStream, FeedStream.this, elapsedMs);
+        }
+        @Override
         public void feedContentVisible() {
             FeedStreamJni.get().reportFeedViewed(mNativeFeedStream, FeedStream.this);
         }
@@ -1369,5 +1406,7 @@ public class FeedStream implements Stream {
         void resetInfoCardStates(long nativeFeedStream, FeedStream caller, int type);
         void invalidateContentCacheFor(
                 long nativeFeedStream, FeedStream caller, @StreamType int feedToInvalidate);
+        void reportContentSliceVisibleTimeForGoodVisits(
+                long nativeFeedStream, FeedStream caller, long elapsedMs);
     }
 }

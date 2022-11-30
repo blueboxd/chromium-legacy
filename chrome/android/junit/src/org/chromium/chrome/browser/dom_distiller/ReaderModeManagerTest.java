@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.dom_distiller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -38,6 +41,8 @@ import org.chromium.chrome.browser.infobar.ReaderModeInfoBarJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtilsJni;
 import org.chromium.components.messages.MessageDispatcher;
@@ -54,6 +59,8 @@ import java.util.concurrent.TimeoutException;
 
 /** This class tests the behavior of the {@link ReaderModeManager}. */
 @RunWith(BaseRobolectricTestRunner.class)
+@DisableFeatures({ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
+        ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE})
 public class ReaderModeManagerTest {
     private static final GURL MOCK_DISTILLER_URL =
             JUnitTestGURLs.getGURL(JUnitTestGURLs.DOM_DISILLER_URL);
@@ -248,6 +255,23 @@ public class ReaderModeManagerTest {
 
     @Test
     @Feature("ReaderMode")
+    @Features.EnableFeatures({ChromeFeatureList.MESSAGES_FOR_ANDROID_READER_MODE,
+            ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS,
+            ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE})
+    public void
+    testUI_notTriggered_contextualPageActionUiEnabled() {
+        mDistillabilityObserver.onIsPageDistillableResult(mTab, true, true, false);
+        assertEquals("Distillation should be possible.", DistillationStatus.POSSIBLE,
+                mManager.getDistillationStatus());
+        verify(mMessageDispatcher,
+                never().description("Message should be suppressed as the CPA UI will be shown"))
+                .enqueueMessage(
+                        any(), eq(mWebContents), eq(MessageScopeType.NAVIGATION), eq(false));
+        verifyNoMoreInteractions(mReaderModeInfobarJniMock);
+    }
+
+    @Test
+    @Feature("ReaderMode")
     public void testWebContentsObserver_distillerNavigationRemoved() {
         when(mNavController.getEntryAtIndex(0))
                 .thenReturn(createNavigationEntry(0, MOCK_DISTILLER_URL));
@@ -299,6 +323,50 @@ public class ReaderModeManagerTest {
 
         assertEquals("Distillation should not be possible.", DistillationStatus.NOT_POSSIBLE,
                 mManager.getDistillationStatus());
+    }
+
+    @Test
+    @Feature("ReaderMode")
+    public void testIsUiRateLimited() {
+        assertFalse(mManager.isReaderModeUiRateLimited());
+    }
+
+    @Test
+    @Feature("ReaderMode")
+    public void testIsUiRateLimited_trueWhenShown() {
+        assertFalse(mManager.isReaderModeUiRateLimited());
+        mManager.setReaderModeUiShown();
+
+        assertTrue(mManager.isReaderModeUiRateLimited());
+    }
+
+    @Test
+    @Feature("ReaderMode")
+    @EnableFeatures({"ReaderModeInCCT"})
+    public void testIsUiRateLimited_trueWhenShownInOtherTab() {
+        when(mTab.getWebContents()).thenReturn(null);
+
+        Tab secondTab = mock(Tab.class);
+        when(secondTab.getUrl()).thenReturn(MOCK_URL);
+        when(secondTab.getUserDataHost()).thenReturn(mUserDataHost);
+        ReaderModeManager secondTabManager =
+                new ReaderModeManager(secondTab, () -> mMessageDispatcher);
+        // Ensure the tab observer is attached when the manager is created.
+        verify(secondTab).addObserver(mTabObserverCaptor.capture());
+        TabObserver secondTabObserver = mTabObserverCaptor.getValue();
+        secondTabObserver.onShown(secondTab, 0);
+
+        // Show UI in second tab.
+        secondTabManager.setReaderModeUiShown();
+
+        // UI on first tab should be limited.
+        assertTrue(mManager.isReaderModeUiRateLimited());
+
+        // Use reader mode on second tab.
+        secondTabManager.activateReaderMode();
+
+        // URl should be removed from block list, we should show UI on first tab now.
+        assertFalse(mManager.isReaderModeUiRateLimited());
     }
 
     /**

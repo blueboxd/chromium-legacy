@@ -27,6 +27,8 @@
 namespace {
 
 constexpr CGFloat kDefaultMargin = 16;
+// Default margin between the subtitle and the content view.
+constexpr CGFloat kDefaultSubtitleBottomMargin = 22;
 // Top margin for AvatarFullImageView in percentage of the dialog size.
 constexpr CGFloat kAvatarFullImageViewTopMarginPercentage = 0.04;
 constexpr CGFloat kFullAvatarImagerBottomMargin = 5;
@@ -105,6 +107,7 @@ constexpr CGFloat kFullAvatarImageSize = 100;
   self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
   if (self) {
     _titleHorizontalMargin = kTitleHorizontalMargin;
+    _subtitleBottomMargin = kDefaultSubtitleBottomMargin;
   }
 
   return self;
@@ -252,7 +255,7 @@ constexpr CGFloat kFullAvatarImageSize = 100;
     [subtitleMarginLayoutGuide.topAnchor
         constraintEqualToAnchor:self.subtitleLabel.bottomAnchor],
     [subtitleMarginLayoutGuide.heightAnchor
-        constraintEqualToConstant:kDefaultMargin],
+        constraintEqualToConstant:_subtitleBottomMargin],
     [self.specificContentView.topAnchor
         constraintEqualToAnchor:subtitleMarginLayoutGuide.bottomAnchor],
     [self.specificContentView.leadingAnchor
@@ -530,7 +533,7 @@ constexpr CGFloat kFullAvatarImageSize = 100;
   }
 }
 
-- (void)setavatarAccessibilityLabel:(NSString*)avatarAccessibilityLabel {
+- (void)setAvatarAccessibilityLabel:(NSString*)avatarAccessibilityLabel {
   _avatarAccessibilityLabel = avatarAccessibilityLabel;
   if (self.hasAvatarImage) {
     self.avatarImageView.accessibilityLabel = avatarAccessibilityLabel;

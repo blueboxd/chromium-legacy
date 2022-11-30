@@ -22,7 +22,7 @@
 namespace {
 
 // The size of the icon image.
-const CGFloat kIconImageWhatsNew = 22;
+const CGFloat kIconImageWhatsNew = 16;
 
 // The file name.
 NSString* const kfileName = @"whats_new_entries.plist";
@@ -52,7 +52,7 @@ UIColor* GenerateColor(NSString* color) {
   } else if ([color isEqualToString:@"yellow"]) {
     return [UIColor colorNamed:kYellow500Color];
   } else {
-    return [UIColor colorNamed:kPrimaryBackgroundColor];
+    return nil;
   }
 }
 
@@ -201,8 +201,13 @@ WhatsNewItem* ConstructWhatsNewItem(NSDictionary* entry) {
   }
 
   // Load the entry learn more url.
-  GURL url(base::SysNSStringToUTF8(entry[kDictionaryLearnMoreURLKey]));
-  [whats_new_item setLearnMoreURL:url];
+  NSString* url = entry[kDictionaryLearnMoreURLKey];
+  if ([url length] > 0) {
+    GURL gurl(base::SysNSStringToUTF8(url));
+    [whats_new_item setLearnMoreURL:gurl];
+  } else {
+    [whats_new_item setLearnMoreURL:GURL::EmptyGURL()];
+  }
 
   return whats_new_item;
 }

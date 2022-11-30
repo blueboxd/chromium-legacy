@@ -21,6 +21,7 @@ import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutManager;
@@ -97,6 +98,7 @@ public class TopToolbarCoordinator implements Toolbar {
     private ToolbarControlContainer mControlContainer;
     private Supplier<ResourceManager> mResourceManagerSupplier;
     private TopToolbarOverlayCoordinator mOverlayCoordinator;
+    private boolean mStartSurfaceToolbarVisible;
 
     /**
      * Creates a new {@link TopToolbarCoordinator}.
@@ -130,7 +132,10 @@ public class TopToolbarCoordinator implements Toolbar {
      *         on Start surface. On NTP, the logo is in the new tab page layout instead of the
      *         toolbar and the logo click events are processed in NewTabPageLayout. So this callback
      *         will only be called on Start surface.
-     * @param constraintsSupplier supplier for browser controls constraints.
+     * @param constraintsSupplier Supplier for browser controls constraints.
+     * @param compositorInMotionSupplier Whether there is an ongoing touch or gesture.
+     * @param browserStateBrowserControlsVisibilityDelegate Used to keep controls locked when
+     *         captures are stale and not able to be taken.
      * @param shouldCreateLogoInStartToolbar Whether logo should be created in Start surface
      *         toolbar. True if the logo should be created in the Start surface toolbar; False if
      *         the logo should be shown in Start surface content.
@@ -158,6 +163,9 @@ public class TopToolbarCoordinator implements Toolbar {
             OfflineDownloader offlineDownloader, boolean initializeWithIncognitoColors,
             Callback<LoadUrlParams> startSurfaceLogoClickedCallback,
             boolean isStartSurfaceRefactorEnabled, ObservableSupplier<Integer> constraintsSupplier,
+            ObservableSupplier<Boolean> compositorInMotionSupplier,
+            BrowserStateBrowserControlsVisibilityDelegate
+                    browserStateBrowserControlsVisibilityDelegate,
             boolean shouldCreateLogoInStartToolbar) {
         mControlContainer = controlContainer;
         mToolbarLayout = toolbarLayout;
@@ -175,7 +183,7 @@ public class TopToolbarCoordinator implements Toolbar {
                     isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled,
                     isTabGroupsAndroidContinuationEnabled, isIncognitoModeEnabledSupplier,
                     startSurfaceLogoClickedCallback, mIsStartSurfaceRefactorEnabled,
-                    shouldCreateLogoInStartToolbar);
+                    shouldCreateLogoInStartToolbar, this::onStartSurfaceToolbarTransitionFinished);
         } else if (mToolbarLayout instanceof ToolbarPhone || isTabletGridTabSwitcherEnabled()) {
             mTabSwitcherModeCoordinator = new TabSwitcherModeTTCoordinator(toolbarStub,
                     fullscreenToolbarStub, overviewModeMenuButtonCoordinator,
@@ -183,7 +191,10 @@ public class TopToolbarCoordinator implements Toolbar {
                     isIncognitoModeEnabledSupplier);
         }
         controlContainer.setPostInitializationDependencies(this, initializeWithIncognitoColors,
-                constraintsSupplier, () -> toolbarDataProvider.getTab());
+                constraintsSupplier,
+                ()
+                        -> toolbarDataProvider.getTab(),
+                compositorInMotionSupplier, browserStateBrowserControlsVisibilityDelegate);
         mToolbarLayout.initialize(toolbarDataProvider, tabController, mMenuButtonCoordinator,
                 isProgressBarVisibleSupplier, historyDelegate, partnerHomepageEnabledSupplier,
                 offlineDownloader);
@@ -697,9 +708,23 @@ public class TopToolbarCoordinator implements Toolbar {
 
     private void updateToolbarLayoutVisibility() {
         assert mStartSurfaceToolbarCoordinator != null;
-        mToolbarLayout.onStartSurfaceStateChanged(
-                mStartSurfaceToolbarCoordinator.shouldShowRealSearchBox(),
-                mStartSurfaceToolbarCoordinator.isOnHomepage());
+        // We continue to show the browsing mode toolbar while the tab switcher is fading in or out.
+        // Once this transition finishes, onStartSurfaceToolbarFinishedShowing() will reset the
+        // browsing mode toolbar's visibility to the correct value.
+        boolean showToolbar = mStartSurfaceToolbarCoordinator.shouldShowRealSearchBox()
+                || (isShowingStartSurfaceTabSwitcher() && !mStartSurfaceToolbarVisible);
+        mToolbarLayout.onStartSurfaceStateChanged(showToolbar,
+                mStartSurfaceToolbarCoordinator.isOnHomepage(), isShowingStartSurfaceTabSwitcher());
+    }
+
+    private boolean isShowingStartSurfaceTabSwitcher() {
+        return mStartSurfaceToolbarCoordinator != null
+                && mStartSurfaceToolbarCoordinator.isShowingTabSwitcher();
+    }
+
+    private void onStartSurfaceToolbarTransitionFinished(boolean nowShowing) {
+        mStartSurfaceToolbarVisible = nowShowing;
+        updateToolbarLayoutVisibility();
     }
 
     @Override

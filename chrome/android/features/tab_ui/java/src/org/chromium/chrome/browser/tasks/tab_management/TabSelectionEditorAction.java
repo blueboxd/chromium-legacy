@@ -156,8 +156,11 @@ public abstract class TabSelectionEditorAction {
                                 ColorStateList.valueOf(Color.TRANSPARENT))
                         .with(TabSelectionEditorActionProperties.SKIP_ICON_TINT, false)
                         .with(TabSelectionEditorActionProperties.ON_CLICK_LISTENER, this::perform)
+                        .with(TabSelectionEditorActionProperties.SHOULD_DISMISS_MENU, true)
                         .with(TabSelectionEditorActionProperties.ON_SELECTION_STATE_CHANGE,
                                 this::onSelectionStateChange)
+                        .with(TabSelectionEditorActionProperties.ON_SHOWN_IN_MENU,
+                                this::onShownInMenu)
                         .build();
 
         if (contentDescriptionResourceId == null) return;
@@ -191,6 +194,8 @@ public abstract class TabSelectionEditorAction {
         return true;
     }
 
+    public void onShownInMenu() {}
+
     /**
      * @return Whether the TabSelectionEditor supports applying the actions to related tabs.
      */
@@ -211,8 +216,9 @@ public abstract class TabSelectionEditorAction {
      * Processes the selected tabs from the selection list this includes related tabs if
      * {@link #editorSupportsActionOnRelatedTabs()} is true.
      * @param tabs a list of tabs from getTabsFromSelection().
+     * @return Whether an action was performed without an error.
      */
-    public abstract void performAction(List<Tab> tabs);
+    public abstract boolean performAction(List<Tab> tabs);
 
     /**
      * @return Whether to hide the editor after tabking the action.
@@ -235,7 +241,9 @@ public abstract class TabSelectionEditorAction {
                 obs.preProcessSelectedTabs(tabs);
             }
         }
-        performAction(tabs);
+        if (!performAction(tabs)) {
+            return false;
+        };
         if (shouldHideEditorAfterAction()) {
             mActionDelegate.hide();
             RecordUserAction.record("TabMultiSelectV2.ClosedAutomatically");
@@ -290,7 +298,7 @@ public abstract class TabSelectionEditorAction {
         return selectedTabs;
     }
 
-    private List<Tab> getTabsAndRelatedTabsFromSelection() {
+    protected List<Tab> getTabsAndRelatedTabsFromSelection() {
         if (!(mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                             instanceof TabGroupModelFilter)) {
             return getTabsFromSelection();

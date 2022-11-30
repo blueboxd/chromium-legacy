@@ -126,6 +126,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void SetDecoder(std::unique_ptr<TextResourceDecoder>) final;
   void NotifyNoRemainingAsyncScripts() final;
 
+  static void ResetCachedFeaturesForTesting();
+  static void FlushPreloadScannerThreadForTesting();
+
  protected:
   HTMLDocumentParser(HTMLDocument&,
                      ParserSynchronizationPolicy,
@@ -167,6 +170,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void DocumentElementAvailable() override;
   void CommitPreloadedData() override;
   void FlushPendingPreloads() override;
+  BackgroundScanCallback TakeBackgroundScanCallback() override;
 
   // HTMLParserScriptRunnerHost
   void NotifyScriptLoaded() final;
@@ -219,7 +223,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void ScanInBackground(const String& source);
 
   // Called on the background thread by |background_scanner_|.
-  void AddPreloadDataOnBackgroundThread(
+  static void AddPreloadDataOnBackgroundThread(
+      CrossThreadWeakPersistent<HTMLDocumentParser> weak_parser,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       std::unique_ptr<PendingPreloadData> preload_data);
 
@@ -250,7 +255,10 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // A scanner used only for input provided to the insert() method.
   std::unique_ptr<HTMLPreloadScanner> insertion_preload_scanner_;
   WTF::SequenceBound<BackgroundHTMLScanner> background_script_scanner_;
-  WTF::SequenceBound<HTMLPreloadScanner> background_scanner_;
+  HTMLPreloadScanner::BackgroundPtr background_scanner_;
+  using BackgroundScanFn =
+      WTF::CrossThreadRepeatingFunction<void(const KURL&, const String&)>;
+  BackgroundScanFn background_scan_fn_;
 
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
 

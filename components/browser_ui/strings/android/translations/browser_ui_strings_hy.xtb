@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hy">
-<translation id="1005794457625275818">Քուքիների օգտագործումը թույլատրված է <ph name="FPS_OWNER" /> խմբի կայքերին (<ph name="FPS_MEMBERS_COUNT" />), այդ թվում՝ <ph name="FPS_MEMBER" /> կայքին</translation>
 <translation id="1006017844123154345">Բացել առցանց</translation>
 <translation id="1044891598689252897">Կայքերը կաշխատեն սովորական ռեժիմով</translation>
 <translation id="1124090076051167250">Կջնջվեն բոլոր տվյալներն ու քուքիները (<ph name="DATASIZE" />), որոնք հիմնական էկրանին են պահվել կայքերի և հավելվածի կողմից։</translation>
@@ -35,6 +34,7 @@
 <translation id="1785415724048343560">Խորհուրդ է տրվում</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" />-ին AR ռեժիմն օգտագործելու թույլտվություն տալու համար միացրեք նաև տեսախցիկը <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="1864927262126810325">Աղբյուրը՝ <ph name="SOURCE_NAME" /></translation>
+<translation id="187227595286001730">Առնչվող կայքերը կարող են տեսնել ձեր գործողությունները խմբում</translation>
 <translation id="1887786770086287077">Սարքի տեղորոշումն անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="1915307458270490472">Փակել</translation>
 <translation id="1919345977826869612">Գովազդ</translation>
@@ -73,6 +73,7 @@
 <translation id="2490684707762498678">Կառավարվում է <ph name="APP_NAME" /> հավելվածի կողմից</translation>
 <translation id="2498359688066513246">Օգնություն և հետադարձ կապ</translation>
 <translation id="2501278716633472235">Վերադառնալ</translation>
+<translation id="2546283357679194313">Cookie ֆայլեր և կայքի տվյալներ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Արգելափակվել է 1 քուքի ֆայլ}one{Արգելափակվել է # քուքի ֆայլ}other{Արգելափակվել է # քուքի ֆայլ}}</translation>
 <translation id="2570922361219980984">Այս սարքի տեղորոշումը նույնպես անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="257931822824936280">Ընդարձակված - կոծկելու համար սեղմեք:</translation>
@@ -82,12 +83,10 @@
 <translation id="2653659639078652383">Ուղարկել</translation>
 <translation id="2677748264148917807">Դուրս գալ էջից</translation>
 <translation id="2687403674020088961">Արգելափակել բոլոր քուքիները (խորհուրդ չի տրվում)</translation>
-<translation id="2692299144678073135">Թույլատրել առնչվող կայքերին հիշել ձեր տվյալները կայքերում</translation>
 <translation id="2704606927547763573">Պատճենվեց</translation>
 <translation id="2713106313042589954">Անջատել տեսախցիկը</translation>
 <translation id="2717722538473713889">Էլ․ հասցեներ</translation>
 <translation id="2750481671343847896">Կայքերը կարող են ցույց տալ նույնականացման ծառայությունների մուտքի հարցումներ։</translation>
-<translation id="2785051990912111074">Այս կայքի (<ph name="WEBSITE" />) քուքիները կջնջվեն</translation>
 <translation id="2822354292072154809">Վերակայե՞լ բոլոր կայքերի թույլտվությունները <ph name="CHOSEN_OBJECT_NAME" />-ի համար:</translation>
 <translation id="2870560284913253234">Կայք</translation>
 <translation id="2874939134665556319">Նախորդը</translation>
@@ -112,6 +111,7 @@
 <translation id="3227137524299004712">Խոսափող</translation>
 <translation id="3248611290851046188">Այս կայքը որոշում է հետաքրքրությունները, որոնք կարող են օգտագործվել այլ կայքերի կողմից՝ ձեզ գովազդ ցուցադրելու համար։ Այս կայքը Chrome-ից նաև ստանում է ձեզ հետաքրքրող թեմաների մասին տվյալներ՝ ձեզ ավելի համապատասխան գովազդ ցուցադրելու համար։</translation>
 <translation id="3277252321222022663">Թույլ տալ կայքերին օգտագործել տվիչները (խորհուրդ է տրվում)</translation>
+<translation id="3285500645985761267">Թույլատրել առնչվող կայքերին տեսնել ձեր գործողությունները խմբում</translation>
 <translation id="3295602654194328831">Թաքցնել տեղեկությունները</translation>
 <translation id="3328801116991980348">Տեղեկություններ կայքի մասին</translation>
 <translation id="3333961966071413176">Բոլոր կոնտակտները</translation>
@@ -119,6 +119,7 @@
 <translation id="3386292677130313581">Հարցնել նախքան ձեր տեղադրությունը կայքերին հասանելի դարձնելը (խորհուրդ է տրվում)</translation>
 <translation id="3521663503435878242">Կայքեր <ph name="DOMAIN" /> տիրույթում</translation>
 <translation id="3538390592868664640">Արգելել կայքերին ստեղծել շրջակայքի եռաչափ քարտեզը և հետագծել տեսախցիկի դիրքը</translation>
+<translation id="3544058026430919413">Ընկերությունը կարող է որոշել կայքերի խումբը, որոնք ունեն քուքիներն օգտագործելու թույլտվություն՝ ձեր գործողությունների մասին տեղեկությունները խմբում հասանելի դարձնելու համար։ Այս գործառույթն անջատված է ինկոգնիտո ռեժիմում։</translation>
 <translation id="3551268116566418498">Դուրս գա՞լ ինկոգնիտո ռեժիմից</translation>
 <translation id="3586500876634962664">Տեսախցիկի և խոսափողի օգտագործում</translation>
 <translation id="358794129225322306">Թույլ տալ կայքին ավտոմատ ներբեռնել մեկից ավել ֆայլեր։</translation>
@@ -144,7 +145,6 @@
 <translation id="4002066346123236978">Վերնագիր</translation>
 <translation id="4008040567710660924">Թույլատրել քուքիները կոնկրետ կայքի համար:</translation>
 <translation id="4046123991198612571">Հաջորդը</translation>
-<translation id="4048876521107516222">Առնչվող կայքերն օգտագործում են քուքիներ, որոնք օգնում են ձեզ, օրինակ, դուրս չգալ հաշվից</translation>
 <translation id="4149994727733219643">Կայքերի պարզեցված դիտակերպ</translation>
 <translation id="4165986682804962316">Կայքի կարգավորումներ</translation>
 <translation id="4169549551965910670">Կայքը միացած է USB սարքի</translation>
@@ -162,6 +162,7 @@
 <translation id="4434045419905280838">Ելնող պատուհաններ և վերահղում</translation>
 <translation id="445467742685312942">Թույլատրել կայքերին նվագարկել պաշտպանված բովանդակություն</translation>
 <translation id="4468959413250150279">Անջատել ձայնը առանձին կայքերում</translation>
+<translation id="4475912480633855319">{COOKIES,plural, =1{# քուքի}one{# քուքի}other{# քուքի}}</translation>
 <translation id="4479647676395637221">Հարցնել նախքան ձեր տեսախցիկը կայքերին հասանելի դարձնելը (խորհուրդ է տրվում)</translation>
 <translation id="4505788138578415521">URL-ը ծավալվել է</translation>
 <translation id="4534723447064627427">Որպեսզի խոսափողը հասանելի դառնա <ph name="APP_NAME" />-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
@@ -175,16 +176,17 @@
 <translation id="483914009762354899">Ներառել այս տիրույթի բոլոր կայքերը</translation>
 <translation id="4883854917563148705">Կառավարվող կարգավորումները հնարավոր չէ վերակայել</translation>
 <translation id="4887024562049524730">Կայքերի համար թույլտվություն խնդրել՝ օգտագործելու վիրտուալ իրականության ձեր սարքերն ու տվյալները (խորհուրդ է տրվում)</translation>
+<translation id="4955223779495905865">Կայքը, որն այցելել եք, կարող է այլ կայքերից զետեղել բովանդակություն, օրինակ՝ պատկերներ, գովազդ և տեքստ։ Այս կայքերից յուրաքանչյուրը կարող է քուքիներ և այլ տվյալներ պահել անհատականացման նպատակով։</translation>
 <translation id="4962975101802056554">Չեղարկել սարքի բոլոր թույլտվությունները</translation>
 <translation id="497421865427891073">Առաջ գնալ</translation>
 <translation id="4976702386844183910">Վերջին այցելությունը՝ <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Ոչ մի կոնտակտ չի գտնվել</translation>
 <translation id="4996978546172906250">Համօգտագործման միջոցը`</translation>
-<translation id="5014906230196386306">Մաքրե՞լ քուքիները</translation>
 <translation id="5039804452771397117">Թույլ տալ</translation>
 <translation id="5048398596102334565">Թույլ տալ կայքերին օգտագործել ձեր տվիչները (խորհուրդ է տրվում)</translation>
 <translation id="5050380848339752099">Այս կայքը պատրաստվում է ուղարկել տվյալները մի հավելվածի, որն ինկոգնիտո ռեժիմից դուրս է գտնվում։</translation>
 <translation id="5063480226653192405">Վիճակագրություն</translation>
+<translation id="5082281938627763039">Կջնջվեն քուքիները և <ph name="FPS_MEMBER" /> տիրույթի կայքերի այլ տվյալները, ինչպես նաև <ph name="FPS_OWNER" /> տիրույթի կայքերի խմբի տվյալները</translation>
 <translation id="5091013926750941408">Կայքի բջջային տարբերակ</translation>
 <translation id="509133520954049755">Համակարգչային տարբերակի հարցում</translation>
 <translation id="5100237604440890931">Կոծկված - ընդլայնելու համար սեղմեք</translation>
@@ -221,6 +223,7 @@
 <translation id="5677928146339483299">Արգելափակված է</translation>
 <translation id="5689516760719285838">Տեղորոշում</translation>
 <translation id="5690795753582697420">Տեսախցիկն անջատված է Android-ի կարգավորումներում</translation>
+<translation id="5706552988683188916">Քուքիները և <ph name="WEBSITE" /> կայքի այլ տվյալները կջնջվեն</translation>
 <translation id="5719847187258001597">Կջնջվեն բոլոր տվյալներն ու քուքիները, որոնք հիմնական էկրանին են պահվել <ph name="ORIGIN" /> կայքի և դրա հավելվածի կողմից։</translation>
 <translation id="5771720122942595109">Արգելափակված է՝ «<ph name="PERMISSION_1" />»</translation>
 <translation id="5804241973901381774">Թույլտվություններ</translation>
@@ -263,7 +266,6 @@
 <translation id="6554732001434021288">Վերջին այցելությունը՝ <ph name="NUM_DAYS" /> օր առաջ</translation>
 <translation id="6561560012278703671">Օգտագործել ավելի հանգիստ հաղորդագրություններ (արգելափակում է շեղող ծանուցումները)</translation>
 <translation id="6593061639179217415">Համակարգչային տարբերակ</translation>
-<translation id="6608211702542341247">Այս կայքը <ph name="FPS_OWNER" />-ի կայքերի խմբում է, որոնք կարող են տեսնել ձեր գործողությունները խմբում</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ԳԲ</translation>
 <translation id="6612358246767739896">Պաշտպանված բովանդակություն</translation>
 <translation id="662080504995468778">Մնալ կայքում</translation>
@@ -314,9 +316,7 @@
 <translation id="7791543448312431591">Ավելացնել</translation>
 <translation id="780301667611848630">Ոչ</translation>
 <translation id="7804248752222191302">Կայքն օգտագործում է ձեր տեսախցիկը</translation>
-<translation id="7816129586531226979">Առնչվող կայքերը կարող են հիշել ձեր տվյալները կայքերում</translation>
 <translation id="7817023149356982970">Դուք դուրս կգաք այս կայքից։</translation>
-<translation id="7828557259026017104">Քուքիները ֆայլեր են, որոնք ստեղծվում են ձեր այցելած կայքերի կողմից։ Կայքերն օգտագործում են դրանք՝ ձեր նախընտրությունները հիշելու համար։ Երրորդ կողմի քուքիները ստեղծվում են այլ կայքերի կողմից։ Այս կայքերն ունեն որոշակի բովանդակություն, օր․՝ գովազդ կամ պատկերներ, որոնք դուք տեսնում եք ձեր այցելած կայքում։</translation>
 <translation id="7835852323729233924">Մեդիա բովանդակության նվագարկում</translation>
 <translation id="783819812427904514">Միացնել տեսանյութի ձայնը</translation>
 <translation id="7846076177841592234">Չեղարկել ընտրվածքը</translation>
@@ -324,6 +324,7 @@
 <translation id="7882806643839505685">Թույլատրել ձայնը առանձին կայքերում</translation>
 <translation id="789180354981963912">Արգելափակել կողմնակի կայքերի քուքիները ինկոգնիտո ռեժիմում․</translation>
 <translation id="7940722705963108451">Հիշեցնել ինձ</translation>
+<translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_OWNER" /> տիրույթի կայքերի խմբի <ph name="FPS_MEMBERS_COUNT" /> կայք կարող է տեսնել ձեր գործողությունները խմբում}one{<ph name="FPS_OWNER" /> տիրույթի կայքերի խմբի <ph name="FPS_MEMBERS_COUNT" /> կայք կարող է տեսնել ձեր գործողությունները խմբում}other{<ph name="FPS_OWNER" /> տիրույթի կայքերի խմբի <ph name="FPS_MEMBERS_COUNT" /> կայք կարող է տեսնել ձեր գործողությունները խմբում}}</translation>
 <translation id="7986741934819883144">Ընտրեք կոնտակտ</translation>
 <translation id="7999064672810608036">Համոզվա՞ծ եք, որ ուզում եք մաքրել բոլոր տեղային տվյալները, այդ թվում նաև քուքիները, և զրոյացնել այս կայքի թույլտվությունները:</translation>
 <translation id="8007176423574883786">Անջատված է այս սարքի համար</translation>
@@ -362,6 +363,7 @@
 <translation id="8499083585497694743">Միացնել խոսափողը</translation>
 <translation id="851751545965956758">Արգելել կայքերին միանալ սարքերին</translation>
 <translation id="8525306231823319788">Լիաէկրան</translation>
+<translation id="8564613706851221529">{COUNT,plural, =1{Քուքիները թույլատրված են <ph name="FPS_OWNER" /> տիրույթի <ph name="FPS_MEMBERS_COUNT" /> կայքի համար}one{Քուքիները թույլատրված են <ph name="FPS_OWNER" /> տիրույթի <ph name="FPS_MEMBERS_COUNT" /> կայքի համար}other{Քուքիները թույլատրված են <ph name="FPS_OWNER" /> տիրույթի <ph name="FPS_MEMBERS_COUNT" /> կայքի համար}}</translation>
 <translation id="857943718398505171">Թույլատրված է (հանձնարարելի)</translation>
 <translation id="8609465669617005112">Տեղափոխել վեր</translation>
 <translation id="8676374126336081632">Մաքրել ներածումը</translation>
@@ -387,6 +389,8 @@
 <translation id="8986362086234534611">Հեռացնել</translation>
 <translation id="9019902583201351841">Կառավարվում է ձեր ծնողների կողմից</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9090268041676521955">Այս կայքը խմբում է, որը կարող է տեսնել ձեր գործողությունները։ Խումբը սահմանված է <ph name="FPS_OWNER" /> տիրույթի կողմից։</translation>
+<translation id="9106233582039520022">Ջնջե՞լ քուքիները</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{«<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}one{«<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}other{«<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}}</translation>
 <translation id="913657688200966289">Միացնել <ph name="APP_NAME" />-ի թույլտվությունները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="9162462602695099906">Այս էջը վտանգավոր է</translation>

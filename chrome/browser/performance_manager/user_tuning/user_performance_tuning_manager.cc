@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/values.h"
+#include "chrome/browser/performance_manager/metrics/page_timeline_monitor.h"
 #include "chrome/browser/performance_manager/policies/high_efficiency_mode_policy.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -28,13 +29,32 @@ class FrameThrottlingDelegateImpl
  public:
   void StartThrottlingAllFrameSinks() override {
     content::StartThrottlingAllFrameSinks(base::Hertz(30));
+    NotifyPageTimelineMonitor(/*battery_saver_mode_enabled=*/true);
   }
 
   void StopThrottlingAllFrameSinks() override {
     content::StopThrottlingAllFrameSinks();
+    NotifyPageTimelineMonitor(/*battery_saver_mode_enabled=*/false);
   }
 
   ~FrameThrottlingDelegateImpl() override = default;
+
+ private:
+  void NotifyPageTimelineMonitor(bool battery_saver_mode_enabled) {
+    performance_manager::PerformanceManager::CallOnGraph(
+        FROM_HERE,
+        base::BindOnce(
+            [](bool enabled, performance_manager::Graph* graph) {
+              auto* monitor = graph->GetRegisteredObjectAs<
+                  performance_manager::metrics::PageTimelineMonitor>();
+              // It's possible for this to be null if the PageTimeline finch
+              // feature is disabled.
+              if (monitor) {
+                monitor->SetBatterySaverEnabled(enabled);
+              }
+            },
+            battery_saver_mode_enabled));
+  }
 };
 
 class HighEfficiencyModeToggleDelegateImpl
@@ -111,6 +131,11 @@ void UserPerformanceTuningManager::SetTemporaryBatterySaverDisabledForSession(
 bool UserPerformanceTuningManager::IsBatterySaverModeDisabledForSession()
     const {
   return battery_saver_mode_disabled_for_session_;
+}
+
+bool UserPerformanceTuningManager::IsHighEfficiencyModeActive() const {
+  return pref_change_registrar_.prefs()->GetBoolean(
+      performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled);
 }
 
 bool UserPerformanceTuningManager::IsBatterySaverActive() const {
@@ -339,10 +364,18 @@ void UserPerformanceTuningManager::OnBatteryStateSampled(
 
   bool was_below_threshold = is_below_low_battery_threshold_;
 
-  // A battery is below the threshold if it's under 20% charge.
+  // A battery is below the threshold if it's under 20% charge. On some
+  // platforms, we adjust the threshold by a value specified in Finch to account
+  // for the displayed battery level being artificially lower than the actual
+  // level. See
+  // `power_manager::BatteryPercentageConverter::ConvertActualToDisplay`.
+  uint64_t adjusted_low_battery_threshold =
+      kLowBatteryThresholdPercent +
+      performance_manager::features::
+          kBatterySaverModeThresholdAdjustmentForDisplayLevel.Get();
   is_below_low_battery_threshold_ = *(battery_state->current_capacity) <
                                     (*(battery_state->full_charged_capacity) *
-                                     kLowBatteryThresholdPercent / 100);
+                                     adjusted_low_battery_threshold / 100);
 
   if (is_below_low_battery_threshold_ && !was_below_threshold) {
     for (auto& obs : observers_) {

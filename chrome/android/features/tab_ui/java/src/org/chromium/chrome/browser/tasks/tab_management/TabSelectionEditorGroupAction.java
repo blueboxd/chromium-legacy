@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.tab_ui.R;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -54,7 +56,7 @@ public class TabSelectionEditorGroupAction extends TabSelectionEditorAction {
     }
 
     @Override
-    public void performAction(List<Tab> tabs) {
+    public boolean performAction(List<Tab> tabs) {
         assert getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;
 
@@ -62,12 +64,31 @@ public class TabSelectionEditorGroupAction extends TabSelectionEditorAction {
                                                           .getTabModelFilterProvider()
                                                           .getCurrentTabModelFilter();
 
+        HashSet<Tab> selectedTabs = new HashSet<>(tabs);
         Tab destinationTab = getDestinationTab(tabs, getTabModelSelector().getCurrentModel(),
                 tabGroupModelFilter, editorSupportsActionOnRelatedTabs());
-        tabGroupModelFilter.mergeListOfTabsToGroup(tabs, destinationTab, false, true);
+        List<Tab> relatedTabs = tabGroupModelFilter.getRelatedTabList(destinationTab.getId());
+        selectedTabs.removeAll(relatedTabs);
+
+        // Sort tabs by index prevent visual bugs when undoing.
+        List<Tab> sortedTabs = new ArrayList<>(selectedTabs.size());
+        // Ensure tab count is as expected and the group doesn't get shuffled.
+        sortedTabs.addAll(relatedTabs);
+        TabModel model = getTabModelSelector().getCurrentModel();
+        for (int i = 0; i < model.getCount(); i++) {
+            Tab tab = model.getTabAt(i);
+            if (!selectedTabs.contains(tab)) continue;
+
+            sortedTabs.add(tab);
+        }
+
+        // Use true for "isSameGroup" to avoid updating the title multiple times.
+        tabGroupModelFilter.mergeListOfTabsToGroup(
+                sortedTabs, destinationTab, /*isSameGroup=*/true, /*notify=*/true);
 
         RecordUserAction.record("TabMultiSelectV2.GroupTabs");
         RecordUserAction.record("TabGroup.Created.TabMultiSelect");
+        return true;
     }
 
     @Override

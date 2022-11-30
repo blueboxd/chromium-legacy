@@ -159,13 +159,23 @@ public class AdaptiveToolbarFeatures {
         return isPriceTrackingPageActionEnabled() || isReaderModePageActionEnabled();
     }
 
-    private static boolean isPriceTrackingPageActionEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING)
+    public static boolean isPriceTrackingPageActionEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS)
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.SHOPPING_LIST);
     }
 
-    private static boolean isReaderModePageActionEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE);
+    public static boolean isReaderModePageActionEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS)
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE);
+    }
+
+    public static boolean isReaderModeRateLimited() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.CONTEXTUAL_PAGE_ACTIONS, "reader_mode_session_rate_limiting",
+                true);
     }
 
     /**

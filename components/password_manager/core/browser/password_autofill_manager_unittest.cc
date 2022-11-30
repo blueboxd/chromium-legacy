@@ -15,10 +15,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -365,6 +367,22 @@ class PasswordAutofillManagerTest : public testing::Test {
       return "settingsIcon";
     }
     return std::string();
+  }
+
+  void ExpectAndAllowAuthentication() {
+    // Allow authentication.
+    EXPECT_CALL(*authenticator_.get(),
+                CanAuthenticate(BiometricAuthRequester::kAutofillSuggestion))
+        .WillOnce(Return(true));
+    EXPECT_CALL(
+        *authenticator_.get(),
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+        AuthenticateWithMessage(BiometricAuthRequester::kAutofillSuggestion,
+                                /*message=*/_, _));
+#else
+        Authenticate(BiometricAuthRequester::kAutofillSuggestion, _,
+                     /*use_last_valid_auth= */ true));
+#endif
   }
 
  protected:
@@ -1888,18 +1906,7 @@ TEST_F(PasswordAutofillManagerTest, CancelsOngoingBiometricAuthOnDestroy) {
       .Times(0);
 
   // The authenticator exists and is available.
-  EXPECT_CALL(*authenticator_.get(),
-              CanAuthenticate(BiometricAuthRequester::kAutofillSuggestion))
-      .WillOnce(Return(true));
-  EXPECT_CALL(
-      *authenticator_.get(),
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-      AuthenticateWithMessage(BiometricAuthRequester::kAutofillSuggestion,
-                              /*message=*/_, _));
-#else
-      Authenticate(BiometricAuthRequester::kAutofillSuggestion, _,
-                   /*use_last_valid_auth= */ true));
-#endif
+  ExpectAndAllowAuthentication();
 
   // Accept the suggestion to start the filing process which tries to
   // reauthenticate the user if possible.
@@ -1950,18 +1957,7 @@ TEST_F(PasswordAutofillManagerTest,
       .Times(0);
 
   // The authenticator exists and is available.
-  EXPECT_CALL(*authenticator_.get(),
-              CanAuthenticate(BiometricAuthRequester::kAutofillSuggestion))
-      .WillOnce(Return(true));
-  EXPECT_CALL(
-      *authenticator_.get(),
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-      AuthenticateWithMessage(BiometricAuthRequester::kAutofillSuggestion,
-                              /*message=*/_, _));
-#else
-      Authenticate(BiometricAuthRequester::kAutofillSuggestion, _,
-                   /*use_last_valid_auth= */ true));
-#endif
+  ExpectAndAllowAuthentication();
 
   // Accept the suggestion to start the filing process which tries to
   // reauthenticate the user if possible.
@@ -2013,18 +2009,7 @@ TEST_F(PasswordAutofillManagerTest,
       .Times(0);
 
   // The authenticator exists and is available.
-  EXPECT_CALL(*authenticator_.get(),
-              CanAuthenticate(BiometricAuthRequester::kAutofillSuggestion))
-      .WillOnce(Return(true));
-  EXPECT_CALL(
-      *authenticator_.get(),
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-      AuthenticateWithMessage(BiometricAuthRequester::kAutofillSuggestion,
-                              /*message=*/_, _));
-#else
-      Authenticate(BiometricAuthRequester::kAutofillSuggestion, _,
-                   /*use_last_valid_auth= */ true));
-#endif
+  ExpectAndAllowAuthentication();
 
   // Accept the suggestion to start the filing process which tries to
   // reauthenticate the user if possible.
@@ -2037,7 +2022,93 @@ TEST_F(PasswordAutofillManagerTest,
               Cancel(BiometricAuthRequester::kAutofillSuggestion));
   password_autofill_manager_->OnAddPasswordFillData(CreateTestFormFillData());
 }
+
+TEST_F(PasswordAutofillManagerTest, CancelsOngoingBiometricAuthOnNewRequest) {
+  TestPasswordManagerClient client;
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  ON_CALL(*client.GetPasswordFeatureManager(),
+          IsBiometricAuthenticationBeforeFillingEnabled)
+      .WillByDefault(Return(true));
+#else
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kBiometricTouchToFill);
+#endif
+  NiceMock<MockAutofillClient> autofill_client;
+  client.SetBiometricAuthenticator(authenticator_);
+
+  InitializePasswordAutofillManager(&client, &autofill_client);
+
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      base::i18n::RIGHT_TO_LEFT, std::u16string(), autofill::IS_PASSWORD_FIELD,
+      gfx::RectF());
+  ExpectAndAllowAuthentication();
+  password_autofill_manager_->DidAcceptSuggestion(
+      autofill::test::CreateAutofillSuggestion(
+          autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, test_username_),
+      1);
+
+  // Triggering new authentication should cancel ongoing authentication.
+  EXPECT_CALL(*authenticator_.get(),
+              Cancel(BiometricAuthRequester::kAutofillSuggestion));
+  ExpectAndAllowAuthentication();
+  password_autofill_manager_->DidAcceptSuggestion(
+      autofill::test::CreateAutofillSuggestion(
+          autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, test_username_),
+      1);
+
+  // Destroying the manager should cancel ongoing authentication.
+  EXPECT_CALL(*authenticator_.get(),
+              Cancel(BiometricAuthRequester::kAutofillSuggestion));
+}
+
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+TEST_F(PasswordAutofillManagerTest, MetricsRecordedForBiometricAuth) {
+  base::ScopedMockElapsedTimersForTest mock_elapsed_timers_;
+  base::HistogramTester histograms;
+  TestPasswordManagerClient client;
+  ON_CALL(*client.GetPasswordFeatureManager(),
+          IsBiometricAuthenticationBeforeFillingEnabled)
+      .WillByDefault(Return(true));
+  NiceMock<MockAutofillClient> autofill_client;
+  client.SetBiometricAuthenticator(authenticator_);
+
+  InitializePasswordAutofillManager(&client, &autofill_client);
+
+  // Show the popup.
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      base::i18n::RIGHT_TO_LEFT, std::u16string(), 0, gfx::RectF());
+
+  // The authenticator exists and is available.
+  EXPECT_CALL(*authenticator_.get(), CanAuthenticate).WillOnce(Return(true));
+  base::OnceCallback<void(bool)> auth_callback;
+  EXPECT_CALL(*authenticator_.get(), AuthenticateWithMessage)
+      .WillOnce(MoveArg<2>(&auth_callback));
+
+  // Accept the suggestion to start the filing process which tries to
+  // reauthenticate the user.
+  password_autofill_manager_->DidAcceptSuggestion(
+      autofill::test::CreateAutofillSuggestion(
+          autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, test_username_),
+      1);
+
+  // Simulate successful authentication and expect successful filling.
+  EXPECT_CALL(*client.mock_driver(),
+              FillSuggestion(test_username_, test_password_));
+  std::move(auth_callback).Run(true);
+
+  // Verify reported metrics.
+  const int64_t kMockElapsedTime =
+      base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
+  histograms.ExpectUniqueSample(
+      "PasswordManager.PasswordFilling.AuthenticationResult", true, 1);
+  histograms.ExpectUniqueSample(
+      "PasswordManager.PasswordFilling.AuthenticationTime", kMockElapsedTime,
+      1);
+}
+#endif
 
 TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSuggestions) {
   TestPasswordManagerClient client;
@@ -2053,8 +2124,8 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSuggestions) {
   webauthn_credential.frontend_id = autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL;
   webauthn_credential.payload = Suggestion::BackendId(kId);
   webauthn_credential.labels = {{Suggestion::Text(kAuthenticator)}};
-  ON_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
-      .WillByDefault(Return(true));
+  EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
   absl::optional<std::vector<autofill::Suggestion>> webauthn_credential_list =
@@ -2121,9 +2192,10 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSignInWithAnotherDevice) {
   InitializePasswordAutofillManager(&client, &autofill_client);
 
   // Enable WebAuthn autofill.
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials;
-  ON_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
-      .WillByDefault(Return(true));
+  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
+      absl::in_place);
+  EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
   EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
@@ -2175,9 +2247,9 @@ TEST_F(PasswordAutofillManagerTest, WebAuthnFaviconWithoutPasswords) {
   webauthn_credential.payload = Suggestion::BackendId(kId);
   webauthn_credential.labels = {{Suggestion::Text(kAuthenticator)}};
   absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials =
-      std::vector{webauthn_credential};
-  ON_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
-      .WillByDefault(Return(true));
+      std::vector{std::move(webauthn_credential)};
+  EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
   EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
@@ -2214,7 +2286,8 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSignInWithoutPasswordData) {
   password_autofill_manager_->DeleteFillData();
 
   // Enable WebAuthn autofill.
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials;
+  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
+      absl::in_place);
   EXPECT_CALL(webauthn_credentials_delegate, IsWebAuthnAutofillEnabled)
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
@@ -2247,7 +2320,8 @@ TEST_F(PasswordAutofillManagerTest, WebAuthnSignInLaunchesWebAuthnFlow) {
   InitializePasswordAutofillManager(&client, &autofill_client);
 
   // Enable WebAuthn autofill.
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials;
+  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
+      absl::in_place);
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
 

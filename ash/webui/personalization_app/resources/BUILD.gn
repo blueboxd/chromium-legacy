@@ -88,6 +88,7 @@ web_component_files = [
   "js/personalization_theme_element.ts",
   "js/personalization_toast_element.ts",
   "js/personalization_breadcrumb_element.ts",
+  "js/theme/theme_header_element.ts",
   "js/user/avatar_camera_element.ts",
   "js/user/avatar_list_element.ts",
   "js/user/user_preview_element.ts",
@@ -204,6 +205,7 @@ ts_library("build_ts") {
   deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
 

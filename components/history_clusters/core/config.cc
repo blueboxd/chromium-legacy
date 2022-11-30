@@ -187,6 +187,12 @@ Config::Config() {
             internal::kOmniboxHistoryClusterProvider,
             "omnibox_history_cluster_provider_on_navigation_intents",
             omnibox_history_cluster_provider_on_navigation_intents);
+
+    omnibox_history_cluster_provider_free_ranking =
+        base::GetFieldTrialParamByFeatureAsBool(
+            internal::kOmniboxHistoryClusterProvider,
+            "omnibox_history_cluster_provider_free_ranking",
+            omnibox_history_cluster_provider_free_ranking);
   }
 
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.
@@ -286,11 +292,6 @@ Config::Config() {
         features::kOnDeviceClustering, "search_results_page_ranking_weight",
         search_results_page_ranking_weight);
     DCHECK_GE(search_results_page_ranking_weight, 0.0f);
-
-    has_page_title_ranking_weight = GetFieldTrialParamByFeatureAsDouble(
-        features::kOnDeviceClustering, "has_page_title_ranking_weight",
-        has_page_title_ranking_weight);
-    DCHECK_GE(has_page_title_ranking_weight, 0.0f);
   }
 
   // The `kJourneysCategoryFiltering` feature and child params.

@@ -62,10 +62,20 @@ BASE_FEATURE(kSkipServiceWorkerCheckInstallOnly,
 // Enables showing a detailed install dialog for user installs.
 BASE_FEATURE(kDesktopPWAsDetailedInstallDialog,
              "DesktopPWAsDetailedInstallDialog",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables sending the beforeinstallprompt without a service worker check.
+BASE_FEATURE(kSkipServiceWorkerForInstallPrompt,
+             "SkipServiceWorkerForInstallPromot",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool SkipInstallServiceWorkerCheck() {
   return base::FeatureList::IsEnabled(kSkipServiceWorkerCheckInstallOnly);
+}
+
+bool SkipServiceWorkerForInstallPromotion() {
+  return base::FeatureList::IsEnabled(kSkipServiceWorkerCheckInstallOnly) &&
+         base::FeatureList::IsEnabled(kSkipServiceWorkerForInstallPrompt);
 }
 
 }  // namespace features

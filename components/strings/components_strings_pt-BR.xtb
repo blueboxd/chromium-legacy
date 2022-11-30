@@ -320,6 +320,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1717494416764505390">Caixa de e-mails 3</translation>
 <translation id="1718029547804390981">O documento é grande demais para receber anotações</translation>
+<translation id="1719434663396780149">Os alertas de redução no preço estão ativados. Para mudar isso, acesse as <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="1720941539803966190">Fechar tutorial</translation>
 <translation id="1721424275792716183">* Campo obrigatório</translation>
 <translation id="1725591448053514783">Envelope You 6</translation>
@@ -358,6 +359,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="1803351196216024260">Pode pedir para usar o microfone</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1807528111851433570">Página inicial</translation>
+<translation id="181000283860817563">Monitorar preços em vários sites</translation>
 <translation id="1812527064848182527">paisagem</translation>
 <translation id="1813414402673211292">Remover dados de navegação</translation>
 <translation id="182139138257690338">downloads automáticos</translation>
@@ -574,7 +576,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2430968933669123598">Gerenciar sua Conta do Google. Pressione Enter para gerenciar suas informações, sua privacidade e sua segurança na Conta do Google</translation>
 <translation id="2436186046335138073">Permitir que <ph name="HANDLER_HOSTNAME" /> abra todos os links de <ph name="PROTOCOL" />?</translation>
 <translation id="2438874542388153331">Perfuração quádrupla no lado direito</translation>
-<translation id="2443309680964448806">Algo deu errado. Sua modificação não foi salva.</translation>
 <translation id="2448295565072560657">Periféricos vinculados a este dispositivo enquanto sua conta está conectada</translation>
 <translation id="2450021089947420533">Jornadas</translation>
 <translation id="2463739503403862330">Preencher</translation>
@@ -626,7 +627,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2553853292994445426">Verifique suas configurações de DNS seguro. Você pode ter configurado um servidor DNS seguro em que as conexões estão falhando.</translation>
 <translation id="2556876185419854533">&amp;Desfazer editar</translation>
 <translation id="2557417190997681027">Viagem a negócios</translation>
-<translation id="2562087035394240049">Como fazer, faça você mesmo e conteúdo profissional</translation>
+<translation id="2562087035394240049">Aprenda a fazer e conteúdo profissional</translation>
 <translation id="2563042576090522782">Luas de mel e viagens românticas</translation>
 <translation id="2570734079541893434">Gerenciar configurações</translation>
 <translation id="2573834589046842510">Impressão e publicação</translation>
@@ -695,6 +696,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2728127805433021124">O certificado do servidor é assinado com um algoritmo de assinatura fraco.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar o Diagnóstico de Conectividade<ph name="END_LINK" /></translation>
 <translation id="2730600605555029057">Música clássica</translation>
+<translation id="2734319753272419592">Permita que o Google use seus carrinhos para pesquisar descontos personalizados. Quando disponíveis, os descontos vão aparecer automaticamente nos carrinhos.</translation>
 <translation id="2738330467931008676">Escolher endereço de retirada</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2742511345840685325">Tênis de mesa</translation>
@@ -979,11 +981,13 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="3550112004925580947">Indústria da hospitalidade</translation>
 <translation id="3552297013052089404">Fonte Sans-Serif</translation>
 <translation id="3558573058928565255">Dia</translation>
+<translation id="3560824484345057728">Ver sites relacionados</translation>
 <translation id="3566021033012934673">Sua conexão não é particular</translation>
 <translation id="3567778190852720481">Não é possível fazer a inscrição com a conta corporativa (a conta corporativa não está qualificada).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3575121482199441727">Permitir para este site</translation>
 <translation id="3576616784287504635">Uma página incorporada em <ph name="SITE" /> diz</translation>
+<translation id="3577473026931028326">Algo deu errado. Tente novamente.</translation>
 <translation id="3577902790357386792">Ginástica</translation>
 <translation id="3581089476000296252">O Chrome avisará quando esta página estiver pronta. &lt;a&gt;Cancelar&lt;/a&gt;</translation>
 <translation id="3582930987043644930">Adicionar nome</translation>
@@ -1155,6 +1159,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4040350669425716613">Faculdades e universidades</translation>
 <translation id="405399507749852140">Receba alertas se houver uma redução no preço em algum site</translation>
 <translation id="4056223980640387499">Sépia</translation>
+<translation id="4063063121357725926">Deixe o Google ajudar você a encontrar descontos para seus carrinhos</translation>
 <translation id="4063924980214801036">Usar o desbloqueio do dispositivo para confirmar os cartões mais rapidamente</translation>
 <translation id="4067098466788473230">Bolsas de estudo</translation>
 <translation id="4067947977115446013">Adicione um Endereço Válido</translation>
@@ -1362,6 +1367,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4542971377163063093">Bandeja 6</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4558551763791394412">Tente desativar suas extensões.</translation>
+<translation id="4559134504959026834">Este site está em um grupo, definido por <ph name="SET_OWNER" />, que pode ver sua atividade</translation>
 <translation id="4559332380232738994">10x11</translation>
 <translation id="4566017918361049074">Ao ar livre</translation>
 <translation id="4567686777917670400">O administrador pode mudar as configurações do navegador remotamente. A atividade deste dispositivo também pode ser gerenciada fora do Chromium. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -1766,7 +1772,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5571083550517324815">Não é possível fazer a retirada nesse endereço. Tente um endereço diferente.</translation>
 <translation id="557886905979275351">Lâminas de barbear e barbeadores</translation>
 <translation id="5580958916614886209">Verifique o mês de validade e tente novamente</translation>
-<translation id="558420943003240152">Gerenciar senhas e senhas de acesso…</translation>
+<translation id="558420943003240152">Gerenciar senhas e chaves de acesso…</translation>
 <translation id="5586446728396275693">Nenhum endereço salvo</translation>
 <translation id="5586831831248371458">Pesquisar <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="5587987780934666589">Usuário da plataforma</translation>
@@ -2359,7 +2365,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="7234638337680728591">Preços de gasolina e combustíveis para veículos</translation>
 <translation id="7237492777898608035">Não mostrar esta mensagem novamente neste site</translation>
 <translation id="7238585580608191973">Assinatura digital SHA-256</translation>
-<translation id="7239514174717251677">Os alertas de redução no preço estão ativados. Para mudar isso, acesse as <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />, <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# correspondência}one{# correspondência}other{# correspondências}}</translation>
@@ -2660,7 +2665,6 @@ Mais detalhes:
 <translation id="7977538094055660992">Dispositivo de saída</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="7981129096182302364">Música dance e eletrônica</translation>
-<translation id="7981260203882740562">Vinculado ao</translation>
 <translation id="798134797138789862">Pode pedir para usar dispositivos e dados de realidade virtual</translation>
 <translation id="7983008347525536475">SUVs</translation>
 <translation id="7984945080620862648">Não é possível acessar <ph name="SITE" /> no momento, porque o website enviou credenciais codificadas que o Google Chrome não pode processar. Ataques e erros de rede geralmente são temporários. Portanto, essa página provavelmente funcionará mais tarde.</translation>
@@ -2670,6 +2674,7 @@ Mais detalhes:
 <translation id="7995512525968007366">Não especificado</translation>
 <translation id="7998269595945679889">Botão "Abrir guia anônima": pressione "Enter" para abrir uma nova guia anônima e navegar com privacidade</translation>
 <translation id="800218591365569300">Tente fechar outras guias ou programas para liberar memória.</translation>
+<translation id="8002230960325005199">Ver sites relacionados em uma nova guia</translation>
 <translation id="8003046808285812021">"<ph name="SEARCH_TERMS" />"</translation>
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8009225694047762179">Gerenciar senha</translation>
@@ -2773,6 +2778,7 @@ Mais detalhes:
 <translation id="8270242299912238708">Documentos em PDF</translation>
 <translation id="8275952078857499577">Não oferecer a opção de traduzir este site</translation>
 <translation id="8277900682056760511">A página do gerenciador de pagamento está aberta</translation>
+<translation id="8279611986089885641">As notificações do Chrome precisam estar ativadas. Faça isso nas <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="8280630997017109758">Bandeja 11</translation>
 <translation id="8281084378435768645">Large photo</translation>
 <translation id="8281886186245836920">Pular</translation>
@@ -3105,7 +3111,6 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="9187461866967718678">Esportes radicais</translation>
 <translation id="9191834167571392248">Perfuração na parte inferior esquerda</translation>
 <translation id="9199905725844810519">A impressão foi bloqueada</translation>
-<translation id="9202180858541326427">As notificações do Chrome precisam estar ativadas. Faça isso nas <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /></translation>
 <translation id="9205078245616868884">Seus dados são criptografados com sua senha longa de sincronização. Informe-a para começar a sincronização.</translation>
 <translation id="920511547311754821">Não encontrou o código? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">Falha ao adicionar artigo.</translation>
@@ -3126,7 +3131,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="950736567201356821">Perfuração tripla na parte superior</translation>
 <translation id="961663415146723894">Encadernação na parte inferior</translation>
 <translation id="962484866189421427">Este conteúdo pode tentar instalar apps enganosos que fingem ser outra coisa ou coletam dados que podem ser usados para rastrear você. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
-<translation id="964050462028070434">Gerenciar senhas e senhas de acesso…</translation>
+<translation id="964050462028070434">Gerenciar senhas e chaves de acesso…</translation>
 <translation id="96680173638229310">Automóveis e veículos</translation>
 <translation id="969892804517981540">Versão oficial</translation>
 <translation id="973773823069644502">Adicionar endereço de entrega</translation>

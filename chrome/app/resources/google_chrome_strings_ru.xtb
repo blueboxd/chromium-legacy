@@ -13,6 +13,7 @@
 <translation id="1152920704813762236">Подробнее о ChromeOS</translation>
 <translation id="1154147086299354128">&amp;Открыть в Chrome</translation>
 <translation id="1203500561924088507">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите браузер.</translation>
+<translation id="1236866257838264361">Так вы сможете пользоваться всеми возможностями Chrome.</translation>
 <translation id="1278833599417554002">Перезапустить для обновления &amp;Chrome</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
 <translation id="1335640173511558774">Согласно действующим правилам (источник правил: <ph name="MANAGER" />) до начала работы с устройством необходимо ознакомиться с приведенными ниже Условиями использования и принять их. Они не дополняют, не заменяют и не ограничивают Условия использования Google Chrome OS Flex.</translation>
@@ -54,6 +55,7 @@
 <translation id="2018879682492276940">Ошибка установки. Повторите попытку.</translation>
 <translation id="2071318482926839249">Вход уже выполнен в другой аккаунт. Вы можете создать свой профиль, чтобы использовать браузер Chrome отдельно.</translation>
 <translation id="207902854391093810">Если пробные функции включены, сайты, которые вы посещаете, смогут проводить оценку эффективности рекламы, запрашивая информацию у Chrome. Оценка эффективности рекламы ограничивает межсайтовое отслеживание, сокращая объем информации, передаваемой между сайтами, до минимума.</translation>
+<translation id="2091012649849228750">На вашем компьютере используется Windows 8. Чтобы получать обновления Google Chrome, установите на устройство Windows 10 или более поздней версии.</translation>
 <translation id="2094648590148273905">Условия использования Chrome OS Flex</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
 <translation id="2106831557840787829">Chrome OS Flex, как и <ph name="BEGIN_LINK_LINUX_OSS" />среда разработки Linux<ph name="END_LINK_LINUX_OSS" />, работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -86,7 +88,7 @@
 <translation id="2586406160782125153">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2597976513418770460">Получите доступ к данным браузера Chrome, сохраненным в аккаунте <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="2622559029861875898">Не удалось проверить наличие обновлений в Chrome. Проверьте подключение к Интернету.</translation>
-<translation id="2645435784669275700">Chrome OS</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2652691236519827073">Открыть ссылку в новой вкладке браузера Chrome</translation>
 <translation id="2665296953892887393">Отправлять в Google такие данные, как отчеты о сбоях и <ph name="UMA_LINK" />, чтобы помочь улучшить Google Chrome</translation>
 <translation id="2689103672227170538">Расширение изменило стартовую страницу Chrome.</translation>
@@ -253,6 +255,7 @@
 <translation id="608006075545470555">Добавление рабочего профиля в браузер</translation>
 <translation id="6113794647360055231">Chrome становится все лучше</translation>
 <translation id="6145313976051292476">Открывать PDF-файлы в Chrome</translation>
+<translation id="6155960517327665396">В режиме экономии памяти Chrome работает ещё быстрее</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome (бета-версия)</translation>
 <translation id="6235018212288296708">Разрешить в Google Chrome передачу входящего трафика по протоколу mDNS</translation>
@@ -266,7 +269,7 @@
 <translation id="6418662306461808273">Переключиться на существующий профиль Chrome?</translation>
 <translation id="6506909944137591434">Для создания 3D-карты места, в котором вы находитесь, браузеру Chrome требуется доступ к камере.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
-<translation id="659498884637196217">В Диспетчере паролей Google на этом устройстве</translation>
+<translation id="659498884637196217">В Менеджере паролей Google на этом устройстве</translation>
 <translation id="6632473616050862500">Chrome OS Flex работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6679975945624592337">Разрешить Google Chrome работать в фоновом режиме</translation>
@@ -281,6 +284,7 @@
 <translation id="6881299373831449287">Обновление Chrome</translation>
 <translation id="6885412569789873916">Приложения Chrome (бета)</translation>
 <translation id="6933858244219479645">Chrome OS</translation>
+<translation id="6938166777909186039">На вашем компьютере используется Windows 8.1. Чтобы получать обновления Google Chrome, установите на устройство Windows 10 или более поздней версии.</translation>
 <translation id="6943584222992551122">Данные о работе этого пользователя в браузере будут удалены с устройства. Чтобы восстановить их, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Разрешить в Google Chrome (бета) передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6989339256997917931">Google Chrome был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
@@ -340,7 +344,7 @@
 <translation id="7930071585467473040">Google Chrome пытается скопировать пароли</translation>
 <translation id="7951272445806340501">Чтобы установить обновление, перезапустите Chrome OS Flex.</translation>
 <translation id="7962410387636238736">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
-<translation id="8005666035647241369">В Диспетчере паролей Google на этом устройстве</translation>
+<translation id="8005666035647241369">В Менеджере паролей Google на этом устройстве</translation>
 <translation id="8008534537613507642">Переустановить Chrome</translation>
 <translation id="8013993649590906847">Если у изображения нет понятного описания, Chrome попытается его найти. Для создания описаний изображения отправляются в Google.</translation>
 <translation id="80471789339884597">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите все открытые браузеры.</translation>
@@ -353,6 +357,7 @@
 <translation id="8286862437124483331">Чтобы просмотреть пароли, введите пароль своего аккаунта Windows.</translation>
 <translation id="828798499196665338">Родители отключили в Chrome параметр "Разрешения для сайтов, приложений и расширений". Включать это <ph name="EXTENSION_TYPE_PARAMETER" /> запрещено.</translation>
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>
+<translation id="8341646175450781745">В этом режиме Chrome освобождает память, выделенную для неактивных вкладок. Это нужно, чтобы активным вкладкам и другим приложениям было доступно больше ресурсов, а скорость работы Chrome не снижалась. Неактивные вкладки становятся активными, как только вы на них переходите. Вы можете <ph name="BEGIN_LINK" />узнать больше<ph name="END_LINK" /> или <ph name="BEGIN_LINK_2" />отправить отзыв<ph name="END_LINK_2" />.</translation>
 <translation id="8342675569599923794">Chrome заблокировал этот файл как опасный.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Как мы используем эти данные.<ph name="END_BOLD" /> Сайты могут хранить в Chrome информацию о ваших интересах. Например, вы перешли на сайт, чтобы купить беговые кроссовки. Он определит, что вам интересны марафоны. Когда вы перейдете на другой сайт, чтобы зарегистрироваться на забег, то увидите рекламу беговых кроссовок.</translation>
 <translation id="8370517070665726704">© Google LLC, <ph name="YEAR" />. Все права защищены.</translation>
@@ -383,6 +388,7 @@
 <translation id="8686817260976772516">Профили Chrome нужны для раздельного использования браузера, например разными людьми или в разных целях.</translation>
 <translation id="8712767363896337380">Почти готово! Чтобы завершить обновление, перезапустите Chrome.</translation>
 <translation id="873133009373065397">Google Chrome не удалось определить или задать браузер по умолчанию</translation>
+<translation id="8821043148920470810">На вашем компьютере используется Windows 7. Чтобы получать обновления Google Chrome, установите на устройство Windows 10 или более поздней версии.</translation>
 <translation id="8823341990149967727">Версия Chrome устарела</translation>
 <translation id="8825634023950448068">Для защиты вашей конфиденциальности интересы автоматически удаляются через 4 недели с момента создания. Если после этого вы продолжите использовать браузер, то удаленные интересы могут вновь появиться в списке. Если вы не хотите видеть на сайтах конкретную рекламу или выводы Chrome не соответствуют действительности, можно удалить связанный интерес.</translation>
 <translation id="8834965163890861871">Google Chrome пытается изменить пароли. Чтобы разрешить это действие, введите свой пароль Windows.</translation>

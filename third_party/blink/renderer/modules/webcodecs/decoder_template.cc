@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -323,7 +323,8 @@ bool DecoderTemplate<Traits>::ProcessConfigureRequest(Request* request) {
   } else if (Traits::kNeedsGpuFactories) {
     RetrieveGpuFactoriesWithKnownDecoderSupport(CrossThreadBindOnce(
         &DecoderTemplate<Traits>::ContinueConfigureWithGpuFactories,
-        WrapCrossThreadPersistent(this), WrapCrossThreadPersistent(request)));
+        MakeUnwrappingCrossThreadHandle(this),
+        MakeUnwrappingCrossThreadHandle(request)));
   } else {
     ContinueConfigureWithGpuFactories(request, nullptr);
   }
@@ -526,10 +527,15 @@ void DecoderTemplate<Traits>::Shutdown(DOMException* exception) {
   // Prevent any further logging from being reported.
   logger_->Neuter();
 
-  // Clear decoding and JS-visible queue state. Use DeleteSoon() to avoid
-  // deleting decoder_ when its callback (e.g. OnDecodeDone()) may be below us
-  // in the stack.
-  main_thread_task_runner_->DeleteSoon(FROM_HERE, std::move(decoder_));
+  // Clear decoding and JS-visible queue state. Use PostTask() to avoid deleting
+  // decoder_ when its callback (e.g. OnDecodeDone()) may be below us in the
+  // stack.
+  //
+  // NOTE: This task runner may be destroyed without running tasks, so don't use
+  // DeleteSoon() which can leak the codec. See https://crbug.com/1376851.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce([](std::unique_ptr<MediaDecoderType>) {},
+                                std::move(decoder_)));
 
   if (pending_request_) {
     // This request was added as part of calling ResetAlgorithm above. However,

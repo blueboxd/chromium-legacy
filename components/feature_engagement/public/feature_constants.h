@@ -45,6 +45,7 @@ BASE_DECLARE_FEATURE(kIPHLiveCaptionFeature);
 BASE_DECLARE_FEATURE(kIPHTabAudioMutingFeature);
 BASE_DECLARE_FEATURE(kIPHPasswordsAccountStorageFeature);
 BASE_DECLARE_FEATURE(kIPHPerformanceNewBadgeFeature);
+BASE_DECLARE_FEATURE(kIPHPriceTrackingPageActionIconLabelFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListDiscoveryFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListEntryPointFeature);
 BASE_DECLARE_FEATURE(kIPHIntentChipFeature);
@@ -59,6 +60,7 @@ BASE_DECLARE_FEATURE(kIPHDesktopSnoozeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopPwaInstallFeature);
 BASE_DECLARE_FEATURE(kIPHProfileSwitchFeature);
 BASE_DECLARE_FEATURE(kIPHWebUiHelpBubbleTestFeature);
+BASE_DECLARE_FEATURE(kIPHPriceTrackingInSidePanelFeature);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 
@@ -169,6 +171,8 @@ BASE_DECLARE_FEATURE(kIPHLongPressToolbarTipFeature);
 BASE_DECLARE_FEATURE(kIPHNewTabTipFeature);
 BASE_DECLARE_FEATURE(kIPHNewIncognitoTabTipFeature);
 BASE_DECLARE_FEATURE(kIPHBadgedReadingListFeature);
+BASE_DECLARE_FEATURE(kIPHBadgedWhatsNewFeature);
+BASE_DECLARE_FEATURE(kIPHWhatsNewFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListMessagesFeature);
 BASE_DECLARE_FEATURE(kIPHBadgedTranslateManualTriggerFeature);
 BASE_DECLARE_FEATURE(kIPHDiscoverFeedHeaderFeature);

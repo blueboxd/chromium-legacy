@@ -120,8 +120,12 @@ EBreakBetween CalculateBreakBetweenValue(NGLayoutInputNode child,
   if (space.IsPaginated() &&
       !IsForcedBreakValue(builder.ConstraintSpace(), break_before)) {
     AtomicString start_page_name = layout_result.StartPageName();
-    if (!start_page_name)
-      start_page_name = child.PageName();
+    if (!start_page_name &&
+        layout_result.Status() == NGLayoutResult::kSuccess) {
+      const auto& fragment =
+          To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment());
+      start_page_name = fragment.PageName();
+    }
     // If the page name propagated from the child differs from what we already
     // have, we need to break before the child.
     if (start_page_name != builder.PreviousPageName())
@@ -420,7 +424,11 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
   if (space.IsPaginated() && !builder->PageName()) {
     // Descendants take precedence, but if none of them propagated a page name,
     // use the one specified on this element, if any.
-    builder->SetPageName(node.PageName());
+    AtomicString page_name = node.PageName();
+    // Otherwise, use the one specified in the ancestry, if any.
+    if (!page_name)
+      page_name = space.PageName();
+    builder->SetPageName(page_name);
   }
 
   if (builder->FoundColumnSpanner())
@@ -571,6 +579,11 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
       // in order to write offsets correctly back to legacy layout.
       builder->SetConsumedBlockSize(previously_consumed_block_size +
                                     std::max(final_block_size, space_left));
+    } else {
+      // If we're not at the end, it means that block-end border and shadow
+      // should be omitted.
+      sides.block_end = false;
+      builder->SetSidesToInclude(sides);
     }
 
     return NGBreakStatus::kContinue;
@@ -743,10 +756,6 @@ void BreakBeforeChild(const NGConstraintSpace& space,
     PropagateSpaceShortage(space, layout_result, fragmentainer_block_offset,
                            builder, block_size_override);
   }
-
-  // If the fragmentainer block-size is unknown, we have no reason to insert
-  // soft breaks.
-  DCHECK(is_forced_break || space.HasKnownFragmentainerBlockSize());
 
   if (layout_result && space.ShouldPropagateChildBreakValues() &&
       !is_forced_break)

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -229,9 +230,14 @@ void EncoderBase<Traits>::ResetInternal() {
   // Schedule deletion of |media_encoder_| for later.
   // ResetInternal() might be called by an error reporting callback called by
   // |media_encoder_|. If we delete it now, this thread might come back up
-  // the call stack and continu executing code belonging to deleted
+  // the call stack and continue executing code belonging to deleted
   // |media_encoder_|.
-  callback_runner_->DeleteSoon(FROM_HERE, std::move(media_encoder_));
+  //
+  // NOTE: This task runner may be destroyed without running tasks, so don't
+  // use DeleteSoon() which can leak the codec. See https://crbug.com/1376851.
+  callback_runner_->PostTask(
+      FROM_HERE, base::BindOnce([](std::unique_ptr<MediaEncoderType>) {},
+                                std::move(media_encoder_)));
 
   // This codec isn't holding on to any resources, and doesn't need to be
   // reclaimed.
@@ -345,9 +351,9 @@ void EncoderBase<Traits>::ProcessFlush(Request* request) {
   request->StartTracing();
 
   blocking_request_in_progress_ = true;
-  media_encoder_->Flush(ConvertToBaseOnceCallback(
-      CrossThreadBindOnce(done_callback, WrapCrossThreadWeakPersistent(this),
-                          WrapCrossThreadPersistent(request))));
+  media_encoder_->Flush(ConvertToBaseOnceCallback(CrossThreadBindOnce(
+      done_callback, MakeUnwrappingCrossThreadWeakHandle(this),
+      MakeUnwrappingCrossThreadHandle(request))));
 }
 
 template <typename Traits>

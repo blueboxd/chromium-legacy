@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -160,10 +162,16 @@ public final class ReturnToChromeUtil {
      * @return true if past threshold, false if not past threshold or experiment cannot be loaded.
      */
     public static boolean shouldShowTabSwitcher(final long lastBackgroundedTimeMillis) {
-        long tabSwitcherAfterMillis =
-                CachedFeatureFlags.isEnabled(ChromeFeatureList.START_SURFACE_RETURN_TIME)
-                ? getReturnTimeFromSegmentation()
-                : TAB_SWITCHER_ON_RETURN_MS.getValue();
+        long tabSwitcherAfterMillis = TAB_SWITCHER_ON_RETURN_MS.getValue();
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.START_SURFACE_RETURN_TIME)
+                && TAB_SWITCHER_ON_RETURN_MS.getValue() != 0) {
+            if (!StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL.getValue()) {
+                tabSwitcherAfterMillis =
+                        START_SURFACE_RETURN_TIME_SECONDS.getValue() * DateUtils.SECOND_IN_MILLIS;
+            } else {
+                tabSwitcherAfterMillis = getReturnTimeFromSegmentation();
+            }
+        }
 
         if (lastBackgroundedTimeMillis == -1) {
             // No last background timestamp set, use control behavior unless "immediate" was set.
@@ -177,7 +185,7 @@ public final class ReturnToChromeUtil {
             return false;
         }
 
-        return System.currentTimeMillis() - lastBackgroundedTimeMillis > tabSwitcherAfterMillis;
+        return System.currentTimeMillis() - lastBackgroundedTimeMillis >= tabSwitcherAfterMillis;
     }
 
     /**
@@ -192,7 +200,7 @@ public final class ReturnToChromeUtil {
         // Sets the default value as 8 hours; 0 means showing immediately.
         return SharedPreferencesManager.getInstance().readLong(
                 ChromePreferenceKeys.START_RETURN_TIME_SEGMENTATION_RESULT_MS,
-                TAB_SWITCHER_ON_RETURN_MS.getDefaultValue());
+                START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue());
     }
 
     /**
@@ -494,20 +502,21 @@ public final class ReturnToChromeUtil {
             return true;
         }
 
-        boolean isStartSurfaceEnabled = ReturnToChromeUtil.isStartSurfaceEnabled(context);
+        // If Start surface isn't enabled, return false.
+        if (!ReturnToChromeUtil.isStartSurfaceEnabled(context)) return false;
 
-        // If Start surface is enabled and there's no tab existing, handle the initial tab creation.
+        // All of the following checks are based on Start surface is enabled.
+        // If there's no tab existing, handle the initial tab creation.
         // Note: if user has a customized homepage, we don't show Start even there isn't any tab.
         // However, if NTP is used as homepage, we show Start when there isn't any tab. See
         // https://crbug.com/1368224.
-        if (isStartSurfaceEnabled && IntentUtils.isMainIntentFromLauncher(intent)
+        if (IntentUtils.isMainIntentFromLauncher(intent)
                 && ReturnToChromeUtil.getTotalTabCount(tabModelSelector) <= 0
                 && useChromeHomepage()) {
             return true;
         }
 
-        // Checks whether to show the Start surface / grid Tab switcher due to feature flag
-        // TAB_SWITCHER_ON_RETURN_MS.
+        // Checks whether to show the Start surface due to feature flag TAB_SWITCHER_ON_RETURN_MS.
         long lastBackgroundedTimeMillis = inactivityTracker.getLastBackgroundedTimeMs();
         boolean tabSwitcherOnReturn = IntentUtils.isMainIntentFromLauncher(intent)
                 && ReturnToChromeUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
@@ -515,14 +524,10 @@ public final class ReturnToChromeUtil {
         // If the overview page won't be shown on startup, stops here.
         if (!tabSwitcherOnReturn) return false;
 
-        if (isStartSurfaceEnabled
-                && !TextUtils.isEmpty(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue())) {
+        if (!TextUtils.isEmpty(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue())) {
             return ReturnToChromeUtil.userBehaviourSupported();
         }
 
-        // If Start surface is disable and should show the Grid tab switcher at startup, or flag
-        // CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP and behavioural targeting flag aren't enabled,
-        // return true here.
         return true;
     }
 

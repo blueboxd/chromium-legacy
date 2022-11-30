@@ -14,7 +14,7 @@ try_.defaults.set(
     builder_group = "tryserver.chromium.chromiumos",
     cores = 8,
     orchestrator_cores = 2,
-    compilator_cores = 32,
+    compilator_cores = 16,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
@@ -46,9 +46,9 @@ try_.builder(
     ],
     main_list_view = "try",
     tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/content/gpu/.+",
-            ".+/[+]/media/.+",
+        location_filters = [
+            "content/gpu/.+",
+            "media/.+",
         ],
     ),
 )
@@ -242,10 +242,10 @@ try_.builder(
     ],
     main_list_view = "try",
     tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/build/chromeos/.+",
-            ".+/[+]/build/config/chromeos/.*",
-            ".+/[+]/chromeos/CHROMEOS_LKGM",
+        location_filters = [
+            "build/chromeos/.+",
+            "build/config/chromeos/.*",
+            "chromeos/CHROMEOS_LKGM",
         ],
     ),
 )
@@ -288,6 +288,7 @@ try_.compilator_builder(
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
     goma_jobs = goma.jobs.J300,
+    cores = 32,
 )
 
 try_.builder(
@@ -322,9 +323,6 @@ try_.compilator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     goma_jobs = goma.jobs.J300,
-    # TODO (crbug.com/1287228): Set correct values once bots are set up
-    ssd = None,
-    cores = None,
 )
 
 try_.builder(
@@ -347,14 +345,14 @@ try_.builder(
         "ci/linux-cfm-rel",
     ],
     tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/chromeos/ash/components/chromebox_for_meetings/.+",
-            ".+/[+]/chromeos/ash/components/dbus/chromebox_for_meetings/.+",
-            ".+/[+]/chromeos/ash/services/chromebox_for_meetings/.+",
-            ".+/[+]/chrome/browser/ash/chromebox_for_meetings/.+",
-            ".+/[+]/chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
-            ".+/[+]/chrome/browser/ui/webui/ash/chromebox_for_meetings/.+",
-            ".+/[+]/chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
+        location_filters = [
+            "chromeos/ash/components/chromebox_for_meetings/.+",
+            "chromeos/ash/components/dbus/chromebox_for_meetings/.+",
+            "chromeos/ash/services/chromebox_for_meetings/.+",
+            "chrome/browser/ash/chromebox_for_meetings/.+",
+            "chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
+            "chrome/browser/ui/webui/ash/chromebox_for_meetings/.+",
+            "chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",
         ],
     ),
 )

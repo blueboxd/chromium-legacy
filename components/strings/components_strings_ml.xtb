@@ -320,6 +320,7 @@
 <translation id="1717218214683051432">ചലന സെൻസറുകൾ</translation>
 <translation id="1717494416764505390">മെയിൽബോക്സ് 3</translation>
 <translation id="1718029547804390981">അനോട്ടേറ്റ് ചെയ്യാനാവുന്നതിലും വളരെ വലുതാണ് ഈ ഡോക്യുമെൻ്റ്</translation>
+<translation id="1719434663396780149">വിലക്കുറവുമായി ബന്ധപ്പെട്ട അലേർട്ടുകൾ ഓണാണ്. <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /> എന്നതിൽ നിങ്ങൾക്കിത് മാറ്റാം.</translation>
 <translation id="1720941539803966190">ട്യൂട്ടോറിയൽ അടയ്‌ക്കുക</translation>
 <translation id="1721424275792716183">* ഫീൽഡ് ആവശ്യമാണ്</translation>
 <translation id="1725591448053514783">Envelope You 6</translation>
@@ -358,6 +359,7 @@
 <translation id="1803351196216024260">നിങ്ങളുടെ മൈക്രോഫോൺ ഉപയോഗിക്കാൻ ആവശ്യപ്പെടാം</translation>
 <translation id="1807246157184219062">ലൈറ്റ്</translation>
 <translation id="1807528111851433570">ആദ്യ ഷീറ്റ്</translation>
+<translation id="181000283860817563">ഒന്നിലധികം സൈറ്റുകളിലെ നിരക്കുകൾ ട്രാക്ക് ചെയ്യുക</translation>
 <translation id="1812527064848182527">ലാൻഡ്‌സ്‌കേപ്പ്</translation>
 <translation id="1813414402673211292">ബ്രൌസിംഗ് ഡാറ്റാ മായ്ക്കുക...</translation>
 <translation id="182139138257690338">സ്വയമേവയുള്ള ഡൗൺലോഡുകൾ</translation>
@@ -574,7 +576,6 @@
 <translation id="2430968933669123598">Google അക്കൗണ്ട് മാനേജ് ചെയ്യുക, നിങ്ങളുടെ Google അക്കൗണ്ടിലെ വിവരങ്ങളും സ്വകാര്യതയും സുരക്ഷയും മാനേജ് ചെയ്യാൻ Enter അമർത്തുക</translation>
 <translation id="2436186046335138073">എല്ലാ <ph name="PROTOCOL" /> ലിങ്കുകളും തുറക്കാൻ <ph name="HANDLER_HOSTNAME" /> എന്നതിനെ അനുവദിക്കണോ?</translation>
 <translation id="2438874542388153331">വലതുവശത്ത് നാല് തവണ പഞ്ച് ചെയ്യുക</translation>
-<translation id="2443309680964448806">എന്തോ കുഴപ്പമുണ്ടായി. നിങ്ങൾ വരുത്തിയ മാറ്റം സംരക്ഷിച്ചില്ല.</translation>
 <translation id="2448295565072560657">നിങ്ങൾ ലോഗിൻ ചെയ്‌തിരിക്കുമ്പോൾ ഈ ഉപകരണത്തിൽ അറ്റാച്ച് ചെയ്തിരിക്കുന്ന പെരിഫറലുകൾ</translation>
 <translation id="2450021089947420533">ജേർണികൾ</translation>
 <translation id="2463739503403862330">പൂരിപ്പിക്കുക</translation>
@@ -695,6 +696,7 @@
 <translation id="2728127805433021124">ഒരു ദുർബ്ബല സിഗ്‌നേച്ചർ ആൽഗരിതം ഉപയോഗിച്ച് സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് സൈൻ ചെയ്‌തു.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />കണക്‌റ്റിവിറ്റി ഡയഗണോസ്‌റ്റിക്‌സ് റൺ ചെയ്യുന്നു<ph name="END_LINK" /></translation>
 <translation id="2730600605555029057">ശാസ്‌ത്രീയ സംഗീതം</translation>
+<translation id="2734319753272419592">വ്യക്തിപരമാക്കിയ കിഴിവുകൾ തിരയുന്നതിന് നിങ്ങളുടെ കാർട്ടുകൾ ഉപയോഗിക്കാൻ Google-നെ അനുവദിക്കുക. കിഴിവുകൾ ലഭ്യമാകുമ്പോൾ, നിങ്ങളുടെ കാർട്ടുകളിൽ അവ സ്വയമേവ ദൃശ്യമാകും.</translation>
 <translation id="2738330467931008676">പിക്കപ്പ് വിലാസം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="2740531572673183784">ശരി</translation>
 <translation id="2742511345840685325">ടേബിൾ ടെന്നീസ്</translation>
@@ -978,11 +980,13 @@
 <translation id="3550112004925580947">ഹോസ്പിറ്റാലിറ്റി വ്യവസായം</translation>
 <translation id="3552297013052089404">Sans Serif ഫോണ്ട്</translation>
 <translation id="3558573058928565255">പകൽ</translation>
+<translation id="3560824484345057728">അനുബന്ധ സൈറ്റുകൾ കാണുക</translation>
 <translation id="3566021033012934673">നിങ്ങളുടെ കണക്ഷൻ സ്വകാര്യമല്ല</translation>
 <translation id="3567778190852720481">എന്റർപ്രൈസ് അക്കൗണ്ട് ഉപയോഗിച്ച് എൻറോൾ ചെയ്യാനാകുന്നില്ല (എന്റർപ്രൈസ് അക്കൗണ്ട് യോഗ്യമല്ല).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3575121482199441727">ഈ സൈറ്റിന് അനുവദിക്കുക</translation>
 <translation id="3576616784287504635"><ph name="SITE" /> സൈറ്റിലെ ഉൾച്ചേർത്ത പേജ് പറയുന്നത്:</translation>
+<translation id="3577473026931028326">എന്തോ കുഴപ്പമുണ്ടായി. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3577902790357386792">ജിംനാസ്റ്റിക്‌സ്</translation>
 <translation id="3581089476000296252">ഈ പേജ് തയ്യാറാകുമ്പോൾ, Chrome നിങ്ങളെ അറിയിക്കും. &lt;a&gt;റദ്ദാക്കുക&lt;/a&gt;</translation>
 <translation id="3582930987043644930">പേര് ചേർക്കുക</translation>
@@ -1154,6 +1158,7 @@
 <translation id="4040350669425716613">കോളേജുകളും സർവ്വകലാശാലകളും</translation>
 <translation id="405399507749852140">ഏതെങ്കിലും സൈറ്റിൽ വിലക്കുറവ് ഉണ്ടെങ്കിൽ അറിയിപ്പുകൾ നേടുക</translation>
 <translation id="4056223980640387499">സിപിയ</translation>
+<translation id="4063063121357725926">കാർട്ടുകൾക്കുള്ള കിഴിവുകൾ കണ്ടെത്താനായി നിങ്ങളെ സഹായിക്കാൻ Google-നെ അനുവദിക്കുക</translation>
 <translation id="4063924980214801036">കൂടുതൽ വേഗത്തിൽ കാർഡുകൾ സ്ഥിരീകരിക്കാൻ ഉപകരണ അൺലോക്ക് ഉപയോഗിക്കുക</translation>
 <translation id="4067098466788473230">പഠന ഗ്രാന്റുകളും സ്‌കോളർഷിപ്പുകളും</translation>
 <translation id="4067947977115446013">ശരിയായ വിലാസം ചേർക്കുക</translation>
@@ -1361,6 +1366,7 @@
 <translation id="4542971377163063093">ട്രേ 6</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4558551763791394412">നിങ്ങളുടെ വിപുലീകരണങ്ങൾ പ്രവർത്തനരഹിതമാക്കുന്നത് പരീക്ഷിക്കുക.</translation>
+<translation id="4559134504959026834"><ph name="SET_OWNER" /> നിർവചിച്ചിരിക്കുന്ന ഗ്രൂപ്പിലാണ് ഈ സൈറ്റുള്ളത്, അതിന് നിങ്ങളുടെ ആക്റ്റിവിറ്റി കാണാം</translation>
 <translation id="4559332380232738994">10x11</translation>
 <translation id="4566017918361049074">ഔട്ട്ഡോർ</translation>
 <translation id="4567686777917670400">നിങ്ങളുടെ അഡ്‌മിന് വിദൂരമായി ബ്രൗസർ സജ്ജീകരണം മാറ്റാനാകും. ഈ ഉപകരണത്തിലെ ആക്‌റ്റിവിറ്റി Chromium-ന് പുറത്തും മാനേജ് ചെയ്തേക്കാം. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
@@ -2358,7 +2364,6 @@
 <translation id="7234638337680728591">പെട്രോൾ വിലയും വാഹന ഇന്ധനവും</translation>
 <translation id="7237492777898608035">ഈ സൈറ്റിൽ വീണ്ടും ഈ സന്ദേശം കാണിക്കരുത്</translation>
 <translation id="7238585580608191973">SHA-256 ഫിംഗര്‍പ്രിന്‍റ്</translation>
-<translation id="7239514174717251677">വിലക്കുറവുമായി ബന്ധപ്പെട്ട അറിയിപ്പുകൾ ഓണാണ്. <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /> എന്നതിൽ നിങ്ങൾക്കിത് മാറ്റാം</translation>
 <translation id="7240120331469437312">സര്‍‌ട്ടിഫിക്കറ്റ് വിഷയേതര നാമം</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="7244465398154211886">{NUM_MATCHES,plural, =1{# പൊരുത്തം}other{# പൊരുത്തങ്ങൾ}}</translation>
@@ -2657,7 +2662,6 @@
 <translation id="7977538094055660992">ഔട്ട്പുട്ട് ഉപകരണം</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="7981129096182302364">ഡാൻസും ഇലക്‌ട്രോണിക് സംഗീതവും</translation>
-<translation id="7981260203882740562">ഇതുമായി ലിങ്ക് ചെയ്‌തു</translation>
 <translation id="798134797138789862">വെർച്വൽ റിയാലിറ്റി ഉപകരണങ്ങളും ഡാറ്റയും ഉപയോഗിക്കാൻ ആവശ്യപ്പെടാം</translation>
 <translation id="7983008347525536475">എസ്‌യുവികൾ</translation>
 <translation id="7984945080620862648">Chrome-ന് പ്രോസസ്സുചെയ്യാനാകാത്ത രൂപമാറ്റം വരുത്തിയ ക്രെഡൻഷ്യലുകൾ വെബ്സൈറ്റ് അയയ്ക്കുന്നതിനാൽ നിങ്ങൾക്കിപ്പോൾ <ph name="SITE" /> സന്ദർശിക്കാനാകില്ല.നെറ്റ്‌വർക്ക് പിശകുകളും ആക്രമണങ്ങളും സാധാരണയായി താൽക്കാലികമായതിനാൽ ഈ പേജ് മിക്കവാറും പിന്നീട് പ്രവർത്തിക്കും.</translation>
@@ -2667,6 +2671,7 @@
 <translation id="7995512525968007366">വ്യക്തമാക്കിയിട്ടില്ല</translation>
 <translation id="7998269595945679889">'അദൃശ്യ ടാബ് തുറക്കുക' ബട്ടൺ, സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ പുതിയ അദൃശ്യ ടാബ് തുറക്കാൻ 'Enter' അമർത്തുക</translation>
 <translation id="800218591365569300">ഇടം സൃഷ്‌ടിക്കാൻ മറ്റ് ടാബുകളോ പ്രോഗ്രാമുകളോ അടയ്‌ക്കുന്നത് പരീക്ഷിക്കൂ.</translation>
+<translation id="8002230960325005199">അനുബന്ധ സൈറ്റുകൾ പുതിയൊരു ടാബിൽ കാണുക</translation>
 <translation id="8003046808285812021">“<ph name="SEARCH_TERMS" />”</translation>
 <translation id="8004582292198964060">ബ്രൗസര്‍</translation>
 <translation id="8009225694047762179">പാസ്‌വേഡുകൾ മാനേജ് ചെയ്യുക</translation>
@@ -2770,6 +2775,7 @@
 <translation id="8270242299912238708">PDF ഡോക്യുമെന്‍റുകൾ</translation>
 <translation id="8275952078857499577">ഈ സൈറ്റ് വിവർത്തനം ചെയ്യേണ്ട</translation>
 <translation id="8277900682056760511">പേയ്മെന്റ് കൈകാര്യം ചെയ്യുന്ന ഷീറ്റ് തുറന്നിരിക്കുന്നു</translation>
+<translation id="8279611986089885641">Chrome അറിയിപ്പുകൾ ഓണാക്കണം. <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /> എന്നതിൽ നിങ്ങൾക്ക് അവ ഓണാക്കാം.</translation>
 <translation id="8280630997017109758">ട്രേ 11</translation>
 <translation id="8281084378435768645">വലിയ-ഫോട്ടോ</translation>
 <translation id="8281886186245836920">ഉപേക്ഷിക്കുക</translation>
@@ -3100,7 +3106,6 @@
 <translation id="9187461866967718678">എക്‌സ്‌ട്രീം സ്‌പോർട്‌സ്</translation>
 <translation id="9191834167571392248">താഴെ ഇടതുവശത്ത് പഞ്ച് ചെയ്യുക</translation>
 <translation id="9199905725844810519">പ്രിന്റ് ചെയ്യൽ ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു</translation>
-<translation id="9202180858541326427">Chrome അറിയിപ്പുകൾ ഓണായിരിക്കണം. <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" /> എന്നതിൽ നിങ്ങൾക്ക് അവ ഓണാക്കാം</translation>
 <translation id="9205078245616868884">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റ് ചെയ്‌തു. സമന്വയം ആരംഭിക്കുന്നതിന് ഇത് നൽകുക.</translation>
 <translation id="920511547311754821">നിങ്ങളുടെ കോഡ് കണ്ടെത്താനാകുന്നില്ലേ? <ph name="IDS_AUTOFILL_CARD_UNMASK_OTP_INPUT_DIALOG_NEW_CODE_MESSAGE" /></translation>
 <translation id="9207861905230894330">ലേഖനം ചേർക്കാനായില്ല.</translation>

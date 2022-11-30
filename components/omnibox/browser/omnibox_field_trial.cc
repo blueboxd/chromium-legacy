@@ -751,13 +751,14 @@ const base::FeatureParam<bool>
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForAsyncUpdates",
         true);
+const base::FeatureParam<bool>
+    kAutocompleteStabilityPreventDefaultPreviousMatches(
+        &omnibox::kPreserveDefault,
+        "AutocompleteStabilityPreventDefaultPreviousMatches",
+        false);
 const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
     &omnibox::kAutocompleteStability,
     "AutocompleteStabilityDontCopyDoneProviders",
-    false);
-const base::FeatureParam<bool> kPreventDefaultPreviousMatches(
-    &omnibox::kAutocompleteStability,
-    "AutocompleteStabilityPreventDefaultPreviousMatches",
     false);
 const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
     &omnibox::kAutocompleteStability,
@@ -780,7 +781,7 @@ const base::FeatureParam<int> kAutocompleteStabilityUpdateResultDebounceDelay(
 const base::FeatureParam<int> kZeroSuggestCacheMaxSize(
     &omnibox::kZeroSuggestInMemoryCaching,
     "ZeroSuggestCacheMaxSize",
-    10);
+    5);
 
 // The relevance score for remote zero-suggest ranges from 550-1400. A default
 // value of 500 places local history zero-suggest below the remote zero-suggest.

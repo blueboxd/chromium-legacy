@@ -724,7 +724,11 @@ void Widget::CloseNow() {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetClosing(this);
   internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetClosing(this);
-  native_widget_->CloseNow();
+
+  DCHECK(native_widget_) << "Native widget is never initialized.";
+
+  if (!native_widget_destroyed_)
+    native_widget_->CloseNow();
 }
 
 bool Widget::IsClosed() const {
@@ -757,10 +761,7 @@ void Widget::Show() {
     native_widget_->Show(preferred_show_state, gfx::Rect());
   }
 
-  if (base::FeatureList::IsEnabled(features::kWidgetLayering))
-    sublevel_manager_->EnsureOwnerSublevel();
-
-  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetShown(this);
+  HandleShowRequested();
 }
 
 void Widget::Hide() {
@@ -779,7 +780,8 @@ void Widget::ShowInactive() {
     saved_show_state_ = ui::SHOW_STATE_NORMAL;
   }
   native_widget_->Show(ui::SHOW_STATE_INACTIVE, gfx::Rect());
-  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetShown(this);
+
+  HandleShowRequested();
 }
 
 void Widget::Activate() {
@@ -1663,6 +1665,7 @@ void Widget::OnMouseCaptureLost() {
 }
 
 void Widget::OnScrollEvent(ui::ScrollEvent* event) {
+  // b/257997427 NOLINTNEXTLINE
   ui::ScrollEvent event_copy(*event);
   SendEventToSink(&event_copy);
 
@@ -2024,6 +2027,13 @@ void Widget::ClearFocusFromWidget() {
   // the root_view_ being removed.
   if (focus_manager)
     focus_manager->ViewRemoved(root_view_.get());
+}
+
+void Widget::HandleShowRequested() {
+  if (base::FeatureList::IsEnabled(features::kWidgetLayering))
+    sublevel_manager_->EnsureOwnerSublevel();
+
+  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetShown(this);
 }
 
 BEGIN_METADATA_BASE(Widget)

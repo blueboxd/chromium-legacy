@@ -308,6 +308,13 @@ void LocalDeskDataManager::DeleteEntry(const base::GUID& uuid,
   std::vector<std::unique_ptr<ash::DeskTemplate>> entry;
   auto& saved_desks = saved_desks_list_[desk_type];
   auto existing_it = saved_desks.find(uuid);
+
+  // The deletion is successful if the entry does not exist.
+  if (existing_it == saved_desks.end()) {
+    std::move(callback).Run(DeleteEntryStatus::kOk);
+    return;
+  }
+
   entry.push_back(std::move(existing_it->second));
   saved_desks_list_[desk_type].erase(existing_it);
 
@@ -455,6 +462,10 @@ LocalDeskDataManager::LoadCacheOnBackgroundSequence(
     std::unique_ptr<ash::DeskTemplate> entry =
         ReadFileToTemplate(fully_qualified_path);
 
+    // TODO(b/248645596): Record metrics about files that failed to parse.
+    if (entry == nullptr)
+      continue;
+
     // Rename file for saved desk if uuid in file and file name are different.
     std::string entry_uuid_string = entry->uuid().AsLowercaseString();
     entry_uuid_string.append(kFileExtension);
@@ -467,10 +478,7 @@ LocalDeskDataManager::LoadCacheOnBackgroundSequence(
       }
     }
 
-    // TODO(crbug/1359398): Record metrics about files that failed to parse.
-    if (entry) {
-      entries.push_back(std::move(entry));
-    }
+    entries.push_back(std::move(entry));
   }
   return {CacheStatus::kOk, std::move(entries)};
 }

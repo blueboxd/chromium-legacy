@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -58,6 +59,7 @@ import java.util.Objects;
  */
 public class LocationBarModel implements ToolbarDataProvider, LocationBarDataProvider {
     private static final int LRU_CACHE_SIZE = 10;
+
     static class SpannableDisplayTextCacheKey {
         @NonNull
         private final String mUrl;
@@ -167,10 +169,15 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     private boolean mIsUsingBrandColor;
     private boolean mShouldShowOmniboxInOverviewMode;
     private boolean mIsShowingTabSwitcher;
+    @StartSurfaceState
+    private int mStartSurfaceState;
 
     private long mNativeLocationBarModelAndroid;
     private ObserverList<LocationBarDataProvider.Observer> mLocationBarDataObservers =
             new ObserverList<>();
+    protected GURL mVisibleGurl = GURL.emptyGURL();
+    protected String mFormattedFullUrl;
+    protected String mUrlForDisplay;
 
     /**
      * Default constructor for this class.
@@ -202,13 +209,14 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         mOptimizationsEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SCROLL_OPTIMIZATIONS);
         mLastUsedNonOTRProfile = Profile.getLastUsedRegularProfile();
+        mNativeLocationBarModelAndroid = LocationBarModelJni.get().init(LocationBarModel.this);
+
         if (mOptimizationsEnabled) {
             mSpannableDisplayTextCache = new LruCache<>(LRU_CACHE_SIZE);
             mChromeAutocompleteSchemeClassifier =
                     new ChromeAutocompleteSchemeClassifier(getProfile());
+            recalculateFormattedUrls();
         }
-
-        mNativeLocationBarModelAndroid = LocationBarModelJni.get().init(LocationBarModel.this);
     }
 
     /**
@@ -286,6 +294,10 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
     @Override
     public GURL getCurrentGurl() {
+        if (mOptimizationsEnabled) {
+            return mVisibleGurl;
+        }
+
         if (isInOverviewAndShowingOmnibox()) {
             return UrlConstants.ntpGurl();
         }
@@ -294,7 +306,26 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         return tab != null && tab.isInitialized() ? tab.getUrl() : GURL.emptyGURL();
     }
 
+    @VisibleForTesting
+    void updateVisibleGurl() {
+        if (!mOptimizationsEnabled) return;
+        try (TraceEvent te = TraceEvent.scoped("LocationBarModel.updateVisibleGurl")) {
+            if (isInOverviewAndShowingOmnibox()) {
+                mFormattedFullUrl = "";
+                mUrlForDisplay = "";
+                mVisibleGurl = UrlConstants.ntpGurl();
+            }
+
+            GURL gurl = getUrlOfVisibleNavigationEntry();
+            if (!gurl.equals(mVisibleGurl)) {
+                mVisibleGurl = gurl;
+                recalculateFormattedUrls();
+            }
+        }
+    }
+
     public void notifyUrlChanged() {
+        updateVisibleGurl();
         for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
             observer.onUrlChanged();
         }
@@ -415,7 +446,9 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
                     }
                 }
             } finally {
-                if (!mOptimizationsEnabled) autocompleteSchemeClassifier.destroy();
+                if (!mOptimizationsEnabled) {
+                    autocompleteSchemeClassifier.destroy();
+                }
             }
         }
         return UrlBarData.forUrlAndText(url, spannableDisplayText, editingText);
@@ -471,14 +504,20 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     }
 
     /**
-     * @return Whether the location bar is showing in overview mode. If the location bar should not
-     *  currently be showing in overview mode, returns false.
+     * Returns whether the location bar is showing and the app is in overview mode. "Overview mode"
+     * here is a catchall for "UI steady state without a selected tab." In practice, there are only
+     * two possible scenarios for overview mode: the start surface and the tab switcher, the latter
+     * of which does not show the omnibox. This effectively means that this method only returns true
+     * when the start surface homepage is showing.
      */
     @Override
     public boolean isInOverviewAndShowingOmnibox() {
         if (!mShouldShowOmniboxInOverviewMode) return false;
 
-        return mLayoutStateProvider != null && mIsShowingTabSwitcher;
+        return mLayoutStateProvider != null && mIsShowingTabSwitcher
+                && (mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE
+                        || mStartSurfaceState == StartSurfaceState.SHOWING_HOMEPAGE
+                        || mStartSurfaceState == StartSurfaceState.SHOWING_START);
     }
 
     /**
@@ -706,22 +745,55 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     }
 
     public void notifySecurityStateChanged() {
+        @ConnectionSecurityLevel
+        int securityLevel = getSecurityLevel();
+        if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
+            recalculateFormattedUrls();
+        }
+
         for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
             observer.onSecurityStateChanged();
         }
     }
 
+    private void recalculateFormattedUrls() {
+        mFormattedFullUrl = calculateFormattedFullUrl();
+        mUrlForDisplay = calculateUrlForDisplay();
+    }
+
+    private String getFormattedFullUrl() {
+        if (mOptimizationsEnabled) {
+            return mFormattedFullUrl;
+        }
+
+        return calculateFormattedFullUrl();
+    }
+
+    private String getUrlForDisplay() {
+        if (mOptimizationsEnabled) {
+            return mUrlForDisplay;
+        }
+
+        return calculateUrlForDisplay();
+    }
+
     /** @return The formatted URL suitable for editing. */
-    public String getFormattedFullUrl() {
+    protected String calculateFormattedFullUrl() {
         if (mNativeLocationBarModelAndroid == 0) return "";
         return LocationBarModelJni.get().getFormattedFullURL(
                 mNativeLocationBarModelAndroid, LocationBarModel.this);
     }
 
     /** @return The formatted URL suitable for display only. */
-    public String getUrlForDisplay() {
+    protected String calculateUrlForDisplay() {
         if (mNativeLocationBarModelAndroid == 0) return "";
         return LocationBarModelJni.get().getURLForDisplay(
+                mNativeLocationBarModelAndroid, LocationBarModel.this);
+    }
+
+    protected GURL getUrlOfVisibleNavigationEntry() {
+        if (mNativeLocationBarModelAndroid == 0) return GURL.emptyGURL();
+        return LocationBarModelJni.get().getUrlOfVisibleNavigationEntry(
                 mNativeLocationBarModelAndroid, LocationBarModel.this);
     }
 
@@ -737,12 +809,22 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         notifySecurityStateChanged();
     }
 
+    /**
+     * Sets the current start surface state, which can be used to distinguish between e.g. the
+     * start-based tab switcher and the start surface homepage.
+     */
+    public void setStartSurfaceState(@StartSurfaceState int startSurfaceState) {
+        mStartSurfaceState = startSurfaceState;
+    }
+
     @NativeMethods
     interface Natives {
         long init(LocationBarModel caller);
         void destroy(long nativeLocationBarModelAndroid, LocationBarModel caller);
         String getFormattedFullURL(long nativeLocationBarModelAndroid, LocationBarModel caller);
         String getURLForDisplay(long nativeLocationBarModelAndroid, LocationBarModel caller);
+        GURL getUrlOfVisibleNavigationEntry(
+                long nativeLocationBarModelAndroid, LocationBarModel caller);
         int getPageClassification(long nativeLocationBarModelAndroid, LocationBarModel caller,
                 boolean isFocusedFromFakebox, boolean isPrefetch);
     }

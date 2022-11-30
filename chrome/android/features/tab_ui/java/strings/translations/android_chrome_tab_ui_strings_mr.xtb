@@ -5,7 +5,6 @@
 <translation id="1181037720776840403">काढून टाका</translation>
 <translation id="125153950246128346">दुसरा टॅब पाहण्यासाठी टॅप करा</translation>
 <translation id="1302104331113804646">किंमत ट्रॅक करण्याची सेटिंग्ज</translation>
-<translation id="1310482092992808703">टॅबची गटामध्ये विभागणी करा</translation>
 <translation id="1378979118429748177">किमतीमध्ये घट झाल्यावर सूचना मिळवा</translation>
 <translation id="1403228085774130835">Chrome च्या मुख्य मेनू अंतर्गत अलीकडील टॅबमध्ये तुम्ही तुमचे बंद केलेले टॅब पाहू शकता</translation>
 <translation id="1455506303394048917">या गुप्त टॅबमधील तुमची अ‍ॅक्टिव्हिटी या डिव्हाइसवरून साफ केली जाईल</translation>
@@ -14,6 +13,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> टॅब}other{<ph name="TABS_COUNT_MANY" /> टॅब}}</translation>
 <translation id="2118649612461486615">स्टोअरची माहिती</translation>
 <translation id="2162620598375156287">आता <ph name="SOURCE_WEBSITE" /> वर <ph name="CURRENT_PRICE" /> मध्ये आहे</translation>
+<translation id="22623456902492423">{TABS_COUNT,plural, =1{टॅब गटामधून काढून टाका}other{टॅब गटामधून काढून टाका}}</translation>
 <translation id="2277224997687551299">गटाचे नाव संपादित करा</translation>
 <translation id="228946090561406413">{TABS_COUNT,plural, =1{गटामधून निवडलेला <ph name="TABS_COUNT_ONE" /> टॅब काढून टाका.}other{गटामधून निवडलेले <ph name="TABS_COUNT_MANY" /> टॅब काढून टाका.}}</translation>
 <translation id="2479148705183875116">सेटिंग्ज वर जा</translation>
@@ -33,11 +33,11 @@
 <translation id="3194464645767632461">रेटिंग</translation>
 <translation id="3291470810748040983">उघड्या टॅबमध्ये किंमत कमी असताना तुम्हाला सूचना मिळेल</translation>
 <translation id="3328308545011660196">सूचना: <ph name="NUMBER_OF_TABS" /> टॅब संबंधित वाटतात. त्यांचा गट बनवायचा का?</translation>
-<translation id="3499853001094440183">टॅब गटामधून काढून टाका</translation>
 <translation id="3652027618765638838"><ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" /></translation>
 <translation id="3819916404117584598">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> टॅब कोलॅप्स करा.}other{<ph name="TABS_COUNT_MANY" /> टॅबचा गट असलेले <ph name="TITLE_OF_GROUP" /> टॅब कोलॅप्स करा.}}</translation>
 <translation id="3882834874697329510">कमी किंमत उपलब्ध असताना उघड्या टॅबमध्ये सूचना मिळवण्यासाठी, सेंटिंग्ज मध्ये सूचना सुरू करा.</translation>
 <translation id="3940195383040445971">टॅबवर किमती ट्रॅक करा</translation>
+<translation id="3954615705217314756">{TABS_COUNT,plural, =1{गट टॅब}other{गट टॅब}}</translation>
 <translation id="3996880007329611795">सूचना मिळवा</translation>
 <translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> टॅब संबंधित वाटतात. त्यांचा गट बनवायचा का?</translation>
 <translation id="4212246570487010370">ब्राउझ करणे सुरू ठेवा</translation>
@@ -46,12 +46,12 @@
 <translation id="4788280460033928884">{REVIEWS,plural, =1{(<ph name="REVIEWS_COUNT_ONE" /> परीक्षण)}other{(<ph name="REVIEWS_COUNT_MANY" /> परीक्षणे)}}</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="4870911314065352661">सर्व टॅब बंद करायचे आहेत का?</translation>
+<translation id="4895402777090717310">{TABS_COUNT,plural, =1{टॅब बंद करा}other{टॅब बंद करा}}</translation>
 <translation id="492284538114688557">किमतीतील घट आढळली</translation>
 <translation id="5007392906805964215">पुनरावलोकन करा</translation>
 <translation id="5073204694187207510">फुलस्क्रीन ग्रिड लपवा</translation>
 <translation id="5076161749301278626">स्टोअरशी संबंधित पुनरावलोकने पहायची आहेत का?</translation>
 <translation id="5082793167783849073">गट बनवून त्वरित पेजशी तुलना करा. सुरू करण्यासाठी, लिंकला स्पर्श करा आणि धरून ठेवा.</translation>
-<translation id="5453029940327926427">टॅब बंद करा</translation>
 <translation id="5490235265819901748">टॅब गटाचा विस्तार केला आहे</translation>
 <translation id="5494920125229734069">सर्व निवडा</translation>
 <translation id="5533021382642990449">नंतर दाखवा</translation>
@@ -75,6 +75,7 @@
 <translation id="6615455863669487791">मला दर्शवा</translation>
 <translation id="6840760312327750441">टॅबचा गट करण्यासाठी, टॅबला स्पर्श करा आणि धरून ठेवा. नंतर, तो दुसऱ्या टॅबवर ड्रॅग करा.</translation>
 <translation id="6856809498882026482">एकाहून अधिक निवड मोड लपवा</translation>
+<translation id="7100731960740376323">{TABS_COUNT,plural, =1{टॅब शेअर करा}other{टॅब शेअर करा}}</translation>
 <translation id="7129458170538955174">या स्टोअरविषयी माहिती अर्ध्या उंचीवर उघडली आहे</translation>
 <translation id="7151209024774799310">गटामधून टॅब काढून टाका</translation>
 <translation id="7204204600596740190">एकाहून अधिक निवड मोड</translation>
@@ -83,6 +84,7 @@
 <translation id="753732157349120914">टॅब स्विचर</translation>
 <translation id="7545727119051420814">{REVIEWS,plural, =1{Google कडून <ph name="REVIEWS_COUNT_ONE" /> पुनरावलोकन}other{Google कडून <ph name="REVIEWS_COUNT_MANY" /> पुनरावलोकने}}</translation>
 <translation id="7559245342362162951">फुलस्क्रीन ग्रिडमध्ये गटाचे टॅब दाखवा</translation>
+<translation id="7699041944097291312">{TABS_COUNT,plural, =1{निवडलेला <ph name="TABS_COUNT_ONE" /> टॅब शेअर करा}other{निवडलेले <ph name="TABS_COUNT_MANY" /> टॅब शेअर करा}}</translation>
 <translation id="7792771145871471484">सूचनांचे पुनरावलोकन करा.</translation>
 <translation id="7838146321400849846">{TABS_COUNT,plural, =1{निवडलेल्या <ph name="TABS_COUNT_ONE" /> टॅबचा गट बनवा}other{निवडलेल्या <ph name="TABS_COUNT_MANY" /> टॅबचा गट बनवा}}</translation>
 <translation id="7854360405711302755">{REVIEWS,plural, =1{ <ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" /> रेटिंग, <ph name="REVIEWS_COUNT_ONE" /> परीक्षण}other{<ph name="CURRENT_RATING" />/<ph name="RATING_BASELINE" /> रेटिंग, <ph name="REVIEWS_COUNT_MANY" /> परीक्षणे}}</translation>

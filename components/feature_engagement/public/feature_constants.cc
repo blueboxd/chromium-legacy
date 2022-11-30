@@ -61,6 +61,9 @@ BASE_FEATURE(kIPHPasswordsAccountStorageFeature,
 BASE_FEATURE(kIPHPerformanceNewBadgeFeature,
              "IPH_PerformanceNewBadge",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPriceTrackingPageActionIconLabelFeature,
+             "IPH_PriceTrackingPageActionIconLabelFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHReadingListDiscoveryFeature,
              "IPH_ReadingListDiscovery",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -103,6 +106,9 @@ BASE_FEATURE(kIPHIntentChipFeature,
 BASE_FEATURE(kIPHWebUiHelpBubbleTestFeature,
              "IPH_WebUiHelpBubbleTest",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPriceTrackingInSidePanelFeature,
+             "IPH_PriceTrackingInSidePanel",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 
@@ -381,6 +387,12 @@ BASE_FEATURE(kIPHNewIncognitoTabTipFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHBadgedReadingListFeature,
              "IPH_BadgedReadingList",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHBadgedWhatsNewFeature,
+             "IPH_BadgedWhatsNew",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHWhatsNewFeature,
+             "IPH_WhatsNew",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHReadingListMessagesFeature,
              "IPH_ReadingListMessages",

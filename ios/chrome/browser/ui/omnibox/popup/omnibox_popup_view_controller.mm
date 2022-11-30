@@ -522,26 +522,32 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_LT((NSUInteger)indexPath.row,
-            self.currentResult[indexPath.section].suggestions.count);
   NSUInteger row = indexPath.row;
+  NSUInteger section = indexPath.section;
+  DCHECK_LT(section, self.currentResult.count);
+  DCHECK_LT(row, self.currentResult[indexPath.section].suggestions.count);
 
-  // Crash reports tell us that `row` is sometimes indexed past the end of
-  // the results array. In those cases, just ignore the request and return
-  // early. See b/5813291.
-  if (row >= self.currentResult[indexPath.section].suggestions.count)
+  // Crash reports tell us that `section` and `row` are sometimes indexed past
+  // the end of the results array. In those cases, just ignore the request and
+  // return early. See crbug.com/1378590.
+  if (section >= self.currentResult.count ||
+      row >= self.currentResult[indexPath.section].suggestions.count)
     return;
   // TODO(crbug.com/1365374): Handle Carousel's selection.
   [self.delegate
       autocompleteResultConsumer:self
-             didSelectSuggestion:self.currentResult[indexPath.section]
-                                     .suggestions[row]
+             didSelectSuggestion:[self suggestionAtIndexPath:indexPath]
                            inRow:row];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
-  return self.currentResult[section].title ? 29.0f : FLT_MIN;
+  if (!IsOmniboxActionsEnabled() &&
+      !base::FeatureList::IsEnabled(omnibox::kMostVisitedTiles)) {
+    return FLT_MIN;
+  }
+  BOOL hasTitle = self.currentResult[section].title.length > 0;
+  return hasTitle ? UITableViewAutomaticDimension : FLT_MIN;
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -549,6 +555,8 @@ const CGFloat kMaxTileFaviconSize = 48.0f;
   if (!IsOmniboxActionsEnabled()) {
     return FLT_MIN;
   }
+  // Don't show the footer on the last section, to not increase the size of the
+  // popup on iPad.
   if (section == (tableView.numberOfSections - 1)) {
     return FLT_MIN;
   }

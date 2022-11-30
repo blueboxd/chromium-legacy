@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_FIRST_PARTY_SETS_FIRST_PARTY_SETS_POLICY_SERVICE_H_
 #define CHROME_BROWSER_FIRST_PARTY_SETS_FIRST_PARTY_SETS_POLICY_SERVICE_H_
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
-#include "net/first_party_sets/first_party_sets_context_config.h"
 #include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 
 class PrefService;
@@ -21,6 +21,8 @@ class BrowserContext;
 }  // namespace content
 
 namespace net {
+class FirstPartySetsCacheFilter;
+class FirstPartySetsContextConfig;
 class SchemefulSite;
 }  // namespace net
 
@@ -58,6 +60,11 @@ class FirstPartySetsPolicyService : public KeyedService {
   // First-Party Sets enabled pref changes.
   void OnFirstPartySetsEnabledChanged(bool enabled);
 
+  // Invoke the callback synchronously to resume navigation if the instance is
+  // ready; or stores the callback to be invoked when this service is ready to
+  // do so.
+  void RegisterThrottleResumeCallback(base::OnceClosure resume_callback);
+
   // KeyedService:
   void Shutdown() override;
 
@@ -80,6 +87,13 @@ class FirstPartySetsPolicyService : public KeyedService {
                base::OnceCallback<void(net::FirstPartySetsContextConfig)>)>
           get_config);
 
+  // Returns true when this instance has received the config thus has been fully
+  // initialized.
+  bool is_ready() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return config_.has_value();
+  }
+
   void ResetForTesting();
 
   // Looks up `site` in Chrome's list of First-Party Sets and returns its
@@ -90,8 +104,11 @@ class FirstPartySetsPolicyService : public KeyedService {
   // - the list of First-Party Sets isn't initialized yet or
   // - `site` isn't in Chrome's list of First-Party Sets or
   // - this instance has not received the config yet
+  //
+  // This also logs metrics that track how often this is queried before this
+  // instance has received the config yet.
   absl::optional<net::FirstPartySetEntry> FindEntry(
-      const net::SchemefulSite& site) const;
+      const net::SchemefulSite& site);
 
   // Checks if ownership of `site` is managed by an enterprise.
   //
@@ -112,7 +129,8 @@ class FirstPartySetsPolicyService : public KeyedService {
                 get_config);
 
   // Sets the `config_` member and provides it to all delegates via NotifyReady.
-  void OnReadyToNotifyDelegates(net::FirstPartySetsContextConfig config);
+  void OnReadyToNotifyDelegates(net::FirstPartySetsContextConfig config,
+                                net::FirstPartySetsCacheFilter cache_filter);
 
   // Triggers changes that occur once the FirstPartySetsContextConfig for the
   // profile that created this service is retrieved.
@@ -138,6 +156,14 @@ class FirstPartySetsPolicyService : public KeyedService {
   absl::optional<net::FirstPartySetsContextConfig> config_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // The filter used to bypass cache access in the network for this profile.
+  absl::optional<net::FirstPartySetsCacheFilter> cache_filter_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // The queue of callbacks that are waiting for the instance to be initialized.
+  base::circular_deque<base::OnceClosure> on_ready_callbacks_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
   // Callback used by tests to wait for the ctor's initialization flow to
   // complete.
   absl::optional<base::OnceClosure> on_first_init_complete_for_testing_;
@@ -145,6 +171,10 @@ class FirstPartySetsPolicyService : public KeyedService {
   // Keeps track of whether this instance has ever been initialized fully. Must
   // not be reset in `ResetForTesting`.
   bool first_initialization_complete_for_testing_ = false;
+
+  // Tracks the number of queries to the First-Party Sets in the browser process
+  // are received before the `global_sets_` are initialized.
+  int num_queries_before_sets_ready_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -46,7 +46,7 @@ public class PageInfoCookiesController
         mMainController = mainController;
         mRowView = rowView;
         mFullUrl = mainController.getURL().getSpec();
-        mTitle = mRowView.getContext().getResources().getString(R.string.cookies_title);
+        mTitle = mRowView.getContext().getResources().getString(R.string.page_info_cookies_title);
         mBridge = delegate.createCookieControlsBridge(this);
 
         PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
@@ -105,12 +105,12 @@ public class PageInfoCookiesController
                 address, result);
         if (mSubPage != null) {
             mSubPage.setStorageUsage(mWebsite.getTotalUsage());
-        }
 
-        boolean isFPSInfoShown = mSubPage.maybeShowFPSInfo(
-                mWebsite.getFPSCookieInfo(), mWebsite.getAddress().getOrigin());
-        RecordHistogram.recordBooleanHistogram(
-                "Security.PageInfo.Cookies.HasFPSInfo", isFPSInfoShown);
+            boolean isFPSInfoShown = mSubPage.maybeShowFPSInfo(
+                    mWebsite.getFPSCookieInfo(), mWebsite.getAddress().getOrigin());
+            RecordHistogram.recordBooleanHistogram(
+                    "Security.PageInfo.Cookies.HasFPSInfo", isFPSInfoShown);
+        }
     }
 
     private void onCheckedChangedCallback(boolean state) {

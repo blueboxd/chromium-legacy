@@ -246,16 +246,6 @@
           </settings-cookies-page>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/siteData" no-search>
-        <settings-subpage page-title="$i18n{siteSettingsCookieHeader}"
-            search-label="$i18n{siteSettingsCookieSearch}"
-            search-term="{{siteDataFilter_}}"
-            preserve-search-term>
-          <site-data filter="[[siteDataFilter_]]"
-              focus-config="[[focusConfig_]]">
-          </site-data>
-        </settings-subpage>
-      </template>
       <template is="dom-if" route-path="/content/images" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
@@ -512,7 +502,8 @@
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
           <div id="notificationRadioGroup" class="radio-group">
-            <template is="dom-if" if="[[!showNotificationPermissionsReview_]]">
+            <template is="dom-if"
+                if="[[!safetyCheckNotificationPermissionsEnabled_]]">
               <div class="secondary">
                 $i18n{siteSettingsNotificationsDescription}
               </div>
@@ -744,16 +735,6 @@
             page-title="{{pageTitle}}"
             block-autoplay-enabled="[[blockAutoplayStatus_.pref.value]]">
           </site-details>
-        </settings-subpage>
-      </template>
-      <template is="dom-if" route-path="/cookies/detail" no-search>
-        <settings-subpage page-title="[[pageTitle]]">
-          <cr-button slot="subpage-title-extra"
-              on-click="onRemoveAllCookiesFromSite_">
-            $i18n{siteSettingsCookieRemoveAll}
-          </cr-button>
-          <site-data-details-subpage page-title="{{pageTitle}}">
-          </site-data-details-subpage>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/protectedContent" no-search>

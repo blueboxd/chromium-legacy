@@ -501,6 +501,9 @@ bool DetectAddToCart(content::RenderFrame* render_frame,
   const GURL& navigation_url(frame->GetDocument().Url());
   const GURL& url = request.Url();
 
+  if (CommerceHintAgent::ShouldSkipAddToCartRequest(navigation_url, url)) {
+    return false;
+  }
   bool is_add_to_cart = false;
   if (navigation_url.DomainIs("dickssportinggoods.com")) {
     is_add_to_cart = CommerceHintAgent::IsAddToCart(url.spec());
@@ -530,10 +533,6 @@ bool DetectAddToCart(content::RenderFrame* render_frame,
     RecordCommerceEvent(CommerceEvent::kAddToCartByURL);
     OnAddToCart(render_frame, std::move(url_product_id));
     return true;
-  }
-
-  if (CommerceHintAgent::ShouldSkipAddToCartRequest(navigation_url, url)) {
-    return false;
   }
 
   if (IsCartHeuristicsImprovementEnabled()) {
@@ -1041,6 +1040,10 @@ void CommerceHintAgent::DidCommitProvisionalLoadCallback(
     CommerceHeuristicsData::GetInstance().UpdateVersion(
         base::Version(heuristics->version_number));
   }
+  // TODO(crbug.com/1383422): Add a test for when starting_url_ is invalid
+  // because of multiple continuous DidCommitProvisionalLoad calls.
+  if (!starting_url_.is_valid())
+    return;
   if (IsAddToCart(starting_url_.PathForRequestPiece())) {
     RecordCommerceEvent(CommerceEvent::kAddToCartByURL);
     OnAddToCart(render_frame());
@@ -1170,11 +1173,17 @@ void CommerceHintAgent::OnMainFrameIntersectionChanged(
 
 bool CommerceHintAgent::ShouldSkipAddToCartRequest(const GURL& navigation_url,
                                                    const GURL& request_url) {
+  const std::string& navigation_domain = eTLDPlusOne(navigation_url);
+  const re2::RE2* pattern =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetSkipAddToCartPatternForDomain(navigation_domain);
+  if (pattern) {
+    return PartialMatch(request_url.spec().substr(0, kLengthLimit), *pattern);
+  }
   const std::map<std::string, std::string>& skip_string_map =
       GetSkipAddToCartMapping();
   static base::NoDestructor<std::map<std::string, std::unique_ptr<re2::RE2>>>
       skip_regex_map;
-  const std::string& navigation_domain = eTLDPlusOne(navigation_url);
   if (skip_string_map.find(navigation_domain) == skip_string_map.end()) {
     return false;
   }

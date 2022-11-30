@@ -53,8 +53,6 @@ constexpr base::FeatureParam<NewMobileIdentityConsistencyFRE>::Option
          kNewMobileIdentityConsistencyFREParamTangibleSyncC},
         {NewMobileIdentityConsistencyFRE::kTwoSteps,
          kNewMobileIdentityConsistencyFREParamTwoSteps},
-        {NewMobileIdentityConsistencyFRE::kUMADialog,
-         kNewMobileIdentityConsistencyFREParamUMADialog},
 };
 
 // Parameter for signin::kNewMobileIdentityConsistencyFRE feature.
@@ -120,12 +118,15 @@ std::map<variations::VariationID, int> GetGroupWeightsForFREVariations() {
     case version_info::Channel::UNKNOWN:
     case version_info::Channel::CANARY:
     case version_info::Channel::DEV:
+    case version_info::Channel::BETA:
       for (auto& [id, weight] : weight_by_id) {
         weight = 20;
       };
       break;
-    case version_info::Channel::BETA:
     case version_info::Channel::STABLE:
+      for (auto& [id, weight] : weight_by_id) {
+        weight = 4;
+      };
       break;
   }
   return weight_by_id;

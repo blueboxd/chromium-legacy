@@ -92,6 +92,10 @@ constexpr base::FeatureParam<base::TimeDelta>
         "shopping-list-bookmark-update-interval",
         base::Hours(6));
 
+// Shopping list revert page action icon on failure.
+extern const char kRevertIconOnFailureParam[];
+extern const base::FeatureParam<bool> kRevertIconOnFailure;
+
 // Feature parameters for ChromeCart on Desktop.
 
 // Whether to use OptimizationGuide to optimize renderer signal collection.
@@ -289,6 +293,10 @@ extern const char kCommerceHintAndroidHeuristicsImprovementParam[];
 // Feature params for merchant wide promotion.
 extern const char kReadyToFetchMerchantWidePromotionParam[];
 extern const base::FeatureParam<bool> kReadyToFetchMerchantWidePromotion;
+
+// Feature params for code-based Rule-based Discount (RBD).
+extern const char kCodeBasedRuleDiscountParam[];
+extern const base::FeatureParam<bool> kCodeBasedRuleDiscount;
 
 // Check if a URL belongs to a partner merchant of any type of discount.
 bool IsPartnerMerchant(const GURL& url);

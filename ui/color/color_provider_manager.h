@@ -7,12 +7,11 @@
 
 #include <memory>
 #include <tuple>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/component_export.h"
-#include "base/containers/lru_cache.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -138,7 +137,7 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
   ColorProviderManager& operator=(const ColorProviderManager&) = delete;
 
   static ColorProviderManager& Get();
-  static ColorProviderManager& GetForTesting(size_t cache_size = 1);
+  static ColorProviderManager& GetForTesting();
   static void ResetForTesting();
 
   // Resets the current `initializer_list_`.
@@ -154,10 +153,12 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
   // Returns a color provider for |key|, creating one if necessary.
   ColorProvider* GetColorProviderFor(Key key);
 
+  size_t num_providers_initialized() const {
+    return num_providers_initialized_;
+  }
+
  protected:
-  // Creates a ColorProviderManager that stores at most |cache_size|
-  // ColorProviders.
-  explicit ColorProviderManager(size_t cache_size);
+  ColorProviderManager();
   virtual ~ColorProviderManager();
 
  private:
@@ -167,7 +168,11 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
   // Holds the subscriptions for initializers in the `initializer_list_`.
   std::vector<base::CallbackListSubscription> initializer_subscriptions_;
 
-  base::LRUCache<Key, std::unique_ptr<ColorProvider>> color_providers_;
+  base::flat_map<Key, std::unique_ptr<ColorProvider>> color_providers_;
+
+  // Tracks the number of ColorProviders constructed and initialized by the
+  // manager for metrics purposes.
+  size_t num_providers_initialized_ = 0;
 };
 
 }  // namespace ui

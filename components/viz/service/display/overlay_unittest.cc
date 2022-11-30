@@ -411,8 +411,8 @@ static ResourceId CreateResourceInLayerTree(
     bool is_overlay_candidate,
     ResourceFormat resource_format) {
   auto resource = TransferableResource::MakeGpu(
-      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
-      size, resource_format, is_overlay_candidate);
+      gpu::Mailbox::GenerateForSharedImage(), GL_LINEAR, GL_TEXTURE_2D,
+      gpu::SyncToken(), size, resource_format, is_overlay_candidate);
 
   ResourceId resource_id =
       child_resource_provider->ImportResource(resource, base::DoNothing());
@@ -1671,36 +1671,12 @@ TEST_F(SingleOverlayOnTopTest, AcceptBlending) {
   EXPECT_FALSE(overlay_damage_rect.IsEmpty());
 }
 
-TEST_F(SingleOverlayOnTopTest, AcceptBackgroundColorWithoutAlpha) {
+TEST_F(SingleOverlayOnTopTest, RejectBackgroundColor) {
   auto pass = CreateRenderPass();
   TextureDrawQuad* quad = CreateFullscreenCandidateQuad(
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-  // Alpha is zero but rgb components are not; this only makes sense in
-  // non-premult alpha.
-  quad->background_color = {1, 0.3, 0.7, 0};
-
-  OverlayCandidateList candidate_list;
-  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
-  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
-  AggregatedRenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-  SurfaceDamageRectList surface_damage_rect_list;
-
-  overlay_processor_->ProcessForOverlays(
-      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_backdrop_filters,
-      std::move(surface_damage_rect_list), nullptr, &candidate_list,
-      &damage_rect_, &content_bounds_);
-  EXPECT_EQ(1U, candidate_list.size());
-}
-
-TEST_F(SingleOverlayOnTopTest, RejectBackgroundColorForNonOpaqueFormat) {
-  auto pass = CreateRenderPass();
-  TextureDrawQuad* quad = CreateFullscreenCandidateQuad(
-      resource_provider_.get(), child_resource_provider_.get(),
-      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-  quad->background_color = SkColors::kBlack;
+  quad->background_color = SkColors::kRed;
 
   OverlayCandidateList candidate_list;
   OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
@@ -1717,17 +1693,35 @@ TEST_F(SingleOverlayOnTopTest, RejectBackgroundColorForNonOpaqueFormat) {
   EXPECT_EQ(0U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, RejectBackgroundColorWithGradient) {
+TEST_F(SingleOverlayOnTopTest, AcceptBlackBackgroundColor) {
   auto pass = CreateRenderPass();
-
-  auto* sqs = pass->shared_quad_state_list.back();
-  sqs->mask_filter_info =
-      gfx::MaskFilterInfo(gfx::RectF(kOverlayRect), gfx::RoundedCornersF(1.f),
-                          gfx::LinearGradient(3));
   TextureDrawQuad* quad = CreateFullscreenCandidateQuad(
       resource_provider_.get(), child_resource_provider_.get(),
-      child_provider_.get(), sqs, pass.get());
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
   quad->background_color = SkColors::kBlack;
+
+  OverlayCandidateList candidate_list;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+  AggregatedRenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+  SurfaceDamageRectList surface_damage_rect_list;
+
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_backdrop_filters,
+      std::move(surface_damage_rect_list), nullptr, &candidate_list,
+      &damage_rect_, &content_bounds_);
+  EXPECT_EQ(1U, candidate_list.size());
+}
+
+TEST_F(SingleOverlayOnTopTest, RejectBlackBackgroundColorWithBlending) {
+  auto pass = CreateRenderPass();
+  TextureDrawQuad* quad = CreateFullscreenCandidateQuad(
+      resource_provider_.get(), child_resource_provider_.get(),
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+  quad->background_color = SkColors::kBlack;
+  quad->needs_blending = true;
 
   OverlayCandidateList candidate_list;
   OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
@@ -2126,37 +2120,6 @@ TEST_F(UnderlayTest, AllowsOpaqueCandidates) {
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get())
       ->needs_blending = false;
   pass->shared_quad_state_list.front()->opacity = 1.0;
-
-  OverlayCandidateList candidate_list;
-  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
-  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
-  AggregatedRenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-  SurfaceDamageRectList surface_damage_rect_list;
-
-  overlay_processor_->ProcessForOverlays(
-      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_backdrop_filters,
-      std::move(surface_damage_rect_list), nullptr, &candidate_list,
-      &damage_rect_, &content_bounds_);
-  ASSERT_EQ(1U, candidate_list.size());
-}
-
-TEST_F(UnderlayTest, AllowRoundedCornerRectWithBackgroundColorOpaqueFormat) {
-  auto pass = CreateRenderPass();
-  auto* sqs = pass->shared_quad_state_list.back();
-  sqs->mask_filter_info =
-      gfx::MaskFilterInfo(gfx::RectF(kOverlayRect), gfx::RoundedCornersF(10.f),
-                          gfx::LinearGradient::GetEmpty());
-
-  auto* quad = CreateCandidateQuadAt(
-      resource_provider_.get(), child_resource_provider_.get(),
-      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
-      gfx::Rect(kDisplaySize), gfx::ProtectedVideoType::kClear,
-      YUV_420_BIPLANAR);
-  quad->needs_blending = false;
-  // Any color is valid for this tests except transparent.
-  quad->background_color = SkColors::kYellow;
 
   OverlayCandidateList candidate_list;
   OverlayProcessorInterface::FilterOperationsMap render_pass_filters;

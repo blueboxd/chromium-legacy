@@ -152,7 +152,7 @@ class KAnonymityTrustTokenGetterTest : public testing::Test {
     const auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
     ASSERT_TRUE(pending_request);
     const auto& request = pending_request->request;
-    EXPECT_EQ(0u, request.url.spec().find(request_url));
+    EXPECT_EQ(0u, request.url.spec().rfind(request_url));
     EXPECT_FALSE(
         request.headers.HasHeader(net::HttpRequestHeaders::kAuthorization));
     EXPECT_EQ(net::HttpRequestHeaders::kGetMethod, request.method);
@@ -229,6 +229,8 @@ class KAnonymityTrustTokenGetterTest : public testing::Test {
   content::BrowserTaskEnvironment* task_environment() {
     return &task_environment_;
   }
+
+  bool HasPendingRequest() { return test_url_loader_factory_.NumPending() > 0; }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -666,6 +668,42 @@ TEST_F(KAnonymityTrustTokenGetterTest, TokenKeysDontExpire) {
              {KAnonymityTrustTokenGetterAction::kFetchTrustTokenKey, 1},
              {KAnonymityTrustTokenGetterAction::kFetchTrustToken, 2},
              {KAnonymityTrustTokenGetterAction::kGetTrustTokenSuccess, 2}});
+}
+
+TEST_F(KAnonymityTrustTokenGetterTest, AuthTokenAlreadyExpired) {
+  InitializeIdentity(/*signed_on=*/true);
+  base::HistogramTester hist;
+  base::Time expiration = base::Time::Now() - base::Days(1);
+  {
+    base::RunLoop run_loop;
+    getter()->TryGetTrustTokenAndKey(
+        base::OnceCallback<void(absl::optional<KeyAndNonUniqueUserId>)>(
+            base::BindLambdaForTesting(
+                [&run_loop](absl::optional<KeyAndNonUniqueUserId> result) {
+                  ASSERT_TRUE(result);
+                  run_loop.Quit();
+                })));
+    RespondWithOAuthToken(expiration);
+    RespondWithTrustTokenNonUniqueUserId(2);
+    RespondWithTrustTokenKeys(2, base::Time::Max());
+    RespondWithTrustTokenIssued(2);
+    run_loop.Run();
+  }
+  task_environment()->RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    getter()->TryGetTrustTokenAndKey(
+        base::OnceCallback<void(absl::optional<KeyAndNonUniqueUserId>)>(
+            base::BindLambdaForTesting(
+                [&run_loop](absl::optional<KeyAndNonUniqueUserId> result) {
+                  ASSERT_TRUE(result);
+                  EXPECT_EQ(2, result->non_unique_user_id);
+                  run_loop.Quit();
+                })));
+    RespondWithOAuthToken(base::Time::Max());
+    RespondWithTrustTokenIssued(2);
+    run_loop.Run();
+  }
 }
 
 TEST_F(KAnonymityTrustTokenGetterTest, AuthTokenExpire) {

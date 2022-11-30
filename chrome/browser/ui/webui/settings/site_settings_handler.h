@@ -147,18 +147,23 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, NonTreeModelDeletion);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, FirstPartySetsMembership);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
-                           HandleIgnoreOriginForNotificationPermissionReview);
+                           HandleIgnoreOriginsForNotificationPermissionReview);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
-                           HandleBlockNotificationPermissionForOrigin);
+                           HandleBlockNotificationPermissionForOrigins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
-                           HandleAllowNotificationPermissionForOrigin);
+                           HandleAllowNotificationPermissionForOrigins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
-                           HandleResetNotificationPermissionForOrigin);
+                           HandleResetNotificationPermissionForOrigins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            PopulateNotificationPermissionReviewData);
   FRIEND_TEST_ALL_PREFIXES(
       SiteSettingsHandlerTest,
-      HandleUndoIgnoreOriginForNotificationPermissionReview);
+      HandleUndoIgnoreOriginsForNotificationPermissionReview);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           SendNotificationPermissionReviewList_FeatureEnabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      SiteSettingsHandlerTest,
+      SendNotificationPermissionReviewList_FeatureDisabled);
 
   // Rebuilds the BrowsingDataModel & CookiesTreeModel. Pending requests are
   // serviced when both models are built.
@@ -262,26 +267,26 @@ class SiteSettingsHandler
   // Handles resetting a chooser exception for the given site.
   void HandleResetChooserExceptionForSite(const base::Value::List& args);
 
-  // Handles ignoring an origin for review notification permissions feature.
-  void HandleIgnoreOriginForNotificationPermissionReview(
+  // Handles ignoring origins for the review notification permissions feature.
+  void HandleIgnoreOriginsForNotificationPermissionReview(
       const base::Value::List& args);
 
-  // Handles resetting a notification permission for a given origin.
-  void HandleResetNotificationPermissionForOrigin(
+  // Handles resetting a notification permission for given origins.
+  void HandleResetNotificationPermissionForOrigins(
       const base::Value::List& args);
 
-  // Handles blocking a notification permission for a given origin.
-  void HandleBlockNotificationPermissionForOrigin(
+  // Handles blocking notification permissions for multiple origins.
+  void HandleBlockNotificationPermissionForOrigins(
       const base::Value::List& args);
 
-  // Handles allowing a notification permission for a given origin.
-  void HandleAllowNotificationPermissionForOrigin(
+  // Handles allowing notification permissions for multiple origins.
+  void HandleAllowNotificationPermissionForOrigins(
       const base::Value::List& args);
 
-  // Handles reverting the action of ignoring an origin for review notification
-  // permissions feature by removing it from the notification permission
+  // Handles reverting the action of ignoring origins for review notification
+  // permissions feature by removing them from the notification permission
   // verification blocklist.
-  void HandleUndoIgnoreOriginForNotificationPermissionReview(
+  void HandleUndoIgnoreOriginsForNotificationPermissionReview(
       const base::Value::List& args);
 
   // Returns whether a given string is a valid origin.
@@ -320,6 +325,9 @@ class SiteSettingsHandler
   // Record metrics for actions on All Sites Page.
   void HandleRecordAction(const base::Value::List& args);
 
+  // Gets a plural string for the given number of cookies.
+  void HandleGetNumCookiesString(const base::Value::List& args);
+
   // Provides an opportunity for site data which is not integrated into the
   // tree model to be removed when entries for |origins| are removed.
   // TODO(crbug.com/1271155): This function is a temporary hack while the
@@ -340,6 +348,9 @@ class SiteSettingsHandler
   // Permissions' module in site settings notification page. Those domains send
   // a lot of notifications, but have low site engagement.
   base::Value::List PopulateNotificationPermissionReviewData();
+
+  // Sends the list of notification permissions to review to the WebUI.
+  void SendNotificationPermissionReviewList();
 
   const raw_ptr<Profile> profile_;
 

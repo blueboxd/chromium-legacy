@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/permissions/permission_prompt_bubble.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/permissions/permission_prompt_style.h"
 #include "components/permissions/features.h"
@@ -18,10 +20,13 @@ PermissionPromptBubble::PermissionPromptBubble(
   if (lbv && lbv->IsDrawn() &&
       base::FeatureList::IsEnabled(permissions::features::kConfirmationChip) &&
       delegate->Requests()[0]->IsConfirmationChipSupported()) {
-    lbv->chip_controller()->InitializePermissionPrompt(web_contents, delegate);
+    lbv->chip_controller()->InitializePermissionPrompt(
+        web_contents, delegate,
+        base::BindOnce(&PermissionPromptBubble::ShowBubble,
+                       weak_factory_.GetWeakPtr()));
+  } else {
+    ShowBubble();
   }
-
-  ShowBubble();
 }
 
 PermissionPromptBubble::~PermissionPromptBubble() {
@@ -68,6 +73,7 @@ bool PermissionPromptBubble::UpdateAnchor() {
   }
 
   if (base::FeatureList::IsEnabled(permissions::features::kConfirmationChip) &&
+      !delegate()->Requests().empty() &&
       delegate()->Requests()[0]->IsConfirmationChipSupported()) {
     // If we have a location bar view but the chip_controller_ doesn't exist,
     // it means that the we switched from a browser mode that did not have a
@@ -76,9 +82,11 @@ bool PermissionPromptBubble::UpdateAnchor() {
     // finally initialize it with the current permission request.
     LocationBarView* lbv = GetLocationBarView();
 
-    if (lbv && lbv->IsDrawn() && !lbv->GetWidget()->IsFullscreen()) {
+    if (lbv && lbv->IsDrawn() && !lbv->GetWidget()->IsFullscreen() &&
+        !lbv->IsEditingOrEmpty()) {
       auto* chip_controller = lbv->chip_controller();
-      chip_controller->InitializePermissionPrompt(web_contents(), delegate());
+      chip_controller->InitializePermissionPrompt(web_contents(), delegate(),
+                                                  base::DoNothing());
       chip_controller->UpdateBrowser(browser());
     }
   }

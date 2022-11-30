@@ -96,6 +96,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/dynamic_library_support.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -187,6 +188,7 @@
 
 #if BUILDFLAG(IS_FUCHSIA)
 #include "base/fuchsia/system_info.h"
+#include "content/public/common/result_codes.h"
 #endif
 
 #if BUILDFLAG(BUILD_TFLITE_WITH_XNNPACK)
@@ -844,7 +846,11 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   // ensure the cache is populated.
   // Making the blocking call now also avoids the potential for blocking later
   // in when it might be user-visible.
-  base::FetchAndCacheSystemInfo();
+  if (!base::FetchAndCacheSystemInfo()) {
+    // Returning `RESULT_CODE_KILLED` instead of
+    // TerminateForFatalInitializationError() to avoid CHECK.
+    return ResultCode::RESULT_CODE_KILLED;
+  }
 #endif
 
   if (!GetContentClient())
@@ -1111,6 +1117,11 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
                        TRACE_EVENT_SCOPE_THREAD);
   if (is_browser_main_loop_started_)
     return -1;
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    mojo::SyncCallRestrictions::DisableSyncCallInterrupts();
+  }
 
   if (!mojo_ipc_support_) {
     const ContentMainDelegate::InvokedInBrowserProcess invoked_in_browser{

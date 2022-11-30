@@ -60,6 +60,7 @@
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/first_party_sets/first_party_sets_navigation_throttle.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
@@ -232,6 +233,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
@@ -4788,6 +4790,15 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if !BUILDFLAG(IS_ANDROID)
   MaybeAddThrottle(MaybeCreateAboutThisSiteThrottleFor(handle), &throttles);
 #endif
+
+  if (profile && profile->GetPrefs() &&
+      profile->GetPrefs()->GetBoolean(
+          prefs::kPrivacySandboxFirstPartySetsEnabled) &&
+      base::FeatureList::IsEnabled(features::kFirstPartySets)) {
+    MaybeAddThrottle(first_party_sets::FirstPartySetsNavigationThrottle::
+                         MaybeCreateNavigationThrottle(handle),
+                     &throttles);
+  }
   return throttles;
 }
 
@@ -6035,24 +6046,6 @@ bool ChromeContentBrowserClient::HandleWebUI(
                                  chrome::kChromeUIHelpHost);
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kConsolidatedSiteStorageControls)) {
-    // Replace deprecated Site Data page URL with the All Sites page, which
-    // contains storage controls for sites.
-    if (url->SchemeIs(content::kChromeUIScheme) &&
-        url->host() == chrome::kChromeUISettingsHost) {
-      if (url->path() == chrome::kChromeUISiteDataDeprecatedPath) {
-        *url = ReplaceURLHostAndPath(*url, chrome::kChromeUISettingsHost,
-                                     chrome::kChromeUIAllSitesPath);
-        UMA_HISTOGRAM_BOOLEAN("Settings.AllSites.DeprecatedRedirect", true);
-      } else if (url->path() == chrome::kChromeUIAllSitesPath) {
-        // Log un-redirected navigations to the page as well to provide context
-        // for the raw number of redirects.
-        UMA_HISTOGRAM_BOOLEAN("Settings.AllSites.DeprecatedRedirect", false);
-      }
-    }
-  }
-
 #if BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1003960): Remove when issue is resolved.
   if (url->SchemeIs(content::kChromeUIScheme) &&
@@ -6485,7 +6478,7 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
 
   // Paste requires either (1) user activation, ...
   if (WebContents::FromRenderFrameHost(render_frame_host)
-          ->HasRecentInteractiveInputEvent()) {
+          ->HasRecentInteraction()) {
     return true;
   }
 

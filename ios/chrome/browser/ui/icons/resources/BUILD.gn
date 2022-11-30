@@ -39,10 +39,24 @@ symbolset("incognito_circle_fill") {
   ]
 }
 
+symbolset("incognito_circle_fill_ios14") {
+  sources = [
+    "incognito_circle_fill_ios14.symbolset/Contents.json",
+    "incognito_circle_fill_ios14.symbolset/incognito.circle.fill.ios14.cr.svg",
+  ]
+}
+
 symbolset("password") {
   sources = [
     "password.symbolset/Contents.json",
     "password.symbolset/password.cr.svg",
+  ]
+}
+
+symbolset("password_manager") {
+  sources = [
+    "password_manager.symbolset/Contents.json",
+    "password_manager.symbolset/password.manager.cr.svg",
   ]
 }
 

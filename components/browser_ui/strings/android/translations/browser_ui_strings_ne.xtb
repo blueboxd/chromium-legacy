@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
-<translation id="1005794457625275818"><ph name="FPS_MEMBER" /> का साथै <ph name="FPS_OWNER" /> का <ph name="FPS_MEMBERS_COUNT" /> वटा साइटलाई कुकी प्रयोग गर्ने अनुमति दिइएको छ</translation>
 <translation id="1006017844123154345">अनलाइन खोल्नुहोस्</translation>
 <translation id="1044891598689252897">साइटहरू सामान्य रूपमा चल्ने छन्</translation>
 <translation id="1124090076051167250">यस कार्यले साइट वा एपहरूले तपाईंको होम स्क्रिनमा भण्डारण गरेका <ph name="DATASIZE" /> बराबरका डेटा र कुकीहरू मेटाउने छ।</translation>
@@ -35,6 +34,7 @@
 <translation id="1785415724048343560">उत्कृष्ट सुविधाका लागि सिफारिस गरिएको</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" /> लाई AR प्रयोग गर्न दिन <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई क्यामेरा पनि अन गर्नुहोस्।</translation>
 <translation id="1864927262126810325"><ph name="SOURCE_NAME" /> बाट प्राप्त जानकारी</translation>
+<translation id="187227595286001730">सम्बन्धित साइटहरूले यस समूहमा तपाईंको गतिविधि देख्न सक्छन्</translation>
 <translation id="1887786770086287077">यो डिभाइसको स्थानमाथिको पहुँच निष्क्रिय छ। <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई अन गर्नुहोस्।</translation>
 <translation id="1915307458270490472">ह्याङ्ग अप</translation>
 <translation id="1919345977826869612">विज्ञापनहरू</translation>
@@ -73,6 +73,7 @@
 <translation id="2490684707762498678"><ph name="APP_NAME" /> ले व्यवस्थापन गरेको</translation>
 <translation id="2498359688066513246">मद्दत र प्रतिक्रिया</translation>
 <translation id="2501278716633472235">पछाडि जानुहोस्</translation>
+<translation id="2546283357679194313">कुकीहरू र साइट डाटा</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{१ कुकीमाथि रोक लगाइयो}other{# कुकीहरूमाथि रोक लगाइयो}}</translation>
 <translation id="2570922361219980984">यो डिभाइसको स्थानमाथिको पहुँच पनि निष्क्रिय छ। <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई अन गर्नुहोस्।</translation>
 <translation id="257931822824936280">विस्तृत गरिएको - संक्षिप्त पार्न क्लिक गर्नुहोस्</translation>
@@ -82,12 +83,10 @@
 <translation id="2653659639078652383">पेश गर्नुहोस्</translation>
 <translation id="2677748264148917807">छोड्नुहोस्</translation>
 <translation id="2687403674020088961">सबै कुकीहरूमाथि रोक लगाउनुहोस् (सिफारिस गरिँदैन)</translation>
-<translation id="2692299144678073135">सम्बन्धित साइटहरूलाई तपाईंले हेरेका साइटसम्बन्धी जानकारी याद राख्ने अनुमति दिनुहोस्</translation>
 <translation id="2704606927547763573">प्रतिलिपि गरियो</translation>
 <translation id="2713106313042589954">क्यामेरा अफ गर्नुहोस्</translation>
 <translation id="2717722538473713889">इमेल ठेगानाहरू</translation>
 <translation id="2750481671343847896">साइटहरूले पहिचान सेवा प्रदायकहरूबाट प्राप्त साइन इन गर्ने प्रम्प्टहरू देखाउन सक्छन्।</translation>
-<translation id="2785051990912111074">तपाईंले यो विकल्प रोज्नुभयो भने <ph name="WEBSITE" /> का कुकीहरू मेटाइने छन्</translation>
 <translation id="2822354292072154809">तपाईं साँच्चिकै <ph name="CHOSEN_OBJECT_NAME" /> का साइटसम्बन्धी सम्पूर्ण अनुमतिहरू रिसेट गर्न चाहनुहुन्छ?</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">अघिल्लो ट्र्याक</translation>
@@ -112,6 +111,7 @@
 <translation id="3227137524299004712">माइक्रोफोन</translation>
 <translation id="3248611290851046188">यो साइटले अन्य साइटहरूले तपाईंलाई विज्ञापनहरू देखाउनका निम्ति प्रयोग गर्न सक्ने रुचिहरूका बारेमा व्याख्या गर्छ। यो साइटले Chrome बाट तपाईंलाई थप सान्दर्भिक विज्ञापनहरू देखाउने प्रयोजनका लागि तपाईंका रुचिहरू प्राप्त गर्छ।</translation>
 <translation id="3277252321222022663">साइटहरूलाई सेन्सरहरूमाथि पहुँच राख्ने अनुमति दिनुहोस् (सिफारिस गरिएको)</translation>
+<translation id="3285500645985761267">सम्बन्धित साइटहरूलाई तपाईंले यो समूहमा गर्ने गतिविधि हेर्ने अनुमति दिइयोस्</translation>
 <translation id="3295602654194328831">जानकारी लुकाउनुहोस्</translation>
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3333961966071413176">सबै सम्पर्कहरू</translation>
@@ -119,6 +119,7 @@
 <translation id="3386292677130313581">साइटहरूलाई तपाईँको स्थान थाहा पाउने अनुमति दिनु भन्दा पहिले तपाईँलाई सोध्ने (सिफारिस गरिएको)</translation>
 <translation id="3521663503435878242"><ph name="DOMAIN" /> अन्तर्गतका साइटहरू</translation>
 <translation id="3538390592868664640">साइटहरूलाई आफू वरपरको ठाउँको 3D नक्सा बनाउन वा क्यामेराको अवस्था पत्ता लगाउन नदिनुहोस्</translation>
+<translation id="3544058026430919413">कुनै कम्पनीले तपाईंले यो समूहमा गर्ने गतिविधिसम्बन्धी जानकारी सेयर गर्न कुकीहरू प्रयोग गर्न सक्ने साइटहरूको समूह बनाउन सक्छ। इन्कोग्निटो मोडमा यो सुविधा अफ हुन्छ।</translation>
 <translation id="3551268116566418498">इन्कोग्निटो मोडबाट बाहिरिने हो?</translation>
 <translation id="3586500876634962664">क्यामेरा र माइक्रोफोनको प्रयोग</translation>
 <translation id="358794129225322306">साइटलाई एकभन्दा बढी फाइलहरू स्वतः डाउनलोड गर्ने अनुमति दिनुहोस्।</translation>
@@ -144,7 +145,6 @@
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4008040567710660924">कुनै खास साइटमा कुकीहरूलाई अनुमति दिनुहोस्।</translation>
 <translation id="4046123991198612571">अर्को ट्र्याक</translation>
-<translation id="4048876521107516222">सम्बन्धित साइटहरूले तपाईंलाई साइन इन अवस्थामा राखिराख्ने जस्ता कार्यहरू गर्न सघाउने प्रयोजनका लागि कुकीहरू प्रयोग गर्छन्</translation>
 <translation id="4149994727733219643">वेब पृष्ठहरूका लागि सरलीकृत दृश्य</translation>
 <translation id="4165986682804962316">साइट सेटिङहरू</translation>
 <translation id="4169549551965910670">USB डिभाइसमा कनेक्ट गर्नुहोस्</translation>
@@ -162,6 +162,7 @@
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
 <translation id="445467742685312942">साइटहरूलाई संरक्षित सामग्री प्ले गर्ने अनुमति दिनुहोस्</translation>
 <translation id="4468959413250150279">निश्चित साइटको ध्वनि म्युट गर्नुहोस्।</translation>
+<translation id="4475912480633855319">{COOKIES,plural, =1{# कुकी}other{# वटा कुकी}}</translation>
 <translation id="4479647676395637221">साइटहरूलाई तपाईँको क्यामेरा प्रयोग गर्न अनुमति दिनुभन्दा पहिले तपाईँलाई सोध्ने (सिफारिस गरिएको)</translation>
 <translation id="4505788138578415521">URL विस्तृत गरियो</translation>
 <translation id="4534723447064627427"><ph name="APP_NAME" /> लाई आफ्नो माइक्रोफोन प्रयोग गर्न दिन <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई माइक्रोफोन पनि अन गर्नुहोस्।</translation>
@@ -175,16 +176,17 @@
 <translation id="483914009762354899">यो डोमेनअन्तर्गतका सबै साइटहरू समावेश गरियोस्</translation>
 <translation id="4883854917563148705">व्यवस्थित सेटिङ रिसेट गर्न सकिँदैन</translation>
 <translation id="4887024562049524730">साइटहरूलाई भर्चुअल रियालिटी चल्ने तपाईंको यन्त्र र त्यसमा भएको डेटा प्रयोग गर्न अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
+<translation id="4955223779495905865">तपाईं कुनै साइटमा जानुभयो भने सो साइटले अन्य साइटका फोटो, विज्ञापन र टेक्स्टलगायतका सामग्री इम्बेड गर्न सक्छ। यीमध्ये कुनै पनि साइटले तपाईंले प्रयोग गर्ने सुविधा पर्सनलाइज गर्ने प्रयोजनका लागि कुकी तथा अन्य डेटा सेभ गर्न सक्छ।</translation>
 <translation id="4962975101802056554">डिभाइसका सबै अनुमतिहरू फिर्ता लिनुहोस्</translation>
 <translation id="497421865427891073">अगाडि जानुहोस्</translation>
 <translation id="4976702386844183910">पछिल्लो पटक खोलिएको मिति: <ph name="DATE" /></translation>
 <translation id="4994033804516042629">कुनै पनि सम्पर्क ठेगाना भेटिएन</translation>
 <translation id="4996978546172906250">मार्फत साझा गर्नुहोस्</translation>
-<translation id="5014906230196386306">कुकीहरू मेटाउने हो?</translation>
 <translation id="5039804452771397117">अनुमति दिनुहोस्</translation>
 <translation id="5048398596102334565">साइटहरूलाई चालसम्बन्धी सेन्सरहरूमाथि पहुँच राख्ने अनुमति दिनुहोस्‌ (सिफारिस गरिएको)</translation>
 <translation id="5050380848339752099">यो साइटले इन्कोग्निटो मोडबाहिरको एपसँग जानकारी सेयर गर्न लागिरहेको छ।</translation>
 <translation id="5063480226653192405">उपयोग</translation>
+<translation id="5082281938627763039">तपाईंले यसो गर्नुभयो भने <ph name="FPS_MEMBER" /> र <ph name="FPS_OWNER" /> का साइटहरूको समूहमा भएका साइटसम्बन्धी कुकी तथा अन्य साइट डेटा मेटिन्छ</translation>
 <translation id="5091013926750941408">मोबाइल साइट</translation>
 <translation id="509133520954049755">डेस्कटप भ्यू देखाउन अनुरोध गरियोस्</translation>
 <translation id="5100237604440890931">संक्षिप्त भयो - विस्तृत गर्न क्लिक गर्नुहोस्</translation>
@@ -221,6 +223,7 @@
 <translation id="5677928146339483299">ब्लक गरिएको छ</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="5690795753582697420">Android का सेटिङमा क्यामेरा बन्द गरिएको छ</translation>
+<translation id="5706552988683188916">तपाईंले यसो गर्नुभयो भने <ph name="WEBSITE" /> सम्बन्धी कुकी तथा अन्य साइट डेटा मेटिन्छ</translation>
 <translation id="5719847187258001597">यस कार्यले <ph name="ORIGIN" /> ले वा यसको एपले तपाईंको होम स्क्रिनमा भण्डारण गरेका सबै डेटा र कुकीहरू मेटाउने छ।</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> ब्लक गरिएको छ</translation>
 <translation id="5804241973901381774">अनुमतिहरू</translation>
@@ -263,7 +266,6 @@
 <translation id="6554732001434021288">पछिल्लो पटक <ph name="NUM_DAYS" /> दिनअघि खोलिएको</translation>
 <translation id="6561560012278703671">सुटुक्क सन्देश पठाउने सुविधा प्रयोग गर्नुहोस् (यसले सूचनाका प्रम्प्टलाई आफूलाई बाधा पुर्‍याउनबाट रोक लगाउँछ)</translation>
 <translation id="6593061639179217415">डेस्कटप साइट</translation>
-<translation id="6608211702542341247">यो साइट <ph name="FPS_OWNER" /> को समूहअन्तर्गत पर्दछ र यसले सो समूहमा तपाईंका गतिविधि हेर्न सक्छ</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> जि.बि.</translation>
 <translation id="6612358246767739896">संरक्षित सामग्री</translation>
 <translation id="662080504995468778">यहीँ रहनुहोस्</translation>
@@ -314,9 +316,7 @@
 <translation id="7791543448312431591">थप्नुहोस्</translation>
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7804248752222191302">कुनै साइटले तपाईंको क्यामेरा प्रयोग गर्दै छ</translation>
-<translation id="7816129586531226979">सम्बन्धित साइटहरूले तपाईंले हेरेका साइटसम्बन्धी जानकारी याद राख्न सक्छन्</translation>
 <translation id="7817023149356982970">तपाईं यो साइटबाट साइन आउट हुनु हुने छ।</translation>
-<translation id="7828557259026017104">कुकीहरू भनेका तपाईं जाने वेबसाइटहरूले सिर्जना गर्ने फाइल हुन्। तपाईंका प्राथमिकताहरू याद राख्न वेबसाइटहरूले ती कुकीहरूको प्रयोग गर्छन्। अन्य वेबसाइटहरूले तेस्रो पक्षीय कुकीहरू सिर्जना गर्छन्। तपाईं जाने वेबपृष्ठमा तपाईंले देख्ने विज्ञापन वा फोटो जस्ता केही सामग्री यी वेबसाइटहरूको स्वामित्वमा हुन्छन्।</translation>
 <translation id="7835852323729233924">प्ले भइरहेको मिडिया</translation>
 <translation id="783819812427904514">भिडियो अनम्युट गर्नुहोस्</translation>
 <translation id="7846076177841592234">चयन रद्द गर्नुहोस्</translation>
@@ -324,6 +324,7 @@
 <translation id="7882806643839505685">निश्चित साइटको ध्वनिलाई अनुमति दिनुहोस्‌।</translation>
 <translation id="789180354981963912">इन्कोग्निटो मोडमा तेस्रो पक्षीय कुकीहरू ब्लक गरियोस्:</translation>
 <translation id="7940722705963108451">मलाई स्मरण गराइयोस्</translation>
+<translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_OWNER" /> का साइटहरूको समूहमा भएको <ph name="FPS_MEMBERS_COUNT" /> वटा साइटले यस समूहमा तपाईंको गतिविधि देख्न सक्छ}other{<ph name="FPS_OWNER" /> का साइटहरूको समूहमा भएका <ph name="FPS_MEMBERS_COUNT" /> वटा साइटले यस समूहमा तपाईंको गतिविधि देख्न सक्छन्}}</translation>
 <translation id="7986741934819883144">कुनै सम्पर्क ठेगाना चयन गर्नुहोस्</translation>
 <translation id="7999064672810608036">के तपाईं कुकीहरू सहित सबै स्थानीय डेटा खाली गर्न चाहनुहुन्छ, र यो वेबसाइटको लागि सबै अनुमतिहरू रिसेट गर्न चाहनुहुन्छ?</translation>
 <translation id="8007176423574883786">यस डिभाइसका लागि बन्द गरियो।</translation>
@@ -362,6 +363,7 @@
 <translation id="8499083585497694743">माइक्रोफोन अनम्युट गर्नुहोस्</translation>
 <translation id="851751545965956758">साइटहरूलाई यन्त्रमा जडान गर्नबाट रोक लगाउनुहोस्</translation>
 <translation id="8525306231823319788">पूर्ण स्क्रीन</translation>
+<translation id="8564613706851221529">{COUNT,plural, =1{<ph name="FPS_OWNER" /> को <ph name="FPS_MEMBERS_COUNT" /> वटा साइटलाई कुकी प्रयोग गर्ने अनुमति दिइएको छ}other{<ph name="FPS_OWNER" /> का <ph name="FPS_MEMBERS_COUNT" /> वटा साइटलाई कुकी प्रयोग गर्ने अनुमति दिइएको छ}}</translation>
 <translation id="857943718398505171">(सिफारिस गरिएको) अनुमति दिएको</translation>
 <translation id="8609465669617005112">माथि सार्नुहोस्</translation>
 <translation id="8676374126336081632">आगत मेटाउनुहोस्</translation>
@@ -387,6 +389,8 @@
 <translation id="8986362086234534611">बिर्सनुहोस्</translation>
 <translation id="9019902583201351841">तपाईँको अविभावक द्वारा व्यवस्थित</translation>
 <translation id="9074739597929991885">ब्लुटुथ</translation>
+<translation id="9090268041676521955">यो साइट तपाईंको गतिविधि हेर्न मिल्ने समूहमा छ। <ph name="FPS_OWNER" /> ले यो समूह बनाएको हो</translation>
+<translation id="9106233582039520022">कुकीहरू मेटाउने हो?</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> र थप <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> र थप <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289"><ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई <ph name="APP_NAME" /> लाई अनुमति दिनुहोस्।</translation>
 <translation id="9162462602695099906">यो पेज खतरनाक छ</translation>

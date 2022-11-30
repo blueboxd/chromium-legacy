@@ -578,6 +578,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
                 new SettingsLauncherImpl(), tabSwitcherCustomViewSupplier,
                 incognitoReauthTopToolbarDelegate, mLayoutManager,
+                /*showRegularOverviewIntent= */ null,
                 /*isTabbedActivity=*/true);
     }
 
@@ -676,7 +677,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             didTriggerPromo = DeviceFormFactor.isWindowOnTablet(mWindowAndroid)
                     && RequestDesktopUtils.maybeShowGlobalSettingOptInMessage(
                             getPrimaryDisplaySizeInInches(), Profile.getLastUsedRegularProfile(),
-                            mMessageDispatcher, mActivity, mActivityTabProvider.get());
+                            mMessageDispatcher, mActivity, mActivityTabProvider);
         }
 
         if (!didTriggerPromo) {

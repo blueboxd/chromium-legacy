@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
@@ -248,10 +249,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
     {"caretBrowsingTitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_TITLE},
     {"caretBrowsingSubtitle", IDS_SETTINGS_ENABLE_CARET_BROWSING_SUBTITLE},
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     {"manageAccessibilityFeatures",
      IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
-#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#else  // !BUILDFLAG(IS_CHROMEOS)
     {"focusHighlightLabel",
      IDS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION},
 #endif
@@ -747,6 +748,12 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
       {"batterySaverModeEnabledOnBatteryLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_ON_BATTERY_LABEL},
+      {"batterySaverModeRadioGroupAriaLabel",
+       IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_RADIO_GROUP_ARIA_LABEL},
+      {"tabDiscardingExceptionsAddButtonAriaLabel",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_BUTTON_ARIA_LABEL},
+      {"tabDiscardingExceptionsSaveButtonAriaLabel",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_SAVE_BUTTON_ARIA_LABEL},
       {"tabDiscardingExceptionsHeader",
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER},
   };
@@ -763,12 +770,29 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
       "highEfficiencyModeDescription",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING_DESCRIPTION,
-          base::UTF8ToUTF16(chrome::kHighEfficiencyModeLearnMoreUrl)));
+          base::UTF8ToUTF16(chrome::kHighEfficiencyModeLearnMoreUrl),
+          base::EscapeForHTML(l10n_util::GetStringUTF16(
+              IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_LEARN_MORE_ARIA_LABEL))
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+              ,
+          base::EscapeForHTML(l10n_util::GetStringUTF16(
+              IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_SEND_FEEDBACK_ARIA_LABEL))
+#endif
+              ));
+
   html_source->AddString(
       "batterySaverModeDescription",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING_DESCRIPTION,
-          base::UTF8ToUTF16(chrome::kBatterySaverModeLearnMoreUrl)));
+          base::UTF8ToUTF16(chrome::kBatterySaverModeLearnMoreUrl),
+          base::EscapeForHTML(l10n_util::GetStringUTF16(
+              IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_LEARN_MORE_ARIA_LABEL))
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+              ,
+          base::EscapeForHTML(l10n_util::GetStringUTF16(
+              IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_SEND_FEEDBACK_ARIA_LABEL))
+#endif
+              ));
 
   html_source->AddString("highEfficiencyLearnMoreUrl",
                          chrome::kHighEfficiencyModeLearnMoreUrl);
@@ -1660,16 +1684,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
-  html_source->AddBoolean(
-      "consolidatedSiteStorageControlsEnabled",
-      base::FeatureList::IsEnabled(
-          features::kConsolidatedSiteStorageControls) ||
-          // The third release of Privacy Sandbox settings depends on the
-          // simplified control structure. Ideally simplified controls will
-          // launch to 100% in advance of the Privacy Sandbox, but the Sandbox
-          // cannot launch without this simplification enabled.
-          base::FeatureList::IsEnabled(
-              privacy_sandbox::kPrivacySandboxSettings3));
 
   bool show_secure_dns = IsSecureDnsAvailable();
   bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
@@ -1987,8 +2001,6 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL},
     {"safetyCheckExtensionsButtonAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL},
-    {"safetyCheckNotificationPermissionReviewPrimaryLabel",
-     IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL},
     {"safetyCheckNotificationPermissionReviewSecondaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL},
     {"safetyCheckNotificationPermissionReviewIgnoredToastLabel",
@@ -2015,6 +2027,8 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_UNDO},
     {"safetyCheckNotificationPermissionReviewDoneLabel",
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_DONE_LABEL},
+    {"safetyCheckNotificationPermissionReviewBlockAllLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_BLOCK_ALL_LABEL},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"safetyCheckChromeCleanerPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},
@@ -2472,33 +2486,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsSourceKillSwitch",
      IDS_SETTINGS_SITE_SETTINGS_SOURCE_KILL_SWITCH},
     {"siteSettingsReset", IDS_SETTINGS_SITE_SETTINGS_RESET_BUTTON},
-    {"siteSettingsCookieHeader", IDS_SETTINGS_SITE_SETTINGS_COOKIE_HEADER},
-    {"siteSettingsCookieLink", IDS_SETTINGS_SITE_SETTINGS_COOKIE_LINK},
-    {"siteSettingsCookieRemove", IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE},
-    {"siteSettingsCookieRemoveAll",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL},
-    {"siteSettingsCookieRemoveAllShown",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_SHOWN},
-    {"siteSettingsCookieRemoveAllThirdParty",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_THIRD_PARTY},
-    {"siteSettingsCookieRemoveThirdPartyDialogTitle",
-     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_DIALOG_TITLE},
-    {"siteSettingsCookieRemoveThirdPartyConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_CONFIRMATION},
-    {"siteSettingsCookiesClearThirdParty",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_THIRD_PARTY_COOKIES},
     {"siteSettingsCookiesThirdPartyExceptionLabel",
      IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIES_EXCEPTION_LABEL},
-    {"siteSettingsCookieRemoveDialogTitle",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE},
-    {"siteSettingsCookieRemoveMultipleConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_MULTIPLE},
     {"siteSettingsCookieRemoveSite",
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_SITE},
-    {"siteSettingsCookiesClearAll",
-     IDS_SETTINGS_SITE_SETTINGS_COOKIES_CLEAR_ALL},
-    {"siteSettingsCookieSearch", IDS_SETTINGS_SITE_SETTINGS_COOKIE_SEARCH},
-    {"siteSettingsCookieSubpage", IDS_SETTINGS_SITE_SETTINGS_COOKIE_SUBPAGE},
     {"siteSettingsDelete", IDS_SETTINGS_SITE_SETTINGS_DELETE},
     {"siteSettingsClearAllStorageDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_DIALOG_TITLE},
@@ -2528,14 +2519,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_SIGN_OUT},
     {"firstPartySetsMembershipLabel",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_MEMBERSHIP_LABEL},
+    {"firstPartySetsMoreActionsTitle",
+     IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_MORE_ACTIONS_TITLE},
     {"firstPartySetsShowRelatedSitesButton",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_SHOW_RELATED_SITES_BUTTON},
     {"firstPartySetsSiteClearStorageButton",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_SITE_CLEAR_STORAGE_BUTTON},
-    {"siteSettingsOriginDeleteConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION},
-    {"siteSettingsOriginDeleteConfirmationInstalled",
-     IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION_INSTALLED},
     {"siteSettingsSiteGroupDeleteConfirmationInstalledPlural",
      IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_INSTALLED_PLURAL},
     {"siteSettingsSiteClearStorage",
@@ -2957,11 +2946,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableExperimentalWebPlatformFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
-
-  html_source->AddBoolean(
-      "enableRemovingAllThirdPartyCookies",
-      base::FeatureList::IsEnabled(
-          browsing_data::features::kEnableRemovingAllThirdPartyCookies));
 
   html_source->AddBoolean(
       "enableQuietNotificationPromptsSetting",

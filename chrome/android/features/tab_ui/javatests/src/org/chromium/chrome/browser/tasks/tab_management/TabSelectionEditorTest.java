@@ -35,6 +35,7 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_STRIP_IMPR
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_TO_GTS_ANIMATION;
 
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,8 +65,9 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -334,7 +336,7 @@ public class TabSelectionEditorTest {
 
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/1237368")
+    @DisabledTest(message = "https://crbug.com/1237368")
     public void testToolbarGroupButton() {
         prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
@@ -513,6 +515,45 @@ public class TabSelectionEditorTest {
         assertEquals(3, getTabsInCurrentTabModel().size());
     }
 
+    // Regression test for https://crbug.com/1374935
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    public void testToolbarMenuItem_GroupActionView_WithGroups() {
+        prepareBlankTab(2, false); // Index: 0, 1
+        prepareBlankTabGroup(3, false); // Index: 2
+        prepareBlankTabGroup(1, false); // Index: 3
+        prepareBlankTabGroup(2, false); // Index: 4
+        List<Tab> tabs = getTabsInCurrentTabModelFilter();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<TabSelectionEditorAction> actions = new ArrayList<>();
+            actions.add(TabSelectionEditorGroupAction.createAction(sActivityTestRule.getActivity(),
+                    ShowMode.IF_ROOM, ButtonType.TEXT, IconPosition.START));
+
+            mTabSelectionEditorController.configureToolbarWithMenuItems(actions, null);
+            mTabSelectionEditorController.show(tabs);
+        });
+
+        final int groupId = R.id.tab_selection_editor_group_menu_item;
+        mRobot.resultRobot.verifyToolbarActionViewDisabled(groupId);
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(4)
+                .clickItemAtAdapterPosition(3)
+                .clickItemAtAdapterPosition(1)
+                .clickItemAtAdapterPosition(0);
+
+        mRobot.resultRobot.verifyToolbarActionViewEnabled(groupId).verifyToolbarSelectionText(
+                "5 tabs");
+
+        View close = mTabSelectionEditorLayout.getToolbar().findViewById(groupId);
+        assertEquals("Group 5 selected tabs", close.getContentDescription());
+
+        mRobot.actionRobot.clickToolbarActionView(groupId);
+
+        assertEquals(2, getTabsInCurrentTabModelFilter().size());
+    }
+
     @Test
     @MediumTest
     @Feature({"RenderTest"})
@@ -607,8 +648,12 @@ public class TabSelectionEditorTest {
     @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
     public void testToolbarMenuItem_ShareActionView() throws IOException {
         Intents.init();
-        prepareBlankTab(3, false);
+        prepareBlankTab(1, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
+
+        final String httpsCanonicalUrl =
+                sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTPS_CANONICAL_URL);
+        sActivityTestRule.loadUrl(httpsCanonicalUrl);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             List<TabSelectionEditorAction> actions = new ArrayList<>();
@@ -624,13 +669,13 @@ public class TabSelectionEditorTest {
         mRobot.resultRobot.verifyToolbarActionViewWithText(shareId, "Share tabs");
         mRobot.resultRobot.verifyToolbarActionViewDisabled(shareId);
 
-        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(2);
+        mRobot.actionRobot.clickItemAtAdapterPosition(0);
 
         mRobot.resultRobot.verifyToolbarActionViewEnabled(shareId).verifyToolbarSelectionText(
-                "2 tabs");
+                "1 tab");
 
         View share = mTabSelectionEditorLayout.getToolbar().findViewById(shareId);
-        assertEquals("Share 2 selected tabs", share.getContentDescription());
+        assertEquals("Share 1 selected tab", share.getContentDescription());
 
         mRobot.actionRobot.clickToolbarActionView(shareId);
 
@@ -664,11 +709,11 @@ public class TabSelectionEditorTest {
             mTabSelectionEditorController.show(tabs);
         });
 
-        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(2);
-
         final String httpsCanonicalUrl =
                 sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTPS_CANONICAL_URL);
         sActivityTestRule.loadUrl(httpsCanonicalUrl);
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(2);
 
         final int shareId = R.id.tab_selection_editor_share_menu_item;
         mRobot.actionRobot.clickToolbarActionView(shareId);
@@ -681,9 +726,8 @@ public class TabSelectionEditorTest {
 
         String sharedUrls[] = shareParamsCaptorValue.getTextAndUrl().split("\\r?\\n");
 
-        assertEquals(2, sharedUrls.length);
-        assertEquals("1. about:blank", sharedUrls[0]);
-        assertEquals("2. " + httpsCanonicalUrl, sharedUrls[1]);
+        assertEquals(1, sharedUrls.length);
+        assertEquals(httpsCanonicalUrl, sharedUrls[0]);
     }
 
     @Test
@@ -693,6 +737,7 @@ public class TabSelectionEditorTest {
         ArrayList<String> urls = new ArrayList<String>();
         urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTPS_CANONICAL_URL));
         urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTP_CANONICAL_URL));
+        urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_NO_CANONICAL_URL));
         urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_NO_CANONICAL_URL));
 
         prepareTabGroupWithUrls(urls, false);
@@ -723,21 +768,30 @@ public class TabSelectionEditorTest {
 
         String sharedUrls[] = shareParamsCaptorValue.getTextAndUrl().split("\\r?\\n");
 
-        assertEquals(5, sharedUrls.length);
+        assertEquals(4, sharedUrls.length);
         assertEquals("1. " + urls.get(0), sharedUrls[0]);
         assertEquals("2. " + urls.get(1), sharedUrls[1]);
         assertEquals("3. " + urls.get(2), sharedUrls[2]);
-        assertEquals("4. about:blank", sharedUrls[3]);
-        assertEquals("5. about:blank", sharedUrls[4]);
+        assertEquals("4. " + urls.get(3), sharedUrls[3]);
     }
 
     @Test
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
     public void testToolbarMenuItem_ShareActionTabsWithGroups() throws IOException {
-        prepareBlankTab(1, false);
-        prepareBlankTabGroup(3, false);
+        prepareBlankTab(2, false);
+
+        final String httpsCanonicalUrl =
+                sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTPS_CANONICAL_URL);
+        sActivityTestRule.loadUrl(httpsCanonicalUrl);
+
         prepareBlankTabGroup(2, false);
+
+        ArrayList<String> urls = new ArrayList<String>();
+        urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTP_CANONICAL_URL));
+        urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_NO_CANONICAL_URL));
+        prepareTabGroupWithUrls(urls, false);
+
         List<Tab> tabs = getTabsInCurrentTabModelFilter();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -750,11 +804,10 @@ public class TabSelectionEditorTest {
             mTabSelectionEditorController.show(tabs);
         });
 
-        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(2);
-
-        final String httpsCanonicalUrl =
-                sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTPS_CANONICAL_URL);
-        sActivityTestRule.loadUrl(httpsCanonicalUrl);
+        mRobot.actionRobot.clickItemAtAdapterPosition(0)
+                .clickItemAtAdapterPosition(1)
+                .clickItemAtAdapterPosition(2)
+                .clickItemAtAdapterPosition(3);
 
         final int shareId = R.id.tab_selection_editor_share_menu_item;
         mRobot.actionRobot.clickToolbarActionView(shareId);
@@ -768,9 +821,32 @@ public class TabSelectionEditorTest {
         String sharedUrls[] = shareParamsCaptorValue.getTextAndUrl().split("\\r?\\n");
 
         assertEquals(3, sharedUrls.length);
-        assertEquals("1. about:blank", sharedUrls[0]);
-        assertEquals("2. about:blank", sharedUrls[1]);
-        assertEquals("3. " + httpsCanonicalUrl, sharedUrls[2]);
+        assertEquals("1. " + httpsCanonicalUrl, sharedUrls[0]);
+        assertEquals("2. " + urls.get(0), sharedUrls[1]);
+        assertEquals("3. " + urls.get(1), sharedUrls[2]);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    public void testToolbarMenuItem_ShareActionAllFilterableTabs() throws Exception {
+        prepareBlankTab(2, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<TabSelectionEditorAction> actions = new ArrayList<>();
+            actions.add(TabSelectionEditorShareAction.createAction(sActivityTestRule.getActivity(),
+                    ShowMode.IF_ROOM, ButtonType.ICON_AND_TEXT, IconPosition.END,
+                    sActivityTestRule.getActivity().getShareDelegateSupplier()));
+
+            mTabSelectionEditorController.configureToolbarWithMenuItems(actions, null);
+            mTabSelectionEditorController.show(tabs);
+        });
+
+        final int shareId = R.id.tab_selection_editor_share_menu_item;
+        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(1);
+        mRobot.resultRobot.verifyToolbarActionViewDisabled(shareId).verifyToolbarSelectionText(
+                "2 tabs");
     }
 
     @Test
@@ -1132,6 +1208,39 @@ public class TabSelectionEditorTest {
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.N, message = "crbug/1374370")
+    public void testToolbarMenuItem_SelectAllMenu() {
+        prepareBlankTab(2, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<TabSelectionEditorAction> actions = new ArrayList<>();
+            actions.add(TabSelectionEditorSelectionAction.createAction(
+                    sActivityTestRule.getActivity(), ShowMode.MENU_ONLY, ButtonType.TEXT,
+                    IconPosition.START, /*isIncognito=*/false));
+            actions.add(TabSelectionEditorCloseAction.createAction(sActivityTestRule.getActivity(),
+                    ShowMode.MENU_ONLY, ButtonType.TEXT, IconPosition.START));
+
+            mTabSelectionEditorController.configureToolbarWithMenuItems(actions, null);
+            mTabSelectionEditorController.show(tabs);
+        });
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        mRobot.actionRobot.clickToolbarMenuButton();
+        mRobot.resultRobot.verifyToolbarMenuItemState("Select all", /*enabled=*/true)
+                .verifyToolbarMenuItemState("Close tabs", /*enabled=*/false);
+        mRobot.actionRobot.clickToolbarMenuItem("Select all");
+        mRobot.resultRobot.verifyToolbarMenuItemState("Deselect all", /*enabled=*/true)
+                .verifyToolbarMenuItemState("Close tabs", /*enabled=*/true);
+        mRobot.actionRobot.clickToolbarMenuItem("Deselect all");
+        mRobot.resultRobot.verifyToolbarMenuItemState("Select all", /*enabled=*/true);
+        Espresso.pressBack();
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testToolbarActionViewAndMenuItemContentDescription() {
         prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
@@ -1163,6 +1272,12 @@ public class TabSelectionEditorTest {
         mRobot.actionRobot.clickToolbarMenuButton();
         mRobot.resultRobot.verifyToolbarMenuItemState("Group tabs", /*enabled=*/true)
                 .verifyToolbarMenuItemWithContentDescription("Group tabs", "Group 2 selected tabs");
+        Espresso.pressBack();
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickToolbarMenuButton();
+        assertEquals("Close 1 selected tab", close.getContentDescription());
+        mRobot.resultRobot.verifyToolbarMenuItemState("Group tab", /*enabled=*/false)
+                .verifyToolbarMenuItemWithContentDescription("Group tab", null);
         Espresso.pressBack();
     }
 

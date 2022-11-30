@@ -11,6 +11,7 @@
 #include "components/messages/android/message_wrapper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store_backend_error.h"
+#include "components/prefs/pref_service.h"
 
 namespace content {
 class WebContents;
@@ -22,24 +23,27 @@ class PasswordManagerErrorMessageDelegate {
       std::unique_ptr<PasswordManagerErrorMessageHelperBridge> bridge_);
   ~PasswordManagerErrorMessageDelegate();
 
-  // Displays a password error message for current `web_contents` if enough
-  // time has passed since the last error message was displayed.
-  // `ErrorMessageFlowType` decides whether the error message mentions the
-  // inability to save or use passwords.
-  void MaybeDisplayErrorMessage(
-      content::WebContents* web_contents,
-      password_manager::ErrorMessageFlowType flow_type,
-      password_manager::PasswordStoreBackendErrorType error_type,
-      base::OnceCallback<void()> dismissal_callback);
+  // Dismisses the message if one is enqueued. Called when the `WebContents` is
+  // destroyed, but before the owner of `this` is destroyed. This is to ensure
+  // that any message that is still showing is dismissed before the `message_`
+  // is destroyed.
   void DismissPasswordManagerErrorMessage(
       messages::DismissReason dismiss_reason);
 
+  // Displays a password error message for current `web_contents` if enough
+  // time has passed since the last error message was displayed.
+  // `ErrorMessageFlowType` decides whether the error message mentions the
+  // inability to save or use passwords. The `pref_service` is used to count
+  // how many times the prompt was shown.
+  void MaybeDisplayErrorMessage(
+      content::WebContents* web_contents,
+      PrefService* pref_service,
+      password_manager::ErrorMessageFlowType flow_type,
+      password_manager::PasswordStoreBackendErrorType error_type,
+      base::OnceCallback<void()> dismissal_callback);
+
  private:
   friend class PasswordManagerErrorMessageDelegateTest;
-
-  std::unique_ptr<messages::MessageWrapper> message_;
-  std::unique_ptr<PasswordManagerErrorMessageHelperBridge> helper_bridge_;
-  base::OnceCallback<void()> dismissal_callback_;
 
   void CreateMessage(content::WebContents* web_contents,
                      password_manager::ErrorMessageFlowType flow_type);
@@ -51,6 +55,10 @@ class PasswordManagerErrorMessageDelegate {
   void RecordDismissalReasonMetrics(messages::DismissReason dismiss_reason);
   void RecordErrorTypeMetrics(
       password_manager::PasswordStoreBackendErrorType error_type);
+
+  std::unique_ptr<messages::MessageWrapper> message_;
+  std::unique_ptr<PasswordManagerErrorMessageHelperBridge> helper_bridge_;
+  base::OnceCallback<void()> dismissal_callback_;
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_MANAGER_ERROR_MESSAGE_DELEGATE_H_

@@ -453,23 +453,37 @@ export interface SiteSettingsPrefsBrowserProxy {
   /** Gets the site list that send a lot of notifications. */
   getNotificationPermissionReview(): Promise<NotificationPermission[]>;
 
-  /** Blocks the notification permission for the origin. */
-  blockNotificationPermissionForOrigin(origin: string): void;
+  /** Blocks the notification permission for all origins in the list. */
+  blockNotificationPermissionForOrigins(origins: string[]): void;
 
-  /** Allows the notification permission for the origin. */
-  allowNotificationPermissionForOrigin(origin: string): void;
+  /** Allows the notification permission for all origins in the list */
+  allowNotificationPermissionForOrigins(origins: string[]): void;
 
-  /** Adds the origin to blocklist for the notification permissions feature. */
-  ignoreNotificationPermissionForOrigin(origin: string): void;
+  /** Adds the origins to blocklist for the notification permissions feature. */
+  ignoreNotificationPermissionForOrigins(origins: string[]): void;
 
   /**
-   * Removes the origin from the blocklist for the notification permissions
+   * Removes the origins from the blocklist for the notification permissions
    * feature.
    */
-  undoIgnoreNotificationPermissionForOrigin(origin: string): void;
+  undoIgnoreNotificationPermissionForOrigins(origins: string[]): void;
 
-  /** Resets the notification permission for the origin. */
-  resetNotificationPermissionForOrigin(origin: string): void;
+  /** Resets the notification permission for the origins. */
+  resetNotificationPermissionForOrigins(origin: string[]): void;
+
+  /**
+   * Gets display string for FPS information of owner and member count.
+   * @param fpsNumMembers The number of members in the first party set.
+   * @param fpsOwner The eTLD+1 for the first party set owner.
+   */
+  getFpsMembershipLabel(fpsNumMembers: number, fpsOwner: string):
+      Promise<string>;
+
+  /**
+   * Gets the plural string for a given number of cookies.
+   * @param numCookies The number of cookies.
+   */
+  getNumCookiesString(numCookies: number): Promise<string>;
 }
 
 export class SiteSettingsPrefsBrowserProxyImpl implements
@@ -628,34 +642,42 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
     return sendWithPromise('getNotificationPermissionReview');
   }
 
-  blockNotificationPermissionForOrigin(origin: string) {
-    chrome.send('blockNotificationPermissionForOrigin', [
-      origin,
+  blockNotificationPermissionForOrigins(origins: string[]) {
+    chrome.send('blockNotificationPermissionForOrigins', [
+      origins,
     ]);
   }
 
-  allowNotificationPermissionForOrigin(origin: string) {
-    chrome.send('allowNotificationPermissionForOrigin', [
-      origin,
+  allowNotificationPermissionForOrigins(origins: string[]) {
+    chrome.send('allowNotificationPermissionForOrigins', [
+      origins,
     ]);
   }
 
-  ignoreNotificationPermissionForOrigin(origin: string) {
-    chrome.send('ignoreNotificationPermissionReviewForOrigin', [
-      origin,
+  ignoreNotificationPermissionForOrigins(origins: string[]) {
+    chrome.send('ignoreNotificationPermissionReviewForOrigins', [
+      origins,
     ]);
   }
 
-  undoIgnoreNotificationPermissionForOrigin(origin: string) {
-    chrome.send('undoIgnoreNotificationPermissionReviewForOrigin', [
-      origin,
+  undoIgnoreNotificationPermissionForOrigins(origins: string[]) {
+    chrome.send('undoIgnoreNotificationPermissionReviewForOrigins', [
+      origins,
     ]);
   }
 
-  resetNotificationPermissionForOrigin(origin: string) {
-    chrome.send('resetNotificationPermissionForOrigin', [
-      origin,
+  resetNotificationPermissionForOrigins(origins: string[]) {
+    chrome.send('resetNotificationPermissionForOrigins', [
+      origins,
     ]);
+  }
+
+  getFpsMembershipLabel(fpsNumMembers: number, fpsOwner: string) {
+    return sendWithPromise('getFpsMembershipLabel', fpsNumMembers, fpsOwner);
+  }
+
+  getNumCookiesString(numCookies: number) {
+    return sendWithPromise('getNumCookiesString', numCookies);
   }
 
   static getInstance(): SiteSettingsPrefsBrowserProxy {

@@ -480,9 +480,6 @@ const FeatureEntry::FeatureVariation kTrendingQueriesModuleVariations[] = {
      std::size(kTrendingQueriesEnableFeedDisabled), nullptr},
 };
 
-const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
-    {kNewMobileIdentityConsistencyFREParam,
-     kNewMobileIdentityConsistencyFREParamUMADialog}};
 const FeatureEntry::FeatureParam kNewMICEFREWithTangibleSyncA[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamTangibleSyncA}};
@@ -497,8 +494,6 @@ const FeatureEntry::FeatureParam kNewMICEFREWithTwoSteps[] = {
      kNewMobileIdentityConsistencyFREParamTwoSteps}};
 const FeatureEntry::FeatureVariation
     kNewMobileIdentityConsistencyFREVariations[] = {
-        {"New FRE with UMA dialog", kNewMICEFREWithUMADialog,
-         std::size(kNewMICEFREWithUMADialog), nullptr},
         {"new FRE with tangible sync A", kNewMICEFREWithTangibleSyncA,
          std::size(kNewMICEFREWithTangibleSyncA), nullptr},
         {"new FRE with tangible sync B", kNewMICEFREWithTangibleSyncB,
@@ -571,6 +566,19 @@ const FeatureEntry::FeatureParam kIOSNewPostRestoreExperienceMinimal[] = {
 const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
     {{"minimal", kIOSNewPostRestoreExperienceMinimal,
       std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
+
+const FeatureEntry::FeatureParam kFollowingFeedSortTypeGroupedByPublisher[] = {
+    {kFollowingFeedDefaultSortTypeGroupedByPublisher, "true"},
+    {kFollowingFeedDefaultSortTypeSortByLatest, "false"}};
+const FeatureEntry::FeatureParam kFollowingFeedSortTypeSortByLatest[] = {
+    {kFollowingFeedDefaultSortTypeGroupedByPublisher, "false"},
+    {kFollowingFeedDefaultSortTypeSortByLatest, "true"}};
+
+const FeatureEntry::FeatureVariation kFollowingFeedDefaultSortTypeVariations[] =
+    {{"Grouped by Publisher", kFollowingFeedSortTypeGroupedByPublisher,
+      std::size(kFollowingFeedSortTypeGroupedByPublisher), nullptr},
+     {"Sort by Latest", kFollowingFeedSortTypeSortByLatest,
+      std::size(kFollowingFeedSortTypeSortByLatest), nullptr}};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -1259,14 +1267,26 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTFLiteLanguageDetectionIgnoreDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionIgnoreEnabled)},
-    {"app-store-rating-test-engaged-user",
-     flag_descriptions::kAppStoreRatingIgnoreEligibilityCheckTestName,
-     flag_descriptions::kAppStoreRatingIgnoreEligibilityCheckTestDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kAppStoreRatingIgnoreEligibilityCheckTest)},
     {"keyboard-shortcuts-menu", flag_descriptions::kKeyboardShortcutsMenuName,
      flag_descriptions::kKeyboardShortcutsMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kKeyboardShortcutsMenu)},
+    {"enable-check-visibility-on-attention-log-start",
+     flag_descriptions::kEnableCheckVisibilityOnAttentionLogStartName,
+     flag_descriptions::kEnableCheckVisibilityOnAttentionLogStartDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableCheckVisibilityOnAttentionLogStart)},
+    {"enable-refine-data-source-reload-reporting",
+     flag_descriptions::kEnableRefineDataSourceReloadReportingName,
+     flag_descriptions::kEnableRefineDataSourceReloadReportingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableRefineDataSourceReloadReporting)},
+    {"enable-default-following-feed-sort-type",
+     flag_descriptions::kFollowingFeedDefaultSortTypeName,
+     flag_descriptions::kFollowingFeedDefaultSortTypeDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kFollowingFeedDefaultSortType,
+                                    kFollowingFeedDefaultSortTypeVariations,
+                                    "FollowingFeedDefaultSortType")},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

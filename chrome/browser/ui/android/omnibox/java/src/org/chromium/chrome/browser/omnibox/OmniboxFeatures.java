@@ -24,6 +24,11 @@ public class OmniboxFeatures {
                     ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
                     "modernize_visual_update_active_color_on_omnibox", false);
 
+    public static final BooleanCachedFieldTrialParameter
+            MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN = new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
+                    "modernize_visual_update_small_bottom_margin", false);
+
     /**
      * @param context The activity context.
      * @return Whether the new modernize visual UI update should be shown.
@@ -42,6 +47,14 @@ public class OmniboxFeatures {
     }
 
     /**
+     * @return Whether to show an active color for Omnibox which has a different background color
+     *         than toolbar.
+     */
+    public static boolean shouldShowSmallBottomMargin() {
+        return MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN.getValue();
+    }
+
+    /**
      * @param context The activity context.
      * @return Whether current activity is in tablet mode.
      */
@@ -54,5 +67,12 @@ public class OmniboxFeatures {
      */
     private static boolean enabledModernizeVisualUpdateOnTablet() {
         return ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET.getValue();
+    }
+
+    /**
+     * Returns whether excessive calls to RecycledViewPool#clear should be removed.
+     */
+    public static boolean shouldRemoveExcessiveRecycledViewClearCalls() {
+        return ChromeFeatureList.sOmniboxRemoveExcessiveRecycledViewClearCalls.isEnabled();
     }
 }

@@ -4,9 +4,20 @@
 
 #import "ios/chrome/browser/ui/whats_new/whats_new_coordinator.h"
 
+#import "base/check_op.h"
+#import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
+#import "base/time/time.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_detail_coordinator.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_detail_view_controller.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_mediator.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_table_view_controller.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,7 +30,7 @@ NSString* const kTableViewNavigationDismissButtonId =
 
 }  // namespace
 
-@interface WhatsNewCoordinator ()
+@interface WhatsNewCoordinator () <UINavigationControllerDelegate>
 
 // The mediator to display What's New data.
 @property(nonatomic, strong) WhatsNewMediator* mediator;
@@ -28,6 +39,15 @@ NSString* const kTableViewNavigationDismissButtonId =
     TableViewNavigationController* navigationController;
 // The view controller used to display the What's New features and chrome tips.
 @property(nonatomic, strong) WhatsNewTableViewController* tableViewController;
+// The coordinator used for What's New feature.
+@property(nonatomic, strong)
+    WhatsNewDetailCoordinator* whatsNewDetailCoordinator;
+// Browser coordinator command handler.
+@property(nonatomic, readonly) id<ApplicationCommands> applicationHandler;
+// The starting time of What's New.
+@property(nonatomic, assign) base::TimeTicks whatsNewStartTime;
+// Browser coordinator command handler.
+@property(nonatomic, readonly) id<BrowserCoordinatorCommands> handler;
 
 @end
 
@@ -37,30 +57,95 @@ NSString* const kTableViewNavigationDismissButtonId =
 
 - (void)start {
   self.mediator = [[WhatsNewMediator alloc] init];
+  self.mediator.urlLoadingAgent =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
   self.tableViewController = [[WhatsNewTableViewController alloc] init];
   self.tableViewController.navigationItem.rightBarButtonItem =
       [self dismissButton];
 
-  self.tableViewController.delegate = self.mediator;
+  self.tableViewController.delegate = self;
+  self.tableViewController.actionHandler = self.mediator;
   self.mediator.consumer = self.tableViewController;
+  self.mediator.handler = self.applicationHandler;
 
   [self.tableViewController reloadData];
 
   self.navigationController = [[TableViewNavigationController alloc]
       initWithTable:self.tableViewController];
+  self.navigationController.delegate = self;
   [self.baseViewController presentViewController:self.navigationController
                                         animated:YES
                                       completion:nil];
+  self.whatsNewStartTime = base::TimeTicks::Now();
+  self.mediator.baseViewController = self.tableViewController;
 
   [super start];
 }
 
 - (void)stop {
+  if (self.whatsNewDetailCoordinator) {
+    [self.whatsNewDetailCoordinator stop];
+    self.whatsNewDetailCoordinator = nil;
+  }
   self.mediator = nil;
+  [self.navigationController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
+  self.tableViewController = nil;
+  self.navigationController = nil;
+
+  base::RecordAction(base::UserMetricsAction("WhatsNew.Dismissed"));
+  UmaHistogramMediumTimes("IOS.WhatsNew.TimeSpent",
+                          base::TimeTicks::Now() - self.whatsNewStartTime);
+
+  if (self.shouldShowBubblePromoOnDismiss) {
+    [self.handler showWhatsNewIPH];
+  }
+
   [super stop];
 }
 
+#pragma mark - UINavigationControllerDelegate
+
+- (void)navigationController:(UINavigationController*)navigationController
+      willShowViewController:(UIViewController*)viewController
+                    animated:(BOOL)animated {
+  // No-op if the previous view controller is not the detail view.
+  if (!self.whatsNewDetailCoordinator) {
+    return;
+  }
+
+  // Stop the detail coordinator if the next view is the table view given that
+  // the previous view was the detail view..
+  if (viewController == self.tableViewController) {
+    [self.whatsNewDetailCoordinator stop];
+    self.whatsNewDetailCoordinator = nil;
+  }
+}
+
+#pragma mark - WhatsNewTableViewDelegate
+
+- (void)detailViewController:
+            (WhatsNewTableViewController*)whatsNewTableviewController
+    openDetailViewControllerForItem:(WhatsNewItem*)item {
+  DCHECK_EQ(self.tableViewController, whatsNewTableviewController);
+
+  self.whatsNewDetailCoordinator = [[WhatsNewDetailCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                               browser:self.browser
+                                  item:item
+                         actionHandler:self.mediator];
+  [self.whatsNewDetailCoordinator start];
+}
+
 #pragma mark Private
+
+- (id<ApplicationCommands>)applicationHandler {
+  id<ApplicationCommands> handler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+
+  return handler;
+}
 
 - (UIBarButtonItem*)dismissButton {
   UIBarButtonItem* button = [[UIBarButtonItem alloc]
@@ -72,13 +157,19 @@ NSString* const kTableViewNavigationDismissButtonId =
 }
 
 - (void)dismissButtonTapped {
-  [self.navigationController.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:nil];
-  self.tableViewController = nil;
-  self.navigationController = nil;
+  [self dismiss];
+}
 
-  [self stop];
+- (void)dismiss {
+  [self.handler dismissWhatsNew];
+}
+
+- (id<BrowserCoordinatorCommands>)handler {
+  id<BrowserCoordinatorCommands> handler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), BrowserCoordinatorCommands);
+  DCHECK(handler);
+
+  return handler;
 }
 
 @end

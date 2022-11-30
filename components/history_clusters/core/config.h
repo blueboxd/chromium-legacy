@@ -198,6 +198,10 @@ struct Config {
   // `omnibox_history_cluster_provider` is disabled.
   bool omnibox_history_cluster_provider_on_navigation_intents = false;
 
+  // If enabled, allows the suggestion row to be ranked in any position;
+  // otherwise, always ranked last.
+  bool omnibox_history_cluster_provider_free_ranking = false;
+
   // The `kOnDeviceClusteringKeywordFiltering` feature and child params.
 
   // If enabled, adds the keywords of aliases for detected entity names to a
@@ -267,10 +271,6 @@ struct Config {
   // Returns the weight to use for visits that are search results pages ranking
   // visits within a cluster. Will always be greater than or equal to 0.
   float search_results_page_ranking_weight = 2.0;
-
-  // Returns the weight to use for visits that have page titles ranking visits
-  // within a cluster. Will always be greater than or equal to 0.
-  float has_page_title_ranking_weight = 2.0;
 
   // Whether to determine whether to show/hide clusters on prominent UI surfaces
   // based on categories annotated for a visit.

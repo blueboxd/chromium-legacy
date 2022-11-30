@@ -41,6 +41,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -296,7 +297,11 @@ class SiteSettingsHandlerTest : public testing::Test,
     base::Time date = base::Time::Now();
     base::Time::Exploded date_exploded;
     date.LocalExplode(&date_exploded);
-    int day_of_week = date_exploded.day_of_week;
+    // |day_of_week| returns 0 for Sunday, but NotificationEngagementService
+    // starts counting on Mondays. So here, setting Sunday as 7 to record
+    // notifications correctly and to prevent calculation errors.
+    int day_of_week =
+        !date_exploded.day_of_week ? 7 : date_exploded.day_of_week;
 
     // Notification count holds in buckets for each monday. So to calculate
     // necessary notification count, here the day_of_week is calculated.
@@ -550,6 +555,17 @@ class SiteSettingsHandlerTest : public testing::Test,
     EXPECT_EQ(expected_fps_policy, data.arg_nth(5)->GetBool());
   }
 
+  void ValidateNotificationPermissionUpdate() {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ("notification-permission-review-list-maybe-changed",
+              data.arg1()->GetString());
+
+    ASSERT_TRUE(data.arg2()->is_list());
+  }
+
   void CreateIncognitoProfile() {
     incognito_profile_ = TestingProfile::Builder().BuildIncognito(profile());
   }
@@ -692,6 +708,14 @@ class SiteSettingsHandlerTest : public testing::Test,
          ConvertEtldToSchemefulSite("unrelated.com")}};
 
     return first_party_sets;
+  }
+
+  base::Value::List GetOriginList(int size) {
+    base::Value::List origins;
+    for (int i = 0; i < size; i++) {
+      origins.Append("https://example" + base::NumberToString(i) + ".org:443");
+    }
+    return origins;
   }
 
   // Content setting group name for the relevant ContentSettingsType.
@@ -3199,7 +3223,11 @@ TEST_F(SiteSettingsHandlerTest, FirstPartySetsMembership) {
 }
 
 TEST_F(SiteSettingsHandlerTest,
-       HandleIgnoreOriginForNotificationPermissionReview) {
+       HandleIgnoreOriginsForNotificationPermissionReview) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      ::features::kSafetyCheckNotificationPermissions);
+
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSettingsForOneType ignored_patterns;
@@ -3208,72 +3236,103 @@ TEST_F(SiteSettingsHandlerTest,
   ASSERT_EQ(0U, ignored_patterns.size());
 
   base::Value::List args;
-  args.Append("https://www.google.com:443");
-  handler()->HandleIgnoreOriginForNotificationPermissionReview(args);
+  args.Append(GetOriginList(1));
+  handler()->HandleIgnoreOriginsForNotificationPermissionReview(args);
 
   // Check there is 1 origin in ignore list.
   content_settings->GetSettingsForOneType(
       ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, &ignored_patterns);
   ASSERT_EQ(1U, ignored_patterns.size());
+
+  ValidateNotificationPermissionUpdate();
 }
 
-TEST_F(SiteSettingsHandlerTest, HandleBlockNotificationPermissionForOrigin) {
-  base::Value::List args;
-  args.Append("https://www.google.com:443");
-  handler()->HandleBlockNotificationPermissionForOrigin(args);
+TEST_F(SiteSettingsHandlerTest, HandleBlockNotificationPermissionForOrigins) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      ::features::kSafetyCheckNotificationPermissions);
 
-  // Check the permission for the origin is block.
+  base::Value::List args;
+  base::Value::List origins = GetOriginList(2);
+  args.Append(origins.Clone());
+
+  handler()->HandleBlockNotificationPermissionForOrigins(args);
+
+  // Check the permission for the two origins is block.
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSettingsForOneType notification_permissions;
   content_settings->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS,
                                           &notification_permissions);
   auto type = content_settings->GetContentSetting(
-      GURL("https://www.google.com:443"), GURL(),
-      ContentSettingsType::NOTIFICATIONS);
+      GURL(origins[0].GetString()), GURL(), ContentSettingsType::NOTIFICATIONS);
   ASSERT_EQ(CONTENT_SETTING_BLOCK, type);
+
+  type = content_settings->GetContentSetting(
+      GURL(origins[1].GetString()), GURL(), ContentSettingsType::NOTIFICATIONS);
+  ASSERT_EQ(CONTENT_SETTING_BLOCK, type);
+
+  ValidateNotificationPermissionUpdate();
 }
 
-TEST_F(SiteSettingsHandlerTest, HandleAllowNotificationPermissionForOrigin) {
-  base::Value::List args;
-  args.Append("https://www.google.com:443");
-  handler()->HandleAllowNotificationPermissionForOrigin(args);
+TEST_F(SiteSettingsHandlerTest, HandleAllowNotificationPermissionForOrigins) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      ::features::kSafetyCheckNotificationPermissions);
 
-  // Check the permission for the origin is block.
+  base::Value::List args;
+  base::Value::List origins = GetOriginList(2);
+  args.Append(origins.Clone());
+  handler()->HandleAllowNotificationPermissionForOrigins(args);
+
+  // Check the permission for the two origins is allow.
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSettingsForOneType notification_permissions;
   content_settings->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS,
                                           &notification_permissions);
   auto type = content_settings->GetContentSetting(
-      GURL("https://www.google.com:443"), GURL(),
-      ContentSettingsType::NOTIFICATIONS);
+      GURL(origins[0].GetString()), GURL(), ContentSettingsType::NOTIFICATIONS);
   ASSERT_EQ(CONTENT_SETTING_ALLOW, type);
+
+  type = content_settings->GetContentSetting(
+      GURL(origins[1].GetString()), GURL(), ContentSettingsType::NOTIFICATIONS);
+  ASSERT_EQ(CONTENT_SETTING_ALLOW, type);
+
+  ValidateNotificationPermissionUpdate();
 }
 
-TEST_F(SiteSettingsHandlerTest, HandleResetNotificationPermissionForOrigin) {
+TEST_F(SiteSettingsHandlerTest, HandleResetNotificationPermissionForOrigins) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      ::features::kSafetyCheckNotificationPermissions);
+
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  ContentSettingsForOneType notification_permissions;
+  base::Value::List args;
+  base::Value::List origins = GetOriginList(1);
+  args.Append(origins.Clone());
+
   content_settings->SetContentSettingCustomScope(
-      ContentSettingsPattern::FromString("https://www.google.com:443"),
+      ContentSettingsPattern::FromString(origins[0].GetString()),
       ContentSettingsPattern::Wildcard(), ContentSettingsType::NOTIFICATIONS,
       CONTENT_SETTING_ALLOW);
 
-  base::Value::List args;
-  args.Append("https://www.google.com:443");
-  handler()->HandleResetNotificationPermissionForOrigin(args);
+  handler()->HandleResetNotificationPermissionForOrigins(args);
 
   // Check the permission for the origin is reset.
   auto type = content_settings->GetContentSetting(
-      GURL("https://www.google.com:443"), GURL(),
-      ContentSettingsType::NOTIFICATIONS);
+      GURL(origins[0].GetString()), GURL(), ContentSettingsType::NOTIFICATIONS);
   ASSERT_EQ(CONTENT_SETTING_ASK, type);
+
+  ValidateNotificationPermissionUpdate();
 }
 
-// TODO(crbug.com/137935): Re-enable this test.
-TEST_F(SiteSettingsHandlerTest,
-       DISABLED_PopulateNotificationPermissionReviewData) {
+TEST_F(SiteSettingsHandlerTest, PopulateNotificationPermissionReviewData) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      ::features::kSafetyCheckNotificationPermissions);
+
   // Add a couple of notification permission and check they appear in review
   // list.
   HostContentSettingsMap* map =
@@ -3314,35 +3373,47 @@ TEST_F(SiteSettingsHandlerTest,
 
   // Set a host to have large number of notifications, but low engagement. This
   // should be in review list.
-  RecordNotification(notification_engagement_service, urls[1], 4);
+  RecordNotification(notification_engagement_service, urls[1], 5);
   site_engagement_service->AddPointsForTesting(urls[1], 1.0);
   EXPECT_EQ(blink::mojom::EngagementLevel::LOW,
             site_engagement_service->GetEngagementLevel(urls[1]));
 
   // Set a host to have medium engagement and high notification count. This
   // should not be in review list.
-  RecordNotification(notification_engagement_service, urls[2], 4);
+  RecordNotification(notification_engagement_service, urls[2], 5);
   site_engagement_service->AddPointsForTesting(urls[2], 50.0);
   EXPECT_EQ(blink::mojom::EngagementLevel::MEDIUM,
             site_engagement_service->GetEngagementLevel(urls[2]));
 
   const auto& notification_permissions =
       handler()->PopulateNotificationPermissionReviewData();
-  // Check there are 2 notification permissions in the list.
+  // Check if resulting list contains only the expected URLs. They should be in
+  // descending order of notification count.
   EXPECT_EQ(2UL, notification_permissions.size());
-  // Check minimal engagement item is in the list.
-  EXPECT_EQ("https://google.com:443",
-            *notification_permissions[0].FindStringKey(site_settings::kOrigin));
-  // Check low engagement item is in the list.
   EXPECT_EQ("https://www.youtube.com:443",
+            *notification_permissions[0].FindStringKey(site_settings::kOrigin));
+  EXPECT_EQ("https://google.com:443",
             *notification_permissions[1].FindStringKey(site_settings::kOrigin));
+
+  // Increasing notification count also promotes host in the list.
+  RecordNotification(notification_engagement_service,
+                     GURL("https://google.com:443"), 10);
+  const auto& updated_notification_permissions =
+      handler()->PopulateNotificationPermissionReviewData();
+  EXPECT_EQ(2UL, updated_notification_permissions.size());
+  EXPECT_EQ("https://google.com:443",
+            *updated_notification_permissions[0].FindStringKey(
+                site_settings::kOrigin));
+  EXPECT_EQ("https://www.youtube.com:443",
+            *updated_notification_permissions[1].FindStringKey(
+                site_settings::kOrigin));
 }
 
 TEST_F(SiteSettingsHandlerTest,
-       HandleUndoIgnoreOriginForNotificationPermissionReview) {
+       HandleUndoIgnoreOriginsForNotificationPermissionReview) {
   base::Value::List args;
-  args.Append("https://www.google.com:443");
-  handler()->HandleIgnoreOriginForNotificationPermissionReview(args);
+  args.Append(GetOriginList(1));
+  handler()->HandleIgnoreOriginsForNotificationPermissionReview(args);
 
   // Check there is 1 origin in ignore list.
   HostContentSettingsMap* content_settings =
@@ -3354,9 +3425,31 @@ TEST_F(SiteSettingsHandlerTest,
   ASSERT_EQ(1U, ignored_patterns.size());
 
   // Check there are no origins in ignore list.
-  handler()->HandleUndoIgnoreOriginForNotificationPermissionReview(args);
+  handler()->HandleUndoIgnoreOriginsForNotificationPermissionReview(args);
   content_settings->GetSettingsForOneType(
       ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, &ignored_patterns);
   ASSERT_EQ(0U, ignored_patterns.size());
+}
+
+TEST_F(SiteSettingsHandlerTest,
+       SendNotificationPermissionReviewList_FeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      ::features::kSafetyCheckNotificationPermissions);
+
+  handler()->SendNotificationPermissionReviewList();
+
+  ValidateNotificationPermissionUpdate();
+}
+
+TEST_F(SiteSettingsHandlerTest,
+       SendNotificationPermissionReviewList_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndDisableFeature(
+      ::features::kSafetyCheckNotificationPermissions);
+
+  handler()->SendNotificationPermissionReviewList();
+
+  ASSERT_EQ(0U, web_ui()->call_data().size());
 }
 }  // namespace settings

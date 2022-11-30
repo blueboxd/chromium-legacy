@@ -365,9 +365,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private final UnownedUserDataSupplier<StartupPaintPreviewHelper>
             mStartupPaintPreviewHelperSupplier = new StartupPaintPreviewHelperSupplier();
 
-    /** An empty {@link Bundle} would be supplied in the event there was no saved instance state. */
-    private final OneshotSupplierImpl<Bundle> mSavedInstanceStateSupplier =
-            new OneshotSupplierImpl<>();
     private final OneshotSupplierImpl<LayoutStateProvider> mLayoutStateProviderSupplier =
             new OneshotSupplierImpl<>();
 
@@ -457,7 +454,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 () -> findViewById(android.R.id.content),
                 this::getIntent, this::shouldIgnoreIntent, this::isTablet,
                 this::shouldShowOverviewPageOnStart, this::isInstantStartEnabled,
-                new IncognitoRestoreAppLaunchDrawBlockerFactory(mSavedInstanceStateSupplier,
+                new IncognitoRestoreAppLaunchDrawBlockerFactory(this::getSavedInstanceState,
                         getTabModelSelectorSupplier()));
         // clang-format on
     }
@@ -985,6 +982,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 mStartSurfaceSupplier.get().setStartSurfaceState(
                         StartSurfaceState.NOT_SHOWN, NewTabPageLaunchOrigin.UNKNOWN);
             }
+
+            boolean shouldShowRegularOverviewMode = IntentUtils.safeGetBooleanExtra(
+                    intent, IntentHandler.EXTRA_OPEN_REGULAR_OVERVIEW_MODE, false);
+            if (shouldShowRegularOverviewMode && IntentHandler.wasIntentSenderChrome(intent)) {
+                mTabModelSelector.selectModel(/*incognito= */ false);
+                mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, /*animate= */ false);
+            }
         }
     }
 
@@ -1099,6 +1103,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mLocaleManager.stopObservingPhoneChanges();
 
         NavigationPredictorBridge.onPause();
+        // Always track the last backgrounded time in case others are using the pref.
+        mInactivityTracker.setLastBackgroundedTimeInPrefsSync(System.currentTimeMillis());
 
         super.onPauseWithNative();
     }
@@ -1314,10 +1320,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             super.initializeState();
             Log.i(TAG, "#initializeState");
             Intent intent = getIntent();
-            // Don't remove this line as this is used to unblock the app draw. Setting this
-            // supplier is very important.
-            mSavedInstanceStateSupplier.set(
-                    getSavedInstanceState() != null ? getSavedInstanceState() : new Bundle());
 
             boolean hadCipherData =
                     CipherFactory.getInstance().restoreFromBundle(getSavedInstanceState());
@@ -1742,7 +1744,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 /* appMenuBlocker= */ this, this::supportsAppMenu, this::supportsFindInPage,
                 getTabCreatorManagerSupplier(), getFullscreenManager(),
                 getCompositorViewHolderSupplier(), getTabContentManagerSupplier(),
-                this::getSnackbarManager, getActivityType(), this::shouldShowOverviewPageOnStart,
+                this::getSnackbarManager, getActivityType(), this::isInOverviewMode,
                 this::isWarmOnResume,
                 /* appMenuDelegate= */ this,
                 /* statusBarColorProvider= */ this, new ObservableSupplierImpl<>(),
@@ -1943,8 +1945,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 if (!navigation.hasCommitted()) return;
 
                 try (TraceEvent e = TraceEvent.scoped("CheckSyncErrorOnDidFinishNavigation")) {
-                    SyncErrorMessage.maybeShowMessageUi(
-                            getWindowAndroid(), ChromeTabbedActivity.this);
+                    SyncErrorMessage.maybeShowMessageUi(getWindowAndroid());
                 }
                 try (TraceEvent te = TraceEvent.scoped("updateActiveWebContents")) {
                     SendTabToSelfAndroidBridge.updateActiveWebContents(tab.getWebContents());

@@ -27,8 +27,7 @@
               },
               "legacy_gclient_config": {
                 "apply_configs": [
-                  "android",
-                  "enable_reclient"
+                  "android"
                 ],
                 "config": "chromium"
               }
@@ -41,12 +40,6 @@
           "bucket": "ci",
           "builder": "Android arm64 Builder All Targets (dbg)",
           "project": "chromium"
-        }
-      ],
-      "mirroring_builder_group_and_names": [
-        {
-          "builder": "android-arm64-all-targets-dbg",
-          "group": "tryserver.chromium.android"
         }
       ]
     }
@@ -66,6 +59,6 @@
   "builder_group": "chromium.android",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "android"
+    "chrome_browser_release"
   ]
 }

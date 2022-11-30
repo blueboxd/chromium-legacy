@@ -24,6 +24,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/audio/audio_device.h"
@@ -53,7 +54,8 @@ class UnifiedSystemTrayTest : public AshTestBase,
 
   void SetUp() override {
     if (IsQsRevampEnabled())
-      feature_list_.InitAndEnableFeature(features::kQsRevamp);
+      feature_list_.InitWithFeatures(
+          {features::kQsRevamp, features::kQsRevampWip}, {});
     AshTestBase::SetUp();
   }
 
@@ -75,6 +77,10 @@ class UnifiedSystemTrayTest : public AshTestBase,
 
   void RemoveNotification(const std::string id) {
     MessageCenter::Get()->RemoveNotification(id, /*by_user=*/false);
+  }
+
+  bool IsBubbleShown() {
+    return GetPrimaryUnifiedSystemTray()->IsBubbleShown();
   }
 
   bool IsSliderBubbleShown() {
@@ -594,6 +600,51 @@ TEST_P(UnifiedSystemTrayTest, MicrophoneMuteToastVisibility) {
   // should not be displayed even though the input mute has changed in the
   // backend.
   EXPECT_FALSE(IsMicrophoneMuteToastShown());
+}
+
+// Tests that the bubble is closed after entering or exiting tablet mode.
+TEST_P(UnifiedSystemTrayTest, BubbleClosedAfterTabletModeChange) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+
+  // Show bubble.
+  EXPECT_FALSE(IsBubbleShown());
+  tray->ShowBubble();
+  EXPECT_TRUE(IsBubbleShown());
+
+  // Expect bubble to close after entering tablet mode.
+  tablet_mode_controller->SetEnabledForTest(true);
+  EXPECT_FALSE(IsBubbleShown());
+
+  // Show bubble again.
+  tray->ShowBubble();
+  EXPECT_TRUE(IsBubbleShown());
+
+  // Expect bubble to close after exiting tablet mode.
+  tablet_mode_controller->SetEnabledForTest(false);
+  EXPECT_FALSE(IsBubbleShown());
+}
+
+// Tests that the tray background has the correct color when entering tablet
+// mode.
+TEST_P(UnifiedSystemTrayTest, TrayBackgroundColorAfterSwitchToTabletMode) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  auto* widget = tray->GetWidget();
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+
+  tablet_mode_controller->SetEnabledForTest(false);
+  EXPECT_EQ(tray->layer()->background_color(),
+            ShelfConfig::Get()->GetShelfControlButtonColor(widget));
+
+  tablet_mode_controller->SetEnabledForTest(true);
+  EXPECT_EQ(tray->layer()->background_color(),
+            ShelfConfig::Get()->GetShelfControlButtonColor(widget));
+
+  tablet_mode_controller->SetEnabledForTest(false);
+  EXPECT_EQ(tray->layer()->background_color(),
+            ShelfConfig::Get()->GetShelfControlButtonColor(widget));
 }
 
 }  // namespace ash

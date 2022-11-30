@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.lifecycle.Stage;
 import android.view.KeyEvent;
+import android.view.View;
 
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -47,7 +48,6 @@ import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.FileProviderHelper;
@@ -474,7 +474,7 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
-    @FlakyTest(message = "crbug.com/1133547")
+    @DisabledTest(message = "crbug.com/1133547")
     public void testRealPromoDialogInterruption() throws Exception {
         // Start the Activity.  It should pause when the promo dialog appears.
         mTestDelegate.shouldShowRealSearchDialog = true;
@@ -680,6 +680,69 @@ public class SearchActivityTest {
         Assert.assertEquals(SearchType.TEXT,
                 SearchActivity.getSearchType(
                         SearchActivityConstants.ACTION_START_LENS_SEARCH + "1"));
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    public void testupdateAnchorViewLayout_NoEffectIfFlagDisabled() {
+        SearchActivity searchActivity = startSearchActivity();
+        View anchorView = searchActivity.getAnchorViewForTesting();
+        var layoutParams = anchorView.getLayoutParams();
+
+        int expectedHeight = searchActivity.getResources().getDimensionPixelSize(
+                R.dimen.toolbar_height_no_shadow);
+        int expectedBottomPadding = 0;
+
+        Assert.assertEquals(expectedHeight, layoutParams.height);
+        Assert.assertEquals(expectedBottomPadding, anchorView.getPaddingBottom());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
+            "force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:modernize_visual_update_active_color_on_omnibox/false"})
+    public void
+    testupdateAnchorViewLayout_ActiveColorOff() {
+        SearchActivity searchActivity = startSearchActivity();
+        View anchorView = searchActivity.getAnchorViewForTesting();
+        var layoutParams = anchorView.getLayoutParams();
+
+        int expectedHeight = searchActivity.getResources().getDimensionPixelSize(
+                                     R.dimen.toolbar_height_no_shadow)
+                + searchActivity.getResources().getDimensionPixelSize(
+                        R.dimen.toolbar_url_focus_height_increase_no_active_color);
+        int expectedBottomPadding = searchActivity.getResources().getDimensionPixelSize(
+                R.dimen.toolbar_url_focus_bottom_padding);
+
+        Assert.assertEquals(expectedHeight, layoutParams.height);
+        Assert.assertEquals(expectedBottomPadding, anchorView.getPaddingBottom());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE})
+    @CommandLineFlags.
+    Add({"enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
+            "force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:modernize_visual_update_active_color_on_omnibox/true"})
+    public void
+    testupdateAnchorViewLayout_ActiveColorOn() {
+        SearchActivity searchActivity = startSearchActivity();
+        View anchorView = searchActivity.getAnchorViewForTesting();
+        var layoutParams = anchorView.getLayoutParams();
+
+        int expectedHeight = searchActivity.getResources().getDimensionPixelSize(
+                                     R.dimen.toolbar_height_no_shadow)
+                + searchActivity.getResources().getDimensionPixelSize(
+                        R.dimen.toolbar_url_focus_height_increase_active_color);
+        int expectedBottomPadding = 0;
+
+        Assert.assertEquals(expectedHeight, layoutParams.height);
+        Assert.assertEquals(expectedBottomPadding, anchorView.getPaddingBottom());
     }
 
     private void putAnImageIntoClipboard() {

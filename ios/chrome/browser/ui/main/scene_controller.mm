@@ -124,6 +124,8 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/whats_new/promo/whats_new_scene_agent.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
@@ -907,7 +909,17 @@ bool IsSigninForcedByPolicy() {
         addAgent:[[PromosManagerSceneAgent alloc]
                      initWithCommandDispatcher:mainCommandDispatcher]];
   if (IsAppStoreRatingEnabled()) {
-    [self.sceneState addAgent:[[AppStoreRatingSceneAgent alloc] init]];
+    [self.sceneState
+        addAgent:[[AppStoreRatingSceneAgent alloc]
+                     initWithPromosManager:GetApplicationContext()
+                                               ->GetPromosManager()]];
+  }
+
+  if (IsWhatsNewEnabled()) {
+    [self.sceneState
+        addAgent:[[WhatsNewSceneAgent alloc]
+                     initWithPromosManager:GetApplicationContext()
+                                               ->GetPromosManager()]];
   }
 }
 

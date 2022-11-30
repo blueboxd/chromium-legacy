@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
-<translation id="1005794457625275818">Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> sites no grupo <ph name="FPS_OWNER" />, incluindo <ph name="FPS_MEMBER" /></translation>
 <translation id="1006017844123154345">Abrir on-line</translation>
 <translation id="1044891598689252897">Os sites funcionarão normalmente</translation>
 <translation id="1124090076051167250">Essa ação vai apagar <ph name="DATASIZE" /> de dados e cookies armazenados por sites ou apps na sua tela inicial.</translation>
@@ -35,6 +34,7 @@
 <translation id="1785415724048343560">Recomendado para melhorar a experiência</translation>
 <translation id="1818308510395330587">Para permitir que o app <ph name="APP_NAME" /> use RA, também é necessário ativar a câmera nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
+<translation id="187227595286001730">Sites relacionados podem ver sua atividade no grupo</translation>
 <translation id="1887786770086287077">O acesso ao local está desativado neste dispositivo. Ative nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Desligar</translation>
 <translation id="1919345977826869612">Anúncios</translation>
@@ -73,6 +73,7 @@
 <translation id="2490684707762498678">Gerenciadas por <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Ajuda e feedback</translation>
 <translation id="2501278716633472235">Voltar</translation>
+<translation id="2546283357679194313">Cookies e dados do site</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloqueado}one{# cookie bloqueado}other{# cookies bloqueados}}</translation>
 <translation id="2570922361219980984">O acesso ao local também está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Visualização expandida. Clique para recolher</translation>
@@ -82,12 +83,10 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2687403674020088961">Bloquear todos os cookies (não recomendado)</translation>
-<translation id="2692299144678073135">Permitir que sites relacionados se lembrem de você em outras páginas</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2713106313042589954">Desativar câmera</translation>
 <translation id="2717722538473713889">Endereços de e-mail</translation>
 <translation id="2750481671343847896">Sites podem exibir solicitações de login de serviços de identificação.</translation>
-<translation id="2785051990912111074">Essa ação vai apagar os cookies de <ph name="WEBSITE" /></translation>
 <translation id="2822354292072154809">Tem certeza de que quer redefinir todas as permissões de site para <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Faixa anterior</translation>
@@ -112,6 +111,7 @@
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3248611290851046188">Este site define interesses que outros sites podem usar para mostrar anúncios. Este site acessa seus interesses no Chrome para mostrar anúncios mais relevantes.</translation>
 <translation id="3277252321222022663">Permitir que sites acessem os sensores (recomendado)</translation>
+<translation id="3285500645985761267">Permitir que sites relacionados vejam sua atividade no grupo</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3333961966071413176">Todos os contatos</translation>
@@ -119,6 +119,7 @@
 <translation id="3386292677130313581">Perguntar antes de permitir que sites saibam seu local (recomendado)</translation>
 <translation id="3521663503435878242">Sites em <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Impedir sites de criar um mapa 3D do ambiente a sua volta ou acompanhar a posição da câmera</translation>
+<translation id="3544058026430919413">Uma empresa pode definir um grupo de sites que podem usar cookies para compartilhar sua atividade no grupo. Essa opção fica desativada na navegação anônima.</translation>
 <translation id="3551268116566418498">Sair do modo de navegação anônima?</translation>
 <translation id="3586500876634962664">Uso de câmera e microfone</translation>
 <translation id="358794129225322306">Permite que um site faça o download de vários arquivos automaticamente.</translation>
@@ -144,7 +145,6 @@
 <translation id="4002066346123236978">Título</translation>
 <translation id="4008040567710660924">Permita cookies de um site específico.</translation>
 <translation id="4046123991198612571">Próxima faixa</translation>
-<translation id="4048876521107516222">Os sites relacionados usam cookies para ajudar a manter sua conta conectada</translation>
 <translation id="4149994727733219643">Versão simplificada das páginas da Web</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
 <translation id="4169549551965910670">Conectado a um dispositivo USB</translation>
@@ -162,6 +162,7 @@
 <translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="445467742685312942">Permitir que sites mostrem conteúdo protegido</translation>
 <translation id="4468959413250150279">Desativar o som de um site específico.</translation>
+<translation id="4475912480633855319">{COOKIES,plural, =1{# cookie}one{# cookie}other{# cookies}}</translation>
 <translation id="4479647676395637221">Perguntar antes de permitir que sites usem sua câmera (recomendado)</translation>
 <translation id="4505788138578415521">URL expandido</translation>
 <translation id="4534723447064627427">Para permitir que o app <ph name="APP_NAME" /> acesse seu microfone, também é preciso ativá-lo nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
@@ -175,16 +176,17 @@
 <translation id="483914009762354899">Incluir todos os sites neste domínio</translation>
 <translation id="4883854917563148705">Não é possível redefinir as configurações gerenciadas</translation>
 <translation id="4887024562049524730">Perguntar antes de permitir que sites usem seus dispositivos e dados de realidade virtual (recomendado)</translation>
+<translation id="4955223779495905865">O site que você acessou pode incorporar conteúdo de outros, como imagens, anúncios e texto. Todos os sites podem salvar cookies e outros dados para personalizar sua experiência.</translation>
 <translation id="4962975101802056554">Revogar todas as permissões para o dispositivo</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4976702386844183910">Última visita: <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Nenhum contato encontrado</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
-<translation id="5014906230196386306">Limpar cookies?</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5048398596102334565">Permitir o acesso de sites aos seus sensores de movimento (recomendado)</translation>
 <translation id="5050380848339752099">Este site compartilhará informações com um app fora do modo de navegação anônima.</translation>
 <translation id="5063480226653192405">Uso</translation>
+<translation id="5082281938627763039">Essa ação vai excluir cookies e outros dados do site <ph name="FPS_MEMBER" /> e de sites no grupo <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Site móvel</translation>
 <translation id="509133520954049755">Solicitar versão para computadores</translation>
 <translation id="5100237604440890931">Visualização recolhida. Clique para expandir</translation>
@@ -221,6 +223,7 @@
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="5690795753582697420">A câmera está desativada nas configurações do Android</translation>
+<translation id="5706552988683188916">Essa ação vai excluir cookies e outros dados do site <ph name="WEBSITE" /></translation>
 <translation id="5719847187258001597">Essa ação vai apagar todos os dados e cookies armazenados por <ph name="ORIGIN" /> ou pelo app dele na sua tela inicial.</translation>
 <translation id="5771720122942595109">Bloqueada: <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Permissões</translation>
@@ -263,7 +266,6 @@
 <translation id="6554732001434021288">Última visita: <ph name="NUM_DAYS" /> dias atrás</translation>
 <translation id="6561560012278703671">Usar mensagens mais silenciosas (bloqueia notificações que interrompem você)</translation>
 <translation id="6593061639179217415">Para computador</translation>
-<translation id="6608211702542341247">Este site está no grupo de sites de <ph name="FPS_OWNER" /> que podem ver sua atividade no grupo</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="662080504995468778">Ficar</translation>
@@ -314,9 +316,7 @@
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7804248752222191302">Um site está usando sua câmera</translation>
-<translation id="7816129586531226979">Sites relacionados podem se lembrar de você em outras páginas</translation>
 <translation id="7817023149356982970">Sua conta será desconectada desse site.</translation>
-<translation id="7828557259026017104">Os cookies são arquivos criados pelos sites que você visita, usados para lembrar suas preferências. Os cookies de terceiros são criados por outros sites que possuem uma parte do conteúdo da página acessada, como imagens ou anúncios.</translation>
 <translation id="7835852323729233924">Tocando mídia</translation>
 <translation id="783819812427904514">Ativar som do vídeo</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
@@ -324,6 +324,7 @@
 <translation id="7882806643839505685">Permitir o som de um site específico.</translation>
 <translation id="789180354981963912">Bloquear cookies de terceiros na navegação anônima:</translation>
 <translation id="7940722705963108451">Lembrar</translation>
+<translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> site que pode ver sua atividade no grupo <ph name="FPS_OWNER" />}one{<ph name="FPS_MEMBERS_COUNT" /> site que pode ver sua atividade no grupo <ph name="FPS_OWNER" />}other{<ph name="FPS_MEMBERS_COUNT" /> sites que podem ver sua atividade no grupo <ph name="FPS_OWNER" />}}</translation>
 <translation id="7986741934819883144">Selecione um contato</translation>
 <translation id="7999064672810608036">Você quer mesmo apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>
 <translation id="8007176423574883786">Desativado neste dispositivo</translation>
@@ -362,6 +363,7 @@
 <translation id="8499083585497694743">Ativar microfone</translation>
 <translation id="851751545965956758">Impedir que sites se conectem a dispositivos</translation>
 <translation id="8525306231823319788">Tela cheia</translation>
+<translation id="8564613706851221529">{COUNT,plural, =1{Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> site de <ph name="FPS_OWNER" />}one{Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> site de <ph name="FPS_OWNER" />}other{Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> sites de <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8609465669617005112">Mover para cima</translation>
 <translation id="8676374126336081632">Limpar entrada</translation>
@@ -387,6 +389,8 @@
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9090268041676521955">Este site está em um grupo que pode ver sua atividade. O grupo é definido por <ph name="FPS_OWNER" /></translation>
+<translation id="9106233582039520022">Excluir cookies?</translation>
 <translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e mais <ph name="NUM_MORE" />}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e mais <ph name="NUM_MORE" />}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e mais <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289">Ative as permissões para o app <ph name="APP_NAME" /> nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="9162462602695099906">Esta página é perigosa</translation>

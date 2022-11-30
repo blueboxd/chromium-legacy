@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.directactions.DirectActionInitializer;
+import org.chromium.chrome.browser.dom_distiller.ReaderModeToolbarButtonController;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
@@ -818,7 +819,7 @@ public class RootUiCoordinator
         mIncognitoReauthController =
                 new IncognitoReauthControllerImpl(mTabModelSelectorSupplier.get(),
                         mActivityLifecycleDispatcher, mLayoutStateProviderOneShotSupplier,
-                        mProfileSupplier, incognitoReauthCoordinatorFactory);
+                        mProfileSupplier, incognitoReauthCoordinatorFactory, mActivity.getTaskId());
         mIncognitoReauthControllerOneshotSupplier.set(mIncognitoReauthController);
     }
 
@@ -1110,10 +1111,15 @@ public class RootUiCoordinator
                     mActivity, mActivityLifecycleDispatcher, mProfileSupplier);
             PriceTrackingButtonController priceTrackingButtonController =
                     new PriceTrackingButtonController(mActivityTabProvider,
-                            mModalDialogManagerSupplier.get(),
+                            mModalDialogManagerSupplier.get(), getBottomSheetController(),
                             AppCompatResources.getDrawable(
                                     mActivity, R.drawable.price_tracking_disabled),
                             mTabBookmarkerSupplier);
+            ReaderModeToolbarButtonController readerModeToolbarButtonController =
+                    new ReaderModeToolbarButtonController(mActivityTabProvider,
+                            mModalDialogManagerSupplier.get(),
+                            AppCompatResources.getDrawable(
+                                    mActivity, R.drawable.infobar_mobile_friendly));
             ShareButtonController shareButtonController = new ShareButtonController(
                     AppCompatResources.getDrawable(
                             mActivity, R.drawable.ic_toolbar_share_offset_24dp),
@@ -1161,6 +1167,8 @@ public class RootUiCoordinator
                     AdaptiveToolbarButtonVariant.VOICE, voiceToolbarButtonController);
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.PRICE_TRACKING, priceTrackingButtonController);
+            adaptiveToolbarButtonController.addButtonVariant(
+                    AdaptiveToolbarButtonVariant.READER_MODE, readerModeToolbarButtonController);
             mContextualPageActionController = new ContextualPageActionController(mProfileSupplier,
                     mActivityTabProvider, adaptiveToolbarButtonController,
                     ()

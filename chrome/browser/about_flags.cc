@@ -1689,6 +1689,15 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleRBDAndCouponDiscount[] = {
     {"partner-merchant-pattern",
      "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"},
     {ntp_features::kNtpChromeCartModuleCouponParam, "true"}};
+const FeatureEntry::FeatureParam kNtpChromeCartModuleCodeBasedRBD[] = {
+    {ntp_features::kNtpChromeCartModuleHeuristicsImprovementParam, "true"},
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"},
+    {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
+     "true"},
+    {"partner-merchant-pattern",
+     "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"},
+    {ntp_features::kNtpChromeCartModuleCouponParam, "true"},
+    {commerce::kCodeBasedRuleDiscountParam, "true"}};
 const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
     {"- Fake Data And Discount", kNtpChromeCartModuleFakeData,
      std::size(kNtpChromeCartModuleFakeData), nullptr},
@@ -1698,6 +1707,8 @@ const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
      std::size(kNtpChromeCartModuleHeuristicsImprovement), nullptr},
     {"- RBD and Coupons", kNtpChromeCartModuleRBDAndCouponDiscount,
      std::size(kNtpChromeCartModuleRBDAndCouponDiscount), nullptr},
+    {"- Code-based RBD and Coupons", kNtpChromeCartModuleCodeBasedRBD,
+     std::size(kNtpChromeCartModuleCodeBasedRBD), nullptr},
 };
 
 // The following are consent v2 variations in the Chrome Cart module.
@@ -2051,6 +2062,26 @@ const FeatureEntry::FeatureVariation kTabSwitcherOnReturnVariations[] = {
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kStartSurfaceReturnTime_Immediate[] = {
+    {"start_surface_return_time_seconds", "0"}};
+const FeatureEntry::FeatureParam kStartSurfaceReturnTime_1Minute[] = {
+    {"start_surface_return_time_seconds", "60"}};
+const FeatureEntry::FeatureParam kStartSurfaceReturnTime_5Minute[] = {
+    {"start_surface_return_time_seconds", "300"}};
+const FeatureEntry::FeatureParam kStartSurfaceReturnTime_60Minute[] = {
+    {"start_surface_return_time_seconds", "3600"}};
+const FeatureEntry::FeatureVariation kStartSurfaceReturnTimeVariations[] = {
+    {"Immediate", kStartSurfaceReturnTime_Immediate,
+     std::size(kStartSurfaceReturnTime_Immediate), nullptr},
+    {"1 minute", kStartSurfaceReturnTime_1Minute,
+     std::size(kStartSurfaceReturnTime_1Minute), nullptr},
+    {"5 minute", kStartSurfaceReturnTime_5Minute,
+     std::size(kStartSurfaceReturnTime_5Minute), nullptr},
+    {"60 minute", kStartSurfaceReturnTime_60Minute,
+     std::size(kStartSurfaceReturnTime_60Minute), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabVariation[] = {
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"allow_to_refetch", "true"}};
@@ -2251,6 +2282,8 @@ const FeatureEntry::FeatureVariation kWebFeedVariations[] = {
 
 const FeatureEntry::FeatureParam kWebFeedAwareness_new_animation[] = {
     {"awareness_style", "new_animation"}};
+const FeatureEntry::FeatureParam kWebFeedAwareness_new_animation_no_limit[] = {
+    {"awareness_style", "new_animation_no_limit"}};
 
 const FeatureEntry::FeatureParam kWebFeedAwareness_IPH[] = {
     {"awareness_style", "IPH"}};
@@ -2258,6 +2291,8 @@ const FeatureEntry::FeatureParam kWebFeedAwareness_IPH[] = {
 const FeatureEntry::FeatureVariation kWebFeedAwarenessVariations[] = {
     {"new animation", kWebFeedAwareness_new_animation,
      std::size(kWebFeedAwareness_new_animation), nullptr},
+    {"new animation rate limit off", kWebFeedAwareness_new_animation_no_limit,
+     std::size(kWebFeedAwareness_new_animation_no_limit), nullptr},
     {"IPH and dot", kWebFeedAwareness_IPH, std::size(kWebFeedAwareness_IPH),
      nullptr},
 };
@@ -2413,30 +2448,55 @@ const FeatureEntry::FeatureVariation kOmniboxAssistantVoiceSearchVariations[] =
 };
 
 const FeatureEntry::FeatureParam
-    kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox[] = {
+    kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxSmallMargin[] = {
         {"enable_modernize_visual_update_on_tablet", "false"},
-        {"modernize_visual_update_active_color_on_omnibox", "true"}};
+        {"modernize_visual_update_active_color_on_omnibox", "true"},
+        {"modernize_visual_update_small_bottom_margin", "true"}};
 
 const FeatureEntry::FeatureParam
-    kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox[] = {
+    kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxBigMargin[] = {
         {"enable_modernize_visual_update_on_tablet", "false"},
-        {"modernize_visual_update_active_color_on_omnibox", "false"}};
+        {"modernize_visual_update_active_color_on_omnibox", "true"},
+        {"modernize_visual_update_small_bottom_margin", "false"}};
+
+const FeatureEntry::FeatureParam
+    kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxSmallMargin[] = {
+        {"enable_modernize_visual_update_on_tablet", "false"},
+        {"modernize_visual_update_active_color_on_omnibox", "false"},
+        {"modernize_visual_update_small_bottom_margin", "true"}};
+
+const FeatureEntry::FeatureParam
+    kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxBigMargin[] = {
+        {"enable_modernize_visual_update_on_tablet", "false"},
+        {"modernize_visual_update_active_color_on_omnibox", "false"},
+        {"modernize_visual_update_small_bottom_margin", "false"}};
 
 const FeatureEntry::FeatureParam kOmniboxModernizeVisualUpdateIncludeTablets[] =
     {{"enable_modernize_visual_update_on_tablet", "true"}};
 
-const FeatureEntry::FeatureVariation kOmniboxModernizeVisualUpdateVariations[] =
-    {
-        {"(active color omnibox, exclude tablet)",
-         kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox,
-         std::size(kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmnibox),
-         nullptr},
-        {"(no active color omnibox, exclude tablet)",
-         kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox,
-         std::size(kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmnibox),
-         nullptr},
-        {"(include tablet)", kOmniboxModernizeVisualUpdateIncludeTablets,
-         std::size(kOmniboxModernizeVisualUpdateIncludeTablets), nullptr},
+const FeatureEntry::FeatureVariation kOmniboxModernizeVisualUpdateVariations[] = {
+    {"(+color, Short)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxSmallMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxSmallMargin),
+     nullptr},
+    {"(+color, Tall)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxBigMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsActiveOmniboxBigMargin),
+     nullptr},
+    {"(-color, Short)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxSmallMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxSmallMargin),
+     nullptr},
+    {"(-color, Tall)",
+     kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxBigMargin,
+     std::size(
+         kOmniboxModernizeVisualUpdateExcludeTabletsDeactiveOmniboxBigMargin),
+     nullptr},
+    {"(Tablet)", kOmniboxModernizeVisualUpdateIncludeTablets,
+     std::size(kOmniboxModernizeVisualUpdateIncludeTablets), nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -3138,37 +3198,70 @@ const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
      std::size(kQuickDim10sQuickLock130sFeedback), nullptr},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurLowest[] = {
-    {"blur_level", "lowest"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample4[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "4"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurLight[] = {
-    {"blur_level", "light"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample8[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "8"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurMedium[] = {
-    {"blur_level", "medium"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale15Sample16[] = {
+    {"blur_scale", "0.15"},
+    {"blur_samples", "16"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurHeavy[] = {
-    {"blur_level", "heavy"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample4[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "4"},
 };
 
-const FeatureEntry::FeatureParam kVCBackgroundBlurMaximum[] = {
-    {"blur_level", "maximum"},
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample8[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "8"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale25Sample16[] = {
+    {"blur_scale", "0.25"},
+    {"blur_samples", "16"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample4[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "4"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample8[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "8"},
+};
+
+const FeatureEntry::FeatureParam kVCBackgroundBlurScale35Sample16[] = {
+    {"blur_scale", "0.35"},
+    {"blur_samples", "16"},
 };
 
 const FeatureEntry::FeatureVariation kVCBackgroundBlurVariations[] = {
-    {"Lowest Blur", kVCBackgroundBlurLowest, std::size(kVCBackgroundBlurLowest),
-     nullptr},
-    {"Light Blur", kVCBackgroundBlurLight, std::size(kVCBackgroundBlurLight),
-     nullptr},
-    {"Medium Blur", kVCBackgroundBlurMedium, std::size(kVCBackgroundBlurMedium),
-     nullptr},
-    {"Heavy Blur", kVCBackgroundBlurHeavy, std::size(kVCBackgroundBlurHeavy),
-     nullptr},
-    {"Maximum Blur", kVCBackgroundBlurMaximum,
-     std::size(kVCBackgroundBlurMaximum), nullptr},
+    {"Scale15Sample4", kVCBackgroundBlurScale15Sample4,
+     std::size(kVCBackgroundBlurScale15Sample4), nullptr},
+    {"Scale15Sample8", kVCBackgroundBlurScale15Sample8,
+     std::size(kVCBackgroundBlurScale15Sample8), nullptr},
+    {"Scale15Sample16", kVCBackgroundBlurScale15Sample16,
+     std::size(kVCBackgroundBlurScale15Sample16), nullptr},
+    {"Scale25Sample4", kVCBackgroundBlurScale25Sample4,
+     std::size(kVCBackgroundBlurScale25Sample4), nullptr},
+    {"Scale25Sample8", kVCBackgroundBlurScale25Sample8,
+     std::size(kVCBackgroundBlurScale25Sample8), nullptr},
+    {"Scale25Sample16", kVCBackgroundBlurScale25Sample16,
+     std::size(kVCBackgroundBlurScale25Sample16), nullptr},
+    {"Scale35Sample4", kVCBackgroundBlurScale35Sample4,
+     std::size(kVCBackgroundBlurScale35Sample4), nullptr},
+    {"Scale35Sample8", kVCBackgroundBlurScale35Sample8,
+     std::size(kVCBackgroundBlurScale35Sample8), nullptr},
+    {"Scale35Sample16", kVCBackgroundBlurScale35Sample16,
+     std::size(kVCBackgroundBlurScale35Sample16), nullptr},
 };
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3278,10 +3371,10 @@ constexpr FeatureEntry::FeatureVariation
 #endif  // BUILDFLAG(IS_ANDROID)
 
 const FeatureEntry::FeatureParam kUnthrottledNestedTimeout_NestingLevel = {
-    "nesting", "100"};
+    "nesting", "15"};
 
 const FeatureEntry::FeatureVariation kUnthrottledNestedTimeout_Variations[] = {
-    {"100", &kUnthrottledNestedTimeout_NestingLevel, 1, nullptr},
+    {"15", &kUnthrottledNestedTimeout_NestingLevel, 1, nullptr},
 };
 
 constexpr FeatureEntry::FeatureParam kLensStandaloneWithSidePanel[] = {
@@ -5477,6 +5570,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMostVisitedTilesTitleWrapAroundName,
      flag_descriptions::kOmniboxMostVisitedTilesTitleWrapAroundDescription,
      kOsAndroid, FEATURE_VALUE_TYPE(omnibox::kMostVisitedTilesTitleWrapAround)},
+
+    {"omnibox-remove-excessive-recycled-view-clear-calls",
+     flag_descriptions::kOmniboxRemoveExcessiveRecycledViewClearCallsName,
+     flag_descriptions::
+         kOmniboxRemoveExcessiveRecycledViewClearCallsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         omnibox::kOmniboxRemoveExcessiveRecycledViewClearCalls)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"omnibox-local-history-zero-suggest-beyond-ntp",
@@ -5967,6 +6068,16 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpChromeCartModuleVariations,
                                     "DesktopNtpModules")},
 
+    {"ntp-comprehensive-theme-realbox",
+     flag_descriptions::kNtpComprehensiveThemeRealboxName,
+     flag_descriptions::kNtpComprehensiveThemeRealboxDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpComprehensiveThemeRealbox)},
+
+    {"ntp-comprehensive-theming",
+     flag_descriptions::kNtpComprehensiveThemingName,
+     flag_descriptions::kNtpComprehensiveThemingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpComprehensiveTheming)},
+
     {"ntp-drive-module", flag_descriptions::kNtpDriveModuleName,
      flag_descriptions::kNtpDriveModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpDriveModule,
@@ -6343,6 +6454,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTabSwitcherOnReturnVariations,
                                     "ChromeStart")},
 
+    {"enable-start-surface-return-time",
+     flag_descriptions::kStartSurfaceReturnTimeName,
+     flag_descriptions::kStartSurfaceReturnTimeDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceReturnTime,
+                                    kStartSurfaceReturnTimeVariations,
+                                    "StartSurfaceReturnTime")},
     {"enable-tab-to-gts-animation",
      flag_descriptions::kTabToGTSAnimationAndroidName,
      flag_descriptions::kTabToGTSAnimationAndroidDescription, kOsAndroid,
@@ -7836,11 +7953,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kIncognitoReauthenticationForAndroid)},
 #endif
 
-    {"consolidated-site-storage-controls",
-     flag_descriptions::kConsolidatedSiteStorageControlsName,
-     flag_descriptions::kConsolidatedSiteStorageControlsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kConsolidatedSiteStorageControls)},
-
 #if BUILDFLAG(IS_ANDROID)
     {"enable-surface-control", flag_descriptions::kAndroidSurfaceControlName,
      flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,
@@ -8311,6 +8423,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFedCm,
                                     kFedCmFeatureVariations,
                                     "FedCmFeatureVariations")},
+
+    {"fedcm-metrics-endpoint", flag_descriptions::kFedCmMetricsEndpointName,
+     flag_descriptions::kFedCmMetricsEndpointDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFedCmMetricsEndpoint)},
+
     {"fedcm-multi-idp", flag_descriptions::kFedCmMultiIdpName,
      flag_descriptions::kFedCmMultiIdpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kFedCmMultipleIdentityProviders)},
@@ -8957,14 +9074,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kVCBackgroundBlur,
                                     kVCBackgroundBlurVariations,
                                     "VCBackgroundBlur")},
-
-    {"vc-background-replace", flag_descriptions::kVCBackgroundReplaceName,
-     flag_descriptions::kVCBackgroundReplaceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kVCBackgroundReplace)},
-
-    {"vc-portrait-relighting", flag_descriptions::kVCPortraitRelightingName,
-     flag_descriptions::kVCPortraitRelightingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kVCPortraitRelighting)},
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -9708,6 +9817,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesks16Description, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnable16Desks)},
 #endif
+
+    {"use-nat64-for-ipv4-literal",
+     flag_descriptions::kUseNAT64ForIPv4LiteralName,
+     flag_descriptions::kUseNAT64ForIPv4LiteralDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kUseNAT64ForIPv4Literal)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

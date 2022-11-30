@@ -1,14 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1057925581724305206">‏دقة فائقة (1080p)</translation>
+<translation id="1076394037877376434">حذف الصفحة <ph name="PAGE_NUMBER" /></translation>
 <translation id="1113173431709655881">وضع الكاميرا</translation>
 <translation id="1153190633558910465">إيقاف الشبكة</translation>
 <translation id="1175958423215084756">تم رصد رابط. <ph name="HOSTNAME" /></translation>
+<translation id="1197694886744716213">تم حذف الصفحة <ph name="PAGE_NUMBER" />.</translation>
 <translation id="1258009455399840361">تدوير بمقدار 90 درجة في اتجاه عقارب الساعة</translation>
 <translation id="1276998909102132017">صور المعرض</translation>
 <translation id="1300209025925956156">مسح المستند ضوئيًا</translation>
 <translation id="1309250603447638106">جارٍ تنزيل تحديثات ميزة المسح الضوئي للمستندات</translation>
 <translation id="137991641490787891"><ph name="ASPECT_RATIO_WIDTH" />. انقر على زر البحث + السهم المتّجه لليمين للوصول إلى عناصر التحكم الجديدة.</translation>
+<translation id="1417314334557041815">تعديل الصفحة <ph name="INDEX" /></translation>
 <translation id="1430915738399379752">طباعة</translation>
 <translation id="1467231725790366244">تم فصل كاميرا <ph name="CAMERA" /> عن الجهاز.</translation>
 <translation id="1473110567575736769">مؤقّت لمدة 3 ثوانٍ</translation>
@@ -18,8 +22,10 @@
 <translation id="1588438908519853928">عادي</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1627744224761163218">4 × 4</translation>
+<translation id="1644345013557678440">‏دقة عالية (720p)</translation>
 <translation id="1664224225747386870">لم يتمّ تسجيل أيّ بيانات.</translation>
 <translation id="1838104802459806957">إمالة إلى أعلى</translation>
+<translation id="1843105061469674856">مسح صفحة إضافية ضوئيًا</translation>
 <translation id="1851169887664797861">تتوفّر عناصر تحكُّم إضافية في الكاميرا.</translation>
 <translation id="1851616744363735765">متوقف مؤقتًا</translation>
 <translation id="1862930711583847113">تعذّر تصدير <ph name="FILE" /></translation>
@@ -77,6 +83,7 @@
 <translation id="414641094616694804">لا يمكن تغيير درجة الدقة في هذه الكاميرا.</translation>
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
 <translation id="4281620174117014503">دقة متوسطة</translation>
+<translation id="428234092390943511">صورة مصغّرة للصفحة</translation>
 <translation id="4329152592498422850">التبديل لالتقاط صورة مربّعة</translation>
 <translation id="4340659173795395806">‏يمكنك الآن إنشاء ملف PDF متعدِّد الصفحات.</translation>
 <translation id="4383571725254449280">طباعة سجلّات الأداء</translation>
@@ -90,6 +97,7 @@
 <translation id="4705093842003735294">دقة كاملة</translation>
 <translation id="4890010094662541459">3 × 3</translation>
 <translation id="491895758387112773">البث المتعدّد لتسجيل الفيديو</translation>
+<translation id="4984613436295737187">‏دقة Quad HD ‏(1440p)</translation>
 <translation id="5034763830503483128">نسبة العرض إلى الارتفاع في الصورة</translation>
 <translation id="5057360777601936059">الكاميرا غير مُتاحة حاليًا.
         يُرجى التحقُّق من اتصال الكاميرا بشكلٍ صحيح.</translation>
@@ -98,6 +106,7 @@
 <translation id="5266635337630551423">الزاوية العلوية اليسرى للمستند</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5320594929574852403">جارٍ نقل زاوية المستند في اتجاه اليسار</translation>
+<translation id="5374917190292010970">‏دقة 4K‏ (2160p)</translation>
 <translation id="5444515100983837161">المستند بكل حوافه يجب أن يكون ضمن الإطار. وللحصول على أفضل النتائج، يجب أن يختلف لون المستند عن لون الخلفية.</translation>
 <translation id="5662366948659129155">جارٍ مسح الصفحة <ph name="COUNT" /> ضوئيًا</translation>
 <translation id="5671277269877808209">وضع المربّع</translation>
@@ -107,7 +116,6 @@
 <translation id="5775960006311140197">الوضع المختصّ</translation>
 <translation id="5860033963881614850">غير مفعّل</translation>
 <translation id="5869546221129391014">شبكة</translation>
-<translation id="5903928279335207406">حذف الصفحة</translation>
 <translation id="5916664084637901428">مفعّل</translation>
 <translation id="5975083100439434680">تصغير</translation>
 <translation id="5976160379964388480">غير ذلك</translation>

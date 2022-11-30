@@ -692,23 +692,25 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     jankTracker,
                     merchantTrustSignalsCoordinatorSupplier,
                     omniboxPedalDelegate, mControlsVisibilityDelegate,
-                    ChromePureJavaExceptionReporter::reportJavaException, backPressManager);
+                    ChromePureJavaExceptionReporter::reportJavaException, backPressManager,
+                    toolbarLayout);
             // clang-format on
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             toolbarLayout.setBrowserControlsVisibilityDelegate(mControlsVisibilityDelegate);
             mLocationBar = locationBarCoordinator;
         }
 
-        if (mLocationBar.getOmniboxStub() != null) {
-            mLocationBar.getOmniboxStub().addUrlFocusChangeListener(this);
-        }
         Runnable clickDelegate = () -> setUrlBarFocus(false, OmniboxFocusReason.UNFOCUS);
         View scrimTarget = mCompositorViewHolder;
         mLocationBarFocusHandler = new LocationBarFocusScrimHandler(scrimCoordinator,
                 new TabObscuringCallback(tabObscuringHandler), /* context= */ activity,
                 mLocationBarModel, clickDelegate, scrimTarget);
-        if (mLocationBar.getOmniboxStub() != null) {
-            mLocationBar.getOmniboxStub().addUrlFocusChangeListener(mLocationBarFocusHandler);
+
+        var omnibox = mLocationBar.getOmniboxStub();
+        if (omnibox != null) {
+            omnibox.addUrlFocusChangeListener(this);
+            omnibox.addUrlFocusChangeListener(mStatusBarColorController);
+            omnibox.addUrlFocusChangeListener(mLocationBarFocusHandler);
         }
 
         mProgressBarCoordinator = new LoadProgressCoordinator(
@@ -748,7 +750,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
              * reduce server pressure.
              */
             private void maybeTriggerCacheRefreshForZeroSuggest(GURL url) {
-                if (url != null && UrlUtilities.isNTPUrl(url)) {
+                if (url != null) {
                     mLocationBarModel.notifyZeroSuggestRefresh();
                 }
             }
@@ -977,6 +979,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
 
             @Override
+            public void onFinishedShowing(int layoutType) {
+                if (layoutType == LayoutType.TAB_SWITCHER) {
+                    mToolbar.onTabSwitcherTransitionFinished();
+                }
+            }
+
+            @Override
             public void onStartedHiding(
                     @LayoutType int layoutType, boolean showToolbar, boolean delayAnimation) {
                 if (layoutType == LayoutType.TAB_SWITCHER) {
@@ -1026,10 +1035,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         startSurfaceSupplier.onAvailable(mCallbackController.makeCancelable((startSurface) -> {
             mStartSurface = startSurface;
+            mStartSurfaceState = startSurface.getStartSurfaceState();
+            mLocationBarModel.setStartSurfaceState(mStartSurfaceState);
             if (!mIsStartSurfaceRefactorEnabled) {
                 mStartSurfaceStateObserver = (newState, shouldShowToolbar) -> {
                     assert ReturnToChromeUtil.isStartSurfaceEnabled(mActivity);
                     mStartSurfaceState = newState;
+                    mLocationBarModel.setStartSurfaceState(mStartSurfaceState);
                     mToolbar.updateStartSurfaceToolbarState(newState, shouldShowToolbar, null);
                 };
                 // TODO(https://crbug.com/1315679): Remove |mStartSurfaceSupplier|,
@@ -1126,7 +1138,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 PartnerBrowserCustomizations.getInstance()::isHomepageProviderAvailableAndEnabled,
                 DownloadUtils::downloadOfflinePage, initializeWithIncognitoColors,
                 logoClickedCallback, mIsStartSurfaceRefactorEnabled, constraintsSupplier,
+                mCompositorViewHolder.getInMotionSupplier(), mControlsVisibilityDelegate,
                 !ReturnToChromeUtil.shouldImproveStartWhenFeedIsDisabled(mActivity));
+
         // clang-format on
         mHomepageStateListener = () -> {
             mHomepageEnabledSupplier.set(HomepageManager.isHomepageEnabled());
@@ -1475,6 +1489,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     public void destroy() {
         mIsDestroyed = true;
 
+        var omnibox = mLocationBar.getOmniboxStub();
+        if (omnibox != null) {
+            omnibox.removeUrlFocusChangeListener(this);
+            omnibox.removeUrlFocusChangeListener(mStatusBarColorController);
+            omnibox.removeUrlFocusChangeListener(mLocationBarFocusHandler);
+        }
+
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
 
         if (mInitializedWithNative) {
@@ -1605,6 +1626,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mComponentCallbacks = null;
         ChromeAccessibilityUtil.get().removeObserver(this);
 
+        mControlContainer.destroy();
         mConstraintsProxy.destroy();
     }
 
@@ -1929,7 +1951,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 tab != null ? tab.isIncognito() : mTabModelSelector.isIncognitoSelected();
         mLocationBarModel.setTab(tab, isIncognito);
 
-        updateCurrentTabDisplayStatus();
+        updateTabLoadingState(true);
 
         // This method is called prior to action mode destroy callback for incognito <-> normal
         // tab switch. Makes sure the action mode toolbar is hidden before selecting the new tab.
@@ -2047,11 +2069,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         if (mBottomControlsCoordinatorSupplier.get() != null) {
             mBottomControlsCoordinatorSupplier.get().setLayoutStateProvider(mLayoutStateProvider);
         }
-    }
-
-    private void updateCurrentTabDisplayStatus() {
-        mLocationBarModel.notifyUrlChanged();
-        updateTabLoadingState(true);
     }
 
     private void updateTabLoadingState(boolean updateUrl) {

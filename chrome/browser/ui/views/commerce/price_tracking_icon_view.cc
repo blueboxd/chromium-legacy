@@ -5,17 +5,27 @@
 #include "chrome/browser/ui/views/commerce/price_tracking_icon_view.h"
 
 #include "base/metrics/user_metrics.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/views/commerce/price_tracking_bubble_dialog_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/price_tracking_utils.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/power_bookmarks/core/power_bookmark_utils.h"
 #include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
@@ -30,15 +40,17 @@
 PriceTrackingIconView::PriceTrackingIconView(
     IconLabelBubbleView::Delegate* parent_delegate,
     Delegate* delegate,
-    Profile* profile)
+    Browser* browser)
     : PageActionIconView(nullptr,
                          0,
                          parent_delegate,
                          delegate,
                          "PriceTracking"),
-      profile_(profile),
+      browser_(browser),
+      profile_(browser->profile()),
       bubble_coordinator_(this),
       icon_(&omnibox::kPriceTrackingDisabledIcon) {
+  SetUpForInOutAnimation();
   SetProperty(views::kElementIdentifierKey, kPriceTrackingChipElementId);
 }
 
@@ -89,10 +101,6 @@ const gfx::VectorIcon& PriceTrackingIconView::GetVectorIcon() const {
   return *icon_;
 }
 
-bool PriceTrackingIconView::ShouldShowLabel() const {
-  return false;
-}
-
 bool PriceTrackingIconView::ShouldShow() {
   if (delegate()->ShouldHidePageActionIcons()) {
     return false;
@@ -114,9 +122,35 @@ void PriceTrackingIconView::UpdateImpl() {
     if (!GetVisible()) {
       base::RecordAction(
           base::UserMetricsAction("Commerce.PriceTracking.OmniboxChipShown"));
+      MaybeShowPageActionLabel();
     }
+  } else {
+    HidePageActionLabel();
   }
   SetVisible(should_show);
+}
+
+void PriceTrackingIconView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  PageActionIconView::AnimationProgressed(animation);
+  // When the label is fully revealed pause the animation for
+  // kLabelPersistDuration before resuming the animation and allowing the label
+  // to animate out. This is currently set to show for 12s including the in/out
+  // animation.
+  // TODO(crbug.com/1314206): This approach of inspecting the animation progress
+  // to extend the animation duration is quite hacky. This should be removed and
+  // the IconLabelBubbleView API expanded to support a finer level of control.
+  constexpr double kAnimationValueWhenLabelFullyShown = 0.5;
+  constexpr base::TimeDelta kLabelPersistDuration = base::Seconds(10.8);
+  if (should_extend_label_shown_duration_ &&
+      GetAnimationValue() >= kAnimationValueWhenLabelFullyShown) {
+    should_extend_label_shown_duration_ = false;
+    PauseAnimation();
+    animate_out_timer_.Start(
+        FROM_HERE, kLabelPersistDuration,
+        base::BindRepeating(&PriceTrackingIconView::UnpauseAnimation,
+                            base::Unretained(this)));
+  }
 }
 
 void PriceTrackingIconView::ForceVisibleForTesting(bool is_tracking_price) {
@@ -149,6 +183,21 @@ void PriceTrackingIconView::EnablePriceTracking(bool enable) {
     base::RecordAction(
         base::UserMetricsAction("Commerce.PriceTracking.OmniboxChip.Tracked"));
     commerce::MaybeEnableEmailNotifications(profile_->GetPrefs());
+    bool should_show_iph = browser_->window()->MaybeShowFeaturePromo(
+        feature_engagement::kIPHPriceTrackingInSidePanelFeature);
+    if (should_show_iph) {
+      SidePanelCoordinator* coordinator =
+          BrowserView::GetBrowserViewForBrowser(browser_)
+              ->side_panel_coordinator();
+      if (coordinator) {
+        SidePanelRegistry* registry = coordinator->GetGlobalSidePanelRegistry();
+        registry->SetActiveEntry(registry->GetEntryForKey(
+            SidePanelEntry::Key(SidePanelEntry::Id::kBookmarks)));
+      } else {
+        profile_->GetPrefs()->SetBoolean(prefs::kShouldShowSidePanelBookmarkTab,
+                                         true);
+      }
+    }
   }
 
   const bookmarks::BookmarkNode* node =
@@ -179,6 +228,10 @@ void PriceTrackingIconView::SetVisualState(bool enable) {
 
 void PriceTrackingIconView::OnPriceTrackingServerStateUpdated(bool success) {
   // TODO(crbug.com/1364739): Handles error if |success| is false.
+  if (commerce::kRevertIconOnFailure.Get() && !success) {
+    bubble_coordinator_.Hide();
+    UpdateImpl();
+  }
 }
 
 bool PriceTrackingIconView::IsPriceTracking() const {
@@ -197,4 +250,28 @@ bool PriceTrackingIconView::ShouldShowFirstUseExperienceBubble() const {
   return profile_->GetPrefs()->GetBoolean(
              prefs::kShouldShowPriceTrackFUEBubble) &&
          !IsPriceTracking();
+}
+
+void PriceTrackingIconView::MaybeShowPageActionLabel() {
+  auto* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
+  if (!tracker ||
+      !tracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature)) {
+    return;
+  }
+
+  should_extend_label_shown_duration_ = true;
+  AnimateIn(absl::nullopt);
+
+  // Note that `Dismiss()` in this case does not dismiss the UI. It's telling
+  // the FE backend that the promo is done so that other promos can run. Showing
+  // the label should not block other promos from displaying.
+  tracker->Dismissed(
+      feature_engagement::kIPHPriceTrackingPageActionIconLabelFeature);
+}
+
+void PriceTrackingIconView::HidePageActionLabel() {
+  UnpauseAnimation();
+  ResetSlideAnimation(false);
 }

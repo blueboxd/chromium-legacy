@@ -894,7 +894,6 @@
 <translation id="5869789175361934029">වෙනත් උපාංගයකින් කරගෙන යන්න</translation>
 <translation id="587735546353481577">අඩවියක් අනුගමනය කිරීමට, අඩවියට ගොස්, Chrome මෙනුව විවෘත කර, අනුගමනය කරන්න තට්ටු කරන්න.</translation>
 <translation id="5879072387416556377">වඩා හොඳ යෝජනා ලබා ගන්න</translation>
-<translation id="5880748256563468367">සංග්‍රහය වෙත යන්න</translation>
 <translation id="5884076754568147479">ඔබට කාර්ය භාර සම්පූර්ණ කිරීමට උදවු කිරීමට, Google විසින් URL සහ ඔබේ සහකරු භාවිත කරන වෙබ් අඩවිවල අන්තර්ගතය මෙන්ම ඔබ සහකරු හරහා ඉදිරිපත් කරන තොරතුරු ලබා ගැනේ</translation>
 <translation id="5906513782029855931">අඩවිවල URL දැන ගැනීම Google සහායකට ඔබට කාර්යයන් සම්පූර්ණ කිරීමට උදවු කිරීමට ඉඩ සලසයි. ඔබට Chrome සැකසීම් තුළ සහායක ක්‍රියාවිරහිත කළ හැකිය.</translation>
 <translation id="5916664084637901428">ක්‍රියාත්මකයි</translation>
@@ -906,6 +905,7 @@
 <translation id="5956665950594638604">Chrome උදවු මධ්‍යස්ථානය නව ටැබයක විවෘත කරන්න</translation>
 <translation id="5957442310066583693">ඔබගේ ඉහළම අඩවි බැලීමට, මුල් පිටු බොත්තම තට්ටු කරන්න</translation>
 <translation id="5958275228015807058">බාගැනීම් තුළ ඔබේ ගොනු සහ පිටු සොයා ගන්න</translation>
+<translation id="5958994127112619898">පිටුව සරල කරන්න</translation>
 <translation id="5962718611393537961">හැකිළවීමට තට්ටු කරන්න</translation>
 <translation id="5964869237734432770">රූප විස්තර නවත්වන්න</translation>
 <translation id="5966233851250124270">Chrome ඔබේ තේරීම මතක තබා ගනී</translation>
@@ -1377,6 +1377,7 @@
 <translation id="8387617938027387193">ඒ ඔබ බව සත්‍යාපනය කරන්න</translation>
 <translation id="8393700583063109961">පණිවිඩය යවන්න</translation>
 <translation id="8394720698884623075">Chrome තුළ ගබඩා කර ඇති අනාරක්ෂිත වෙබ් අඩවි ලැයිස්තුවක් සමඟ URL පරීක්ෂා කරයි.</translation>
+<translation id="8402673309244746971">පහත දේ වෙත යන්න</translation>
 <translation id="8410695015584479363">මිල ගණන් හඹා යන්න</translation>
 <translation id="8413126021676339697">සම්පූර්ණ ඉතිහාසය පෙන්වන්න</translation>
 <translation id="8414396119627470038"><ph name="SITE_ETLD_PLUS_ONE" /> වෙත <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> සමග පුරන්න</translation>

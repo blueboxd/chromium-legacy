@@ -27,8 +27,7 @@
               },
               "legacy_gclient_config": {
                 "apply_configs": [
-                  "android",
-                  "enable_reclient"
+                  "android"
                 ],
                 "config": "chromium"
               }
@@ -78,16 +77,6 @@
           "builder": "Marshmallow 64 bit Tester",
           "project": "chromium"
         }
-      ],
-      "mirroring_builder_group_and_names": [
-        {
-          "builder": "android_arm64_dbg_recipe",
-          "group": "tryserver.chromium.android"
-        },
-        {
-          "builder": "android_n5x_swarming_dbg",
-          "group": "tryserver.chromium.android"
-        }
       ]
     }
   },
@@ -99,5 +88,8 @@
     ]
   },
   "builder_group": "chromium.android",
-  "recipe": "chromium"
+  "recipe": "chromium",
+  "sheriff_rotations": [
+    "chrome_browser_release"
+  ]
 }

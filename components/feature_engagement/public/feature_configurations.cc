@@ -185,6 +185,31 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHPriceTrackingInSidePanelFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    // Show the promo once a year if the price tracking IPH was not triggered.
+    config->trigger = EventConfig("iph_price_tracking_side_panel_trigger",
+                                  Comparator(EQUAL, 0), 360, 360);
+    config->used = EventConfig("price_tracking_side_panel_shown",
+                               Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
+  if (kIPHPriceTrackingPageActionIconLabelFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    // Show the promo once per day.
+    config->trigger =
+        EventConfig("price_tracking_page_action_icon_label_in_trigger",
+                    Comparator(LESS_THAN, 1), 1, 360);
+    return config;
+  }
+
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS)
 
@@ -1012,6 +1037,23 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->event_configs.insert(
         EventConfig("desktop_version_requested",
                     Comparator(GREATER_THAN_OR_EQUAL, 3), 60, 60));
+    return config;
+  }
+
+  if (kIPHWhatsNewFeature.name == feature->name) {
+    // A config that allows a user education bubble to be shown for the bottom
+    // toolbar. After the promo manager dismisses What's New promo, the user
+    // education bubble will be shown once. This can only occur once every a
+    // year.
+
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger =
+        EventConfig("whats_new_trigger", Comparator(EQUAL, 0), 360, 360);
+    config->used =
+        EventConfig("whats_new_used", Comparator(EQUAL, 0), 360, 360);
     return config;
   }
 #endif  // BUILDFLAG(IS_IOS)

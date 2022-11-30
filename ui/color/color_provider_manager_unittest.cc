@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -37,14 +38,6 @@ ColorProvider* GetLightNormalColorProvider() {
        ColorProviderManager::FrameType::kChromium, absl::nullopt, nullptr});
 }
 
-// Returns a Key where |color| is the user_color value.
-ColorProviderManager::Key UserColorKey(SkColor color) {
-  return ColorProviderManager::Key(
-      ColorProviderManager::ColorMode::kLight,
-      ColorProviderManager::ContrastMode::kNormal, ui::SystemTheme::kDefault,
-      ColorProviderManager::FrameType::kChromium, color, nullptr);
-}
-
 class TestInitializerSupplier
     : public ColorProviderManager::InitializerSupplier {
   void AddColorMixers(ColorProvider* provider,
@@ -55,9 +48,12 @@ class TestInitializerSupplier
 
 // Verifies that color providers endure for each call to GetColorProviderFor().
 TEST_F(ColorProviderManagerTest, Persistence) {
+  base::HistogramTester histogram_tester;
   ColorProvider* provider = GetLightNormalColorProvider();
   ASSERT_NE(nullptr, provider);
   EXPECT_EQ(provider, GetLightNormalColorProvider());
+  histogram_tester.ExpectTotalCount(
+      "Views.Browser.TimeSpentInitializingColorProvider", 1);
 }
 
 // Verifies that the initializer is called for each newly created color
@@ -69,9 +65,12 @@ TEST_F(ColorProviderManagerTest, SetInitializer) {
             provider->AddMixer()[kColorTest0] = {SK_ColorBLUE};
           }));
 
+  base::HistogramTester histogram_tester;
   ColorProvider* provider = GetLightNormalColorProvider();
   ASSERT_NE(nullptr, provider);
   EXPECT_EQ(SK_ColorBLUE, provider->GetColor(kColorTest0));
+  histogram_tester.ExpectTotalCount(
+      "Views.Browser.TimeSpentInitializingColorProvider", 1);
 }
 
 // Verifies resetting the manager clears the provider. This is useful to keep
@@ -82,12 +81,16 @@ TEST_F(ColorProviderManagerTest, Reset) {
           [](ColorProvider* provider, const ColorProviderManager::Key&) {
             provider->AddMixer()[kColorTest0] = {SK_ColorBLUE};
           }));
+
+  base::HistogramTester histogram_tester;
   ColorProvider* provider = GetLightNormalColorProvider();
   ASSERT_NE(nullptr, provider);
   EXPECT_EQ(SK_ColorBLUE, provider->GetColor(kColorTest0));
   ColorProviderManager::ResetForTesting();
   EXPECT_EQ(gfx::kPlaceholderColor,
             GetLightNormalColorProvider()->GetColor(kColorTest0));
+  histogram_tester.ExpectTotalCount(
+      "Views.Browser.TimeSpentInitializingColorProvider", 2);
 }
 
 TEST_F(ColorProviderManagerTest, LookupWithDeletedMember) {
@@ -123,48 +126,6 @@ TEST_F(ColorProviderManagerTest, KeyOrderIsStable) {
 
   // Verify that the order hasn't changed.
   EXPECT_LT(keys[0], keys[1]);
-}
-
-TEST_F(ColorProviderManagerTest, CacheLimits) {
-  // Count each time colors are generated.
-  int counter = 0;
-  auto initializer = base::BindRepeating(
-      [](int* inc, ColorProvider* provider, const ColorProviderManager::Key&) {
-        provider->AddMixer()[kColorTest0] = {SK_ColorBLUE};
-        (*inc)++;
-      },
-      &counter);
-
-  // Only keep 4 color providers.
-  ColorProviderManager& manager = ColorProviderManager::GetForTesting(4U);
-  manager.AppendColorProviderInitializer(initializer);
-
-  // We need 5 keys to test this.
-  ColorProviderManager::Key keys[5] = {
-      UserColorKey(SK_ColorGRAY), UserColorKey(SK_ColorWHITE),
-      UserColorKey(SK_ColorRED), UserColorKey(SK_ColorBLUE),
-      UserColorKey(SK_ColorMAGENTA)};
-
-  for (const ColorProviderManager::Key& key : keys) {
-    manager.GetColorProviderFor(key);
-  }
-  // 5 requests for different keys yields 5 runs of the initializer.
-  EXPECT_EQ(5, counter);
-
-  counter = 0;
-  // Magenta is the most recent so it should not result in an evaluation.
-  manager.GetColorProviderFor(keys[4]);
-  EXPECT_EQ(0, counter);
-
-  // Gray should have been evicted so it causes an evaluation.
-  manager.GetColorProviderFor(keys[0]);
-  EXPECT_EQ(1, counter);
-
-  counter = 0;
-  // The most recently used keys are grey, magenta, blue and red. Magenta should
-  // not result in an evaluation.
-  manager.GetColorProviderFor(keys[4]);
-  EXPECT_EQ(0, counter);
 }
 
 }  // namespace ui

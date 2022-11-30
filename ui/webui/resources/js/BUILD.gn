@@ -44,12 +44,14 @@ preprocess_if_expr("preprocess_src_ts") {
     "color_utils.ts",
     "custom_element.ts",
     "drag_wrapper.ts",
+    "event_tracker.ts",
     "focus_grid.ts",
     "focus_outline_manager.ts",
     "focus_row.ts",
     "keyboard_shortcut_list.ts",
     "plural_string_proxy.ts",
     "search_highlight_utils.ts",
+    "static_types.ts",
     "store_ts.ts",
     "test_loader.ts",
     "test_loader_util.ts",
@@ -76,13 +78,11 @@ preprocess_if_expr("preprocess_src") {
     "cr.m.js",
     "cr/event_target.js",
     "cr/ui.js",
-    "event_tracker.js",
     "icon.js",
     "load_time_data.m.js",
     "load_time_data_deprecated.js",
     "parse_html_subset.js",
     "promise_resolver.js",
-    "static_types.js",
     "util.js",
     "webui_resource_test.js",
   ]
@@ -146,12 +146,10 @@ js_type_check("js_resources_modules") {
   deps = [
     ":assert",
     ":cr.m",
-    ":event_tracker",
     ":icon",
     ":load_time_data.m",
     ":parse_html_subset",
     ":promise_resolver",
-    ":static_types",
     ":util",
   ]
 }
@@ -167,9 +165,6 @@ js_library("cr.m") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
-js_library("event_tracker") {
-}
-
 js_library("icon") {
   deps = [ ":cr.m" ]
 }
@@ -181,10 +176,6 @@ js_library("parse_html_subset") {
 }
 
 js_library("promise_resolver") {
-  deps = [ ":assert" ]
-}
-
-js_library("static_types") {
   deps = [ ":assert" ]
 }
 

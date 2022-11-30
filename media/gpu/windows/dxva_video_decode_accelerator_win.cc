@@ -1169,7 +1169,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
         // texture ids. This call just causes the texture manager to hold a
         // reference to the GLImage as long as either texture exists.
         bind_image_cb_.Run(client_id, GetTextureTarget(),
-                           picture_buffer->gl_image(), false);
+                           picture_buffer->gl_image());
       }
     }
 
@@ -1238,7 +1238,7 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
       for (uint32_t client_id :
            it->second->picture_buffer().client_texture_ids()) {
         bind_image_cb_.Run(client_id, GetTextureTarget(),
-                           it->second->gl_image(), false);
+                           it->second->gl_image());
       }
     }
 
@@ -3265,11 +3265,17 @@ DXVAVideoDecodeAccelerator::GetSharedImagesFromPictureBuffer(
       auto* gl_image_pbuffer =
           gpu::GLImagePbuffer::FromGLImage(picture_buffer->gl_image().get());
       DCHECK(gl_image_pbuffer);
+      // GLImagePbuffer is only created by PbufferPictureBuffer, which itself
+      // is only created by DXVAPictureBuffer::Create() when
+      // GetPictureBufferMechanism() returns COPY_TO_RGB. In this case,
+      // GetTextureTarget() returns GL_TEXTURE_2D. Note that
+      // GLImagePbufferBacking assumes this texture target.
+      DCHECK_EQ(GetTextureTarget(), static_cast<uint32_t>(GL_TEXTURE_2D));
       shared_image = gpu::GLImagePbufferBacking::CreateFromGLTexture(
           gl_image_pbuffer, mailbox, viz_formats[texture_idx],
           picture_buffer->size(), picture_buffer->color_space(),
           kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, shared_image_usage,
-          GetTextureTarget(), std::move(gl_texture));
+          std::move(gl_texture));
     }
 
     DCHECK(shared_image);

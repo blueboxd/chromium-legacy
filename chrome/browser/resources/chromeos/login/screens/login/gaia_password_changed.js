@@ -13,7 +13,7 @@ import '../../components/buttons/oobe_next_button.js';
 import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
-import '../../components/dialogs/oobe_loading_dialog.m.js';
+import '../../components/dialogs/oobe_loading_dialog.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -22,8 +22,8 @@ import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../component
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
 import {OobeTextButton} from '../../components/buttons/oobe_text_button.js';
-import {OOBE_UI_STATE} from '../../components/display_manager_types.m.js';
-import {addSubmitListener} from '../../login_ui_tools.m.js';
+import {OOBE_UI_STATE} from '../../components/display_manager_types.js';
+import {addSubmitListener} from '../../login_ui_tools.js';
 
 
 /**

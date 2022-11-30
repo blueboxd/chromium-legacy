@@ -124,7 +124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ActiveScriptController.DeniedExtensions"
-    units="Extension Count" expires_after="2023-03-26">
+    units="Extension Count" expires_after="2023-05-27">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -338,26 +338,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.CheckForExternalUpdatesTime" units="ms"
-    expires_after="M77">
-  <owner>rkaplow@chromium.org</owner>
-  <summary>
-    The amount of time that elapsed during
-    ExtensionService::CheckForExternalUpdates.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.ChromeExtensionsClientInitTime2"
-    units="microseconds" expires_after="2019-12-01">
-  <owner>dbertoni@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    The amount of elapsed time taken to initialize the ChromeExtensionsClient.
-    Recorded once per client initialization, which happens once per instance of
-    Chrome. This is a new stat that has microsecond resolution.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.ContentScripts.ContentScriptLength" units="KB"
     expires_after="2023-11-22">
   <owner>kelvinjiang@chromium.org</owner>
@@ -512,16 +492,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.CorruptExtensionBecameDisabled" units="units"
-    expires_after="M85">
-  <owner>lazyboy@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    Fired each time an extension was detected to be corrupted (contents not
-    matching an expected content hash from the webstore) and was disabled.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.CorruptExtensionDisabledReason"
     enum="CorruptExtensionDisabledReason" expires_after="2022-12-01">
   <owner>lazyboy@chromium.org</owner>
@@ -543,16 +513,6 @@ chromium-metrics-reviews@google.com.
     Logged once at startup, this is the value of a counter that is incremented
     anytime we disable a corrupted extension because its content didn't match an
     expected content hash.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.CorruptExtensionWouldBeDisabled" units="units"
-    expires_after="M85">
-  <owner>lazyboy@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    Simiar to Extensions.CorruptExtensionBecameDisabled, but fires when we're in
-    a bootstrapping mode and would have disabled an extension.
   </summary>
 </histogram>
 
@@ -1016,28 +976,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.DisabledUIUserResponse2"
-    enum="ExtensionDisabledUIUserResponse" expires_after="M77">
-  <owner>catmullings@chromium.org</owner>
-  <summary>
-    User response to the dialog shown when an extension is disabled due to an
-    update requiring more permissions. A count is recorded when the user takes
-    an action on the dialog (re-enable or remove the extension) or ignores the
-    dialog.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.DisabledUIUserResponseRemoteInstall2"
-    enum="ExtensionDisabledUIUserResponse" expires_after="M77">
-  <owner>catmullings@chromium.org</owner>
-  <summary>
-    User response to the dialog shown when an extension is disabled due to it
-    having been installed remotely. A count is recorded when the user takes an
-    action on the dialog (re-enable or remove the extension) or ignores the
-    dialog.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.DisableReason" enum="ExtensionDisableReason"
     expires_after="2022-08-28">
   <owner>rdevlin.cronin@chromium.org</owner>
@@ -1323,22 +1261,6 @@ chromium-metrics-reviews@google.com.
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>An extension has been uninstalled.</summary>
-</histogram>
-
-<histogram name="Extensions.ExternalExtensionEvent{ExternalExtensionEvent}"
-    enum="SideloadUIEvents" expires_after="M81">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Records what happens to extensions that are sideloaded, grouped by the
-    ExternalExtensionEvent enum. {ExternalExtensionEvent}
-  </summary>
-  <token key="ExternalExtensionEvent">
-    <variant name=""/>
-    <variant name="NonWebstore"
-        summary="sideloaded extensions that don't update from the webstore"/>
-    <variant name="Webstore"
-        summary="sideloaded extensions that update from the webstore"/>
-  </token>
 </histogram>
 
 <histogram name="Extensions.ExternalItemState" enum="ExternalItemState"
@@ -2653,33 +2575,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.ManifestIconSetIconWasVisibleForUnpacked"
-    enum="BooleanVisible" expires_after="2019-09-07">
-  <owner>dbertoni@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    Reports whether loading an icon declarated in the extension's manifest icon
-    set is considered visible by our icon analysis code. This stat is only for
-    unpacked extensions, which we check at load time.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.ManifestIconSetIconWasVisibleForUnpackedRendered"
-    enum="BooleanVisible" expires_after="2019-09-07">
-  <owner>dbertoni@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    Reports whether loading an icon declarated in the extension's manifest icon
-    set is considered visible by our icon analysis code. This stat is only for
-    unpacked extensions, which we check at load time.
-
-    This replaces the previous stat, ManifestIconSetIconWasVisibleForUnpacked,
-    due to a change to our analysis algorithm. The new algorithm renders the
-    icon against the toolbar background color and determines how visible the
-    resulting pixels are.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.ManifestReloadNeedsRelocalization" units="units"
     expires_after="2018-08-30">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -2902,34 +2797,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.PopupCreateTime" units="ms"
-    expires_after="2022-06-30">
-  <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    The time taken between a user clicking on a button to open a popup, and the
-    popup finishing loading its initial URL. This is a good way to measure the
-    UI responsiveness of extension popups. It will be strictly larger than
-    Extensions.PopupLoadTime2, which only measures the time it takes to load -
-    there may be a delay between clicking and starting to load, for example, if
-    the popup's host got caught in a queue.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.PopupLoadTime2" units="ms"
-    expires_after="2022-06-30">
-  <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>extensions-core@chromium.org</owner>
-  <summary>
-    The time taken for an extension popup to load its initial URL. This may not
-    include the time taken for an extension process to start, if the extension
-    already has a background page running. It does not necessarily correlate
-    with the amount of time since the popup was *clicked* either, since there
-    may be a delay between the user clicking and the loading started.
-    Extensions.PopupCreateTime measures this instead.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.PowerfulCount" units="extensions"
     expires_after="2021-12-01">
   <owner>tnagel@chromium.org</owner>
@@ -2963,32 +2830,6 @@ chromium-metrics-reviews@google.com.
     extension while checking for a permissions increase. Recorded during startup
     and on reload and update, for each extension that has the
     DISABLE_PERMISSIONS_INCREASE reason.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.ResourceLastModifiedDelta" units="seconds"
-    expires_after="2019-11-30">
-  <owner>lazyboy@chromium.org</owner>
-  <summary>
-    The difference in seconds between an extension resource's last modification
-    time and its extension base directory's creation time. Recorded on each
-    extension resource request if the difference is non-negative (i.e., the
-    resource's last modification time is more recent than the directory's
-    creation time.) For cases where the directory creation date is more recent,
-    see Extensions.ResourceLastModifiedNegativeDelta instead.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.ResourceLastModifiedNegativeDelta" units="seconds"
-    expires_after="2019-11-30">
-  <owner>lazyboy@chromium.org</owner>
-  <summary>
-    The absolute difference in seconds between an extension resource's last
-    modification time and extension base directory's creation time. Recorded on
-    each extension resource request if the difference is negative (i.e., the
-    directory's creation time is more recent than the resource's last
-    modification time.) For cases where the resource modification time is more
-    recent, see Extensions.ResourceLastModifiedDelta instead.
   </summary>
 </histogram>
 
@@ -3325,64 +3166,6 @@ chromium-metrics-reviews@google.com.
   <summary>Uninstalls grouped by Extension::HistogramType.</summary>
 </histogram>
 
-<histogram name="Extensions.UpdateCheckApp" units="units"
-    expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of legacy packaged apps and hosted apps that were checked during
-    an update check.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.UpdateCheckExtension" units="units"
-    expires_after="M77">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of extensions that were checked during an update check.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.UpdateCheckGoogleUrl" units="units"
-    expires_after="M77">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of crx's with a Google-hosted update URL that were checked during
-    an update check.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.UpdateCheckNoUrl" units="units" expires_after="M77">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of crx's with no update URL checked during an update check.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.UpdateCheckOtherUrl" units="units"
-    expires_after="M77">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of crx's with a non-Google update URL that were checked during an
-    update check.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.UpdateCheckPackagedApp" units="units"
-    expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of packaged apps that were checked during an update check.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.UpdateCheckTheme" units="units"
-    expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of themes that were checked during an update check.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.UpdateOnLoad" units="units" expires_after="M85">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -3434,32 +3217,6 @@ chromium-metrics-reviews@google.com.
     Whether and how keepalive requests are blocked. There is a similar histgoram
     Net.KeepaliveRequest.BlockStatus. See there for the difference between the
     two histograms.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.WebRequest.OnBeforeSendHeadersEventResponse"
-    enum="WebRequestEventResponse" expires_after="M77">
-  <owner>rockot@chromium.org</owner>
-  <summary>
-    For every network request visible to the Web Request API, this indicates
-    whether any registered declarative rules or event listeners observed the
-    onBeforeSendHeaders event.
-
-    This histogram is temporary, for investigating https://crbug.com/827582. It
-    can probably be removed by M69.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.WebRequest.OnHeadersReceivedEventResponse"
-    enum="WebRequestEventResponse" expires_after="M77">
-  <owner>rockot@chromium.org</owner>
-  <summary>
-    For every network request visible to the Web Request API, this indicates
-    whether any registered declarative rules or event listeners observed the
-    onHeadersReceived event.
-
-    This histogram is temporary, for investigating https://crbug.com/827582. It
-    can probably be removed by M69.
   </summary>
 </histogram>
 
@@ -3626,37 +3383,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.WebstoreDownload.InterruptReason"
-    enum="InterruptReason" expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The reason a webstore download was interrupted.</summary>
-</histogram>
-
-<histogram name="Extensions.WebstoreDownload.InterruptReceivedKBytes"
-    units="KB" expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of KBytes received for a webstore download before it was
-    interrupted.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.WebstoreDownload.InterruptTotalKBytes" units="KB"
-    expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The total expected size in KBytes of an interrupted webstore download.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.WebstoreDownload.InterruptTotalSizeUnknown"
-    enum="Boolean" expires_after="2018-08-30">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Tracks whether the total size of an interrupted webstore download was known.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.WebStoreInstall.EsbAllowlistParameter"
     enum="WebStoreInstallAllowlistParameter" expires_after="2023-10-01">
   <owner>jeffcyr@google.com</owner>
@@ -3788,33 +3514,6 @@ chromium-metrics-reviews@google.com.
     The total number of extensions that have an icon in the extension toolbar,
     including those that are unpinned and only show in the extensions menu.
     Measured once per startup per (non-incognito) profile.
-  </summary>
-</histogram>
-
-<histogram name="ExtensionUrlRequest.Latency" units="ms"
-    expires_after="2020-11-30">
-  <owner>lazyboy@chromium.org</owner>
-  <summary>The time taken to complete an extension url request.</summary>
-</histogram>
-
-<histogram name="ExtensionUrlRequest.SeekPosition" units="units"
-    expires_after="2020-11-30">
-  <owner>lazyboy@chromium.org</owner>
-  <summary>
-    When fetching a chrome-extension:// URL, this indicates the first byte
-    position we read from. This will be greater than 0 in cases such as XHR's
-    with a Range header, but will normally be 0 in the typical case of reading
-    the entire file. This helps identify how frequently partial file reads are
-    taking place.
-  </summary>
-</histogram>
-
-<histogram name="ExtensionUrlRequest.TotalKbRead" units="KB"
-    expires_after="2020-11-30">
-  <owner>lazyboy@chromium.org</owner>
-  <summary>
-    The total number of bytes read for a chrome-extension:// URL, logged when
-    the job is finished (either successfully or not).
   </summary>
 </histogram>
 

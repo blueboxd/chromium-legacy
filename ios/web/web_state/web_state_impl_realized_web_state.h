@@ -144,11 +144,7 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   void OpenURL(const WebState::OpenURLParams& params);
   void Stop();
   CRWSessionStorage* BuildSessionStorage();
-  CRWJSInjectionReceiver* GetJSInjectionReceiver() const;
   void LoadData(NSData* data, NSString* mime_type, const GURL& url);
-  void ExecuteJavaScript(const std::u16string& javascript);
-  void ExecuteJavaScript(const std::u16string& javascript,
-                         JavaScriptResultCallback callback);
   void ExecuteUserJavaScript(NSString* javaScript);
   const std::string& GetContentsMimeType() const;
   bool ContentIsHTML() const;
@@ -183,6 +179,10 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions() const
       API_AVAILABLE(ios(15.0));
   void OnStateChangedForPermission(Permission permission)
+      API_AVAILABLE(ios(15.0));
+  void RequestPermissionsWithDecisionHandler(
+      NSArray<NSNumber*>* permissions,
+      PermissionDecisionHandler web_view_decision_handler)
       API_AVAILABLE(ios(15.0));
 
   // NavigationManagerDelegate:

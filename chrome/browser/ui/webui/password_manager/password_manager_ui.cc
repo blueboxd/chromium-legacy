@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
+#include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -17,6 +18,7 @@
 #include "chrome/grit/password_manager_resources_map.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/password_manager/content/common/web_ui_constants.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -109,6 +111,8 @@ void AddPluralStrings(content::WebUI* web_ui) {
       "compromisedPasswords",
       IDS_PASSWORD_MANAGER_UI_COMPROMISED_PASSWORDS_COUNT);
   plural_string_handler->AddLocalizedString(
+      "numberOfAccounts", IDS_PASSWORD_MANAGER_UI_NUMBER_OF_ACCOUNTS);
+  plural_string_handler->AddLocalizedString(
       "reusedPasswords", IDS_PASSWORD_MANAGER_UI_REUSED_PASSWORDS_COUNT);
   plural_string_handler->AddLocalizedString(
       "weakPasswords", IDS_PASSWORD_MANAGER_UI_WEAK_PASSWORDS_COUNT);
@@ -125,6 +129,8 @@ PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
   AddPluralStrings(web_ui);
   ManagedUIHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
+  content::URLDataSource::Add(profile,
+                              std::make_unique<SanitizedImageSource>(profile));
 }
 
 // static

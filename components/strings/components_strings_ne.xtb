@@ -38,6 +38,7 @@
 <translation id="10614374240317010">कहिले पनि बचत नगर्नुहोस्</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">डेस्कटप पृष्ठमञ्जूषाहरू</translation>
+<translation id="1067561478268651872"><ph name="SECURE_DNS_SALT" /> नीति लागू गरिएको छ भने मात्र <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> नीति लागू गरिने छ।</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> मा भएका पृष्ठहरूलाई कहिल्यै अनुवाद नगर्नुहोस्‌</translation>
 <translation id="1070853536588271387">हाइब्रिड तथा वैकल्पिक सवारी साधनहरू</translation>
 <translation id="1070901266639972381">राति</translation>
@@ -1228,6 +1229,7 @@
 <translation id="4132448310531350254">एपहरू "<ph name="POLICY_IDS_LIST" />" सँग सम्बन्धित file_extension "<ph name="FILE_EXTENSION" />" का नक्कली ह्यान्ड्लरहरू।</translation>
 <translation id="4134123981501319574">डकुमेन्ट बनाउनुहोस्</translation>
 <translation id="413544239732274901">थप जान्नुहोस्</translation>
+<translation id="4140905530744469899">प्रोफाइलको आइडी:</translation>
 <translation id="4142935452406587478">ट्रे १०</translation>
 <translation id="4148925816941278100">अमेरिकन एक्स्प्रेस</translation>
 <translation id="4150099059797363385">Envelope Chinese #4</translation>
@@ -1351,6 +1353,7 @@
 <translation id="4407755609041463909">आगो</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> कुकीहरू</translation>
 <translation id="4411435778612100394">घरेलु उपकरण</translation>
+<translation id="4412074349188076601">यो कन्फिगुरेसनलाई "इन्स्टल गर्न मिल्ने" कन्फिगुरेसनका रूपमा चिन्ह लगाइएको छ तर यो आर्किटेक्चरको कुनै पनि इमेज उपलब्ध गराइएको छैन। त्यसैले यो कन्फिगुरेसन इन्स्टल गर्न मिल्दैन।</translation>
 <translation id="4414515549596849729">कुकीहरू र साइटका डाटा</translation>
 <translation id="4415426530740016218">पिकअप गर्ने ठेगाना</translation>
 <translation id="4424024547088906515">यो सर्भरले यो <ph name="DOMAIN" /> को भनि प्रमाणित गर्न सकेन; यसको सुरक्षा प्रमाणपत्रलाई Chrome ले विश्वास गर्दैन। यो कुनै एउटा मिसकन्फिगरेसन वा कुनै आक्रमणकारीले तपाईंको जडानमा गरेको हस्तक्षेपको कारणले गर्दा भएको हुन सक्छ।</translation>
@@ -2094,6 +2097,7 @@
 <translation id="6328786501058569169">यो साइट भ्रमपूर्ण छ</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> भन्दा कम ठाउँ खाली गर्दछ। तपाईं अर्कोपटक आउँदा केही साइटहरू अझ ढिलोगरी लोड हुनसक्छन्।</translation>
 <translation id="6337534724793800597">नामद्वारा नीतिहरू फिल्टर गर्छ</translation>
+<translation id="633770708279464947"><ph name="SECURE_DNS_SALT" /> को मान अवैध छ र सो मान प्रयोग गरिने छैन।</translation>
 <translation id="6340739886198108203">एड्मिनले तोकेका नीतिअनुसार स्क्रिनमा गोप्य सामग्री देखिएका बेला स्क्रिनसट लिन वा स्क्रिन रेकर्ड गर्न सिफारिस गरिँदैन:</translation>
 <translation id="6341434961864773665">{0,plural, =1{एड्मिनले तोकेको नीतिअनुसार यो फाइल <ph name="DESTINATION_NAME" /> मा अपलोड गर्न सिफारिस गरिँदैन}other{एड्मिनले तोकेको नीतिअनुसार यी फाइलहरू <ph name="DESTINATION_NAME" /> मा अपलोड गर्न सिफारिस गरिँदैन}}</translation>
 <translation id="6348220984832452017">प्रयोग गर्न मिल्ने संस्करणहरू</translation>
@@ -2989,6 +2993,7 @@
 <translation id="8654126188050905496">५५ x ९१ मिलिमिटर</translation>
 <translation id="8663226718884576429">अर्डरको सारांश, <ph name="TOTAL_LABEL" />, थप विवरण</translation>
 <translation id="8666678546361132282">अङ्ग्रेजी</translation>
+<translation id="8671519637524426245"><ph name="SECURE_DNS_SALT" /> को मान आकारसम्बन्धी मापदण्डबमोजिम छैन।</translation>
 <translation id="867224526087042813">हस्ताक्षर</translation>
 <translation id="8672264262457010862">व्यापार तथा उद्योगधन्दा</translation>
 <translation id="8676424191133491403">विलम्बरहित</translation>
@@ -3088,6 +3093,7 @@
 <translation id="8913778647360618320">'भुक्तानी विधिहरू व्यवस्थित गर्नुहोस्' नामक बटन, Chrome का सेटिङमा गई आफ्ना भुक्तानी तथा क्रेडिट कार्डसम्बन्धी जानकारी व्यवस्थित गर्न Enter थिच्नुहोस्</translation>
 <translation id="8922013791253848639">यो साइटमा सधैँ विज्ञापनहरू राख्ने अनुमति दिनुहोस्</translation>
 <translation id="892588693504540538">सिरानको दायाँपट्टि प्वाल</translation>
+<translation id="8930098617363288380"><ph name="SECURE_DNS_SALT" /> को मान सान्दर्भिक छैन र <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> नीति लागू गरिएको छ भने मात्र सो मान प्रयोग गरिने छ।</translation>
 <translation id="8930330541574156305">घर जग्गा</translation>
 <translation id="8931333241327730545">तपाईं आफ्नो Google खातामा यो कार्ड सुरक्षित गर्न चाहनुहुन्छ?</translation>
 <translation id="8932102934695377596">तपाईंको घडी ढिला छ</translation>
@@ -3200,6 +3206,7 @@
 <translation id="9179907736442194268">कुनै साइटमा मूल्य घटेका खण्डमा इमेलमार्फत अलर्ट प्राप्त गर्नुहोस्</translation>
 <translation id="9183302530794969518">Google कागजात</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> ले असमर्थित प्रोटोकल प्रयोग गर्दछ।</translation>
+<translation id="918454845714257218"><ph name="SIDE_OF_CARD" /> मा भएको कोड जाँच गर्नुहोस् र फेरि प्रयास गर्नुहोस्</translation>
 <translation id="9187461866967718678">खतरनाक खेलहरू</translation>
 <translation id="9191834167571392248">फेदको बायाँपट्टि प्वाल</translation>
 <translation id="9199905725844810519">प्रिन्ट गर्ने सुविधा ब्लक गरिएको छ</translation>

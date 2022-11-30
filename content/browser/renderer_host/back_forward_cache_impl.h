@@ -207,7 +207,8 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // corresponds to this the value.
   static void VlogUnexpectedRendererToBrowserMessage(
       const char* interface_name_,
-      uint32_t message_name);
+      uint32_t message_name,
+      RenderFrameHostImpl* rfh);
 
   // Returns the reasons (if any) why this document and its children cannot
   // enter the back/forward cache. Depends on the |render_frame_host| and its
@@ -372,13 +373,6 @@ class CONTENT_EXPORT BackForwardCacheImpl
       BackForwardCacheCanStoreDocumentResult& result,
       RenderFrameHostImpl* render_frame_host);
 
-  // Populates `result` with the blocking reasons for this document. If
-  // "include_non_sticky" is true, it includes non-sticky reasons.
-  void PopulateReasonsForDocument(
-      BackForwardCacheCanStoreDocumentResult& result,
-      RenderFrameHostImpl* rfh,
-      bool include_non_sticky);
-
   // Populates the reasons why this |rfh| and its subframes cannot enter the
   // back/forward cache in a flat list through |flattened_result| and as a tree
   // through its return value.
@@ -388,20 +382,6 @@ class CONTENT_EXPORT BackForwardCacheImpl
       RenderFrameHostImpl* rfh,
       BackForwardCacheCanStoreDocumentResult& flattened_result,
       bool include_non_sticky);
-
-  // Populates the sticky reasons for `rfh` without recursing into subframes.
-  // Sticky features can't be unregistered and remain active for the rest of the
-  // lifetime of the page.
-  void PopulateStickyReasonsForDocument(
-      BackForwardCacheCanStoreDocumentResult& result,
-      RenderFrameHostImpl* rfh);
-
-  // Populates the non-sticky reasons for `rfh` without recursing into
-  // subframes. Non-sticky reasons mean the reasons that may be resolved later
-  // such as when the page releases blocking resources in pagehide.
-  void PopulateNonStickyReasonsForDocument(
-      BackForwardCacheCanStoreDocumentResult& result,
-      RenderFrameHostImpl* rfh);
 
   // Updates the result to include CacheControlNoStore reasons if the flag is
   // on.
@@ -524,6 +504,27 @@ class CONTENT_EXPORT BackForwardCacheImpl
       return std::move(tree_result_);
     }
 
+    // Populates `result` with the blocking reasons for this document. If
+    // "include_non_sticky" is true, it includes non-sticky reasons.
+    void PopulateReasonsForDocument(
+        BackForwardCacheCanStoreDocumentResult& result,
+        RenderFrameHostImpl* rfh,
+        bool include_non_sticky);
+
+    // Populates the sticky reasons for `rfh` without recursing into subframes.
+    // Sticky features can't be unregistered and remain active for the rest of
+    // the lifetime of the page.
+    void PopulateStickyReasonsForDocument(
+        BackForwardCacheCanStoreDocumentResult& result,
+        RenderFrameHostImpl* rfh);
+
+    // Populates the non-sticky reasons for `rfh` without recursing into
+    // subframes. Non-sticky reasons mean the reasons that may be resolved later
+    // such as when the page releases blocking resources in pagehide.
+    void PopulateNonStickyReasonsForDocument(
+        BackForwardCacheCanStoreDocumentResult& result,
+        RenderFrameHostImpl* rfh);
+
    private:
     // Populate NotRestoredReasons for the `rfh` by
     // iterating the frame tree and populating NotRestoredReasons in
@@ -622,9 +623,8 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
   // Creates and returns an empty tree.
   static std::unique_ptr<BackForwardCacheCanStoreTreeResult> CreateEmptyTree(
       RenderFrameHostImpl* rfh);
-  // Creates and returns an empty tree before committing navigation.
   static std::unique_ptr<BackForwardCacheCanStoreTreeResult>
-  CreateEmptyTreeBeforeCommit(NavigationRequest* navigation);
+  CreateEmptyTreeForNavigation(NavigationRequest* navigation);
 
  private:
   friend class BackForwardCacheImplTest;
@@ -633,19 +633,16 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
   FRIEND_TEST_ALL_PREFIXES(BackForwardCacheImplTest, FirstCrossOriginReachable);
   FRIEND_TEST_ALL_PREFIXES(BackForwardCacheImplTest,
                            SecondCrossOriginReachable);
+  // This constructor is for creating a tree for |rfh| as the subtree's root
+  // document's frame.
   BackForwardCacheCanStoreTreeResult(
       RenderFrameHostImpl* rfh,
       const url::Origin& main_document_origin,
       const GURL& url,
       BackForwardCacheCanStoreDocumentResult& result_for_this_document);
 
-  BackForwardCacheCanStoreTreeResult(
-      BackForwardCacheCanStoreDocumentResult& result_for_this_document,
-      bool is_same_origin,
-      const std::string& id,
-      const std::string& name,
-      const std::string& src,
-      const GURL& url);
+  // Creates an empty placeholder tree with the empty result.
+  BackForwardCacheCanStoreTreeResult(bool is_same_origin, const GURL& url);
 
   // Helper function for |GetWebExposedNotRestoredReasons()|. |index| is the
   // random index of the cross-origin iframe that we decided to report
@@ -674,6 +671,7 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
   const bool is_same_origin_;
   // The id, name and src attribute of the frame owner of this subtree's root
   // document.
+  // TODO(yuzus): Make them optional.
   const std::string id_;
   const std::string name_;
   const std::string src_;

@@ -38,6 +38,7 @@
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1064054731605354900">A3 x 5</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
+<translation id="1067561478268651872">除非已設定 <ph name="SECURE_DNS_SALT" /> 政策，否則系統不會使用 <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> 政策。</translation>
 <translation id="1068672505746868501">一律不翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
 <translation id="1070853536588271387">混合與替代動力車輛</translation>
 <translation id="1070901266639972381">晚上</translation>
@@ -1230,6 +1231,7 @@
 <translation id="4132448310531350254">應用程式「<ph name="POLICY_IDS_LIST" />」參照的 file_extension「<ph name="FILE_EXTENSION" />」被指派給多個處理常式。</translation>
 <translation id="4134123981501319574">建立文件</translation>
 <translation id="413544239732274901">瞭解詳情</translation>
+<translation id="4140905530744469899">個人資料 ID：</translation>
 <translation id="4142935452406587478">紙匣 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Envelope Chinese #4</translation>
@@ -1353,6 +1355,7 @@
 <translation id="4407755609041463909">火焰</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> 個 Cookie</translation>
 <translation id="4411435778612100394">消費性電子產品</translation>
+<translation id="4412074349188076601">這項設定標示為可安裝，但沒有映像檔可供這個架構使用，因此無法安裝。</translation>
 <translation id="4414515549596849729">Cookie 和網站資料</translation>
 <translation id="4415426530740016218">取件地址</translation>
 <translation id="4424024547088906515">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chrome 的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
@@ -2096,6 +2099,7 @@
 <translation id="6328786501058569169">這是詐欺網站</translation>
 <translation id="6337133576188860026">釋出不到 <ph name="SIZE" />。下次造訪部分網站時，載入速度可能會變慢。</translation>
 <translation id="6337534724793800597">依名稱篩選政策</translation>
+<translation id="633770708279464947"><ph name="SECURE_DNS_SALT" /> 的值無效，系統不會使用這個值。</translation>
 <translation id="6340739886198108203">根據管理員政策，當畫面上有機密內容時，不建議你擷取螢幕截圖或錄影：</translation>
 <translation id="6341434961864773665">{0,plural, =1{根據管理員政策，建議你不要將這個檔案上傳到「<ph name="DESTINATION_NAME" />」}other{根據管理員政策，建議你不要將這些檔案上傳到「<ph name="DESTINATION_NAME" />」}}</translation>
 <translation id="6348220984832452017">使用中的變化版本</translation>
@@ -2991,6 +2995,7 @@
 <translation id="8654126188050905496">55 x 91 公釐</translation>
 <translation id="8663226718884576429">訂單摘要：<ph name="TOTAL_LABEL" />，更多詳細資料</translation>
 <translation id="8666678546361132282">英文</translation>
+<translation id="8671519637524426245"><ph name="SECURE_DNS_SALT" /> 值不符合大小規定。</translation>
 <translation id="867224526087042813">簽名</translation>
 <translation id="8672264262457010862">工商業</translation>
 <translation id="8676424191133491403">不延遲</translation>
@@ -3090,6 +3095,7 @@
 <translation id="8913778647360618320">「管理付款方式」按鈕，按下 Enter 鍵即可在 Chrome 設定中管理付款和信用卡資訊</translation>
 <translation id="8922013791253848639">一律允許在這個網站中顯示廣告</translation>
 <translation id="892588693504540538">打孔 (右上方)</translation>
+<translation id="8930098617363288380">除非已設定 <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> 政策，否則 <ph name="SECURE_DNS_SALT" /> 值不具關聯性，系統也不會使用該值。</translation>
 <translation id="8930330541574156305">房地產</translation>
 <translation id="8931333241327730545">您要將這張卡片的資訊儲存到您的 Google 帳戶嗎？</translation>
 <translation id="8932102934695377596">你的時鐘時間過慢</translation>
@@ -3202,6 +3208,7 @@
 <translation id="9179907736442194268">產品在任何網站上降價時都會通知你</translation>
 <translation id="9183302530794969518">Google 文件</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> 使用了不支援的通訊協定。</translation>
+<translation id="918454845714257218">請確認<ph name="SIDE_OF_CARD" />的安全碼，然後再試一次</translation>
 <translation id="9187461866967718678">極限運動</translation>
 <translation id="9191834167571392248">打孔 (左下方)</translation>
 <translation id="9199905725844810519">列印功能已遭封鎖</translation>

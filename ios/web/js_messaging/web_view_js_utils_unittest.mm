@@ -84,19 +84,16 @@ TEST_F(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
 
   std::unique_ptr<base::Value> value(
       web::ValueResultFromWKResult(test_dictionary));
-  base::DictionaryValue* dictionary = nullptr;
-  value->GetAsDictionary(&dictionary);
+  base::Value::Dict* dictionary = value->GetIfDict();
   EXPECT_NE(nullptr, dictionary);
 
-  std::string value1;
-  dictionary->GetString("Key1", &value1);
-  EXPECT_EQ("Value1", value1);
+  std::string* value1 = dictionary->FindString("Key1");
+  EXPECT_EQ("Value1", *value1);
 
-  base::DictionaryValue const* inner_dictionary = nullptr;
-  dictionary->GetDictionary("Key2", &inner_dictionary);
+  base::Value::Dict const* inner_dictionary = dictionary->FindDict("Key2");
   EXPECT_NE(nullptr, inner_dictionary);
 
-  EXPECT_EQ(42, *inner_dictionary->FindDoubleKey("Key3"));
+  EXPECT_EQ(42, *inner_dictionary->FindDouble("Key3"));
 }
 
 // Tests that ValueResultFromWKResult converts NSArray to properly
@@ -106,7 +103,7 @@ TEST_F(WebViewJsUtilsTest, ValueResultFromArrayWKResult) {
 
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(test_array));
   ASSERT_TRUE(value->is_list());
-  base::Value::ConstListView list = value->GetListDeprecated();
+  const base::Value::List& list = value->GetList();
 
   size_t list_size = 3;
   ASSERT_EQ(list_size, list.size());
@@ -144,17 +141,15 @@ TEST_F(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
   // `kMaximumParsingRecursionDepth`.
   std::unique_ptr<base::Value> value =
       web::ValueResultFromWKResult(test_dictionary);
-  base::DictionaryValue* current_dictionary = nullptr;
-  base::DictionaryValue* inner_dictionary = nullptr;
+  base::Value::Dict* current_dictionary = value->GetIfDict();
+  base::Value::Dict* inner_dictionary = nullptr;
 
-  value->GetAsDictionary(&current_dictionary);
   EXPECT_NE(nullptr, current_dictionary);
 
   for (int current_depth = 0; current_depth <= kMaximumParsingRecursionDepth;
        current_depth++) {
     EXPECT_NE(nullptr, current_dictionary);
-    inner_dictionary = nullptr;
-    current_dictionary->GetDictionary(key, &inner_dictionary);
+    inner_dictionary = current_dictionary->FindDict(key);
     current_dictionary = inner_dictionary;
   }
   EXPECT_EQ(nullptr, current_dictionary);
@@ -176,22 +171,22 @@ TEST_F(WebViewJsUtilsTest, ValueResultFromArrayWithDepthCheckWKResult) {
   // Check that parsing the array stopped at a depth of
   // `kMaximumParsingRecursionDepth`.
   std::unique_ptr<base::Value> value = web::ValueResultFromWKResult(test_array);
-  absl::optional<base::Value::ConstListView> current_list;
-  absl::optional<base::Value::ConstListView> inner_list;
+  base::Value::List* current_list = nullptr;
+  base::Value::List* inner_list = nullptr;
 
   ASSERT_TRUE(value->is_list());
-  current_list = value->GetListDeprecated();
+  current_list = &value->GetList();
 
   for (int current_depth = 0; current_depth <= kMaximumParsingRecursionDepth;
        current_depth++) {
-    ASSERT_TRUE(current_list.has_value());
+    ASSERT_TRUE(current_list);
 
-    inner_list = absl::nullopt;
-    if (!current_list.value().empty() && current_list.value()[0].is_list())
-      inner_list = current_list.value()[0].GetListDeprecated();
+    inner_list = nullptr;
+    if (!current_list->empty())
+      inner_list = (*current_list)[0].GetIfList();
     current_list = inner_list;
   }
-  EXPECT_FALSE(current_list.has_value());
+  EXPECT_FALSE(current_list);
 }
 
 // Tests that ExecuteJavaScript returns an error if there is no web view.

@@ -133,6 +133,7 @@
 <translation id="1974060860693918893">উন্নত</translation>
 <translation id="1981118202195772574">ম’বাইল</translation>
 <translation id="1989112275319619282">ব্ৰাউজ কৰক</translation>
+<translation id="1990820278544963435">বিচাৰক</translation>
 <translation id="199425419756152024">পাছৱৰ্ড চাওক</translation>
 <translation id="2010008505735295285">পুনৰ ল’ড কৰক</translation>
 <translation id="2015722694326466240">পাছৱৰ্ড চাবলৈ আপুনি প্ৰথমে এই ডিভাইচটোত এটা পাছক‘ড ছেট কৰিব লাগিব।</translation>
@@ -283,6 +284,7 @@
 <translation id="3153862085237805241">কাৰ্ড ছেভ কৰক</translation>
 <translation id="3157387275655328056">পঢ়াৰ সূচীত যোগ দিয়ক</translation>
 <translation id="3157684681743766797">সকলো চিহ্নিত কৰক…</translation>
+<translation id="315778507796115851">ইতিহাস</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">আপুনি নিজৰ অন্য ডিভাইচসমূহতো ছেভ কৰি ৰখা পাছৱৰ্ড ব্যৱহাৰ কৰিব পাৰে।</translation>
 <translation id="3175081911749765310">ৱেব সেৱা</translation>
@@ -927,7 +929,6 @@
 <translation id="7966516440812255683">ছাইটসমূহে আপোনাৰ ব্ৰাউজিঙৰ অভিজ্ঞতা উন্নত কৰিবলৈ কুকিসমূহ ব্যৱহাৰ কৰিব পাৰে, উদাহৰণস্বৰূপে, আপোনাক ছাইন ইন কৰি ৰাখিবলৈ অথবা আপোনাৰ শ্বপিং কার্টত থকা বস্তুবোৰ মনত ৰাখিবলৈ।
 
 আপুনি বিভিন্ন ছাইটসমূহত কৰা ব্ৰাউজিঙৰ কার্যকলাপ চাবলৈ ছাইটসমূহে কুকিসমূহ ব্যৱহাৰ কৰিব পাৰে, যেনে, বিজ্ঞাপন ব্যক্তিগতকৃত কৰিবলৈ।</translation>
-<translation id="7966904497916178308">মানক সুৰক্ষা অন আছে</translation>
 <translation id="7971521879845308059">পপ-আপ অৱৰোধ কৰক</translation>
 <translation id="797413074872316787">সকলো ডিভাইচতে ছিংক আৰু ব্যক্তিগতকৰণ কৰিবলৈ ছিংক কৰা সুবিধাটো অন কৰক।</translation>
 <translation id="7978018860671536736">৩) স্বয়ংক্ৰিয়ভাৱে পূৰ হোৱা পাছৱৰ্ডত টিপক</translation>
@@ -1088,6 +1089,7 @@
 <translation id="9188680907066685419">পৰিচালিত একাউণ্টৰ পৰা ছাইন আউট হওক</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> দিন আগতে</translation>
 <translation id="9203116392574189331">হেণ্ডঅফ</translation>
+<translation id="9219154867334666734">সন্ধানৰ টেব…</translation>
 <translation id="9223358826628549784">ক্ৰেশ্ব ৰিপর্ট পঠিওৱা হ’ল।</translation>
 <translation id="941747855997058526">পাছৱৰ্ড বাছনি কৰক...</translation>
 <translation id="952704832371081537">বাতিল কৰক</translation>

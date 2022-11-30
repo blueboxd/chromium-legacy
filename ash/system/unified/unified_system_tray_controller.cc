@@ -203,11 +203,14 @@ UnifiedSystemTrayController::CreateQuickSettingsView() {
 
   volume_slider_controller_ =
       std::make_unique<UnifiedVolumeSliderController>(this);
-  qs_view->AddSliderView(volume_slider_controller_->CreateView());
+  unified_volume_view_ = volume_slider_controller_->CreateView();
+  qs_view->AddSliderView(unified_volume_view_);
 
   brightness_slider_controller_ =
       std::make_unique<UnifiedBrightnessSliderController>(model_);
-  qs_view->AddSliderView(brightness_slider_controller_->CreateView());
+  unified_brightness_view_ = brightness_slider_controller_->CreateView();
+  qs_view->AddSliderView(unified_brightness_view_);
+
   return qs_view;
 }
 
@@ -644,20 +647,23 @@ void UnifiedSystemTrayController::InitFeaturePods() {
 
 void UnifiedSystemTrayController::InitFeatureTiles() {
   // TODO(b/252871301): Create each feature's tile.
-  // For prototyping, adding a primary and a compact feature tile, followed by a
-  // single compact placeholder tile and six primary placeholder tiles.
   auto accessibility_controller =
       std::make_unique<AccessibilityFeaturePodController>(this);
   auto screen_capture_controller =
       std::make_unique<CaptureModeFeaturePodController>(this);
+  auto vpn_controller = std::make_unique<VPNFeaturePodController>(this);
 
   std::vector<std::unique_ptr<FeatureTile>> tiles;
   tiles.push_back(accessibility_controller->CreateTile());
   tiles.push_back(screen_capture_controller->CreateTile());
 
-  // Adding placeholder tiles.
+  // Placeholder tile.
   tiles.push_back(
       std::make_unique<FeatureTile>(FeatureTile::TileType::kCompact));
+
+  tiles.push_back(vpn_controller->CreateTile());
+
+  // More placeholder tiles.
   while (tiles.size() < 9)
     tiles.push_back(std::make_unique<FeatureTile>());
 
@@ -666,6 +672,7 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
   // Transfer ownership of controllers to this.
   feature_pod_controllers_.push_back(std::move(accessibility_controller));
   feature_pod_controllers_.push_back(std::move(screen_capture_controller));
+  feature_pod_controllers_.push_back(std::move(vpn_controller));
 }
 
 void UnifiedSystemTrayController::AddFeaturePodItem(

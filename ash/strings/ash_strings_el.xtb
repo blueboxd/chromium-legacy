@@ -52,6 +52,7 @@
 <translation id="1218444235442067213"><ph name="APP_NAME" />, εφαρμογή Play Store</translation>
 <translation id="1225748608451425081">Το Chromebook κλειδώθηκε λόγω γνωστού προβλήματος. Θα μπορέσετε να συνδεθείτε σε: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Διακοπή επιλογής</translation>
+<translation id="1235458158152011030">Γνωστά δίκτυα</translation>
 <translation id="1239161794459865856">Η λειτουργία <ph name="FEATURE_NAME" /> συνδέθηκε.</translation>
 <translation id="1240638468526743569">Μια εφαρμογή</translation>
 <translation id="1246890715821376239">Μη υποστηριζόμενες εφαρμογές</translation>
@@ -386,7 +387,6 @@
 <translation id="3120421559657122717">Να τερματιστεί η λειτουργία της συσκευής;</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Επανεκκίνηση για ενημέρωση</translation>
-<translation id="3139382871451988441">Απενεργοποιήστε την πρόσβαση στην κάμερα.</translation>
 <translation id="3139942575505304791">Γραφείο 1</translation>
 <translation id="315116470104423982">Δεδομένα κινητής τηλεφωνίας</translation>
 <translation id="3151786313568798007">Προσανατολισμός</translation>
@@ -519,7 +519,6 @@
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="385300504083504382">Αρχή</translation>
 <translation id="3861651314799684201">Press Enter για εγγραφή πλήρους οθόνης</translation>
-<translation id="3885531177412808398">Επιτρέπει την πρόσβαση στο μικρόφωνο για όλες τις εφαρμογές και τους ιστοτόπους με άδεια μικροφώνου.</translation>
 <translation id="3886872229787704059">Ανοίχτηκαν σήμερα</translation>
 <translation id="3891340733213178823">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
 <translation id="3893630138897523026">ChromeVox (προφορικά σχόλια)</translation>
@@ -555,6 +554,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Ανενεργές για κάποια εφαρμογή}other{Ανενεργές για # εφαρμογές}}</translation>
 <translation id="4066027111132117168">Ενεργό, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Μεσαίο σήμα</translation>
+<translation id="4086921558679520050">Ενεργοποιήστε τον φυσικό διακόπτη μικροφώνου στη συσκευή σας</translation>
 <translation id="4112140312785995938">Αναζήτηση προς τα πίσω</translation>
 <translation id="4114315158543974537">Ενεργοποίηση του Phone Hub</translation>
 <translation id="4115378294792113321">Ματζέντα</translation>
@@ -607,6 +607,7 @@
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, ισχύς σήματος <ph name="SIGNAL_STRENGTH" /> τοις εκατό</translation>
 <translation id="4378551569595875038">Σύνδεση…</translation>
 <translation id="4379531060876907730">Αυτά είναι τα εργαλεία γραφίδας σας</translation>
+<translation id="4381031910344220229">Αυτό επιτρέπει την πρόσβαση στο μικρόφωνο για την εφαρμογή <ph name="APP_NAME" /> και όλες τις εφαρμογές και τους ιστοτόπους με άδεια μικροφώνου.</translation>
 <translation id="4389184120735010762">Πατήσατε τη συντόμευση πληκτρολογίου για τον μεγεθυντικό φακό σε παράθυρο. Θέλετε να τον ενεργοποιήσετε;</translation>
 <translation id="439598569299422042">Σε παύση, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Δεν είναι δυνατή η αποθήκευση της ψηφιακής εγγραφής οθόνης</translation>
@@ -648,11 +649,8 @@
 <translation id="4573176682887762361">"Πληκτρολόγηση [λέξη / φράση]"</translation>
 <translation id="4577274620589681794">Ο χρόνος τελείωσε · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Εμφάνιση προεπισκοπήσεων</translation>
-<translation id="4578196883126898996">Το μικρόφωνό σας είναι απενεργοποιημένο. Ενεργοποιήστε το κουμπί μικροφώνου της συσκευής σας.</translation>
 <translation id="4578906031062871102">Το μενού Ρυθμίσεις άνοιξε.</translation>
-<translation id="4581047786858252841">Το μικρόφωνο είναι ενεργοποιημένο</translation>
 <translation id="4585337515783392668">Διακοπή μετάδοσης σε άγνωστο δέκτη</translation>
-<translation id="4587299710837179226">Το μικρόφωνο είναι απενεργοποιημένο</translation>
 <translation id="4596144739579517758">Το Σκούρο θέμα είναι απενεργοποιημένο.</translation>
 <translation id="4611292653554630842">Σύνδεση</translation>
 <translation id="4623167406982293031">Επαλήθευση λογαριασμού</translation>
@@ -732,6 +730,7 @@
 <translation id="4987738733603015246">Γραφείο 16</translation>
 <translation id="5003993274120026347">Επόμενη πρόταση</translation>
 <translation id="5016558321564993266">Επιλέξτε τον μαρκαδόρο. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Η πρόσβαση στο μικρόφωνο της συσκευής είναι ενεργοποιημένη</translation>
 <translation id="5030687792513154421">Τέλος χρόνου</translation>
 <translation id="5033299697334913360">Κάντε κλικ σε οποιοδήποτε σημείο για εγγραφή ολόκληρης της οθόνης.</translation>
 <translation id="5035236842988137213">Η συσκευή <ph name="DEVICE_NAME" /> συνδέθηκε σε ένα νέο τηλέφωνο</translation>
@@ -963,9 +962,11 @@
 <translation id="6338485349199627913">Το <ph name="DISPLAY_NAME" /> είναι μια διαχειριζόμενη περίοδος σύνδεσης την οποία διαχειρίζεται ο τομέας <ph name="MANAGER" />.</translation>
 <translation id="6344138931392227467">Η συσκευή <ph name="DEVICE_NAME" /> συνδέθηκε</translation>
 <translation id="6351032674660237738">ΠΡΟΤΑΣΕΙΣ ΕΦΑΡΜΟΓΩΝ</translation>
+<translation id="6352082849089527770">Άγνωστα δίκτυα</translation>
 <translation id="6359587239691116345">Αποκτήστε τις πιο πρόσφατες λειτουργίες και βελτιώσεις ασφάλειας. Εάν απορρίψετε αυτήν την ενημέρωση, η συσκευή σας ενδέχεται να μην λειτουργεί σωστά πλέον και ίσως αντιμετωπίσετε ζητήματα ασφάλειας και απόδοσης.</translation>
 <translation id="6376931439017688372">Το Bluetooth είναι ενεργοποιημένο</translation>
 <translation id="6381109794406942707">Για να ξεκλειδώσετε τη συσκευή, εισαγάγετε το PIN σας.</translation>
+<translation id="638716340450135524">Ενεργοποίηση πρόσβασης στην κάμερα</translation>
 <translation id="639644700271529076">Το CAPS LOCK είναι απενεργοποιημένο</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Βοηθός Google</translation>
@@ -973,6 +974,7 @@
 <translation id="642644398083277086">Διαγραφή όλων των ειδοποιήσεων</translation>
 <translation id="643147933154517414">Όλα έτοιμα</translation>
 <translation id="6431865393913628856">Εγγραφή οθόνης</translation>
+<translation id="6442259747294754014">Η πρόσβαση στο μικρόφωνο της συσκευής είναι απενεργοποιημένη</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> συμβάν</translation>
 <translation id="6449483711453944360">Προς το παρόν, δεν υποστηρίζονται οι εφαρμογές Linux και τα παράθυρα για ανώνυμη περιήγηση</translation>
@@ -1024,6 +1026,7 @@
 <translation id="6670153871843998651">Γραφείο 3</translation>
 <translation id="6671495933530132209">Αντιγραφή εικόνας</translation>
 <translation id="6671661918848783005">Δεν είναι δυνατό το ξεκλείδωμα του Chromebook</translation>
+<translation id="6683022854667115063">Ακουστικά</translation>
 <translation id="6696025732084565524">Απαιτείται σημαντική ενημέρωση του αποσπώμενου πληκτρολογίου σας</translation>
 <translation id="6700713906295497288">Κουμπί μενού IME</translation>
 <translation id="6707693040195709527">Η αλλαγή της συσκευής στην προηγούμενη έκδοση είναι εκπρόθεσμη</translation>
@@ -1136,6 +1139,7 @@
 <translation id="7360036564632145207">Η αλλαγή της ρύθμισης προστασίας πρόσβασης δεδομένων για περιφερειακά μπορεί να βελτιστοποιήσει την απόδοση</translation>
 <translation id="736045644501761622">Ρύθμιση ταπετσαρίας και στιλ</translation>
 <translation id="7371404428569700291">Εγγραφή παραθύρου</translation>
+<translation id="737315737514430195">Αυτό επιτρέπει την πρόσβαση στο μικρόφωνο για όλες τις εφαρμογές και τους ιστοτόπους με άδεια μικροφώνου.</translation>
 <translation id="7377169924702866686">Το Caps Lock είναι ενεργοποιημένο.</translation>
 <translation id="7377481913241237033">Σύνδεση με κωδικό</translation>
 <translation id="7378203170292176219">Σύρετε, για να επιλέξετε μια περιοχή για εγγραφή</translation>
@@ -1204,12 +1208,14 @@
 <translation id="7671610481353807627">Οι εφαρμογές ταξινομούνται κατά χρώμα</translation>
 <translation id="7672095158465655885">Συνδέθηκε σε <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Η είσοδος κάμερας ρυθμίστηκε σε <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">Αυτό επιτρέπει την πρόσβαση στο μικρόφωνο για τις εφαρμογές <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> και όλες τις εφαρμογές και τους ιστοτόπους με άδεια μικροφώνου.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Προσθήκη νέου δικτύου κινητής τηλεφωνίας</translation>
 <translation id="7720400844887872976">Ενεργή έως τις <ph name="TIME" /></translation>
 <translation id="7720410380936703141">ΔΟΚΙΜΑΣΤΕ ΞΑΝΑ</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 ειδοποίηση}other{# ειδοποιήσεις}}</translation>
 <translation id="7724603315864178912">Αποκοπή</translation>
+<translation id="7742327441377685481">Δεν υπάρχουν ειδοποιήσεις</translation>
 <translation id="7745560842763881396">Εμφάνιση εφαρμογών στο ράφι</translation>
 <translation id="7749443890790263709">Συμπληρώθηκε ο μέγιστος αριθμός γραφείων.</translation>
 <translation id="776344839111254542">Κάντε κλικ, για να δείτε τις λεπτομέρειες της ενημέρωσης</translation>
@@ -1366,6 +1372,7 @@
 <translation id="8598235756057743477">Ταξινόμηση των εφαρμογών σας κατά όνομα ή χρώμα</translation>
 <translation id="8614517853887502247">Έχει γίνει απόκρυψη των ειδοποιήσεων των εφαρμογών <ph name="APP_1_TITLE" /> και <ph name="APP_2_TITLE" /> επειδή η προστασία προβολής είναι ενεργοποιημένη</translation>
 <translation id="8627191004499078455">Συνδέθηκε στη συσκευή <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Απενεργοποίηση πρόσβασης στην κάμερα</translation>
 <translation id="8631727435199967028">Ρυθμίσεις προσβασιμότητας</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />, Διαχειριζόμενο από τον διαχειριστή σας</translation>
 <translation id="8639760480004882931">Απομένει <ph name="PERCENTAGE" /></translation>
@@ -1381,7 +1388,6 @@
 <translation id="8666856788528804727">Ανοίξτε το <ph name="NAME" /> για να ρυθμίσετε τη συσκευή σας</translation>
 <translation id="8676770494376880701">Ο συνδεδεμένος φορτιστής παρέχει χαμηλή ισχύ</translation>
 <translation id="8683506306463609433">Ενεργή παρακολούθηση απόδοσης</translation>
-<translation id="8684405646663021166">Επιτρέπει την πρόσβαση στο μικρόφωνο για την εφαρμογή <ph name="APP_NAME" /> και όλες τις εφαρμογές και τους ιστοτόπους με άδεια μικροφώνου.</translation>
 <translation id="8685326675965865247">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό. Χρησιμοποιήστε τα πλήκτρα βέλους για πλοήγηση στις εφαρμογές σας.</translation>
 <translation id="8703634754197148428">Έναρξη εγγραφής. Μόλις ξεκινήσει η εγγραφή, χρησιμοποιήστε τα πλήκτρα Alt + Shift + L για να πλοηγηθείτε στο ράφι και να βρείτε το κουμπί διακοπής εγγραφής.</translation>
 <translation id="8721053961083920564">Εναλλαγή έντασης ήχου. <ph name="STATE_TEXT" /></translation>
@@ -1406,7 +1412,6 @@
 <translation id="8819728065740986820">Η προσαρμοστική φόρτιση είναι ενεργή</translation>
 <translation id="8825863694328519386">Για να επιστρέψετε, σύρετε από τα αριστερά.</translation>
 <translation id="8834539327799336565">Συνδεδεμένες αυτήν τη στιγμή</translation>
-<translation id="8834657930627018205">Ενεργοποιήστε την πρόσβαση στην κάμερα</translation>
 <translation id="8841375032071747811">Κουμπί "Πίσω"</translation>
 <translation id="8843682306134542540">Εναλλαγή κλειδώματος περιστροφής. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Πλήκτρο αναζήτησης+Esc</translation>

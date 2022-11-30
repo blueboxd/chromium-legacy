@@ -33,14 +33,6 @@ const char kDynamicSchedulerPercentile[] = "percentile";
 
 namespace features {
 
-// Enables the use of power hint APIs on Android.
-BASE_FEATURE(kAdpf, "Adpf", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Target duration used for power hint on Android.
-// `0` indicates use hard coded default.
-const base::FeatureParam<int> kAdpfTargetDurationMs{&kAdpf,
-                                                    "AdpfTargetDurationMs", 0};
-
 BASE_FEATURE(kEnableOverlayPrioritization,
              "EnableOverlayPrioritization",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -230,6 +222,12 @@ BASE_FEATURE(kOverrideThrottledFrameRateParams,
              "OverrideThrottledFrameRateParams",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Used to gate calling SetPurgeable on OutputPresenter::Image from
+// SkiaOutputDeviceBufferQueue.
+BASE_FEATURE(kBufferQueueImageSetPurgeable,
+             "BufferQueueImageSetPurgeable",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // On platforms using SkiaOutputDeviceBufferQueue, when this is true
 // SkiaRenderer will allocate and maintain a buffer queue of images for the root
 // render pass, instead of SkiaOutputDeviceBufferQueue itself.
@@ -241,11 +239,6 @@ BASE_FEATURE(kRendererAllocatesImages,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
-
-bool IsAdpfEnabled() {
-  // TODO(crbug.com/1157620): Limit this to correct android version.
-  return base::FeatureList::IsEnabled(kAdpf);
-}
 
 bool IsOverlayPrioritizationEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

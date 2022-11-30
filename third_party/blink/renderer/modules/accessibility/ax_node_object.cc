@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -4483,8 +4484,16 @@ double AXNodeObject::EstimatedLoadingProgress() const {
 Element* AXNodeObject::ActionElement() const {
   const AXObject* current = this;
 
-  if (!current->GetElement())
-    return nullptr;  // Do not expose action element for text or document.
+  if (blink::IsA<blink::Document>(current->GetNode()))
+    return nullptr;  // Do not expose action element for document.
+
+  // In general, we look an action element up only for AXObjects that have a
+  // backing Element. We make an exception for text nodes and pseudo elements
+  // because we also want these to expose a default action when any of their
+  // ancestors is clickable. We have found Windows ATs relying on this behavior
+  // (see https://crbug.com/1382034).
+  DCHECK(current->GetElement() || current->IsTextObject() ||
+         current->ShouldUseLayoutObjectTraversalForChildren());
 
   while (current) {
     // Handles clicks or is a textfield and is not a disabled form control.
@@ -4672,6 +4681,13 @@ bool AXNodeObject::OnNativeFocusAction() {
   }
 
   element->Focus();
+
+  // Calling NotifyUserActivation here allows the browser to activate features
+  // that need user activation, such as showing an autofill suggestion.
+  LocalFrame::NotifyUserActivation(
+      document->GetFrame(),
+      mojom::blink::UserActivationNotificationType::kInteraction);
+
   return true;
 }
 

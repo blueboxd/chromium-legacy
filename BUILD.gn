@@ -416,15 +416,6 @@ group("gn_all") {
     }
   }
 
-  # NOTE: The following should really be 'is_android', but the fuzzing build
-  #       seems currently broken for this platform at the moment, and the
-  #       corresponding code build and works on Linux unmodified.
-  #       See instructions in the corresponding BUILD.gn.
-  if (is_linux || is_chromeos) {
-    deps +=
-        [ "//third_party/android_crazy_linker:android_crazy_linker_zip_fuzzer" ]
-  }
-
   if (is_linux || is_chromeos) {
     # This is only used by ChromeOS, but we want maximal fuzzer coverage, so
     # run it under linux too.
@@ -631,10 +622,6 @@ group("gn_all") {
     if (!is_debug && !is_component_build && !is_castos) {
       deps += [ "//chrome/tools/service_discovery_sniffer" ]
     }
-  }
-
-  if (ozone_platform_x11 && !is_castos && target_cpu != "arm") {
-    deps += [ "//gpu/tools/compositor_model_bench" ]
   }
 
   if (is_mac) {
@@ -1087,12 +1074,6 @@ if (!is_ios) {
         "//chrome/test/chromedriver:generate_chromedriver_license",
       ]
     }
-  }
-
-  # TODO(chromium:1382224): Remove this target as soon as all the builders have switched to :chromedriver_group
-  group("chromedriver") {
-    testonly = true
-    deps = [ ":chromedriver_group" ]
   }
 
   # This group includes all of the targets needed to build and test Blink,

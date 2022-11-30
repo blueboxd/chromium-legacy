@@ -133,6 +133,7 @@
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1981118202195772574">Мобильная версия</translation>
 <translation id="1989112275319619282">Выбрать</translation>
+<translation id="1990820278544963435">Найти</translation>
 <translation id="199425419756152024">Посмотреть пароль</translation>
 <translation id="2010008505735295285">Перезагрузить</translation>
 <translation id="2015722694326466240">Чтобы просматривать пароли, настройте на устройстве код доступа.</translation>
@@ -283,6 +284,7 @@
 <translation id="3153862085237805241">Сохранить подсказку</translation>
 <translation id="3157387275655328056">Добавить в список для чтения</translation>
 <translation id="3157684681743766797">Отметить все…</translation>
+<translation id="315778507796115851">История</translation>
 <translation id="3169472444629675720">Рекомендации</translation>
 <translation id="3174662312949010067">Вы также можете использовать сохраненные пароли на других своих устройствах.</translation>
 <translation id="3175081911749765310">Веб-сервисы</translation>
@@ -927,7 +929,6 @@
 <translation id="7966516440812255683">Сайты могут использовать файлы cookie для вашего удобства, например сохранять информацию о товарах в корзине или о том, что вы вошли в аккаунт.
 
 Сайты могут использовать файлы cookie, чтобы отслеживать ваши действия в браузере, например для показа персонализированной рекламы.</translation>
-<translation id="7966904497916178308">Стандартная защита включена</translation>
 <translation id="7971521879845308059">Блок. вспл. окна</translation>
 <translation id="797413074872316787">Чтобы синхронизировать и персонализировать данные на всех устройствах, включите синхронизацию.</translation>
 <translation id="7978018860671536736">3. Нажмите "Автозаполнение пароля".</translation>
@@ -1088,6 +1089,7 @@
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> дн. назад</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Поиск по вкладкам</translation>
 <translation id="9223358826628549784">Отчет отправлен</translation>
 <translation id="941747855997058526">Выбрать пароль</translation>
 <translation id="952704832371081537">Отмена</translation>

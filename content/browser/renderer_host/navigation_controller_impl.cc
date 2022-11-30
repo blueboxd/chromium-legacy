@@ -2034,6 +2034,22 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
       replace_entry, previous_document_was_activated,
       request->IsRendererInitiated(), request->GetPreviousPageUkmSourceId());
 
+  // If this is a history navigation and the old entry has an existing
+  // back/forward cache metrics object, keep using the old one so that the
+  // reasons logged from the last time the page navigated gets preserved.
+  if (BackForwardCacheMetrics::IsCrossDocumentMainFrameHistoryNavigation(
+          request)) {
+    // Use |request->GetNavigationEntry()| instead of |pending_entry_| here
+    // because some tests do not have a pending entry.
+    NavigationEntryImpl* entry =
+        static_cast<NavigationEntryImpl*>(request->GetNavigationEntry());
+    if (entry && entry->back_forward_cache_metrics()) {
+      scoped_refptr<BackForwardCacheMetrics> metrics =
+          entry->TakeBackForwardCacheMetrics();
+      new_entry->set_back_forward_cache_metrics(std::move(metrics));
+    }
+  }
+
   InsertOrReplaceEntry(std::move(new_entry), replace_entry,
                        !request->post_commit_error_page_html().empty(),
                        rfh->IsNestedWithinFencedFrame(), commit_details);
@@ -4590,6 +4606,19 @@ bool NavigationControllerImpl::ShouldMaintainTrivialSessionHistory(
   // LocalFrame version, LocalFrame::ShouldMaintainTrivialSessionHistory.
   return frame_tree_->is_prerendering() ||
          frame_tree_node->IsInFencedFrameTree();
+}
+
+void NavigationControllerImpl::DidChangeReferrerPolicy(
+    FrameTreeNode* node,
+    network::mojom::ReferrerPolicy referrer_policy) {
+  FrameNavigationEntry* entry = GetLastCommittedEntry()->GetFrameEntry(node);
+  if (!entry)
+    return;
+
+  // The FrameNavigationEntry may want to change whether to protect its url
+  // in the navigation API when the referrer policy changes.
+  entry->set_protect_url_in_navigation_api(
+      ShouldProtectUrlInNavigationApi(referrer_policy));
 }
 
 }  // namespace content

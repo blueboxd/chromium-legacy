@@ -32,6 +32,9 @@ class ASH_EXPORT AppStreamLauncherItem : public views::View {
   void RequestFocus() override;
   const char* GetClassName() const override;
 
+  views::Label* GetLabelForTest();
+  PhoneHubRecentAppButton* GetIconForTest();
+
  private:
   // Owned by views hierarchy.
   // TODO(b/259426750) refactor PhoneHubRecentAppButton to a more generic name.

@@ -8,14 +8,14 @@
 
 import '//resources/polymer/v3_0/paper-styles/color.js';
 import '../../components/common_styles/common_styles.m.js';
-import '../../components/dialogs/oobe_loading_dialog.m.js';
+import '../../components/dialogs/oobe_loading_dialog.js';
 
 import {afterNextRender, dom, flush, html, mixinBehaviors, Polymer, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
 import {OobeAdaptiveDialog} from '../../components/dialogs/oobe_adaptive_dialog.js';
-import {OobeTypes} from '../../components/oobe_types.m.js';
+import {OobeTypes} from '../../components/oobe_types.js';
 
 
 /**

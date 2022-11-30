@@ -34,6 +34,7 @@
     UIKeyCommand.cr_openLocation,
     UIKeyCommand.cr_closeTab,
     UIKeyCommand.cr_voiceSearch,
+    UIKeyCommand.cr_closeAll,
   ]];
   [builder insertChildMenu:fileMenu atStartOfMenuForIdentifier:UIMenuFile];
 
@@ -83,8 +84,8 @@
   UIMenu* windowMenu = [UIMenu menuWithChildren:@[
     UIKeyCommand.cr_showNextTab,
     UIKeyCommand.cr_showPreviousTab,
-    UIKeyCommand.cr_showFirstTab,
-    UIKeyCommand.cr_showLastTab,
+    UIKeyCommand.cr_select1,
+    UIKeyCommand.cr_select9,
     UIKeyCommand.cr_showDownloads,
     UIKeyCommand.cr_showSettings,
   ]];

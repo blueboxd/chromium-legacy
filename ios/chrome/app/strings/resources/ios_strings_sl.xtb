@@ -133,6 +133,7 @@ Vaš iskalnik je <ph name="DSE_NAME" />. Oglejte si navodila iskalnika za brisan
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1981118202195772574">Mobilna naprava</translation>
 <translation id="1989112275319619282">Brskanje</translation>
+<translation id="1990820278544963435">Iskanje</translation>
 <translation id="199425419756152024">Prikaži geslo</translation>
 <translation id="2010008505735295285">Znova naloži</translation>
 <translation id="2015722694326466240">Če si želite ogledati gesla, morate najprej nastaviti geslo v napravi.</translation>
@@ -283,6 +284,7 @@ Oglejte si navodila iskalnika za brisanje zgodovine iskanja, če je na voljo.</t
 <translation id="3153862085237805241">Shranjevanje kartice</translation>
 <translation id="3157387275655328056">Dodaj na bralni seznam</translation>
 <translation id="3157684681743766797">Označi vse …</translation>
+<translation id="315778507796115851">Zgodovina</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">Shranjena gesla lahko uporabljate tudi v drugih napravah.</translation>
 <translation id="3175081911749765310">Spletne storitve</translation>
@@ -927,7 +929,6 @@ Ko uporabljate anonimni način, spletna mesta ne smejo uporabljati piškotkov za
 <translation id="7966516440812255683">Spletna mesta lahko uporabljajo piškotke za izboljšanje izkušnje brskanja, na primer tako, da poskrbijo, da ostanete prijavljeni, ali si zapomnijo izdelke v nakupovalnem vozičku.
 
 Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na različnih spletnih mestih, na primer za osebno prilagajanje oglasov.</translation>
-<translation id="7966904497916178308">Standardna zaščita je vklopljena.</translation>
 <translation id="7971521879845308059">Blokiraj pojavna okna</translation>
 <translation id="797413074872316787">Če želite sinhronizirati in prilagajati v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="7978018860671536736">3. Dotaknite se »Samodejno izpolnjevanje gesel«.</translation>
@@ -1088,6 +1089,7 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="9188680907066685419">Odjava iz upravljanega računa</translation>
 <translation id="9200875785104711666">pred <ph name="TIME" /> d</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Iskanje zavihkov …</translation>
 <translation id="9223358826628549784">Poročilo o zrušitvi poslano.</translation>
 <translation id="941747855997058526">Izbira gesla ...</translation>
 <translation id="952704832371081537">Preklic</translation>

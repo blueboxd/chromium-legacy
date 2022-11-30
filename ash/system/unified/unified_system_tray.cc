@@ -210,6 +210,9 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
                                    ? new PrivacyIndicatorsTrayItemView(shelf)
                                    : nullptr),
       screen_capture_view_(new ScreenCaptureTrayItemView(shelf)) {
+  SetPressedCallback(base::BindRepeating(&UnifiedSystemTray::OnButtonPressed,
+                                         base::Unretained(this)));
+
   if (media::ShouldEnableAutoFraming()) {
     autozoom_toast_controller_ = std::make_unique<AutozoomToastController>(
         this, std::make_unique<AutozoomToastController::Delegate>());
@@ -310,6 +313,17 @@ void UnifiedSystemTray::AddObserver(Observer* observer) {
 void UnifiedSystemTray::RemoveObserver(Observer* observer) {
   if (observer)
     observers_.RemoveObserver(observer);
+}
+
+void UnifiedSystemTray::OnButtonPressed(const ui::Event& event) {
+  if (!bubble_) {
+    ShowBubble();
+  } else if (IsShowingCalendarView()) {
+    bubble_->unified_system_tray_controller()->TransitionToMainView(
+        /*restore_focus=*/true);
+  } else {
+    CloseBubble();
+  }
 }
 
 bool UnifiedSystemTray::IsBubbleShown() const {
@@ -468,6 +482,25 @@ absl::optional<AcceleratorAction> UnifiedSystemTray::GetAcceleratorAction()
   return absl::make_optional(TOGGLE_SYSTEM_TRAY_BUBBLE);
 }
 
+void UnifiedSystemTray::OnAnyBubbleVisibilityChanged(
+    views::Widget* bubble_widget,
+    bool visible) {
+  if (!features::IsQsRevampEnabled())
+    return;
+
+  if (!IsBubbleShown())
+    return;
+
+  if (bubble_widget == GetBubbleWidget())
+    return;
+
+  if (visible) {
+    // Another bubble is becoming visible while this bubble is being shown, so
+    // hide this bubble.
+    CloseBubble();
+  }
+}
+
 void UnifiedSystemTray::OnShelfConfigUpdated() {
   // Ensure the margin is updated correctly depending on whether dense shelf
   // is currently shown or not.
@@ -529,19 +562,6 @@ void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
 void UnifiedSystemTray::SetTargetNotification(
     const std::string& notification_id) {
   model_->SetTargetNotification(notification_id);
-}
-
-bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
-  if (!GetBubbleWidget()) {
-    ShowBubble();
-  } else if (IsShowingCalendarView()) {
-    bubble_->unified_system_tray_controller()->TransitionToMainView(
-        /*restore_focus=*/true);
-  } else {
-    CloseBubble();
-  }
-
-  return true;
 }
 
 void UnifiedSystemTray::ShowBubble() {

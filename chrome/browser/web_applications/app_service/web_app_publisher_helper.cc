@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
+#include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -943,7 +944,7 @@ void WebAppPublisherHelper::LoadIcon(const std::string& app_id,
                                      apps::IconType icon_type,
                                      int32_t size_hint_in_dip,
                                      apps::IconEffects icon_effects,
-                                     LoadIconCallback callback) {
+                                     apps::LoadIconCallback callback) {
   DCHECK(provider_);
   if (IsShuttingDown()) {
     return;
@@ -952,6 +953,25 @@ void WebAppPublisherHelper::LoadIcon(const std::string& app_id,
   LoadIconFromWebApp(profile_, icon_type, size_hint_in_dip, app_id,
                      icon_effects, std::move(callback));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void WebAppPublisherHelper::GetCompressedIconData(
+    const std::string& app_id,
+    apps::IconEffects icon_effects,
+    apps::IconType icon_type,
+    int32_t size_in_dip,
+    ui::ResourceScaleFactor scale_factor,
+    apps::LoadIconCallback callback) {
+  DCHECK(provider_);
+  if (IsShuttingDown()) {
+    return;
+  }
+
+  apps::GetWebAppCompressedIconData(profile_, app_id, icon_effects, icon_type,
+                                    size_in_dip, scale_factor,
+                                    std::move(callback));
+}
+#endif
 
 void WebAppPublisherHelper::Launch(
     const std::string& app_id,
@@ -1280,8 +1300,14 @@ void WebAppPublisherHelper::SetWindowMode(const std::string& app_id,
       user_display_mode = UserDisplayMode::kTabbed;
       break;
   }
-  provider_->sync_bridge().SetAppUserDisplayMode(app_id, user_display_mode,
-                                                 /*is_user_action=*/true);
+  provider_->scheduler().ScheduleCallbackWithLock(
+      std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id}),
+      base::BindOnce(
+          [](AppId app_id, UserDisplayMode user_display_mode, AppLock& lock) {
+            lock.sync_bridge().SetAppUserDisplayMode(app_id, user_display_mode,
+                                                     /*is_user_action=*/true);
+          },
+          app_id, std::move(user_display_mode)));
 }
 
 void WebAppPublisherHelper::SetRunOnOsLoginMode(

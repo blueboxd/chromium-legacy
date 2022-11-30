@@ -635,14 +635,14 @@ void PermissionRequestManager::Ignore() {
 void PermissionRequestManager::PreIgnoreQuietPrompt() {
   // Random number of seconds in the range [1.0, 2.0).
   double delay_seconds = 1.0 + 1.0 * base::RandDouble();
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&PermissionRequestManager::PreIgnoreQuietPromptInternal,
-                     weak_factory_.GetWeakPtr()),
-      base::Seconds(delay_seconds));
+  preignore_timer_.Start(
+      FROM_HERE, base::Seconds(delay_seconds), this,
+      &PermissionRequestManager::PreIgnoreQuietPromptInternal);
 }
 
 void PermissionRequestManager::PreIgnoreQuietPromptInternal() {
+  DCHECK(!requests_.empty());
+
   std::vector<PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin(); requests_iter != requests_.end();
        requests_iter++) {
@@ -763,32 +763,37 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
       validated_requests_set_.insert(request);
   }
 
-  if (!permission_ui_selectors_.empty()) {
-    DCHECK(!current_request_ui_to_use_.has_value());
-    // Initialize the selector decisions vector.
-    DCHECK(selector_decisions_.empty());
-    selector_decisions_.resize(permission_ui_selectors_.size());
-
-    for (size_t selector_index = 0;
-         selector_index < permission_ui_selectors_.size(); ++selector_index) {
-      if (permission_ui_selectors_[selector_index]
-              ->IsPermissionRequestSupported(
-                  requests_.front()->request_type())) {
-        permission_ui_selectors_[selector_index]->SelectUiToUse(
-            requests_.front(),
-            base::BindOnce(
-                &PermissionRequestManager::OnPermissionUiSelectorDone,
-                weak_factory_.GetWeakPtr(), selector_index));
-      } else {
-        OnPermissionUiSelectorDone(
-            selector_index,
-            PermissionUiSelector::Decision::UseNormalUiAndShowNoWarning());
-      }
-    }
-  } else {
+  if (permission_ui_selectors_.empty()) {
     current_request_ui_to_use_ =
         UiDecision(UiDecision::UseNormalUi(), UiDecision::ShowNoWarning());
     ShowPrompt();
+    return;
+  }
+
+  DCHECK(!current_request_ui_to_use_.has_value());
+  // Initialize the selector decisions vector.
+  DCHECK(selector_decisions_.empty());
+  selector_decisions_.resize(permission_ui_selectors_.size());
+
+  for (size_t selector_index = 0;
+       selector_index < permission_ui_selectors_.size(); ++selector_index) {
+    // Skip if we have already made a decision due to a higher priority
+    // selector
+    if (current_request_ui_to_use_.has_value())
+      break;
+
+    if (permission_ui_selectors_[selector_index]->IsPermissionRequestSupported(
+            requests_.front()->request_type())) {
+      permission_ui_selectors_[selector_index]->SelectUiToUse(
+          requests_.front(),
+          base::BindOnce(&PermissionRequestManager::OnPermissionUiSelectorDone,
+                         weak_factory_.GetWeakPtr(), selector_index));
+      continue;
+    }
+
+    OnPermissionUiSelectorDone(
+        selector_index,
+        PermissionUiSelector::Decision::UseNormalUiAndShowNoWarning());
   }
 }
 
@@ -967,6 +972,10 @@ void PermissionRequestManager::FinalizeCurrentRequests(
 }
 
 void PermissionRequestManager::CleanUpRequests() {
+  // No need to execute the preignore logic as we canceling currently active
+  // requests anyway.
+  preignore_timer_.AbandonAndStop();
+
   for (; !pending_permission_requests_.IsEmpty();
        pending_permission_requests_.Pop()) {
     auto* pending_request = pending_permission_requests_.Peek();

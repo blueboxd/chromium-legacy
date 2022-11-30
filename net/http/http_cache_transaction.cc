@@ -126,6 +126,9 @@ bool ShouldByPassCacheForFirstPartySets(
   UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern" type, cache_entry_status_, \
                             CacheEntryStatus::ENTRY_MAX)
 
+#define IS_NO_STORE_HISTOGRAMS(type, is_no_store) \
+  base::UmaHistogramBoolean("HttpCache.IsNoStore" type, is_no_store)
+
 struct HeaderNameAndValue {
   const char* name;
   const char* value;
@@ -1225,8 +1228,15 @@ int HttpCache::Transaction::DoOpenOrCreateEntryComplete(int result) {
   // It is important that we go to STATE_ADD_TO_ENTRY whenever the result is
   // OK, otherwise the cache will end up with an active entry without any
   // transaction attached.
-  net_log_.EndEventWithNetErrorCode(
-      NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY, result);
+  net_log_.EndEvent(NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY, [&] {
+    base::Value::Dict params;
+    if (result == OK) {
+      params.Set("result", new_entry_->opened ? "opened" : "created");
+    } else {
+      params.Set("net_error", result);
+    }
+    return base::Value(std::move(params));
+  });
 
   cache_pending_ = false;
 
@@ -3872,6 +3882,8 @@ void HttpCache::Transaction::RecordHistograms() {
 
   std::string mime_type;
   HttpResponseHeaders* response_headers = GetResponseInfo()->headers.get();
+  const bool is_no_store = response_headers && response_headers->HasHeaderValue(
+                                                   "cache-control", "no-store");
   if (response_headers && response_headers->GetMimeType(&mime_type)) {
     // Record the cache pattern by resource type. The type is inferred by
     // response header mime type, which could be incorrect, so this is just an
@@ -3879,6 +3891,7 @@ void HttpCache::Transaction::RecordHistograms() {
     if (mime_type == "text/html" &&
         (effective_load_flags_ & LOAD_MAIN_FRAME_DEPRECATED)) {
       CACHE_STATUS_HISTOGRAMS(".MainFrameHTML");
+      IS_NO_STORE_HISTOGRAMS(".MainFrameHTML", is_no_store);
     } else if (mime_type == "text/html") {
       CACHE_STATUS_HISTOGRAMS(".NonMainFrameHTML");
     } else if (mime_type == "text/css") {
@@ -3918,6 +3931,8 @@ void HttpCache::Transaction::RecordHistograms() {
   }
 
   CACHE_STATUS_HISTOGRAMS("");
+  IS_NO_STORE_HISTOGRAMS("", is_no_store);
+
   if (validation_request) {
     UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause", validation_cause_,
                               VALIDATION_CAUSE_MAX);

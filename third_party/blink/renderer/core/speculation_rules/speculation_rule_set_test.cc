@@ -4,19 +4,14 @@
 
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 
-#include "base/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom-blink.h"
-#include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_urlpatterninit_usvstring.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -41,7 +36,7 @@
 #include "third_party/blink/renderer/core/url_pattern/url_pattern.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -120,10 +115,18 @@ class SpeculationRuleSetTest : public ::testing::Test {
     execution_context_->NotifyContextDestroyed();
   }
 
+  SpeculationRuleSet* CreateRuleSet(const String& source_text,
+                                    const KURL& base_url,
+                                    ExecutionContext* context,
+                                    String* parse_error = nullptr) {
+    return SpeculationRuleSet::Parse(
+        MakeGarbageCollected<SpeculationRuleSet::Source>(source_text, base_url),
+        context, parse_error);
+  }
+
   SpeculationRuleSet* CreateSpeculationRuleSetWithTargetHint(
       const char* target_hint) {
-    return SpeculationRuleSet::Parse(
-        String::Format(R"({
+    return CreateRuleSet(String::Format(R"({
         "prefetch": [{
           "source": "list",
           "urls": ["https://example.com/hint.html"],
@@ -140,8 +143,8 @@ class SpeculationRuleSetTest : public ::testing::Test {
           "target_hint": "%s"
         }]
       })",
-                       target_hint, target_hint, target_hint),
-        KURL("https://example.com/"), execution_context_);
+                                        target_hint, target_hint, target_hint),
+                         KURL("https://example.com/"), execution_context_);
   }
 
   ExecutionContext* execution_context() { return execution_context_.Get(); }
@@ -153,15 +156,16 @@ class SpeculationRuleSetTest : public ::testing::Test {
 };
 
 TEST_F(SpeculationRuleSetTest, Empty) {
-  auto* rule_set = SpeculationRuleSet::Parse("{}", KURL("https://example.com/"),
-                                             execution_context());
+  auto* rule_set = CreateRuleSet(
+
+      "{}", KURL("https://example.com/"), execution_context());
   ASSERT_TRUE(rule_set);
   EXPECT_THAT(rule_set->prefetch_rules(), ElementsAre());
   EXPECT_THAT(rule_set->prefetch_with_subresources_rules(), ElementsAre());
 }
 
 TEST_F(SpeculationRuleSetTest, SimplePrefetchRule) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "list",
@@ -178,7 +182,8 @@ TEST_F(SpeculationRuleSetTest, SimplePrefetchRule) {
 }
 
 TEST_F(SpeculationRuleSetTest, SimplePrerenderRule) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
+
       R"({
         "prerender": [{
           "source": "list",
@@ -195,7 +200,7 @@ TEST_F(SpeculationRuleSetTest, SimplePrerenderRule) {
 }
 
 TEST_F(SpeculationRuleSetTest, SimplePrefetchWithSubresourcesRule) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch_with_subresources": [{
           "source": "list",
@@ -212,7 +217,7 @@ TEST_F(SpeculationRuleSetTest, SimplePrefetchWithSubresourcesRule) {
 }
 
 TEST_F(SpeculationRuleSetTest, ResolvesURLs) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "list",
@@ -233,7 +238,7 @@ TEST_F(SpeculationRuleSetTest, ResolvesURLs) {
 }
 
 TEST_F(SpeculationRuleSetTest, RequiresAnonymousClientIPWhenCrossOrigin) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "list",
@@ -256,23 +261,22 @@ TEST_F(SpeculationRuleSetTest, RequiresAnonymousClientIPWhenCrossOrigin) {
 
 TEST_F(SpeculationRuleSetTest, RejectsInvalidJSON) {
   String parse_error;
-  auto* rule_set =
-      SpeculationRuleSet::Parse("[invalid]", KURL("https://example.com"),
-                                execution_context(), &parse_error);
+  auto* rule_set = CreateRuleSet("[invalid]", KURL("https://example.com"),
+                                 execution_context(), &parse_error);
   EXPECT_FALSE(rule_set);
   EXPECT_TRUE(parse_error.Contains("Syntax error"));
 }
 
 TEST_F(SpeculationRuleSetTest, RejectsNonObject) {
   String parse_error;
-  auto* rule_set = SpeculationRuleSet::Parse("42", KURL("https://example.com"),
-                                             execution_context(), &parse_error);
+  auto* rule_set = CreateRuleSet("42", KURL("https://example.com"),
+                                 execution_context(), &parse_error);
   EXPECT_FALSE(rule_set);
   EXPECT_TRUE(parse_error.Contains("must be an object"));
 }
 
 TEST_F(SpeculationRuleSetTest, IgnoresUnknownOrDifferentlyTypedTopLevelKeys) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "unrecognized_key": true,
         "prefetch": 42,
@@ -288,7 +292,7 @@ TEST_F(SpeculationRuleSetTest, DropUnrecognizedRules) {
   ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
       true};
 
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({"prefetch": [)"
 
       // A rule that doesn't elaborate on its source.
@@ -434,8 +438,8 @@ TEST_F(SpeculationRuleSetTest, ReferrerPolicy) {
   ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
       true};
 
-  auto* rule_set = SpeculationRuleSet::Parse(
-      R"({
+  auto* rule_set =
+      CreateRuleSet(R"({
         "prefetch": [{
           "source": "list",
           "urls": ["https://example.com/index2.html"],
@@ -445,7 +449,7 @@ TEST_F(SpeculationRuleSetTest, ReferrerPolicy) {
           "urls": ["https://example.com/index3.html"]
         }]
       })",
-      KURL("https://example.com/"), execution_context());
+                    KURL("https://example.com/"), execution_context());
   ASSERT_TRUE(rule_set);
   EXPECT_THAT(
       rule_set->prefetch_rules(),
@@ -812,7 +816,7 @@ TEST_F(SpeculationRuleSetTest, ConsoleWarning) {
 }
 
 TEST_F(SpeculationRuleSetTest, RejectsWhereClause) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1028,15 +1032,19 @@ class DocumentRulesTest : public SpeculationRuleSetTest {
   DocumentRulePredicate* CreatePredicate(
       String where_text,
       KURL base_url = KURL("https://example.com/")) {
+    // clang-format off
     auto* rule_set =
-        SpeculationRuleSet::Parse(String::Format(R"({
-        "prefetch": [{
-          "source": "document",
-          "where": {%s}
-        }]
-      })",
-                                                 where_text.Latin1().c_str()),
-                                  base_url, execution_context());
+        CreateRuleSet(
+          String::Format(
+            R"({
+              "prefetch": [{
+                "source": "document",
+                "where": {%s}
+              }]
+            })",
+            where_text.Latin1().c_str()), base_url, execution_context()
+        );
+    // clang-format on
     DCHECK(!rule_set->prefetch_rules().empty()) << "Invalid predicate.";
     return rule_set->prefetch_rules()[0]->predicate();
   }
@@ -1046,7 +1054,7 @@ class DocumentRulesTest : public SpeculationRuleSetTest {
 };
 
 TEST_F(DocumentRulesTest, ParseAnd) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1063,7 +1071,7 @@ TEST_F(DocumentRulesTest, ParseAnd) {
 }
 
 TEST_F(DocumentRulesTest, ParseOr) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1080,7 +1088,7 @@ TEST_F(DocumentRulesTest, ParseOr) {
 }
 
 TEST_F(DocumentRulesTest, ParseNot) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1097,7 +1105,7 @@ TEST_F(DocumentRulesTest, ParseNot) {
 }
 
 TEST_F(DocumentRulesTest, ParseHref) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1158,8 +1166,47 @@ TEST_F(DocumentRulesTest, HrefMatchesWithBaseURL) {
   EXPECT_THAT(with_base_specified, Href({URLPattern("http://bar.com/hello")}));
 }
 
+// Testing on http://bar.com requesting a ruleset from http://foo.com.
+TEST_F(DocumentRulesTest, HrefMatchesWithBaseURLAndRelativeTo) {
+  static_cast<NullExecutionContext*>(execution_context())
+      ->SetURL(KURL{"http://bar.com"});
+
+  auto* with_relative_to = CreatePredicate(
+      R"(
+        "href_matches": "/hello",
+        "relative_to": "document"
+      )",
+      KURL("http://foo.com"));
+  EXPECT_THAT(with_relative_to, Href({URLPattern("http://bar.com/hello")}));
+
+  auto* relative_to_no_effect = CreatePredicate(
+      R"(
+        "href_matches": {"pathname": "/hello", "baseURL": "http://buz.com"},
+        "relative_to": "document"
+      )",
+      KURL("http://foo.com"));
+  EXPECT_THAT(relative_to_no_effect,
+              Href({URLPattern("http://buz.com/hello")}));
+
+  auto* nested_relative_to = CreatePredicate(
+      R"(
+        "or": [
+          {
+            "href_matches": {"pathname": "/hello"},
+            "relative_to": "document"
+          },
+          {"not": {"href_matches": "/world"}}
+        ]
+      )",
+      KURL("http://foo.com/"));
+
+  EXPECT_THAT(nested_relative_to,
+              Or({Href({URLPattern("http://bar.com/hello")}),
+                  Neg(Href({URLPattern("http://foo.com/world")}))}));
+}
+
 TEST_F(DocumentRulesTest, DropInvalidRules) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({"prefetch": [)"
 
       // A rule that doesn't elaborate on its source.
@@ -1215,6 +1262,26 @@ TEST_F(DocumentRulesTest, DropInvalidRules) {
       R"({"source": "document",
           "where": {"href_matches": {"protocol": "::"}}},)"
 
+      // Invalid key pairs.
+      R"({
+          "source": "document",
+          "where": {"href_matches": "/hello.html",
+                    "invalid_key": "invalid_val"}
+        },)"
+
+      // Bad value of "relative_to".
+      R"({
+          "source": "document",
+          "where": {"href_matches": "/hello.html",
+                    "relative_to": "not_document"}
+        },)"
+
+      // Currently the spec does not allow three keys.
+      R"({"source": "document",
+          "where":{"href_matches": "/hello.html",
+                   "relative_to": "document",
+                   "world-cup": "2022"}},)"
+
       // valid document rule.
       R"({"source": "document",
           "where": {"and": [
@@ -1231,7 +1298,7 @@ TEST_F(DocumentRulesTest, DropInvalidRules) {
 }
 
 TEST_F(DocumentRulesTest, DefaultPredicate) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document"
@@ -1932,6 +1999,34 @@ TEST_F(DocumentRulesTest, ReferrerMetaChangeShouldInvalidateCandidates) {
       [&]() { meta->setAttribute(html_names::kContentAttr, "same-origin"); });
   EXPECT_THAT(candidates, ElementsAre(HasReferrerPolicy(
                               network::mojom::ReferrerPolicy::kSameOrigin)));
+}
+
+TEST_F(DocumentRulesTest, BaseURLChanged) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+  document.SetBaseURLOverride(KURL("https://foo.com"));
+
+  AddAnchor(*document.body(), "https://foo.com/bar");
+  AddAnchor(*document.body(), "/bart");
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "/bar*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar"),
+                                  KURL("https://foo.com/bart")));
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { document.SetBaseURLOverride(KURL("https://bar.com")); });
+  // After the base URL changes, "https://foo.com/bar" is matched against
+  // "https://bar.com/bar*" and doesn't match. "/bart" is resolved to
+  // "https://bar.com/bart" and matches with "https://bar.com/bar*".
+  EXPECT_THAT(candidates, HasURLs("https://bar.com/bart"));
 }
 
 }  // namespace

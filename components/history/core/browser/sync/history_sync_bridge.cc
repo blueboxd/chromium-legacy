@@ -681,14 +681,27 @@ void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
 void HistorySyncBridge::OnURLsModified(HistoryBackend* history_backend,
                                        const URLRows& changed_urls,
                                        bool is_from_expiration) {
-  // Not interested: This class is watching visits rather than URLs, so
-  // modifications are handled in OnVisitUpdated().
-  // TODO(crbug.com/1318028): The title *can* get updated without a new visit,
-  // so watch for and commit such changes. Basically:
-  // - Get most recent visit for the URL.
-  // - If it's a local visit, and is tracked (and, maybe, is the end of a
-  //   redirect chain):
-  // - Build the specifics and Put() it.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!ShouldCommitRightNow()) {
+    return;
+  }
+
+  // Not interested in expirations - both the server side and other clients have
+  // their own, independent expiration logic, so no need to send any updates.
+  if (is_from_expiration) {
+    return;
+  }
+
+  for (const URLRow& url_row : changed_urls) {
+    VisitRow visit_row;
+    if (history_backend_->GetMostRecentVisitForURL(url_row.id(), &visit_row) &&
+        visit_row.originator_cache_guid.empty()) {
+      // It's the URL corresponding to a local visit - probably the title got
+      // updated.
+      MaybeCommit(visit_row);
+    }
+  }
 }
 
 void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
@@ -743,6 +756,16 @@ void HistorySyncBridge::OnVisitDeleted(const VisitRow& visit_row) {
 void HistorySyncBridge::SetSyncTransportState(
     syncer::SyncService::TransportState state) {
   sync_transport_state_ = state;
+
+  // TODO(crbug.com/1383912): Currently ApplyStopSyncChanges() doesn't always
+  // get called with a non-null MetadataChangeList when Sync is turned off. This
+  // is a workaround to still clear foreign history in that case. Remove once
+  // that bug is fixed.
+  if (sync_transport_state_ == syncer::SyncService::TransportState::DISABLED) {
+    // DeleteAllForeignVisits() is cheap if there is no foreign history in the
+    // DB, so it's okay to call this somewhat too often.
+    history_backend_->DeleteAllForeignVisits();
+  }
 }
 
 void HistorySyncBridge::OnDatabaseError() {
@@ -970,13 +993,14 @@ bool HistorySyncBridge::UpdateEntityInBackend(
   // TODO(crbug.com/1341636): Add an integration test to ensure that updates
   // don't break referrer/opener links.
   VisitID updated_visit_id = history_backend_->UpdateSyncedVisit(
-      final_visit_row, context_annotations, content_annotations);
+      GURL(specifics.redirect_entries(index).url()),
+      base::UTF8ToUTF16(specifics.redirect_entries(index).title()),
+      specifics.redirect_entries(index).hidden(), final_visit_row,
+      context_annotations, content_annotations);
   if (updated_visit_id == 0) {
     return false;
   }
 
-  // TODO(crbug.com/1318028): Handle updates to the URL-related fields
-  // (notably the title - other fields probably can't change).
   return true;
 }
 

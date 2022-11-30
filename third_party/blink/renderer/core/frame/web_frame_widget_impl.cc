@@ -1620,6 +1620,10 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
   widget_base_->SetVisibleViewportSizeInDIPs(
       visual_properties.visible_viewport_size);
 
+  virtual_keyboard_resize_height_physical_px_ =
+      visual_properties.virtual_keyboard_resize_height_physical_px;
+  DCHECK(!virtual_keyboard_resize_height_physical_px_ || ForTopMostMainFrame());
+
   if (ForMainFrame()) {
     if (!AutoResizeMode()) {
       size_ = widget_base_->DIPsToCeiledBlinkSpace(visual_properties.new_size);
@@ -3000,7 +3004,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
                             std::move(promise_callbacks_), frame_token_));
   }
 
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason,
+                              base::TimeTicks timestamp) override {
     if (base::FeatureList::IsEnabled(
             features::kReportFCPOnlyOnSuccessfulCommit)) {
       if (reason != DidNotSwapReason::SWAP_FAILS &&
@@ -3027,8 +3032,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 
     if (!promise_callbacks_on_failure.IsEmpty()) {
       ReportSwapAndPresentationFailureOnTaskRunner(
-          task_runner_, std::move(promise_callbacks_on_failure),
-          base::TimeTicks::Now());
+          task_runner_, std::move(promise_callbacks_on_failure), timestamp);
     }
     return action;
   }
@@ -4370,6 +4374,15 @@ void WebFrameWidgetImpl::SetMayThrottleIfUndrawnFrames(
     return;
   widget_base_->LayerTreeHost()->SetMayThrottleIfUndrawnFrames(
       may_throttle_if_undrawn_frames);
+}
+
+int WebFrameWidgetImpl::GetVirtualKeyboardResizeHeight() const {
+  DCHECK(!virtual_keyboard_resize_height_physical_px_ || ForTopMostMainFrame());
+  return virtual_keyboard_resize_height_physical_px_;
+}
+
+void WebFrameWidgetImpl::SetVirtualKeyboardResizeHeightForTesting(int height) {
+  virtual_keyboard_resize_height_physical_px_ = height;
 }
 
 bool WebFrameWidgetImpl::GetMayThrottleIfUndrawnFramesForTesting() {

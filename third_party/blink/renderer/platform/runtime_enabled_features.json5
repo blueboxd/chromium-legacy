@@ -366,7 +366,7 @@
       status: "experimental",
       origin_trial_feature_name: "BackForwardCacheNotRestoredReasons",
       base_feature: "BackForwardCacheSendNotRestoredReasons",
-      base_feature_status: "disabled",
+      base_feature_status: "enabled",
       copied_from_base_feature_if: "overridden",
       public: true,
     },
@@ -386,11 +386,6 @@
         "Mac": "stable",
         "default": "test",
       },
-    },
-    {
-      name: "BatchFetchRequests",
-      status: "test",
-      base_feature: "BatchFetchRequests",
     },
     {
       // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
@@ -600,6 +595,11 @@
     },
     {
       name: "CorsRFC1918",
+    },
+    {
+      name: "CrossFramePerformanceTimeline",
+      status: "test",
+      base_feature: "CrossFramePerformanceTimeline",
     },
     {
       // Allows positioning a positioned element relative to another one.
@@ -819,12 +819,6 @@
     {
       name: "CSSPositionStickyStaticScrollPosition",
       status: "test",
-    },
-    {
-      // Match input elements which have been autofilled by user agent.
-      // https://html.spec.whatwg.org/multipage/semantics-other.html#selector-autofill
-      name: "CSSPseudoAutofill",
-      status: "experimental",
     },
     {
       name: "CSSPseudoDir",
@@ -1138,6 +1132,9 @@
     // before M102. See crbug.com/1173534.
     {
       name: "ExperimentalWebSnapshots",
+    },
+    {
+      name: "ExposeRenderTimeNonTaoDelayedImage",
     },
     {
       name: "ExtendedTextMetrics",
@@ -1656,6 +1653,10 @@
     {
       name: "LCPAnimatedImagesWebExposed",
       status: "test",
+    },
+    {
+      name: "LCPMouseoverHeuristics",
+      base_feature: "LCPMouseoverHeuristics"
     },
     {
       name: "LCPMultipleUpdatesPerElement",
@@ -2268,7 +2269,7 @@
       // User-Agent string.
       name: "ReduceUserAgentAndroidVersionDeviceModel",
       depends_on: ["ReduceUserAgentMinorVersion"],
-      status: {"Android": "experimental"},
+      status: {"Android": "stable"},
       base_feature: "ReduceUserAgentAndroidVersionDeviceModel",
     },
     // If enabled, the minor version of the User-Agent string will be reduced.
@@ -2333,6 +2334,11 @@
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
+    },
+    {
+      name: "RTCEncodedVideoFrameClone",
+      status: "experimental",
+      base_feature: "RTCEncodedVideoFrameClone",
     },
     // Enables the use of the RTCIceTransport with extensions.
     {
@@ -2582,6 +2588,10 @@
       name: "SpeculationRulesFetchFromHeader"
     },
     {
+      name: "SpeculationRulesPointerDownHeuristics",
+      base_feature: "SpeculationRulesPointerDownHeuristics"
+    },
+    {
       name: "SpeculationRulesPointerHoverHeuristics",
       base_feature: "SpeculationRulesPointerHoverHeuristics"
     },
@@ -2668,6 +2678,12 @@
       status: "stable",
     },
     {
+      // crbug.com/1393223
+      name: "SvgContainersRejectSvgInDisplayContents",
+      status: "stable",
+      base_feature: "SvgContainersRejectSvgInDisplayContents",
+    },
+    {
       name: "SVGTextNG",
       depends_on: ["LayoutNG"],
       status: "stable"
@@ -2731,13 +2747,6 @@
       name: "ThirdPartyStoragePartitioning",
       status: "experimental",
       browser_process_read_write_access: true,
-    },
-    {
-      // Forces same-process display:none cross-origin iframes to be throttled
-      // in the same manner that OOPIFs are.
-      name: "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-      status: "experimental",
-      base_feature: "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",

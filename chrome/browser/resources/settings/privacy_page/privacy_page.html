@@ -61,13 +61,11 @@
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
         <template is="dom-if" if=
             "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
-          <!-- TODO(crbug.com/1378703): Replace strings and icons. -->
           <cr-link-row id="privacySandboxLinkRow"
-              start-icon="settings20:experiment"
+              start-icon="settings20:privacy-sandbox"
               class="hr"
-              label="$i18n{privacySandboxTitle}"
-              sub-label="[[computePrivacySandboxSublabel_(
-                  prefs.privacy_sandbox.*)]]"
+              label="$i18n{adPrivacyLinkRowLabel}"
+              sub-label="$i18n{adPrivacyLinkRowSubLabel}"
               on-click="onPrivacySandboxClick_"
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
@@ -153,10 +151,44 @@
         <template is="dom-if" route-path="/adPrivacy">
           <!-- TODO(b/254413940): Add learn-more-url. -->
           <settings-subpage id="privacy-sandbox"
-              page-title="$i18n{privacySandboxTitle}"
+              page-title="$i18n{adPrivacyPageTitle}"
               associated-control="[[$$('#privacySandboxLinkRow')]]"
               learn-more-url="">
-            <settings-privacy-sandbox-page></settings-privacy-sandbox-page>
+            <settings-privacy-sandbox-page prefs="{{prefs}}">
+            </settings-privacy-sandbox-page>
+          </settings-subpage>
+        </template>
+
+        <template is="dom-if" route-path="/adPrivacy/interests">
+          <!-- TODO(b/254413439): Add learn-more-url. -->
+          <settings-subpage id="privacy-sandbox-topics"
+              page-title="$i18n{topicsPageTitle}"
+              associated-control="[[$$('#privacySandboxLinkRow')]]"
+              learn-more-url="">
+            <settings-privacy-sandbox-topics-subpage>
+            </settings-privacy-sandbox-topics-subpage>
+          </settings-subpage>
+        </template>
+
+        <template is="dom-if" route-path="/adPrivacy/sites">
+          <!-- TODO(b/254411472): Add learn-more-url. -->
+          <settings-subpage id="privacy-sandbox-fledge"
+              page-title="$i18n{fledgePageTitle}"
+              associated-control="[[$$('#privacySandboxLinkRow')]]"
+              learn-more-url="">
+            <settings-privacy-sandbox-fledge-subpage>
+            </settings-privacy-sandbox-fledge-subpage>
+          </settings-subpage>
+        </template>
+
+        <template is="dom-if" route-path="/adPrivacy/measurement">
+          <!-- TODO(b/254412702): Add learn-more-url. -->
+          <settings-subpage id="privacy-sandbox-ad-measurement"
+              page-title="$i18n{adMeasurementPageTitle}"
+              associated-control="[[$$('#privacySandboxLinkRow')]]"
+              learn-more-url="">
+            <settings-privacy-sandbox-ad-measurement-subpage>
+            </settings-privacy-sandbox-ad-measurement-subpage>
           </settings-subpage>
         </template>
       </template>

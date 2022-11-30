@@ -805,7 +805,7 @@ BASE_FEATURE(kUseSnappyForParkableStrings,
 // the delay.
 BASE_FEATURE(kDelayFirstParkingOfStrings,
              "DelayFirstParkingOfStrings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool ParkableStringsUseSnappy() {
   return base::FeatureList::IsEnabled(kUseSnappyForParkableStrings);
@@ -879,21 +879,11 @@ BASE_FEATURE(kLoadingTasksUnfreezable,
              "LoadingTasksUnfreezable",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls how max frame rates are enforced in MediaStreamTracks.
-// TODO(crbug.com/1152307): Remove in M91.
-BASE_FEATURE(kMediaStreamTrackUseConfigMaxFrameRate,
-             "MediaStreamTrackUseConfigMaxFrameRate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, the SubresourceFilter receives calls from the ResourceLoader
 // to perform additional checks against any aliases found from DNS CNAME records
 // for the requested URL.
 BASE_FEATURE(kSendCnameAliasesToSubresourceFilterFromRenderer,
              "SendCnameAliasesToSubresourceFilterFromRenderer",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDisableDocumentDomainByDefault,
-             "DisableDocumentDomainByDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Scopes the memory cache to a fetcher i.e. document/frame. Any resource cached
@@ -1661,6 +1651,21 @@ BASE_FEATURE(kStartMediaStreamCaptureIndicatorInBrowser,
 BASE_FEATURE(kUseThreadPoolForMediaStreamVideoTaskRunner,
              "UseThreadPoolForMediaStreamVideoTaskRunner",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes,
+             "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled() {
+  static bool throttling_disabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableThrottleNonVisibleCrossOriginIframes);
+
+  return !throttling_disabled &&
+         base::FeatureList::IsEnabled(
+             features::
+                 kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes);
+}
 
 }  // namespace features
 }  // namespace blink

@@ -995,6 +995,11 @@ EVENT_TYPE(URL_REQUEST_FILTERS_SET)
 EVENT_TYPE(HTTP_CACHE_GET_BACKEND)
 
 // Measures the time while getting a disk cache entry with OpenOrCreateEntry().
+// The following parameters are attached:
+//   {
+//     "net_error": <Network error code.  Only present on error>,
+//     "result": <"opened" or "created".  Only present on success>
+//   }
 EVENT_TYPE(HTTP_CACHE_OPEN_OR_CREATE_ENTRY)
 
 // Measures the time while opening a disk cache entry.
@@ -1882,6 +1887,14 @@ EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
 //     "detection_time": <The time at which the packet was declared lost>
 //   }
 EVENT_TYPE(QUIC_SESSION_PACKET_LOST)
+
+// Congestion control parameters have been configured for the session.
+//   {
+//     "congestion_control_type": <The name of the CC algorithm used>,
+//     "use_pacing": <The bool indicating if pacing is enabled>,
+//     "initial_congestion_window": <The size of the initial congestion window>
+//   }
+EVENT_TYPE(QUIC_CONGESTION_CONTROL_CONFIGURED)
 
 // Session received a QUIC packet with a sequence number that had previously
 // been received.

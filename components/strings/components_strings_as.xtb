@@ -38,6 +38,7 @@
 <translation id="10614374240317010">কেতিয়াও ছেভ কৰা নহয়</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">ডেস্কটপ বুকমার্ক</translation>
+<translation id="1067561478268651872"><ph name="SECURE_DNS_SALT" /> নীতিটো ছেট নকৰা পৰ্যন্ত <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> নীতিটো ব্যৱহাৰ কৰা নহয়।</translation>
 <translation id="1068672505746868501">পৃষ্ঠা <ph name="SOURCE_LANGUAGE" />লৈ কেতিয়াও অনুবাদ নকৰিব</translation>
 <translation id="1070853536588271387">হাইব্ৰিড আৰু বিকল্প বাহন</translation>
 <translation id="1070901266639972381">নিশা</translation>
@@ -1228,6 +1229,7 @@
 <translation id="4132448310531350254">এপৰ "<ph name="POLICY_IDS_LIST" />"এ উল্লেখ কৰা file_extension "<ph name="FILE_EXTENSION" />"ৰ বাবে ডুপ্লিকেট নিয়ন্ত্ৰক।</translation>
 <translation id="4134123981501319574">নথি সৃষ্টি কৰক</translation>
 <translation id="413544239732274901">অধিক জানক</translation>
+<translation id="4140905530744469899">প্ৰ’ফাইল আইডি:</translation>
 <translation id="4142935452406587478">ট্ৰে’ ১০</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">এনভেল’প চীনা #৪</translation>
@@ -1350,6 +1352,7 @@
 <translation id="4407755609041463909">জুই</translation>
 <translation id="4408413947728134509">কুকী <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">উপভোক্তা বৈদ্যুতিক সামগ্ৰী</translation>
+<translation id="4412074349188076601">এই কনফিগাৰেশ্বনটো ইনষ্টল কৰিব পৰা হিচাপে চিহ্নিত কৰা হৈছে, কিন্তু এই গঠন প্ৰণালীটোৰ বাবে কোনো প্ৰতিচ্ছবি প্ৰদান কৰা হোৱা নাই, গতিকে এইটো ইনষ্টল কৰিব নোৱাৰি।</translation>
 <translation id="4414515549596849729">কুকি আৰু ছাইটৰ ডেটা</translation>
 <translation id="4415426530740016218">পিকআপ কৰাৰ ঠিকনা</translation>
 <translation id="4424024547088906515">এই ছার্ভাৰটোৱে নিজকে <ph name="DOMAIN" />; বুলি প্ৰমাণ কৰিব নোৱাৰিলে আৰু Chromeএ ইয়াৰ সুৰক্ষাৰ প্ৰমাণপত্ৰ বিশ্বাস নকৰে। এয়া কোনো ভুল কনফিগাৰেশ্বনৰ বাবে বা কোনো আক্ৰমণকাৰীয়ে আপোনাৰ সংযোগ অৱৰোধ কৰাৰ বাবে হ’ব পাৰে।</translation>
@@ -2092,6 +2095,7 @@
 <translation id="6328786501058569169">এই ছাইটটো বিভ্ৰান্তিকৰ</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />তকৈ কম খালী ঠাই উলিয়াওক। আপুনি পৰৱর্তী সময়ত কিছুমান ছাইট চাওতে লেহেমীয়াকৈ ল’ড হ’ব পাৰে।</translation>
 <translation id="6337534724793800597">নাম অনুসৰি নীতিসমূহ ফিল্টাৰ কৰক</translation>
+<translation id="633770708279464947"><ph name="SECURE_DNS_SALT" /> মানটো অমান্য আৰু সেইটো ব্যৱহাৰ কৰা নহ’ব।</translation>
 <translation id="6340739886198108203">প্ৰশাসকৰ নীতিয়ে গোপনীয় সমল দেখা পোৱা হৈ থকাৰ সময়ত স্ক্ৰীনশ্বট লোৱা অথবা ৰেকৰ্ডিং কৰাটো চুপাৰিছ নকৰে:</translation>
 <translation id="6341434961864773665">{0,plural, =1{প্ৰশাসকৰ নীতিয়ে এই ফাইলটো <ph name="DESTINATION_NAME" />ত আপল’ড কৰাটো চুপাৰিছ নকৰে}one{প্ৰশাসকৰ নীতিয়ে এই ফাইলসমূহ <ph name="DESTINATION_NAME" />ত আপল’ড কৰাটো চুপাৰিছ নকৰে}other{প্ৰশাসকৰ নীতিয়ে এই ফাইলসমূহ <ph name="DESTINATION_NAME" />ত আপল’ড কৰাটো চুপাৰিছ নকৰে}}</translation>
 <translation id="6348220984832452017">ভিন্নতা সক্ৰিয় কৰক</translation>
@@ -2987,6 +2991,7 @@
 <translation id="8654126188050905496">৫৫ x ৯১ মি.মি.</translation>
 <translation id="8663226718884576429">অৰ্ডাৰৰ সাৰাংশ, <ph name="TOTAL_LABEL" />, অধিক বিৱৰণ</translation>
 <translation id="8666678546361132282">ইংৰাজী</translation>
+<translation id="8671519637524426245"><ph name="SECURE_DNS_SALT" /> মানটো আকাৰৰ আৱশ্যকতাসমূহৰ সৈতে নিমিলে।</translation>
 <translation id="867224526087042813">চহী</translation>
 <translation id="8672264262457010862">ব্যৱসায় আৰু ঔদ্যোগিক</translation>
 <translation id="8676424191133491403">কোনো বিলম্ব নাই</translation>
@@ -3086,6 +3091,7 @@
 <translation id="8913778647360618320">পৰিশোধৰ পদ্ধতিসমূহ পৰিচালনা কৰক বুটাম, Chromeৰ ছেটিংসমূহত আপোনাৰ পৰিশোধসমূহ আৰু ক্ৰেডিট কাৰ্ডৰ তথ্য পৰিচালনা কৰিবলৈ এণ্টাৰ টিপক</translation>
 <translation id="8922013791253848639">এই ছাইটটোত সদায় বিজ্ঞাপনৰ অনুমতি দিয়ক</translation>
 <translation id="892588693504540538">সোঁফালে ওপৰৰ অংশত পাঞ্চ কৰক</translation>
+<translation id="8930098617363288380"><ph name="SECURE_DNS_SALT" /> মানটো প্ৰাসংগিক নহয় আৰু <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> নীতিটো ছেট নকৰা পৰ্যন্ত সেইটো ব্যৱহাৰ কৰা নহ’ব।</translation>
 <translation id="8930330541574156305">ৰিয়েল ইষ্টেট</translation>
 <translation id="8931333241327730545">আপুনি এই কার্ড নিজৰ Google একাউণ্টত ছেভ কৰিব খোজেনে?</translation>
 <translation id="8932102934695377596">আপোনাৰ ঘড়ীৰ সময় পিছপৰি আছে</translation>
@@ -3198,6 +3204,7 @@
 <translation id="9179907736442194268">কোনো ছাইটত মূল্য কমিলে ইমেইলৰ জৰিয়তে সতৰ্কবাৰ্তা পাওক</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" />এ এটা অসমর্থিত প্ৰ'ট'কল ব্যৱহাৰ কৰে।</translation>
+<translation id="918454845714257218"><ph name="SIDE_OF_CARD" />ত থকা ক’ডটো পৰীক্ষা কৰি পুনৰ চেষ্টা কৰক</translation>
 <translation id="9187461866967718678">দুঃসাহসিক খেল</translation>
 <translation id="9191834167571392248">বাওঁফালে তলৰ অংশত পাঞ্চ কৰক</translation>
 <translation id="9199905725844810519">প্ৰিণ্ট কৰাটো অৱৰোধ কৰা হৈছে</translation>

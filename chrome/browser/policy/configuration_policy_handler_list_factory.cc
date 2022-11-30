@@ -115,6 +115,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
+#include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -186,6 +187,10 @@
 #include "extensions/common/manifest.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+#if BUILDFLAG(ENABLE_PDF)
+#include "chrome/browser/pdf/pdf_pref_names.h"
+#endif  // BUILDFLAG(ENABLE_PDF)
+
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/policy/printing_restrictions_policy_handler.h"
 #endif
@@ -195,6 +200,7 @@
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#include "chrome/browser/enterprise/idle/action.h"
 #include "components/device_signals/core/browser/pref_names.h"
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
@@ -270,6 +276,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kAllowWebAuthnWithBrokenTlsCerts,
     webauthn::pref_names::kAllowWithBrokenCerts,
+    base::Value::Type::BOOLEAN },
+  { key::kThrottleNonVisibleCrossOriginIframesAllowed,
+    prefs::kThrottleNonVisibleCrossOriginIframesAllowed,
     base::Value::Type::BOOLEAN },
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
@@ -521,6 +530,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPasswordProtectionWarningTrigger,
     prefs::kPasswordProtectionWarningTrigger,
     base::Value::Type::INTEGER },
+#if BUILDFLAG(ENABLE_PDF)
+  { key::kPdfLocalFileAccessAllowedForDomains,
+    prefs::kPdfLocalFileAccessAllowedForDomains,
+    base::Value::Type::LIST},
+#endif  // BUILDFLAG(ENABLE_PDF)
   { key::kPolicyRefreshRate,
     policy_prefs::kUserPolicyRefreshRate,
     base::Value::Type::INTEGER },
@@ -847,7 +861,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     drive::prefs::kDisableDriveOverCellular,
     base::Value::Type::BOOLEAN },
   { key::kEmojiSuggestionEnabled,
-    chromeos::prefs::kEmojiSuggestionEnterpriseAllowed,
+    ash::prefs::kEmojiSuggestionEnterpriseAllowed,
     base::Value::Type::BOOLEAN },
   { key::kExternalStorageDisabled,
     disks::prefs::kExternalStorageDisabled,
@@ -856,7 +870,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     disks::prefs::kExternalStorageReadOnly,
     base::Value::Type::BOOLEAN },
   { key::kAudioOutputAllowed,
-    chromeos::prefs::kAudioOutputAllowed,
+    ash::prefs::kAudioOutputAllowed,
     base::Value::Type::BOOLEAN },
   { key::kShowLogoutButtonInTray,
     ash::prefs::kShowLogoutButtonInTray,
@@ -1172,10 +1186,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kSamlInSessionPasswordChangeEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSamlPasswordExpirationAdvanceWarningDays,
-    chromeos::prefs::kSamlPasswordExpirationAdvanceWarningDays,
+    ash::prefs::kSamlPasswordExpirationAdvanceWarningDays,
     base::Value::Type::INTEGER },
   { key::kLockScreenReauthenticationEnabled,
-    chromeos::prefs::kLockScreenReauthenticationEnabled,
+    ash::prefs::kLockScreenReauthenticationEnabled,
     base::Value::Type::BOOLEAN },
   { key::kDeviceAdvancedBatteryChargeModeEnabled,
     ash::prefs::kAdvancedBatteryChargeModeEnabled,
@@ -1223,7 +1237,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSystemTimezoneAutomaticDetectionPolicy,
     base::Value::Type::INTEGER },
   { key::kDeviceWiFiFastTransitionEnabled,
-    chromeos::prefs::kDeviceWiFiFastTransitionEnabled,
+    ash::prefs::kDeviceWiFiFastTransitionEnabled,
     base::Value::Type::BOOLEAN },
   { key::kNetworkThrottlingEnabled,
     prefs::kNetworkThrottlingEnabled,
@@ -1262,13 +1276,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     variations::prefs::kDeviceVariationsRestrictionsByPolicy,
     base::Value::Type::INTEGER },
   { key::kLoginDisplayPasswordButtonEnabled,
-    chromeos::prefs::kLoginDisplayPasswordButtonEnabled,
+    ash::prefs::kLoginDisplayPasswordButtonEnabled,
     base::Value::Type::BOOLEAN },
   { key::kDeletePrintJobHistoryAllowed,
     prefs::kDeletePrintJobHistoryAllowed,
     base::Value::Type::BOOLEAN },
   { key::kSuggestedContentEnabled,
-    chromeos::prefs::kSuggestedContentEnabled,
+    ash::prefs::kSuggestedContentEnabled,
     base::Value::Type::BOOLEAN },
   { key::kRequiredClientCertificateForUser,
     prefs::kRequiredClientCertificateForUser,
@@ -1292,7 +1306,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     policy::policy_prefs::kSystemFeaturesDisableMode,
     base::Value::Type::STRING },
   { key::kDeviceSystemWideTracingEnabled,
-    chromeos::prefs::kDeviceSystemWideTracingEnabled,
+    ash::prefs::kDeviceSystemWideTracingEnabled,
     base::Value::Type::BOOLEAN },
   { key::kUserBorealisAllowed,
     borealis::prefs::kBorealisAllowedForUser,
@@ -1495,9 +1509,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kImportDialogAutofillFormData,
     base::Value::Type::BOOLEAN },
 
-  { key::kIdleProfileCloseTimeout,
-    prefs::kIdleProfileCloseTimeout,
-    base::Value::Type::INTEGER },
   { key::kRestrictSigninToPattern,
     prefs::kGoogleServicesUsernamePattern,
     base::Value::Type::STRING },
@@ -1802,6 +1813,22 @@ void GetExtensionAllowedTypesMap(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+void GetIdleTimeoutActionsMap(
+    std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
+        result) {
+  // Mapping from IdleTimeoutActions action names to ActionType.
+  for (size_t i = 0; i < enterprise_idle::kActionTypeMapSize; i++) {
+    const enterprise_idle::ActionTypeMapEntry& entry =
+        enterprise_idle::kActionTypeMap[i];
+    result->push_back(
+        std::make_unique<StringMappingListPolicyHandler::MappingEntry>(
+            entry.name, std::make_unique<base::Value>(
+                            static_cast<int>(entry.action_type))));
+  }
+}
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+
 // Future policies are not supported on Stable and Beta by default.
 bool AreFuturePoliciesSupported() {
   // Enable future policies for branded browser tests.
@@ -1990,6 +2017,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kIdleTimeout, prefs::kIdleTimeout, 5, INT_MAX, /*clamp=*/true));
+  handlers->AddHandler(std::make_unique<StringMappingListPolicyHandler>(
+      key::kIdleTimeoutActions, prefs::kIdleTimeoutActions,
+      base::BindRepeating(&GetIdleTimeoutActionsMap)));
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
   handlers->AddHandler(std::make_unique<RestoreOnStartupPolicyHandler>());
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
@@ -2227,18 +2262,16 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       base::Value::Type::STRING));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kGaiaOfflineSigninTimeLimitDays,
-      chromeos::prefs::kGaiaOfflineSigninTimeLimitDays, -1, 365, true));
+      ash::prefs::kGaiaOfflineSigninTimeLimitDays, -1, 365, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
-      key::kSAMLOfflineSigninTimeLimit,
-      chromeos::prefs::kSAMLOfflineSigninTimeLimit, -1, INT_MAX, true));
+      key::kSAMLOfflineSigninTimeLimit, ash::prefs::kSAMLOfflineSigninTimeLimit,
+      -1, INT_MAX, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kGaiaLockScreenOfflineSigninTimeLimitDays,
-      chromeos::prefs::kGaiaLockScreenOfflineSigninTimeLimitDays, -2, 365,
-      true));
+      ash::prefs::kGaiaLockScreenOfflineSigninTimeLimitDays, -2, 365, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kSamlLockScreenOfflineSigninTimeLimitDays,
-      chromeos::prefs::kSamlLockScreenOfflineSigninTimeLimitDays, -2, 365,
-      true));
+      ash::prefs::kSamlLockScreenOfflineSigninTimeLimitDays, -2, 365, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kLidCloseAction, ash::prefs::kPowerLidClosedAction,
       chromeos::PowerPolicyController::ACTION_SUSPEND,
@@ -2350,9 +2383,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-      key::kEduCoexistenceToSVersion,
-      chromeos::prefs::kEduCoexistenceToSVersion, chrome_schema,
-      SCHEMA_ALLOW_UNKNOWN,
+      key::kEduCoexistenceToSVersion, ash::prefs::kEduCoexistenceToSVersion,
+      chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(

@@ -133,6 +133,7 @@ O teu motor de busca é <ph name="DSE_NAME" />. En caso aplicable, consulta as s
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1981118202195772574">Móbil</translation>
 <translation id="1989112275319619282">Examinar</translation>
+<translation id="1990820278544963435">Buscar</translation>
 <translation id="199425419756152024">Ver contrasinal</translation>
 <translation id="2010008505735295285">Volver cargar</translation>
 <translation id="2015722694326466240">Para ver os contrasinais, en primeiro lugar debes definir un código de desbloqueo no teu dispositivo.</translation>
@@ -283,6 +284,7 @@ En caso aplicable, consulta as instrucións do teu motor de busca para eliminar 
 <translation id="3153862085237805241">Gardar tarxeta</translation>
 <translation id="3157387275655328056">Engadir á lista de lectura</translation>
 <translation id="3157684681743766797">Marcar todo como...</translation>
+<translation id="315778507796115851">Historial</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">Tamén podes utilizar os contrasinais gardados nos teus outros dispositivos.</translation>
 <translation id="3175081911749765310">Servizos web</translation>
@@ -927,7 +929,6 @@ Co modo de incógnito activado, non poden utilizalas para ver a túa actividade 
 <translation id="7966516440812255683">Os sitios poden utilizar cookies para mellorar a túa experiencia de navegación a través de funcións como manter a sesión iniciada ou lembrar artigos da túa cesta da compra.
 
 Tamén poden utilizalas para ver a túa actividade de navegación en varios sitios (por exemplo, co fin de personalizar os anuncios).</translation>
-<translation id="7966904497916178308">A protección estándar está activada</translation>
 <translation id="7971521879845308059">Bloq. ventás em.</translation>
 <translation id="797413074872316787">Para sincronizar e personalizar o contido de todos os teus dispositivos, activa a sincronización.</translation>
 <translation id="7978018860671536736">3. Toca AutoFill Passwords (Autocompletar contrasinais)</translation>
@@ -1088,6 +1089,7 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="9188680907066685419">Pechar sesión na conta xestionada</translation>
 <translation id="9200875785104711666">Hai <ph name="TIME" /> d</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Realizar buscas nas pestanas…</translation>
 <translation id="9223358826628549784">Enviouse o informe de erros.</translation>
 <translation id="941747855997058526">Seleccionar contrasinal…</translation>
 <translation id="952704832371081537">Cancelar</translation>

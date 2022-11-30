@@ -35,7 +35,6 @@
 #include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/clipboard/control_v_histogram_recorder.h"
 #include "ash/color_enhancement/color_enhancement_controller.h"
-#include "ash/components/fwupd/firmware_update_manager.h"
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -122,6 +121,7 @@
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/camera/autozoom_controller_impl.h"
+#include "ash/system/camera/camera_effects_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/federated/federated_service_controller.h"
@@ -209,6 +209,7 @@
 #include "base/trace_event/trace_event.h"
 #include "chromeos/ash/components/dbus/fwupd/fwupd_client.h"
 #include "chromeos/ash/components/dbus/usb/usbguard_client.h"
+#include "chromeos/ash/components/fwupd/firmware_update_manager.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
@@ -992,6 +993,8 @@ Shell::~Shell() {
   // before it.
   calendar_controller_.reset();
 
+  camera_effects_controller_.reset();
+
   shell_delegate_.reset();
 
   multi_capture_service_client_.reset();
@@ -1236,6 +1239,10 @@ void Shell::Init(
   holding_space_controller_ = std::make_unique<HoldingSpaceController>();
 
   calendar_controller_ = std::make_unique<CalendarController>();
+
+  if (CameraEffectsController::IsCameraEffectsSupported()) {
+    camera_effects_controller_ = std::make_unique<CameraEffectsController>();
+  }
 
   shelf_config_ = std::make_unique<ShelfConfig>();
   shelf_controller_ = std::make_unique<ShelfController>();

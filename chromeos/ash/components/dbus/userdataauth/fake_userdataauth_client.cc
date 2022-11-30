@@ -83,6 +83,10 @@ struct FakeUserDataAuthClient::UserCryptohomeState {
   // encrypted.
   HomeEncryptionMethod home_encryption_method =
       HomeEncryptionMethod::kDirCrypto;
+
+  // A flag describing how we pretend that the user's home directory migration
+  // was not completed correctly.
+  bool incomplete_migration = false;
 };
 
 namespace {
@@ -435,6 +439,23 @@ void FakeUserDataAuthClient::TestApi::SetHomeEncryptionMethod(
   DCHECK(user_it != std::end(FakeUserDataAuthClient::Get()->users_));
   UserCryptohomeState& user_state = user_it->second;
   user_state.home_encryption_method = method;
+}
+
+void FakeUserDataAuthClient::TestApi::SetEncryptionMigrationIncomplete(
+    const cryptohome::AccountIdentifier& cryptohome_id,
+    bool incomplete) {
+  auto user_it = FakeUserDataAuthClient::Get()->users_.find(cryptohome_id);
+  if (user_it == std::end(FakeUserDataAuthClient::Get()->users_)) {
+    LOG(ERROR) << "User does not exist: " << cryptohome_id.account_id();
+    // TODO(crbug.com/1334538): Some existing tests rely on us creating the
+    // user here, but new tests shouldn't. Eventually this should crash.
+    user_it = FakeUserDataAuthClient::Get()
+                  ->users_.insert({cryptohome_id, UserCryptohomeState()})
+                  .first;
+  }
+  DCHECK(user_it != std::end(FakeUserDataAuthClient::Get()->users_));
+  UserCryptohomeState& user_state = user_it->second;
+  user_state.incomplete_migration = incomplete;
 }
 
 void FakeUserDataAuthClient::TestApi::SetPinLocked(
@@ -876,52 +897,6 @@ void FakeUserDataAuthClient::RemoveKey(
     user_state.auth_factors.erase(label);
   }
 }
-void FakeUserDataAuthClient::MassRemoveKeys(
-    const ::user_data_auth::MassRemoveKeysRequest& request,
-    MassRemoveKeysCallback callback) {
-  ReturnProtobufMethodCallback(::user_data_auth::MassRemoveKeysReply(),
-                               std::move(callback));
-}
-
-void FakeUserDataAuthClient::MigrateKey(
-    const ::user_data_auth::MigrateKeyRequest& request,
-    MigrateKeyCallback callback) {
-  ::user_data_auth::MigrateKeyReply reply;
-  ReplyOnReturn auto_reply(&reply, std::move(callback));
-
-  const cryptohome::Key& key = request.authorization_request().key();
-  std::string matched_factor_label;
-  switch (AuthenticateViaAuthFactors(
-      request.account_id(), /*factor_label=*/key.data().label(),
-      /*secret=*/key.secret(), /*wildcard_allowed=*/true,
-      &matched_factor_label)) {
-    case AuthResult::kAuthSuccess:
-      // Can proceed to the migration.
-      break;
-    case AuthResult::kUserNotFound:
-      reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
-      return;
-    case AuthResult::kFactorNotFound:
-      reply.set_error(::user_data_auth::CRYPTOHOME_ERROR_KEY_NOT_FOUND);
-      return;
-    case AuthResult::kAuthFailed:
-      reply.set_error(
-          ::user_data_auth::CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
-      return;
-  }
-  UserCryptohomeState& user_state = users_[request.account_id()];
-
-  // Update the fake auth factor according to the new secret.
-  cryptohome::Key new_key = key;
-  if (new_key.data().label().empty())
-    new_key.mutable_data()->set_label(matched_factor_label);
-  new_key.set_secret(request.secret());
-  const auto [new_label, new_factor] =
-      KeyToFakeAuthFactor(new_key, enable_auth_check_);
-  DCHECK_EQ(new_label, matched_factor_label);
-  user_state.auth_factors[matched_factor_label] = new_factor;
-}
-
 void FakeUserDataAuthClient::StartFingerprintAuthSession(
     const ::user_data_auth::StartFingerprintAuthSessionRequest& request,
     StartFingerprintAuthSessionCallback callback) {
@@ -1361,9 +1336,24 @@ void FakeUserDataAuthClient::PreparePersistentVault(
     return;
   }
 
-  if (!users_.contains(authenticated_auth_session->account)) {
+  const auto user_it = users_.find(authenticated_auth_session->account);
+  if (user_it == std::end(users_)) {
     reply.set_error(::user_data_auth::CryptohomeErrorCode::
                         CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+    return;
+  }
+
+  if (request.block_ecryptfs() && user_it->second.home_encryption_method ==
+                                      HomeEncryptionMethod::kEcryptfs) {
+    if (user_it->second.incomplete_migration) {
+      LOG(ERROR) << "Encryption migration required, incomplete migration";
+      reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                          CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE);
+    } else {
+      LOG(ERROR) << "Encryption migration required, full migration";
+      reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                          CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION);
+    }
     return;
   }
 

@@ -11,6 +11,7 @@
 #import "base/time/time.h"
 #import "components/favicon/core/large_icon_service.h"
 #import "components/omnibox/common/omnibox_features.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #import "ios/chrome/browser/ui/elements/self_sizing_table_view.h"
@@ -44,19 +45,22 @@ const CGFloat kTopAndBottomPadding = 8.0;
 const CGFloat kTopPaddingVariation1 = 0.0;
 const CGFloat kTopPaddingVariation2 = 10.0;
 const CGFloat kTopBottomPaddingVariation2Ipad = 16.0;
+const CGFloat kTopPaddingVariation2IpadPopoutOmnibox = 8.0;
+const CGFloat kBottomPaddingVariation2IpadPopoutOmnibox = -12.0;
+const CGFloat kSidePaddingVariation2IpadPopoutOmnibox = 8.0;
 const CGFloat kFooterHeightVariation1 = 12.0;
 const CGFloat kFooterHeightVariation2 = 16.0;
-// Percentage of the suggestion height that needs to be visible in order to
-// consider the suggestion as visible.
+/// Percentage of the suggestion height that needs to be visible in order to
+/// consider the suggestion as visible.
 const CGFloat kVisibleSuggestionThreshold = 0.6;
-// Minimum size of the fetched favicon for tiles.
+/// Minimum size of the fetched favicon for tiles.
 const CGFloat kMinTileFaviconSize = 32.0f;
-// Maximum size of the fetched favicon for tiles.
+/// Maximum size of the fetched favicon for tiles.
 const CGFloat kMaxTileFaviconSize = 48.0f;
 
-// Bottom padding for table view headers, variation 2.
+/// Bottom padding for table view headers, variation 2.
 const CGFloat kHeaderPaddingBottomVariation2 = 10.0f;
-// Leading, trailing, and top padding for table view headers, variation 2.
+/// Leading, trailing, and top padding for table view headers, variation 2.
 const CGFloat kHeaderPaddingVariation2 = 2.0f;
 }  // namespace
 
@@ -65,57 +69,57 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
                                           OmniboxPopupCarouselCellDelegate,
                                           OmniboxPopupRowCellDelegate>
 
-// Index path of currently highlighted row. The rows can be highlighted by
-// tapping and holding on them or by using arrow keys on a hardware keyboard.
+/// Index path of currently highlighted row. The rows can be highlighted by
+/// tapping and holding on them or by using arrow keys on a hardware keyboard.
 @property(nonatomic, strong) NSIndexPath* highlightedIndexPath;
 
-// Flag that enables forwarding scroll events to the delegate. Disabled while
-// updating the cells to avoid defocusing the omnibox when the omnibox popup
-// changes size and table view issues a scroll event.
+/// Flag that enables forwarding scroll events to the delegate. Disabled while
+/// updating the cells to avoid defocusing the omnibox when the omnibox popup
+/// changes size and table view issues a scroll event.
 @property(nonatomic, assign) BOOL forwardsScrollEvents;
 
-// The height of the keyboard. Used to determine the content inset for the
-// scroll view.
+/// The height of the keyboard. Used to determine the content inset for the
+/// scroll view.
 @property(nonatomic, assign) CGFloat keyboardHeight;
 
-// Time the view appeared on screen. Used to record a metric of how long this
-// view controller was on screen.
+/// Time the view appeared on screen. Used to record a metric of how long this
+/// view controller was on screen.
 @property(nonatomic, assign) base::TimeTicks viewAppearanceTime;
-// Table view that displays the results.
+/// Table view that displays the results.
 @property(nonatomic, strong) UITableView* tableView;
 
-// Alignment of omnibox text. Popup text should match this alignment.
+/// Alignment of omnibox text. Popup text should match this alignment.
 @property(nonatomic, assign) NSTextAlignment alignment;
 
-// Semantic content attribute of omnibox text. Popup should match this
-// attribute. This is used by the new omnibox popup.
+/// Semantic content attribute of omnibox text. Popup should match this
+/// attribute. This is used by the new omnibox popup.
 @property(nonatomic, assign)
     UISemanticContentAttribute semanticContentAttribute;
 
-// Estimated maximum number of visible suggestions.
-// Only updated in `newResultsAvailable` method, were the value is used.
+/// Estimated maximum number of visible suggestions.
+/// Only updated in `newResultsAvailable` method, were the value is used.
 @property(nonatomic, assign) NSUInteger visibleSuggestionCount;
 
-// Boolean to update visible suggestion count only once on event such as device
-// orientation change or multitasking window change, where multiple keyboard and
-// view updates are received.
+/// Boolean to update visible suggestion count only once on event such as device
+/// orientation change or multitasking window change, where multiple keyboard
+/// and view updates are received.
 @property(nonatomic, assign) BOOL shouldUpdateVisibleSuggestionCount;
 
-// Index of the suggestion group that contains the first suggestion to preview
-// and highlight.
+/// Index of the suggestion group that contains the first suggestion to preview
+/// and highlight.
 @property(nonatomic, assign) NSUInteger preselectedMatchGroupIndex;
 
-// Provider used to fetch carousel favicons.
+/// Provider used to fetch carousel favicons.
 @property(nonatomic, strong)
     FaviconAttributesProvider* carouselAttributeProvider;
 
-// UITableViewCell displaying the most visited carousel in (Web and SRP) ZPS
-// state.
+/// UITableViewCell displaying the most visited carousel in (Web and SRP) ZPS
+/// state.
 @property(nonatomic, strong) OmniboxPopupCarouselCell* carouselCell;
 
-// Flag that tracks if the carousel should be hidden. It is only true when we
-// show the carousel, then the user deletes every item in it before the UI has
-// updated.
+/// Flag that tracks if the carousel should be hidden. It is only true when we
+/// show the carousel, then the user deletes every item in it before the UI has
+/// updated.
 @property(nonatomic, assign) BOOL shouldHideCarousel;
 
 @end
@@ -178,6 +182,9 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateBackgroundColor];
+  if (IsIpadPopoutOmniboxEnabled()) {
+    [self.delegate autocompleteResultConsumerDidChangeTraitCollection:self];
+  }
 }
 
 #pragma mark - Getter/Setter
@@ -314,7 +321,13 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
                                   omniboxFrame.origin.x -
                                   omniboxFrame.size.width
                             : 0;
+
   if (IsOmniboxActionsVisualTreatment2()) {
+    if (IsIpadPopoutOmniboxEnabled() && IsRegularXRegularSizeClass(self)) {
+      leftMargin += kSidePaddingVariation2IpadPopoutOmnibox;
+      rightMargin += kSidePaddingVariation2IpadPopoutOmnibox;
+    }
+
     // Adjust the table view to be aligned with the omnibox textfield.
     self.tableView.layoutMargins =
         UIEdgeInsetsMake(self.tableView.layoutMargins.top, leftMargin,
@@ -351,9 +364,21 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
              isFirstUpdate:YES];
 }
 
-// Set text alignment for popup cells.
+/// Set text alignment for popup cells.
 - (void)setTextAlignment:(NSTextAlignment)alignment {
   self.alignment = alignment;
+}
+
+- (void)setDebugInfoViewController:(UIViewController*)viewController {
+  DCHECK(experimental_flags::IsOmniboxDebuggingEnabled());
+  _debugInfoViewController = viewController;
+
+  UITapGestureRecognizer* debugGestureRecognizer =
+      [[UITapGestureRecognizer alloc] initWithTarget:self
+                                              action:@selector(showDebugUI)];
+  debugGestureRecognizer.numberOfTapsRequired = 2;
+  debugGestureRecognizer.numberOfTouchesRequired = 2;
+  [self.view addGestureRecognizer:debugGestureRecognizer];
 }
 
 - (void)newResultsAvailable {
@@ -748,7 +773,7 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
   return header;
 }
 
-// Customize the appearance of table view cells.
+/// Customize the appearance of table view cells.
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_LT((NSUInteger)indexPath.row,
@@ -834,8 +859,8 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
 
 #pragma mark - Internal API methods
 
-// Reset the highlighting to the first suggestion when it's available. Reset
-// to nil otherwise.
+/// Reset the highlighting to the first suggestion when it's available. Reset
+/// to nil otherwise.
 - (void)resetHighlighting {
   if (self.currentResult.firstObject.suggestions.count > 0) {
     self.highlightedIndexPath = [NSIndexPath indexPathForRow:0 inSection:0];
@@ -844,8 +869,8 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
   }
 }
 
-// Adjust the inset on the table view to prevent keyboard from overlapping the
-// text.
+/// Adjust the inset on the table view to prevent keyboard from overlapping the
+/// text.
 - (void)updateContentInsetForKeyboard {
   UIWindow* currentWindow = self.tableView.window;
   CGRect absoluteRect =
@@ -861,8 +886,8 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
   self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
 }
 
-// Updates the color of the background based on the incognito-ness and the size
-// class.
+/// Updates the color of the background based on the incognito-ness and the size
+/// class.
 - (void)updateBackgroundColor {
   ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
       initWithStyle:self.incognito ? INCOGNITO : NORMAL];
@@ -968,8 +993,8 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
   return self.currentResult[indexPath.section].suggestions[indexPath.row];
 }
 
-// Returns the absolute row number for `indexPath`, counting every row in every
-// section above. Used for logging.
+/// Returns the absolute row number for `indexPath`, counting every row in every
+/// section above. Used for logging.
 - (NSInteger)absoluteRowIndexForIndexPath:(NSIndexPath*)indexPath {
   if (![self suggestionAtIndexPath:indexPath]) {
     return NSNotFound;
@@ -1027,6 +1052,10 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
     BOOL isIpad = ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
     topPadding =
         isIpad ? kTopBottomPaddingVariation2Ipad : kTopPaddingVariation2;
+
+    if (IsIpadPopoutOmniboxEnabled()) {
+      topPadding = kTopPaddingVariation2IpadPopoutOmnibox;
+    }
   }
   return topPadding;
 }
@@ -1034,6 +1063,10 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
 - (CGFloat)bottomPadding {
   if (IsOmniboxActionsVisualTreatment2() &&
       (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)) {
+    if (IsIpadPopoutOmniboxEnabled()) {
+      return kBottomPaddingVariation2IpadPopoutOmnibox;
+    }
+
     return kTopBottomPaddingVariation2Ipad;
   }
   return kTopAndBottomPadding;
@@ -1075,6 +1108,12 @@ const CGFloat kHeaderPaddingVariation2 = 2.0f;
   [self.carouselAttributeProvider
       fetchFaviconAttributesForURL:carouselItem.URL.gurl
                         completion:completion];
+}
+
+- (void)showDebugUI {
+  [self presentViewController:self.debugInfoViewController
+                     animated:YES
+                   completion:nil];
 }
 
 @end

@@ -585,13 +585,21 @@ const blink::Color BackgroundColor::ColorIncludingFallback(
     const ComputedStyle& style,
     bool* is_current_color) const {
   DCHECK(!visited_link);
-  StyleColor background_color = style.BackgroundColor();
-  if (style.ShouldForceColor(background_color)) {
-    return To<Longhand>(GetCSSPropertyInternalForcedBackgroundColor())
-        .ColorIncludingFallback(false, style, is_current_color);
+  const StyleColor& background_color = style.BackgroundColor();
+  if (!style.InForcedColorsMode() && !background_color.HasColorKeyword()) {
+    // Fast path.
+    if (is_current_color) {
+      *is_current_color = false;
+    }
+    return background_color.GetColor();
+  } else {
+    if (style.ShouldForceColor(background_color)) {
+      return To<Longhand>(GetCSSPropertyInternalForcedBackgroundColor())
+          .ColorIncludingFallback(false, style, is_current_color);
+    }
+    return background_color.Resolve(style.GetCurrentColor(),
+                                    style.UsedColorScheme(), is_current_color);
   }
-  return background_color.Resolve(style.GetCurrentColor(),
-                                  style.UsedColorScheme(), is_current_color);
 }
 
 const CSSValue* BackgroundColor::CSSValueFromComputedStyleInternal(
@@ -2000,14 +2008,15 @@ const CSSValue* ContainerName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  if (style.ContainerName().empty())
+  if (!style.ContainerName())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  for (const AtomicString& ident : style.ContainerName())
-    list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(ident));
-
+  for (const Member<const ScopedCSSName>& name :
+       style.ContainerName()->GetNames()) {
+    list->Append(*ComputedStyleUtils::ValueForCustomIdentOrNone(name.Get()));
+  }
   return list;
 }
 
@@ -5948,9 +5957,10 @@ const CSSValue* PositionFallback::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.PositionFallback().empty())
+  if (!style.PositionFallback())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.PositionFallback());
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.PositionFallback()->GetName());
 }
 
 const CSSValue* Quotes::ParseSingleValue(CSSParserTokenRange& range,
@@ -6620,10 +6630,8 @@ const CSSValue* ScrollTimelineName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const AtomicString& ident = style.ScrollTimelineName();
-  if (ident.empty())
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(ident);
+  return ComputedStyleUtils::ValueForCustomIdentOrNone(
+      style.ScrollTimelineName().Get());
 }
 
 const CSSValue* ScrollTimelineName::InitialValue() const {
@@ -7922,12 +7930,12 @@ const CSSValue* ViewTimelineName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Vector<AtomicString>& vector = style.ViewTimelineName();
-  if (vector.empty())
+  if (!style.ViewTimelineName())
     return InitialValue();
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const AtomicString& name : vector) {
-    list->Append(*ComputedStyleUtils::ValueForCustomIdentOrNone(name));
+  for (const Member<const ScopedCSSName>& name :
+       style.ViewTimelineName()->GetNames()) {
+    list->Append(*ComputedStyleUtils::ValueForCustomIdentOrNone(name.Get()));
   }
   return list;
 }

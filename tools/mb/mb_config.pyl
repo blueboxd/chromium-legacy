@@ -890,7 +890,7 @@
       'mac11.0.arm64-blink-rel': 'release_bot_blink_arm64_minimal_symbols',
       'mac12.0-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
       'mac12.0.arm64-blink-rel': 'release_bot_blink_arm64_minimal_symbols',
-      'win10.20h2-blink-rel': 'release_bot_blink_x86_minimal_symbols',
+      'win10.20h2-blink-rel': 'release_bot_blink_x86_minimal_symbols_reclient',
       'win11-blink-rel': 'release_bot_blink_x64_minimal_symbols_reclient',
     },
 
@@ -955,7 +955,7 @@
       'linux-official': 'official_optimize_reclient_trybot',
       'mac-official': 'official_optimize_goma_trybot',
       'win-official': 'official_optimize_reclient_trybot',
-      'win32-official': 'x86_official_optimize_goma_trybot',
+      'win32-official': 'x86_official_optimize_reclient_trybot',
     },
 
     'tryserver.chromium.accessibility': {
@@ -1019,7 +1019,7 @@
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64_fastbuild_reclient',
       'android_blink_rel': 'android_release_trybot_x64_reclient',
-      'android_compile_dbg': 'android_debug_trybot_compile_only_reclient',
+      'android_compile_dbg': 'android_debug_trybot_compile_only_arm64_fastbuild_reclient',
       'android_compile_x64_dbg': 'android_debug_trybot_compile_only_x64_reclient',
       'android_compile_x86_dbg': 'android_debug_trybot_compile_only_x86_reclient',
       'android_coverage': 'android_debug_trybot_java_coverage',
@@ -1102,9 +1102,9 @@
       'dawn-mac-x64-deps-rel': 'dawn_tests_release_trybot_alloc_none',
       'dawn-try-mac-amd-exp': 'dawn_tests_release_trybot_alloc_none',
       'dawn-try-mac-intel-exp': 'dawn_tests_release_trybot_alloc_none',
-      'dawn-try-win10-x64-asan-rel': 'dawn_tests_asan_release_trybot',
-      'dawn-try-win10-x86-rel': 'dawn_tests_release_trybot_x86',
-      'dawn-win10-x64-deps-rel': 'dawn_tests_release_trybot',
+      'dawn-try-win10-x64-asan-rel': 'dawn_tests_asan_release_trybot_reclient',
+      'dawn-try-win10-x86-rel': 'dawn_tests_release_trybot_x86_reclient',
+      'dawn-win10-x64-deps-rel': 'dawn_tests_release_trybot_reclient',
       'dawn-win10-x86-deps-rel': 'dawn_tests_release_trybot_x86_reclient',
       'linux-dawn-rel': 'dawn_tests_with_desktop_gl_release_trybot_reclient',
       'mac-dawn-rel': 'dawn_tests_release_trybot_alloc_none',
@@ -1166,6 +1166,7 @@
       'linux-mbi-mode-per-site-instance-rel': 'gpu_tests_release_trybot_mbi_mode_per_site_instance',
       'linux-perfetto-rel': 'perfetto_release_trybot_reclient',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_reclient',
+      'linux-rel-cft': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_chrome_for_testing_reclient',
       'linux-rel-inverse-fyi': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck',
       'linux-rel-ml': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_do_typecheck_reclient',
       'linux-rel-warmed': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage',
@@ -1250,6 +1251,7 @@
       'mac-osxbeta-rel': 'gpu_tests_debug_trybot',
       'mac-perfetto-rel': 'perfetto_release_trybot',
       'mac-rel': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage',
+      'mac-rel-cft': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage_chrome_for_testing',
       'mac-rel-inverse-fyi': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage',
       'mac11-arm64-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols',
       'mac12-arm64-rel': 'mac_arm64_gpu_tests_release_trybot_no_symbols',
@@ -1315,43 +1317,44 @@
       'linux-clang-tidy-rel': 'release_trybot_reclient',
       'linux-lacros-clang-tidy-rel': 'lacros_on_linux_release_trybot',
       'mac-clang-tidy-rel': 'release_trybot',
-      'win10-clang-tidy-rel': 'release_trybot',
+      'win10-clang-tidy-rel': 'release_trybot_reclient',
     },
 
     'tryserver.chromium.updater': {
        'mac-updater-try-builder-dbg': 'updater_debug_bot',
        'mac-updater-try-builder-rel': 'updater_release_trybot',
-       'win-updater-try-builder-dbg': 'updater_debug_bot',
-       'win-updater-try-builder-rel': 'updater_release_trybot',
+       'win-updater-try-builder-dbg': 'updater_debug_bot_reclient',
+       'win-updater-try-builder-rel': 'updater_release_trybot_reclient',
     },
 
     'tryserver.chromium.win': {
-      'gpu-fyi-try-win10-amd-rel-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win10-intel-exp-64': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-win10-amd-rel-64': 'gpu_fyi_tests_release_trybot_reclient',
+      'gpu-fyi-try-win10-intel-exp-64': 'gpu_fyi_tests_release_trybot_reclient',
       'gpu-fyi-try-win10-intel-rel-64': 'gpu_fyi_tests_release_trybot_reclient',
       'gpu-fyi-try-win10-nvidia-dbg-64': 'gpu_fyi_tests_debug_trybot_reclient',
-      'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64': 'gpu_fyi_tests_dx12vk_debug_trybot',
-      'gpu-fyi-try-win10-nvidia-dx12vk-rel-64': 'gpu_fyi_tests_dx12vk_release_trybot',
-      'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
-      'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64': 'gpu_fyi_tests_dx12vk_debug_trybot_reclient',
+      'gpu-fyi-try-win10-nvidia-dx12vk-rel-64': 'gpu_fyi_tests_dx12vk_release_trybot_reclient',
+      'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot_reclient',
+      'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86_reclient',
+      'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot_reclient',
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release_reclient',
-      'win-celab-try-rel': 'release_bot_minimal_symbols',
+      'win-celab-try-rel': 'release_bot_minimal_symbols_reclient',
       'win-fieldtrial-rel': 'release_bot_minimal_symbols',
       'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot_reclient',
       'win-perfetto-rel': 'perfetto_release_trybot',
       'win-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
+      'win-rel-cft': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage_chrome_for_testing',
       'win10-wpt-content-shell-fyi-rel': 'release_trybot',
       'win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials',
-      'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot',
+      'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_bot_reclient',
       'win10_chromium_x64_rel_ng-inverse-fyi': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
-      'win11-x64-fyi-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage',
-      'win_archive': 'release_trybot_x86',
+      'win11-x64-fyi-rel': 'gpu_tests_release_trybot_resource_allowlisting_code_coverage_reclient',
+      'win_archive': 'release_trybot_x86_reclient',
       'win_chromium_compile_dbg_ng': 'gpu_tests_debug_bot_x86_no_symbols_reclient',
-      'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_resource_allowlisting',
-      'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot',
+      'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_resource_allowlisting_reclient',
+      'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot_reclient',
       'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_reclient',
       'win_upload_clang': 'release_bot',
       'win_x64_archive': 'release_trybot',
@@ -1549,10 +1552,6 @@
 
     'android_debug_trybot_compile_only_arm64_fastbuild_reclient': [
       'android', 'debug_bot_reclient', 'compile_only', 'arm64', 'android_fastbuild'
-    ],
-
-    'android_debug_trybot_compile_only_reclient': [
-      'android', 'debug_bot_reclient', 'compile_only',
     ],
 
     'android_debug_trybot_compile_only_x64_reclient': [
@@ -2433,8 +2432,8 @@
       'dawn_tests', 'asan', 'release_trybot_minimal_symbols_reclient',
     ],
 
-    'dawn_tests_asan_release_trybot': [
-      'dawn_tests', 'asan', 'release_trybot',
+    'dawn_tests_asan_release_trybot_reclient': [
+      'dawn_tests', 'asan', 'release_trybot_reclient',
     ],
 
     # https://crbug.com/dawn/1200: temporarily avoid using partition alloc
@@ -2451,10 +2450,6 @@
       'dawn_tests', 'release_trybot_minimal_symbols_reclient', 'x86',
     ],
 
-    'dawn_tests_release_trybot': [
-      'dawn_tests', 'release_trybot',
-    ],
-
     # https://crbug.com/dawn/1200: temporarily avoid using partition alloc
     # while we investigate a crash in the mac AMD shader compiler.
     'dawn_tests_release_trybot_alloc_none': [
@@ -2463,10 +2458,6 @@
 
     'dawn_tests_release_trybot_reclient': [
       'dawn_tests', 'release_trybot_reclient',
-    ],
-
-    'dawn_tests_release_trybot_x86': [
-      'dawn_tests', 'release_trybot', 'x86',
     ],
 
     'dawn_tests_release_trybot_x86_reclient': [
@@ -2563,16 +2554,8 @@
       'gpu_fyi_tests', 'debug_bot_reclient', 'disable_nacl',
     ],
 
-    'gpu_fyi_tests_dx12vk_debug_trybot': [
-      'gpu_fyi_tests', 'dx12vk', 'debug_bot', 'disable_nacl',
-    ],
-
     'gpu_fyi_tests_dx12vk_debug_trybot_reclient': [
       'gpu_fyi_tests', 'dx12vk', 'debug_bot_reclient', 'disable_nacl',
-    ],
-
-    'gpu_fyi_tests_dx12vk_release_trybot': [
-      'gpu_fyi_tests', 'dx12vk', 'release_trybot_minimal_symbols', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_dx12vk_release_trybot_reclient': [
@@ -2605,10 +2588,6 @@
 
     'gpu_fyi_tests_release_trybot_tsan_reclient': [
       'gpu_fyi_tests', 'release_trybot_minimal_symbols_reclient', 'tsan', 'disable_nacl',
-    ],
-
-    'gpu_fyi_tests_release_trybot_x86': [
-      'gpu_fyi_tests', 'release_trybot_minimal_symbols', 'x86', 'disable_nacl',
     ],
 
     'gpu_fyi_tests_release_trybot_x86_reclient': [
@@ -2833,6 +2812,11 @@
       'use_clang_coverage', 'partial_code_coverage_instrumentation'
     ],
 
+    'gpu_tests_release_trybot_no_symbols_mac_code_coverage_chrome_for_testing': [
+      'gpu_tests', 'release_trybot', 'no_symbols',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation', 'chrome_for_testing',
+    ],
+
     # Keep in sync with
     # gpu_tests_release_trybot_no_symbols_use_dummy_lastchange.
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage': [
@@ -2846,6 +2830,11 @@
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck': [
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
       'use_clang_coverage', 'partial_code_coverage_instrumentation', 'devtools_do_typecheck',
+    ],
+
+    'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_chrome_for_testing_reclient': [
+      'gpu_tests', 'release_trybot_reclient', 'no_symbols', 'use_dummy_lastchange',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation', 'devtools_do_typecheck', 'chrome_for_testing',
     ],
 
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_do_typecheck_reclient': [
@@ -2887,6 +2876,11 @@
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
+    'gpu_tests_release_trybot_resource_allowlisting_code_coverage_chrome_for_testing': [
+      'gpu_tests', 'release_trybot', 'no_resource_allowlisting',
+      'use_clang_coverage', 'partial_code_coverage_instrumentation', 'chrome_for_testing',
+    ],
+
     'gpu_tests_release_trybot_resource_allowlisting_code_coverage_reclient': [
       'gpu_tests', 'release_trybot_reclient', 'no_resource_allowlisting',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
@@ -2907,10 +2901,6 @@
 
     'gpu_tests_release_trybot_x86_reclient': [
       'gpu_tests', 'release_trybot_reclient', 'x86',
-    ],
-
-    'gpu_tests_release_trybot_x86_resource_allowlisting': [
-      'gpu_tests', 'release_trybot', 'x86', 'resource_allowlisting',
     ],
 
     'gpu_tests_release_trybot_x86_resource_allowlisting_reclient': [
@@ -3271,7 +3261,7 @@
     ],
 
     'official_goma_fuchsia_x64_perf': [
-      'official', 'goma', 'minimal_symbols', 'fuchsia', 'x64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator'
+      'official', 'goma', 'minimal_symbols', 'fuchsia', 'x64', 'ffmpeg_branding_chrome', 'proprietary_codecs', 'test_isolate_no_emulator', 'fuchsia_chrome'
     ],
 
     'official_goma_linux_perf': [
@@ -3490,8 +3480,8 @@
       'release_bot_blink_reclient', 'x64', 'minimal_symbols',
     ],
 
-    'release_bot_blink_x86_minimal_symbols': [
-      'release_bot_blink', 'x86', 'minimal_symbols',
+    'release_bot_blink_x86_minimal_symbols_reclient': [
+      'release_bot_blink_reclient', 'x86', 'minimal_symbols',
     ],
 
     'release_bot_enable_blink_heap_verification_dcheck_always_on_reclient': [
@@ -3678,8 +3668,8 @@
       'release_trybot', 'tsan'
     ],
 
-    'release_trybot_x86': [
-      'release_trybot', 'x86',
+    'release_trybot_x86_reclient': [
+      'release_trybot_reclient', 'x86',
     ],
 
     'tsan_disable_nacl_debug_bot_reclient': [
@@ -3734,6 +3724,10 @@
       'updater_on_win_mac', 'release_trybot',
     ],
 
+    'updater_release_trybot_reclient': [
+      'updater_on_win_mac', 'release_trybot_reclient',
+    ],
+
     'v8_future_debug_bot_reclient': [
       'v8_future', 'debug_bot_reclient',
     ],
@@ -3754,12 +3748,12 @@
       'arm64', 'disable_nacl', 'minimal_symbols', 'release_bot_reclient',
     ],
 
-    'x86_official_optimize_goma_trybot': [
-      'official_optimize_goma_trybot', 'x86',
-    ],
-
     'x86_official_optimize_reclient': [
       'official_optimize_reclient', 'x86',
+    ],
+
+    'x86_official_optimize_reclient_trybot': [
+      'official_optimize_reclient_trybot', 'x86',
     ],
   },
 
@@ -3939,6 +3933,10 @@
 
     'cfm': {
       'gn_args': 'is_cfm=true',
+    },
+
+    'chrome_for_testing': {
+      'gn_args': 'is_chrome_for_testing_branded=true'
     },
 
     'chrome_google': {

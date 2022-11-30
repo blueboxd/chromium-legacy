@@ -213,7 +213,13 @@ class AutofillMetrics {
     // requested the issuer to send an OTP, and we can not move on to the next
     // step in this flow.
     kDismissedByServerRequestFailure = 4,
-    kMaxValue = kDismissedByServerRequestFailure,
+    // User accepted a challenge option in the
+    // CardUnmaskAuthenticationSelectionDialog that does not require a server
+    // call to get to the next step in this flow. For instance, in the CVC case,
+    // we can go directly to the CVC input dialog after the user selects the
+    // challenge option.
+    kDismissedByUserAcceptanceNoServerRequestNeeded = 5,
+    kMaxValue = kDismissedByUserAcceptanceNoServerRequestNeeded,
   };
 
   // Metrics measuring how well we predict field types.  These metric values are
@@ -1101,9 +1107,10 @@ class AutofillMetrics {
   static void LogCardUnmaskAuthenticationSelectionDialogResultMetric(
       CardUnmaskAuthenticationSelectionDialogResultMetric metric);
 
-  // Logs true every time the Card Unmask Authentication Selection Dialog is
-  // shown.
-  static void LogCardUnmaskAuthenticationSelectionDialogShown();
+  // Logs the number of challenge options shown every time the Card Unmask
+  // Authentication Selection Dialog is shown.
+  static void LogCardUnmaskAuthenticationSelectionDialogShown(
+      size_t number_of_challenge_options);
 
   static void LogCreditCardInfoBarMetric(
       InfoBarMetric metric,
@@ -1237,7 +1244,8 @@ class AutofillMetrics {
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event,
-                                   bool has_valid_nickname);
+                                   bool has_valid_nickname,
+                                   CreditCard::RecordType card_type);
 
   // Logs |event| to cardholder name fix flow prompt events histogram.
   static void LogCardholderNameFixFlowPromptEvent(
@@ -1410,10 +1418,6 @@ class AutofillMetrics {
   // Log the fact that an autocomplete popup was shown.
   static void OnAutocompleteSuggestionsShown();
 
-  // Log the number of autocomplete entries that were cleaned-up as a result
-  // of the Autocomplete Retention Policy.
-  static void LogNumberOfAutocompleteEntriesCleanedUp(int nb_entries);
-
   // Log how many autofilled fields in a given form were edited before the
   // submission or when the user unfocused the form (depending on
   // |observed_submission|).
@@ -1506,9 +1510,6 @@ class AutofillMetrics {
   // This should be called when the user selects the Form-Not-Secure warning
   // suggestion to show an explanation of the warning.
   static void LogShowedHttpNotSecureExplanation();
-
-  // Logs if an autocomplete query was created for a field.
-  static void LogAutocompleteQuery(bool created);
 
   // Logs if there is any suggestions for an autocomplete query.
   static void LogAutocompleteSuggestions(bool has_suggestions);

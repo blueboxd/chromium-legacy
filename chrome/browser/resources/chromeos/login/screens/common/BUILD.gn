@@ -11,14 +11,6 @@ import("../../oobe_auto_imports.gni")
 
 assert(is_chromeos, "OOBE UI is only available on ChromeOS builds")
 
-group("polymer3_elements") {
-  public_deps = [
-    ":family_link_notice_module",
-    ":hw_data_collection_module",
-    ":smart_privacy_protection_module",
-    ":sync_consent_module",
-  ]
-}
 
 group("closure_compile") {
   deps = [
@@ -49,12 +41,12 @@ js_type_check("closure_compile_local") {
     ":device_disabled",
     ":enable_kiosk",
     ":error_message",
-    ":family_link_notice.m",
+    ":family_link_notice",
     ":fingerprint_setup",
     ":gaia_signin",
     ":gesture_navigation",
     ":guest_tos",
-    ":hw_data_collection.m",
+    ":hw_data_collection",
     ":local_state_error",
     ":managed_terms_of_service",
     ":marketing_opt_in",
@@ -68,8 +60,8 @@ js_type_check("closure_compile_local") {
     ":recommend_apps",
     ":saml_confirm_password",
     ":signin_fatal_error",
-    ":smart_privacy_protection.m",
-    ":sync_consent.m",
+    ":smart_privacy_protection",
+    ":sync_consent",
     ":theme_selection",
     ":tpm_error",
     ":user_creation",
@@ -125,17 +117,17 @@ js_library("app_launch_splash") {
 js_library("arc_terms_of_service") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/arc_terms_of_service.js" ]
   deps = [
-    "../../:display_manager.m",
-    "../../components:oobe_select.m",
-    "../../components:web_view_helper.m",
-    "../../components:web_view_loader.m",
+    "../../:display_manager",
+    "../../components:oobe_select",
+    "../../components:web_view_helper",
+    "../../components:web_view_loader",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/buttons:oobe_back_button",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
-    "../../components/dialogs:oobe_modal_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
+    "../../components/dialogs:oobe_modal_dialog",
   ]
 
   externs_list = [
@@ -166,12 +158,12 @@ js_library("autolaunch") {
 js_library("consolidated_consent") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/consolidated_consent.js" ]
   deps = [
-    "../..:display_manager.m",
-    "../../components:display_manager_types.m",
-    "../../components:oobe_select.m",
-    "../../components:oobe_types.m",
-    "../../components:web_view_helper.m",
-    "../../components:web_view_loader.m",
+    "../..:display_manager",
+    "../../components:display_manager_types",
+    "../../components:oobe_select",
+    "../../components:oobe_types",
+    "../../components:web_view_helper",
+    "../../components:web_view_loader",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
@@ -179,8 +171,8 @@ js_library("consolidated_consent") {
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
-    "../../components/dialogs:oobe_modal_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
+    "../../components/dialogs:oobe_modal_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":web_components" ]
@@ -198,7 +190,7 @@ js_library("cryptohome_recovery_setup") {
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
   ]
   extra_deps = [ ":web_components" ]
 }
@@ -227,8 +219,8 @@ js_library("enable_kiosk") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("family_link_notice.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/family_link_notice.m.js" ]
+js_library("family_link_notice") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/family_link_notice.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -237,13 +229,13 @@ js_library("family_link_notice.m") {
     "../../components/dialogs:oobe_adaptive_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":family_link_notice_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("fingerprint_setup") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/fingerprint_setup.js" ]
   deps = [
-    "../../components:display_manager_types.m",
+    "../../components:display_manager_types",
     "../../components:oobe_cr_lottie",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
@@ -277,11 +269,11 @@ js_library("gesture_navigation") {
 js_library("gaia_signin") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/gaia_signin.js" ]
   deps = [
-    "../..:display_manager.m",
+    "../..:display_manager",
     "../../../../gaia_auth_host:authenticator",
     "../../components:gaia_dialog",
     "../../components:notification_card",
-    "../../components:oobe_types.m",
+    "../../components:oobe_types",
     "../../components:security_token_pin",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
@@ -296,9 +288,9 @@ js_library("gaia_signin") {
 js_library("guest_tos") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/guest_tos.js" ]
   deps = [
-    "../..:display_manager.m",
-    "../../components:web_view_helper.m",
-    "../../components:web_view_loader.m",
+    "../..:display_manager",
+    "../../components:web_view_helper",
+    "../../components:web_view_loader",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
@@ -306,8 +298,8 @@ js_library("guest_tos") {
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
-    "../../components/dialogs:oobe_modal_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
+    "../../components/dialogs:oobe_modal_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":web_components" ]
@@ -318,15 +310,15 @@ js_library("guest_tos") {
   ]
 }
 
-js_library("hw_data_collection.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/hw_data_collection.m.js" ]
+js_library("hw_data_collection") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/hw_data_collection.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/buttons:oobe_text_button",
   ]
-  extra_deps = [ ":hw_data_collection_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("local_state_error") {
@@ -352,7 +344,7 @@ js_library("managed_terms_of_service") {
     "../../components/buttons:oobe_back_button",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
   ]
 
   externs_list = [
@@ -366,7 +358,7 @@ js_library("managed_terms_of_service") {
 js_library("marketing_opt_in") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/marketing_opt_in.js" ]
   deps = [
-    "../../components:display_manager_types.m",
+    "../../components:display_manager_types",
     "../../components:oobe_a11y_option",
     "../../components:oobe_cr_lottie",
     "../../components/behaviors:login_screen_behavior.m",
@@ -401,7 +393,7 @@ js_library("offline_ad_login") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/offline_ad_login.js" ]
   deps = [
     "../../components:oobe_a11y_option",
-    "../../components:oobe_select.m",
+    "../../components:oobe_select",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
@@ -421,13 +413,13 @@ js_library("offline_ad_login") {
 js_library("oobe_eula") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/oobe_eula.js" ]
   deps = [
-    "../../:display_manager.m",
-    "../../components:web_view_helper.m",
+    "../../:display_manager",
+    "../../components:web_view_helper",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_modal_dialog.m",
+    "../../components/dialogs:oobe_modal_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 
@@ -446,7 +438,7 @@ js_library("oobe_reset") {
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_modal_dialog.m",
+    "../../components/dialogs:oobe_modal_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:util",
   ]
@@ -456,7 +448,7 @@ js_library("oobe_reset") {
 js_library("os_install") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/os_install.js" ]
   deps = [
-    "../../:display_manager.m",
+    "../../:display_manager",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -464,8 +456,8 @@ js_library("os_install") {
     "../../components/buttons:oobe_back_button",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
-    "../../components/dialogs:oobe_modal_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
+    "../../components/dialogs:oobe_modal_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 
@@ -511,7 +503,7 @@ js_library("os_trial") {
 js_library("pin_setup") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/pin_setup.js" ]
   deps = [
-    "../../components:oobe_types.m",
+    "../../components:oobe_types",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -531,14 +523,14 @@ js_library("recommend_apps") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/recommend_apps.js" ]
   deps = [
     "../../components:oobe_apps_list",
-    "../../components:oobe_types.m",
+    "../../components:oobe_types",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data.m",
   ]
@@ -549,13 +541,13 @@ js_library("recommend_apps") {
 js_library("saml_confirm_password") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/saml_confirm_password.js" ]
   deps = [
-    "../../:login_ui_tools.m",
+    "../../:login_ui_tools",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/buttons:oobe_next_button",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
-    "../../components/dialogs:oobe_modal_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
+    "../../components/dialogs:oobe_modal_dialog",
   ]
   extra_deps = [ ":web_components" ]
 }
@@ -563,8 +555,8 @@ js_library("saml_confirm_password") {
 js_library("signin_fatal_error") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/signin_fatal_error.js" ]
   deps = [
-    "../../components:display_manager_types.m",
-    "../../components:oobe_types.m",
+    "../../components:display_manager_types",
+    "../../components:oobe_types",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
@@ -575,8 +567,8 @@ js_library("signin_fatal_error") {
   extra_deps = [ ":web_components" ]
 }
 
-js_library("smart_privacy_protection.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/smart_privacy_protection.m.js" ]
+js_library("smart_privacy_protection") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/smart_privacy_protection.js" ]
   deps = [
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -585,28 +577,28 @@ js_library("smart_privacy_protection.m") {
     "../../components/dialogs:oobe_adaptive_dialog",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":smart_privacy_protection_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
-js_library("sync_consent.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/sync_consent.m.js" ]
+js_library("sync_consent") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/sync_consent.js" ]
   deps = [
-    "../../components:display_manager_types.m",
+    "../../components:display_manager_types",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/buttons:oobe_text_button",
     "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_loading_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert",
   ]
-  extra_deps = [ ":sync_consent_module" ]
+  extra_deps = [ ":web_components" ]
 }
 
 js_library("theme_selection") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/theme_selection.js" ]
   deps = [
-    "../../components:display_manager_types.m",
+    "../../components:display_manager_types",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
@@ -661,8 +653,8 @@ js_library("wrong_hwid") {
 js_library("error_message") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/error_message.js" ]
   deps = [
-    "../../:cr_ui.m",
-    "../../components:display_manager_types.m",
+    "../../:cr_ui",
+    "../../components:display_manager_types",
     "../../components:network_select_login",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:oobe_dialog_host_behavior.m",
@@ -673,42 +665,6 @@ js_library("error_message") {
     "//ash/webui/common/resources:parse_html_subset",
   ]
   extra_deps = [ ":web_components" ]
-}
-
-polymer_modulizer("family_link_notice") {
-  js_file = "family_link_notice.js"
-  html_file = "family_link_notice.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("hw_data_collection") {
-  js_file = "hw_data_collection.js"
-  html_file = "hw_data_collection.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  namespace_rewrites = oobe_namespace_rewrites
-  migrated_imports = oobe_migrated_imports
-}
-
-polymer_modulizer("smart_privacy_protection") {
-  js_file = "smart_privacy_protection.js"
-  html_file = "smart_privacy_protection.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports
-  migrated_imports = oobe_migrated_imports
-  namespace_rewrites = oobe_namespace_rewrites
-}
-
-polymer_modulizer("sync_consent") {
-  js_file = "sync_consent.js"
-  html_file = "sync_consent.html"
-  html_type = "dom-module"
-  auto_imports = oobe_auto_imports + [ "ui/webui/resources/cr_elements/cr_checkbox/cr_checkbox.html|CrCheckboxElement" ]
-  namespace_rewrites = oobe_namespace_rewrites
-  migrated_imports = oobe_migrated_imports
 }
 
 html_to_js("web_components") {
@@ -724,10 +680,12 @@ html_to_js("web_components") {
     "device_disabled.js",
     "enable_kiosk.js",
     "error_message.js",
+    "family_link_notice.js",
     "fingerprint_setup.js",
     "gaia_signin.js",
     "gesture_navigation.js",
     "guest_tos.js",
+    "hw_data_collection.js",
     "local_state_error.js",
     "managed_terms_of_service.js",
     "marketing_opt_in.js",
@@ -742,6 +700,8 @@ html_to_js("web_components") {
     "recommend_apps.js",
     "saml_confirm_password.js",
     "signin_fatal_error.js",
+    "smart_privacy_protection.js",
+    "sync_consent.js",
     "theme_selection.js",
     "tpm_error.js",
     "user_creation.js",

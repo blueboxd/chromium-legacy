@@ -7,10 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
-#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_including_tree_order_traversal.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -251,6 +248,23 @@ void DocumentSpeculationRules::DocumentReferrerPolicyChanged() {
   QueueUpdateSpeculationCandidates();
 }
 
+void DocumentSpeculationRules::DocumentBaseURLChanged() {
+  // Replace every existing rule set with a new copy that is parsed using the
+  // updated document base URL.
+  for (Member<SpeculationRuleSet>& rule_set : rule_sets_) {
+    SpeculationRuleSet::Source* source = rule_set->source();
+    String parse_error;
+    rule_set = SpeculationRuleSet::Parse(
+        source, GetSupplementable()->GetExecutionContext(), &parse_error);
+    // There should not be any parsing errors as these rule sets have already
+    // been parsed once without errors, and an updated base URL should not cause
+    // new errors.
+    DCHECK(parse_error.empty());
+  }
+  InvalidateAllLinks();
+  QueueUpdateSpeculationCandidates();
+}
+
 void DocumentSpeculationRules::Trace(Visitor* visitor) const {
   Supplement::Trace(visitor);
   visitor->Trace(rule_sets_);
@@ -311,7 +325,11 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
             url, action, std::move(referrer_ptr),
             rule->requires_anonymous_client_ip_when_cross_origin(),
             rule->target_browsing_context_name_hint().value_or(
-                mojom::blink::SpeculationTargetHint::kNoHint)));
+                mojom::blink::SpeculationTargetHint::kNoHint),
+            mojom::blink::SpeculationEagerness::
+                kEager));  // The default Eagerness value for |"source": "list"|
+                           // rules is |kEager|. More info can be found here:
+                           // https://docs.google.com/document/d/1nKOUX6R9seR5e7nyR16mj0lp3C1z7Qox-_KUt4C9E2U
       }
     }
   };
@@ -392,7 +410,12 @@ void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
                     link->HrefURL(), action, std::move(referrer_ptr),
                     rule->requires_anonymous_client_ip_when_cross_origin(),
                     rule->target_browsing_context_name_hint().value_or(
-                        mojom::blink::SpeculationTargetHint::kNoHint));
+                        mojom::blink::SpeculationTargetHint::kNoHint),
+                    mojom::blink::SpeculationEagerness::
+                        kDefault);  // The default Eagerness value for
+                                    // |"source": "document"| rules is
+                                    // |kDefault|. More info can be found here:
+                                    // https://docs.google.com/document/d/1nKOUX6R9seR5e7nyR16mj0lp3C1z7Qox-_KUt4C9E2U
             link_candidates.push_back(std::move(candidate));
           }
         };

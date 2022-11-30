@@ -231,6 +231,7 @@ component("base") {
     "cancelable_callback.h",
     "check.cc",
     "check.h",
+    "check_deref.h",
     "check_is_test.cc",
     "check_is_test.h",
     "check_op.cc",
@@ -368,6 +369,7 @@ component("base") {
     "functional/invoke.h",
     "functional/not_fn.h",
     "functional/overloaded.h",
+    "functional/unretained_traits.h",
     "gtest_prod_util.h",
     "guid.cc",
     "guid.h",
@@ -1747,13 +1749,6 @@ component("base") {
         "profiler/chrome_unwind_info_android.h",
         "profiler/chrome_unwinder_android_v2.cc",
         "profiler/chrome_unwinder_android_v2.h",
-      ]
-    }
-
-    if (current_cpu == "arm64") {
-      sources += [
-        "profiler/frame_pointer_unwinder.cc",
-        "profiler/frame_pointer_unwinder.h",
       ]
     }
 
@@ -3642,9 +3637,6 @@ test("base_unittests") {
         "profiler/chrome_unwinder_android_v2_unittest.cc",
       ]
     }
-    if (current_cpu == "arm64") {
-      sources += [ "profiler/frame_pointer_unwinder_unittest.cc" ]
-    }
     if (!exclude_unwind_tables &&
         (current_cpu == "arm" || current_cpu == "arm64")) {
       sources += [
@@ -3672,9 +3664,7 @@ test("base_unittests") {
       "android/library_loader/library_prefetcher_unittest.cc",
       "android/linker/linker_jni.cc",
       "android/linker/linker_jni.h",
-      "android/linker/modern_linker_jni.cc",
-      "android/linker/modern_linker_jni.h",
-      "android/linker/modern_linker_unittest.cc",
+      "android/linker/linker_unittest.cc",
       "android/path_utils_unittest.cc",
       "android/radio_utils_unittest.cc",
       "android/reached_addresses_bitset_unittest.cc",
@@ -4247,14 +4237,11 @@ if (is_android) {
       "android/java/src/org/chromium/base/jank_tracker/JankScenario.java",
       "android/java/src/org/chromium/base/jank_tracker/JankTracker.java",
       "android/java/src/org/chromium/base/jank_tracker/JankTrackerImpl.java",
-      "android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
       "android/java/src/org/chromium/base/library_loader/Linker.java",
       "android/java/src/org/chromium/base/library_loader/LinkerJni.java",
       "android/java/src/org/chromium/base/library_loader/LoaderErrors.java",
-      "android/java/src/org/chromium/base/library_loader/ModernLinker.java",
-      "android/java/src/org/chromium/base/library_loader/ModernLinkerJni.java",
       "android/java/src/org/chromium/base/library_loader/NativeLibraryPreloader.java",
       "android/java/src/org/chromium/base/library_loader/ProcessInitException.java",
       "android/java/src/org/chromium/base/lifetime/DestroyChecker.java",
@@ -4621,7 +4608,7 @@ if (is_android) {
       "android/application_status_listener.h",
       "android/child_process_binding_types.h",
       "android/library_loader/library_loader_hooks.h",
-      "android/linker/modern_linker_jni.h",
+      "android/linker/linker_jni.h",
       "android/task_scheduler/task_runner_android.h",
       "memory/memory_pressure_listener.h",
       "metrics/histogram_base.h",
@@ -4733,6 +4720,11 @@ fuzzer_test("command_line_fuzzer") {
 
 fuzzer_test("escape_fuzzer") {
   sources = [ "strings/escape_fuzzer.cc" ]
+  deps = [ "//base" ]
+}
+
+fuzzer_test("file_path_fuzzer") {
+  sources = [ "files/file_path_fuzzer.cc" ]
   deps = [ "//base" ]
 }
 

@@ -70,6 +70,8 @@ declare global {
         LONG_USERNAME = 'LONG_USERNAME',
         CONFLICT_PROFILE = 'CONFLICT_PROFILE',
         CONFLICT_ACCOUNT = 'CONFLICT_ACCOUNT',
+        LONG_NOTE = 'LONG_NOTE',
+        LONG_CONCATENATED_NOTE = 'LONG_CONCATENATED_NOTE',
       }
 
       export interface ImportEntry {
@@ -108,7 +110,6 @@ declare global {
         isAndroidCredential: boolean;
         note?: string;
         changePasswordUrl?: string;
-        hasStartableScript: boolean;
         compromisedInfo?: CompromisedInfo;
       }
 
@@ -179,13 +180,10 @@ declare global {
       export function unmuteInsecureCredential(credential: PasswordUiEntry):
           Promise<void>;
       export function recordChangePasswordFlowStarted(
-          credential: PasswordUiEntry, isManualFlow: boolean): void;
-      export function refreshScriptsIfNecessary(): Promise<void>;
+          credential: PasswordUiEntry): void;
       export function startPasswordCheck(): Promise<void>;
       export function stopPasswordCheck(): Promise<void>;
       export function getPasswordCheckStatus(): Promise<PasswordCheckStatus>;
-      export function startAutomatedPasswordChange(credential: PasswordUiEntry):
-          Promise<boolean>;
       export function isAccountStoreDefault(): Promise<boolean>;
       export function getUrlCollection(url: string):
           Promise<UrlCollection|null>;

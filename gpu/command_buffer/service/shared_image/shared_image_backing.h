@@ -148,6 +148,13 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Marks the provided rect as cleared.
   virtual void SetClearedRect(const gfx::Rect& cleared_rect) = 0;
 
+  // Indicate that the image is purgable. When an image is purgeable, its
+  // contents may be discarded at any time. Before the image can be used again,
+  // it must be set to be not-purgeable. This is intended to be lighter-weight
+  // than allocating and freeing the image. See investigation in
+  // https://crbug.com/1347282.
+  virtual void SetPurgeable(bool purgeable) {}
+
   virtual void Update(std::unique_ptr<gfx::GpuFence> in_fence);
 
   // Uploads pixels from memory into GPU texture. Backings must implement this
@@ -235,9 +242,6 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   ProduceLegacyOverlay(SharedImageManager* manager, MemoryTypeTracker* tracker);
 #endif
 
-  // Updates the estimated size if memory usage changes after creation.
-  void UpdateEstimatedSize(size_t estimated_size_bytes);
-
   // Used by subclasses during destruction.
   bool have_context() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -296,7 +300,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const GrSurfaceOrigin surface_origin_;
   const SkAlphaType alpha_type_;
   const uint32_t usage_;
-  size_t estimated_size_;
+  const size_t estimated_size_;
 
   bool is_ref_counted_ = true;
 

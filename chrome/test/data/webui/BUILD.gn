@@ -109,6 +109,7 @@ if (include_js_tests) {
       "net_internals/net_internals_browsertest.js",
       "ntp4.js",
       "password_manager/password_manager_browsertest.js",
+      "privacy_sandbox/privacy_sandbox_dialog_a11y_browsertest.js",
       "privacy_sandbox/privacy_sandbox_dialog_browsertest.js",
       "sandboxstatus_browsertest.js",
       "settings/a11y/a11y_browsertest.js",
@@ -157,7 +158,6 @@ if (include_js_tests) {
 
     if (is_chromeos_ash) {
       sources += [
-        "../../../browser/resources/chromeos/login/components/oobe_types.js",
         "../../../browser/resources/chromeos/login/security_token_pin_browsertest.js",
         "../../../browser/ui/webui/ash/bluetooth_pairing_dialog_browsertest.js",
         "../../../browser/ui/webui/ash/certificate_manager_dialog_browsertest.js",

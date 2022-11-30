@@ -532,8 +532,8 @@ const char kSavedDevicesTotalUxLoadTime[] =
     "Bluetooth.ChromeOS.FastPair.SavedDevices.TotalUxLoadTime";
 const char kSavedDevicesCount[] =
     "Bluetooth.ChromeOS.FastPair.SavedDevices.DeviceCount";
-constexpr char kSubsequentSuccessFunnelMetric[] =
-    "ChromeOS.FastPair.SubsequentPairing";
+constexpr char kFastPairGattConnectionStep[] = "FastPair.GattConnection";
+constexpr char kSubsequentSuccessFunnelMetric[] = "FastPair.SubsequentPairing";
 
 const std::string GetEngagementFlowInitialModelIdMetric(
     const ash::quick_pair::Device& device) {
@@ -879,6 +879,12 @@ void RecordFootprintsFetcherGetResult(const FastPairHttpResult& result) {
 
 void RecordFastPairRepositoryCacheResult(bool success) {
   base::UmaHistogramBoolean(kFastPairRepositoryCacheResult, success);
+}
+
+void RecordGattInitializationStep(
+    FastPairGattConnectionSteps initialization_step) {
+  base::UmaHistogramEnumeration(kFastPairGattConnectionStep,
+                                initialization_step);
 }
 
 void RecordHandshakeResult(bool success) {

@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -278,12 +279,12 @@ static bool DiffAffectsScrollAnimations(const ComputedStyle& old_style,
 // if they reference a named timeline which appeared/disappeared.
 static bool AffectsScrollAnimations(const ComputedStyle* old_style,
                                     const ComputedStyle* new_style) {
-  if (old_style && !(old_style->ScrollTimelineName().empty() &&
-                     old_style->ViewTimelineName().empty())) {
+  if (old_style &&
+      (old_style->ScrollTimelineName() || old_style->ViewTimelineName())) {
     return true;
   }
-  if (new_style && !(new_style->ScrollTimelineName().empty() &&
-                     new_style->ViewTimelineName().empty())) {
+  if (new_style &&
+      (new_style->ScrollTimelineName() || new_style->ViewTimelineName())) {
     return true;
   }
   return false;
@@ -2121,14 +2122,30 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   return visited_link ? InternalVisitedTextFillColor() : TextFillColor();
 }
 
-blink::Color ComputedStyle::VisitedDependentColor(
-    const CSSProperty& color_property,
-    bool* is_current_color) const {
+bool ComputedStyle::HasBackground() const {
+  // Ostensibly, we should call VisitedDependentColor() here,
+  // but visited does not affect alpha (see VisitedDependentColor()
+  // implementation).
+  blink::Color color = GetCSSPropertyBackgroundColor().ColorIncludingFallback(
+      false, *this,
+      /*is_current_color=*/nullptr);
+  if (color.Alpha())
+    return true;
+  // When background color animation is running on the compositor thread, we
+  // need to trigger repaint even if the background is transparent to collect
+  // artifacts in order to run the animation on the compositor.
+  if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+      HasCurrentBackgroundColorAnimation())
+    return true;
+  return HasBackgroundImage();
+}
+
+Color ComputedStyle::VisitedDependentColor(const Longhand& color_property,
+                                           bool* is_current_color) const {
   DCHECK(!color_property.IsVisited());
 
   blink::Color unvisited_color =
-      To<Longhand>(color_property)
-          .ColorIncludingFallback(false, *this, is_current_color);
+      color_property.ColorIncludingFallback(false, *this, is_current_color);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 

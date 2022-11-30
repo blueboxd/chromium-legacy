@@ -425,6 +425,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ads.InterestGroup.Auction.BidFiltered" enum="Boolean"
+    expires_after="2023-10-31">
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    True if the trusted bidding signals specified a per-interest-group
+    priorityVector whose sparse dot product with the browser generated
+    prioritySignals was negative, indicating the generateBid() should not be
+    invoked.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
 <histogram name="Ads.InterestGroup.Auction.CompletedWithoutWinnerTime"
     units="ms" expires_after="2023-07-31">
   <owner>mmenke@chromium.org</owner>
@@ -435,6 +450,20 @@ chromium-metrics-reviews@google.com.
     seller script rejecting all bidders. Not recoded when there are no bidders,
     or when an auction fails due to the seller worklet failing to load. Recorded
     on auction complete.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.ContextReused" enum="Boolean"
+    expires_after="2023-10-31">
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    True if the browser can reuse an existing context when calling generateBid()
+    whose corresponding interest group has the executionMode set to
+    groupByOrigin.
 
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
@@ -483,6 +512,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ads.InterestGroup.Auction.GenerateBidTime" units="ms"
+    expires_after="2023-10-31">
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The length of time it took to initialize the context and arguments, and
+    evaluate generateBid() once.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
 <histogram name="Ads.InterestGroup.Auction.GroupFreshness.{Type}"
     units="minutes" expires_after="2023-07-31">
   <owner>caraitto@chromium.org</owner>
@@ -503,6 +545,34 @@ chromium-metrics-reviews@google.com.
     <variant name="WithDailyUpdates"
         summary="interest groups that specify a dailyUpdateUrl"/>
   </token>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.LoadGroupsTime" units="ms"
+    expires_after="2023-10-31">
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The length of time it took to start a FLEDGE auction and complete loading
+    the interest groups that should participate in the auction; only recorded
+    when at least one interest group was loaded.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.LoadNoGroupsTime" units="ms"
+    expires_after="2023-10-31">
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The length of time it took to start a FLEDGE auction and complete loading
+    the interest groups that should participate in the auction; only recorded
+    when no interest groups were loaded.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.NumAuctionsPerPage" units="auctions"
@@ -607,6 +677,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ads.InterestGroup.Auction.ProcessLaunchTime" units="ms"
+    expires_after="2023-10-31">
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The length of time it took to launch a process to execute FLEDGE worklets.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
 <histogram name="Ads.InterestGroup.Auction.Result" enum="AuctionResult"
     expires_after="2023-07-31">
   <owner>mmenke@chromium.org</owner>
@@ -614,6 +696,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     The final result type of running a FLEDGE auction. Recorded on auction
     completion/cancellation.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Auction.ScoreAdTime" units="ms"
+    expires_after="2023-10-31">
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The length of time it took to initialize the context and arguments, and
+    evaluate scoreAd() once.
 
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
@@ -1046,37 +1141,6 @@ chromium-metrics-reviews@google.com.
   <owner>jbauman@chromium.org</owner>
   <summary>
     Whether the browser compositor uses GPU or the software renderer.
-  </summary>
-</histogram>
-
-<histogram name="Autocomplete.Cleanup" units="entries" expires_after="M85">
-  <owner>seblalancette@chromium.org</owner>
-  <summary>
-    Logged when the Autocomplete Retention Policy cleaned up expired entries.
-    Expired entries are entries that haven't been used in the last 14 months.
-  </summary>
-</histogram>
-
-<histogram name="Autocomplete.DaysSinceLastUse" units="days"
-    expires_after="M85">
-  <owner>seblalancette@chromium.org</owner>
-  <summary>
-    Logged when users select Autocomplete entries in the dropdown, this
-    histogram captures the number of days that have passed since the selected
-    autocomplete entry was last used. I.e., the distribution of time between
-    uses of an &quot;active&quot; autocomplete entry.
-  </summary>
-</histogram>
-
-<histogram name="Autocomplete.Events" enum="AutocompleteEvents"
-    expires_after="2023-04-16">
-  <owner>seblalancette@chromium.org</owner>
-  <summary>
-    Autocomplete events recorded when the user interacts with suggestions served
-    from Autocomplete.
-
-    Note that this histogram was disabled after M85 and was only reenabled on
-    25.02.2021.
   </summary>
 </histogram>
 
@@ -2183,14 +2247,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ChildProcess.KilledByExtensionAPI" units="units"
-    expires_after="M81">
-  <owner>nasko@chromium.org</owner>
-  <summary>
-    Count of child processes killed by the extension API (processes.terminate).
-  </summary>
-</histogram>
-
 <histogram name="ChildProcess.Launched.UtilityProcessHash"
     enum="UtilityProcessNameHash" expires_after="2023-04-23">
   <owner>wfh@chromium.org</owner>
@@ -2849,6 +2905,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ClientHints.Viewport.IsDeviceScaleFactorOne" enum="Boolean"
+    expires_after="2023-03-29">
+  <owner>curranmax@chromium.org</owner>
+  <summary>
+    This records whether or not the device scale factor was exactly 1.0 or not
+    when sending either of the viewport height or viewport width client hint.
+    There was a bug (see crbug.com/1394231) where the device scale factor was
+    being applied twice to the viewport values. This histogram can be used to
+    estimate the impact of that bug.
+  </summary>
+</histogram>
+
 <histogram
     name="ComponentUpdater.AndroidComponentLoader.LoadStatus.{Component}"
     units="BooleanSuccess" expires_after="2022-12-15">
@@ -3227,7 +3295,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.Shown" enum="BooleanPresent"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>mpearson@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -3335,21 +3403,6 @@ chromium-metrics-reviews@google.com.
     per conversion report. For conversion report that has been retried, only the
     last retry will be counted.
   </summary>
-</histogram>
-
-<histogram name="Conversion.SourceRegistration.NavigationType.{RequestType}"
-    enum="AttributionNavigationType" expires_after="M117">
-  <owner>csharrison@chromium.org</owner>
-  <owner>apaseltiner@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    For any successfully registered {RequestType} navigation sources, records
-    the API surface that initiated the navigation.
-  </summary>
-  <token key="RequestType">
-    <variant name="Background" summary="background"/>
-    <variant name="Foreground" summary="foreground"/>
-  </token>
 </histogram>
 
 <histogram name="Conversions.AggregatableKeysPerSource" units="keys"
@@ -3926,7 +3979,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.NavigationDataHostStatus"
+<histogram name="Conversions.NavigationDataHostStatus2"
     enum="ConversionNavigationDataHostStatus" expires_after="M117">
   <owner>linnan@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
@@ -4277,6 +4330,21 @@ chromium-metrics-reviews@google.com.
     for the data host. This can be used as an upper bound to determine the
     amount of delay a trigger event may receive.
   </summary>
+</histogram>
+
+<histogram name="Conversions.SourceRegistration.NavigationType.{RequestType}"
+    enum="AttributionNavigationType" expires_after="M117">
+  <owner>csharrison@chromium.org</owner>
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    For any successfully registered {RequestType} navigation sources, records
+    the API surface that initiated the navigation.
+  </summary>
+  <token key="RequestType">
+    <variant name="Background" summary="background"/>
+    <variant name="Foreground" summary="foreground"/>
+  </token>
 </histogram>
 
 <histogram name="Conversions.SourceStoredStatus"
@@ -6582,7 +6650,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Feedback.HappinessTrackingSurvey.ShouldShowSurveyReason"
     enum="HappinessTrackingSurveyShouldShowSurveyReasons"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>sauski@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -7379,7 +7447,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Hwsec.Attestation.Status"
-    enum="HwsecAttestationOpsStatus" expires_after="2023-03-19">
+    enum="HwsecAttestationOpsStatus" expires_after="2023-05-27">
 <!-- Name completed by histogram_suffixes name="AttestationOps" -->
 
   <owner>garryxiao@chromium.org</owner>
@@ -8560,14 +8628,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Manifest.FetchResult" enum="ManifestFetchResultType"
-    expires_after="2020-12-13">
-  <owner>mgiuca@chromium.org</owner>
-  <summary>
-    Tracks whether the Manifest fetch succeed and why it failed if it failed.
-  </summary>
-</histogram>
-
 <histogram name="Manifest.HasProperty" enum="Boolean"
     expires_after="2023-05-07">
   <owner>mgiuca@chromium.org</owner>
@@ -8584,16 +8644,6 @@ chromium-metrics-reviews@google.com.
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@chromium.org</owner>
   <summary>Tracks the result of parsing id field in the Manifest.</summary>
-</histogram>
-
-<histogram name="Manifest.ParseSuccess" enum="Boolean"
-    expires_after="2020-06-07">
-  <owner>mgiuca@chromium.org</owner>
-  <summary>
-    Tracks the Manifest parsing result. A failure will be recorded if the
-    Manifest was incorrectly structured. This doesn't take into account parse
-    failures for each individual properties.
-  </summary>
 </histogram>
 
 <histogram name="Mist.SwitchResult" enum="MistSwitchResult" expires_after="M77">
@@ -8916,6 +8966,28 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number queued messages waiting to be written, measured when a channel
     flush is attempted.
+  </summary>
+</histogram>
+
+<histogram name="Mojo.Channel.WriteReceiveMessageProcessType"
+    enum="ShortProcessType" expires_after="2023-10-04">
+  <owner>amanvr@chromium.org</owner>
+  <owner>carlscab@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    Records the number of received Mojo IPCs, split per process. Emitted each
+    time a mojo IPC is received.
+  </summary>
+</histogram>
+
+<histogram name="Mojo.Channel.WriteSendMessageProcessType"
+    enum="ShortProcessType" expires_after="2023-10-04">
+  <owner>amanvr@chromium.org</owner>
+  <owner>carlscab@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    Records the number of sent Mojo IPCs, split per process. Emitted each time a
+    mojo IPC is sent.
   </summary>
 </histogram>
 
@@ -11641,7 +11713,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="RenderViewContextMenu.OpenLinkAsProfile" enum="OpenLinkAs"
-    expires_after="2023-03-23">
+    expires_after="2023-05-27">
   <owner>gabolvr@google.com</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -12212,7 +12284,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SB2.RemoteCall.Elapsed" units="ms" expires_after="2023-03-26">
+<histogram name="SB2.RemoteCall.Elapsed" units="ms" expires_after="2023-05-27">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -12454,7 +12526,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SBIRS.UploadResult" enum="ReportProcessingResult"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>caitkp@google.com</owner>
   <summary>
     The result of an attempted report upload by the safe browsing incident
@@ -13075,7 +13147,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="SignedExchange.LoadResult2" enum="SignedExchangeLoadResult"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>ksakamoto@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
@@ -13624,7 +13696,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram base="true" name="Spellcheck.Windows.SpellcheckRequestDuration"
-    units="ms" expires_after="2023-03-19">
+    units="ms" expires_after="2023-05-27">
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -14865,7 +14937,7 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="Uptime.ChromeExecToLoginPromptVisibleAfterLogout" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>alemate@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <owner>xiyuan@chromium.org</owner>
@@ -15620,7 +15692,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.BlankTextShownTime" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -15728,7 +15800,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.HadBlankText" enum="BooleanHadBlankText"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -15762,7 +15834,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.LocalFontUsed" enum="BooleanUsage"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
@@ -16233,7 +16305,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WrenchMenu.TimeToAction" units="units"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>ainslie@chromium.org</owner>
   <owner>edwardjung@chromium.org</owner>
   <summary>

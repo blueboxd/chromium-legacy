@@ -52,6 +52,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, aplicație din Magazinul Play</translation>
 <translation id="1225748608451425081">Chromebookul este blocat din cauza unei probleme cunoscute. Vei putea să te conectezi după <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Nu mai selecta</translation>
+<translation id="1235458158152011030">Rețele cunoscute</translation>
 <translation id="1239161794459865856">Opțiunea <ph name="FEATURE_NAME" /> s-a conectat.</translation>
 <translation id="1240638468526743569">O aplicație</translation>
 <translation id="1246890715821376239">Aplicații neacceptate</translation>
@@ -386,7 +387,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="3120421559657122717">Închizi dispozitivul?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
-<translation id="3139382871451988441">Dezactivează accesul la camera foto.</translation>
 <translation id="3139942575505304791">Desktop 1</translation>
 <translation id="315116470104423982">Date mobile</translation>
 <translation id="3151786313568798007">Orientare</translation>
@@ -519,7 +519,6 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="385300504083504382">Început</translation>
 <translation id="3861651314799684201">Apasă pe Enter pentru a înregistra ecranul complet</translation>
-<translation id="3885531177412808398">Permite accesul la microfon pentru toate aplicațiile și site-urile care au permisiune de microfon</translation>
 <translation id="3886872229787704059">Deschis astăzi</translation>
 <translation id="3891340733213178823">Apăsați de două ori Ctrl+Shift+Q pentru a vă deconecta.</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
@@ -555,6 +554,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Dezac., o apl.}few{Dezac., # apl.}other{Dezac., # apl.}}</translation>
 <translation id="4066027111132117168">Activată, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Semnal mediu</translation>
+<translation id="4086921558679520050">Activează comutatorul pentru microfonul fizic al dispozitivului</translation>
 <translation id="4112140312785995938">Derulează înapoi</translation>
 <translation id="4114315158543974537">Activează Phone Hub</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -607,6 +607,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4378551569595875038">Se conectează</translation>
 <translation id="4379531060876907730">Acestea sunt instrumentele pentru creion</translation>
+<translation id="4381031910344220229">Aceasta permite accesul la microfon pentru <ph name="APP_NAME" /> și pentru toate aplicațiile și site-urile care au permisiune de microfon</translation>
 <translation id="4389184120735010762">Ai accesat comanda rapidă de la tastatură pentru lupa andocată. Vrei să o activezi?</translation>
 <translation id="439598569299422042">Întreruptă, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Nu se poate salva înregistrarea de pe ecran</translation>
@@ -648,11 +649,8 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4573176682887762361">Introdu [cuvântul / expresia]</translation>
 <translation id="4577274620589681794">Timpul a expirat · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Afișează previzualizările</translation>
-<translation id="4578196883126898996">Microfonul este dezactivat. Activează butonul pentru microfonul dispozitivului.</translation>
 <translation id="4578906031062871102">Meniul Setări deschis</translation>
-<translation id="4581047786858252841">Microfonul este activat</translation>
 <translation id="4585337515783392668">Nu mai proiecta pe un receiver necunoscut</translation>
-<translation id="4587299710837179226">Microfonul este dezactivat</translation>
 <translation id="4596144739579517758">Tema întunecată este dezactivată</translation>
 <translation id="4611292653554630842">Conectează-te</translation>
 <translation id="4623167406982293031">Confirmă contul</translation>
@@ -732,6 +730,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4987738733603015246">Biroul 16</translation>
 <translation id="5003993274120026347">Propoziția următoare</translation>
 <translation id="5016558321564993266">Comută marcatorul. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Accesul la microfonul dispozitivului este activat</translation>
 <translation id="5030687792513154421">Timpul a expirat</translation>
 <translation id="5033299697334913360">Dă clic oriunde pentru a captura ecranul complet</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> conectat la un telefon nou</translation>
@@ -963,9 +962,11 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> este o sesiune gestionată de <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> s-a conectat</translation>
 <translation id="6351032674660237738">SUGESTII DE APLICAȚII</translation>
+<translation id="6352082849089527770">Rețele necunoscute</translation>
 <translation id="6359587239691116345">Obține cele mai noi funcții și îmbunătățiri ale securității. Dacă refuzi această actualizare, este posibil ca dispozitivul să nu mai funcționeze corespunzător și să întâmpini probleme de securitate și de performanță.</translation>
 <translation id="6376931439017688372">Bluetooth este activat</translation>
 <translation id="6381109794406942707">Pentru a debloca dispozitivul, introdu codul PIN.</translation>
+<translation id="638716340450135524">Activează accesul la camera foto</translation>
 <translation id="639644700271529076">Tasta CAPS LOCK este dezactivată</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
@@ -973,6 +974,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="642644398083277086">Șterge toate notificările</translation>
 <translation id="643147933154517414">Gata</translation>
 <translation id="6431865393913628856">Înregistrarea ecranului</translation>
+<translation id="6442259747294754014">Accesul la microfonul dispozitivului este dezactivat</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> pe <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> eveniment</translation>
 <translation id="6449483711453944360">Aplicațiile Linux și ferestrele incognito nu sunt acceptate</translation>
@@ -1024,6 +1026,7 @@ Instalare nouă</translation>
 <translation id="6670153871843998651">Desktop 3</translation>
 <translation id="6671495933530132209">Copiați imaginea</translation>
 <translation id="6671661918848783005">Chromebookul nu a putut fi deblocat</translation>
+<translation id="6683022854667115063">Căști</translation>
 <translation id="6696025732084565524">Tastatura detașabilă necesită o actualizare esențială</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>
 <translation id="6707693040195709527">Ai depășit termenul limită pentru trecerea dispozitivului la versiunea anterioară</translation>
@@ -1136,6 +1139,7 @@ Instalare nouă</translation>
 <translation id="7360036564632145207">Modificarea setării pentru protecția accesului la date pentru dispozitive periferice poate optimiza performanța</translation>
 <translation id="736045644501761622">Setează imaginea de fundal și stilul</translation>
 <translation id="7371404428569700291">Înregistrează fereastra</translation>
+<translation id="737315737514430195">Aceasta permite accesul la microfon pentru toate aplicațiile și site-urile care au permisiune de microfon</translation>
 <translation id="7377169924702866686">Tasta Caps Lock este activată.</translation>
 <translation id="7377481913241237033">Conectează-te cu un cod</translation>
 <translation id="7378203170292176219">Trage pentru a selecta o zonă de înregistrat</translation>
@@ -1204,12 +1208,14 @@ Instalare nouă</translation>
 <translation id="7671610481353807627">Aplicațiile se sortează după culoare</translation>
 <translation id="7672095158465655885">Conectat la <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Introducerea cu ajutorul camerei foto este setată la <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">Aceasta permite accesul la microfon pentru <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> și pentru toate aplicațiile și site-urile care au permisiune de microfon</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Adaugă o nouă rețea de date mobile</translation>
 <translation id="7720400844887872976">Activată până la <ph name="TIME" /></translation>
 <translation id="7720410380936703141">ÎNCEARCĂ DIN NOU</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{O notificare}few{# notificări}other{# de notificări}}</translation>
 <translation id="7724603315864178912">Decupează</translation>
+<translation id="7742327441377685481">Nicio notificare</translation>
 <translation id="7745560842763881396">Afișează aplicațiile în raft</translation>
 <translation id="7749443890790263709">S-a atins numărul maxim de desktopuri.</translation>
 <translation id="776344839111254542">Dă clic pentru a vedea detaliile actualizării</translation>
@@ -1366,6 +1372,7 @@ Instalare nouă</translation>
 <translation id="8598235756057743477">Sortează aplicațiile după nume sau culoare</translation>
 <translation id="8614517853887502247">Notificările pentru <ph name="APP_1_TITLE" /> și <ph name="APP_2_TITLE" /> sunt ascunse deoarece este activată protecția la afișare</translation>
 <translation id="8627191004499078455">Conectat la <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Dezactivează accesul la camera foto</translation>
 <translation id="8631727435199967028">Setări de accesibilitate</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="8639760480004882931">Nivelul bateriei: <ph name="PERCENTAGE" /></translation>
@@ -1381,7 +1388,6 @@ Instalare nouă</translation>
 <translation id="8666856788528804727">Deschide <ph name="NAME" /> pentru a configura dispozitivul</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
 <translation id="8683506306463609433">Urmărirea performanțelor este activă</translation>
-<translation id="8684405646663021166">Permite accesul la microfon pentru <ph name="APP_NAME" /> și pentru toate aplicațiile și site-urile care au permisiune de microfon</translation>
 <translation id="8685326675965865247">Caută pe dispozitiv, în aplicații, în setări și pe web. Folosește tastele săgeată ca să navighezi în aplicațiile tale.</translation>
 <translation id="8703634754197148428">Pornește înregistrarea. După ce a început înregistrarea, apasă pe Alt + Shift + L pentru a naviga la raft și caută butonul de oprire a înregistrării</translation>
 <translation id="8721053961083920564">Activează sau dezactivează volumul: <ph name="STATE_TEXT" /></translation>
@@ -1406,7 +1412,6 @@ Instalare nouă</translation>
 <translation id="8819728065740986820">S-a activat încărcarea adaptativă</translation>
 <translation id="8825863694328519386">Glisează dinspre stânga pentru a reveni</translation>
 <translation id="8834539327799336565">Conectat</translation>
-<translation id="8834657930627018205">Activează accesul la camera foto.</translation>
 <translation id="8841375032071747811">Butonul Înapoi</translation>
 <translation id="8843682306134542540">Comută blocarea rotației. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Tasta de căutare + Esc</translation>

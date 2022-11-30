@@ -52,6 +52,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store-app</translation>
 <translation id="1225748608451425081">Je Chromebook is vergrendeld vanwege een bekend probleem. Je kunt inloggen over: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Selecteren stoppen</translation>
+<translation id="1235458158152011030">Bekende netwerken</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> is verbonden.</translation>
 <translation id="1240638468526743569">Een app</translation>
 <translation id="1246890715821376239">Niet-ondersteunde apps</translation>
@@ -386,7 +387,6 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3120421559657122717">Apparaat uitzetten?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Opnieuw starten om updates uit te voeren</translation>
-<translation id="3139382871451988441">Cameratoegang uitzetten</translation>
 <translation id="3139942575505304791">Bureau 1</translation>
 <translation id="315116470104423982">Mobiele data</translation>
 <translation id="3151786313568798007">Stand</translation>
@@ -519,7 +519,6 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="385300504083504382">Begin</translation>
 <translation id="3861651314799684201">Druk op Enter om het volledige scherm op te nemen</translation>
-<translation id="3885531177412808398">Microfoontoegang toestaan voor alle apps en websites met microfoonrechten</translation>
 <translation id="3886872229787704059">Vandaag geopend</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
@@ -555,6 +554,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Uit voor een app}other{Uit voor # apps}}</translation>
 <translation id="4066027111132117168">Aan, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Normaal signaal</translation>
+<translation id="4086921558679520050">Zet de fysieke microfoonschakelaar aan op je apparaat</translation>
 <translation id="4112140312785995938">Achteruit zoeken</translation>
 <translation id="4114315158543974537">Phone Hub aanzetten</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -607,6 +607,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, signaalsterkte <ph name="SIGNAL_STRENGTH" /> procent</translation>
 <translation id="4378551569595875038">Verbinden...</translation>
 <translation id="4379531060876907730">Dit zijn je stylustools</translation>
+<translation id="4381031910344220229">Hierdoor wordt microfoontoegang toegestaan voor <ph name="APP_NAME" /> en alle apps en websites met microfoonrechten</translation>
 <translation id="4389184120735010762">Je hebt op de sneltoets voor het vastgezette vergrootglas gedrukt. Wil je deze functie aanzetten?</translation>
 <translation id="439598569299422042">Onderbroken, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Kan screencast niet opslaan</translation>
@@ -648,11 +649,8 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4573176682887762361">'Typ [woord/woordgroep]'</translation>
 <translation id="4577274620589681794">De tijd is om · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Voorbeelden bekijken</translation>
-<translation id="4578196883126898996">Je microfoon staat uit. Zet de microfoonknop van je apparaat aan.</translation>
 <translation id="4578906031062871102">Menu Instellingen geopend</translation>
-<translation id="4581047786858252841">Microfoon staat aan</translation>
 <translation id="4585337515783392668">Casten naar een onbekende ontvanger stopzetten</translation>
-<translation id="4587299710837179226">Microfoon staat uit</translation>
 <translation id="4596144739579517758">Donker thema staat uit</translation>
 <translation id="4611292653554630842">Inloggen</translation>
 <translation id="4623167406982293031">Account verifiëren</translation>
@@ -732,6 +730,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="4987738733603015246">Bureau 16</translation>
 <translation id="5003993274120026347">Volgende zin</translation>
 <translation id="5016558321564993266">Stift aan-/uitzetten. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Microfoontoegang voor apparaat staat aan</translation>
 <translation id="5030687792513154421">De tijd is voorbij</translation>
 <translation id="5033299697334913360">Klik ergens om een opname van het volledige scherm te maken</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> verbonden met nieuwe telefoon</translation>
@@ -963,9 +962,11 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> is een beheerde sessie die wordt beheerd door <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> gekoppeld</translation>
 <translation id="6351032674660237738">APP-SUGGESTIES</translation>
+<translation id="6352082849089527770">Onbekende netwerken</translation>
 <translation id="6359587239691116345">Krijg de nieuwste functies en beveiligingsverbeteringen. Als je deze update weigert, werkt je apparaat misschien niet meer goed en kun je beveiligings- en prestatieproblemen ondervinden.</translation>
 <translation id="6376931439017688372">Bluetooth staat aan</translation>
 <translation id="6381109794406942707">Geef je pincode op om het apparaat te ontgrendelen.</translation>
+<translation id="638716340450135524">Cameratoegang aanzetten</translation>
 <translation id="639644700271529076">CAPS LOCK staat uit</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -973,6 +974,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="642644398083277086">Alle meldingen verwijderen</translation>
 <translation id="643147933154517414">Klaar</translation>
 <translation id="6431865393913628856">Schermopname</translation>
+<translation id="6442259747294754014">Microfoontoegang voor apparaat staat uit</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> in <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> afspraak</translation>
 <translation id="6449483711453944360">Linux-apps en incognitovensters worden momenteel niet ondersteund</translation>
@@ -1024,6 +1026,7 @@ Nieuwe installatie</translation>
 <translation id="6670153871843998651">Bureau 3</translation>
 <translation id="6671495933530132209">Afbeelding kopiëren</translation>
 <translation id="6671661918848783005">Kan je Chromebook niet ontgrendelen</translation>
+<translation id="6683022854667115063">Hoofdtelefoon</translation>
 <translation id="6696025732084565524">Je afneembare toetsenbord heeft een essentiële update nodig</translation>
 <translation id="6700713906295497288">IME-menuknop</translation>
 <translation id="6707693040195709527">Het apparaat had al moeten zijn teruggezet naar een oudere versie</translation>
@@ -1133,6 +1136,7 @@ Nieuwe installatie</translation>
 <translation id="7360036564632145207">Als je de instelling 'Beveiliging voor gegevenstoegang voor randapparaten' wijzigt, kun je de prestaties optimaliseren</translation>
 <translation id="736045644501761622">Achtergrond en stijl instellen</translation>
 <translation id="7371404428569700291">Opname van venster maken</translation>
+<translation id="737315737514430195">Hierdoor wordt microfoontoegang toegestaan voor alle apps en websites met microfoonrechten</translation>
 <translation id="7377169924702866686">Caps Lock staat aan.</translation>
 <translation id="7377481913241237033">Koppelen met een code</translation>
 <translation id="7378203170292176219">Sleep om het gedeelte te selecteren dat je wilt opnemen</translation>
@@ -1201,12 +1205,14 @@ Nieuwe installatie</translation>
 <translation id="7671610481353807627">Apps zijn gesorteerd op kleur</translation>
 <translation id="7672095158465655885">Verbonden met <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Camera-invoer ingesteld op <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">Hierdoor wordt microfoontoegang toegestaan voor <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> en alle apps en websites met microfoonrechten</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Een nieuw mobiel netwerk toevoegen</translation>
 <translation id="7720400844887872976">Aan tot <ph name="TIME" /></translation>
 <translation id="7720410380936703141">OPNIEUW PROBEREN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{Eén melding}other{# meldingen}}</translation>
 <translation id="7724603315864178912">Knip</translation>
+<translation id="7742327441377685481">Geen meldingen</translation>
 <translation id="7745560842763881396">Apps in plank bekijken</translation>
 <translation id="7749443890790263709">Maximum aantal bureaus bereikt.</translation>
 <translation id="776344839111254542">Klik om updategegevens te bekijken</translation>
@@ -1363,6 +1369,7 @@ Nieuwe installatie</translation>
 <translation id="8598235756057743477">Je apps sorteren op naam of kleur</translation>
 <translation id="8614517853887502247">Meldingen van <ph name="APP_1_TITLE" /> en <ph name="APP_2_TITLE" /> zijn verborgen omdat weergavebeveiliging aanstaat</translation>
 <translation id="8627191004499078455">Verbonden met <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Cameratoegang uitzetten</translation>
 <translation id="8631727435199967028">Instellingen voor toegankelijkheid</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />, beheerd door je beheerder</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> resterend</translation>
@@ -1378,7 +1385,6 @@ Nieuwe installatie</translation>
 <translation id="8666856788528804727">Open <ph name="NAME" /> om je apparaat in te stellen</translation>
 <translation id="8676770494376880701">Laag-vermogen-lader aangesloten</translation>
 <translation id="8683506306463609433">Bijhouden van prestaties is actief</translation>
-<translation id="8684405646663021166">Microfoontoegang toestaan voor <ph name="APP_NAME" /> en alle apps en websites met microfoonrechten</translation>
 <translation id="8685326675965865247">Zoek op je apparaat, in apps en instellingen en op internet. Gebruik de pijltoetsen om te navigeren in je apps.</translation>
 <translation id="8703634754197148428">Opname starten. Nadat de opname is gestart, gebruik je Alt + Shift + L om op de plank naar de knop voor het stoppen van de opname te gaan.</translation>
 <translation id="8721053961083920564">Volume aan/uit. <ph name="STATE_TEXT" /></translation>
@@ -1403,7 +1409,6 @@ Nieuwe installatie</translation>
 <translation id="8819728065740986820">Aangepast opladen staat aan</translation>
 <translation id="8825863694328519386">Swipe vanaf de linkerkant om terug te gaan</translation>
 <translation id="8834539327799336565">Momenteel verbonden</translation>
-<translation id="8834657930627018205">Cameratoegang aanzetten</translation>
 <translation id="8841375032071747811">Knop Terug</translation>
 <translation id="8843682306134542540">Draaivergrendeling aan- of uitzetten. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Zoeken+Esc</translation>

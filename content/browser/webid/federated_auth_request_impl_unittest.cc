@@ -396,8 +396,8 @@ class DelegatedIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
   }
 
   void FetchManifest(const GURL& provider,
-                     absl::optional<int> idp_brand_icon_ideal_size,
-                     absl::optional<int> idp_brand_icon_minimum_size,
+                     int idp_brand_icon_ideal_size,
+                     int idp_brand_icon_minimum_size,
                      FetchManifestCallback callback) override {
     delegate_->FetchManifest(provider, idp_brand_icon_ideal_size,
                              idp_brand_icon_minimum_size, std::move(callback));
@@ -478,8 +478,8 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
   }
 
   void FetchManifest(const GURL& provider,
-                     absl::optional<int> idp_brand_icon_ideal_size,
-                     absl::optional<int> idp_brand_icon_minimum_size,
+                     int idp_brand_icon_ideal_size,
+                     int idp_brand_icon_minimum_size,
                      FetchManifestCallback callback) override {
     fetched_endpoints_ |= FetchedEndpoint::MANIFEST;
 
@@ -1108,12 +1108,15 @@ TEST_F(FederatedAuthRequestImplTest, ManifestListNotInList) {
       /*selected_idp_config_url=*/absl::nullopt,
       FetchedEndpoint::MANIFEST_LIST | FetchedEndpoint::MANIFEST};
 
-  IdentityProviderParameters identity_provider{"https://not-in-list.example",
-                                               kClientId, kNonce};
-  RequestParameters parameters{
-      std::vector<IdentityProviderParameters>{identity_provider},
-      /*prefer_auto_sign_in=*/false};
-  RunAuthTest(parameters, request_not_in_list, kConfigurationValid);
+  const char* idp_config_url =
+      kDefaultRequestParameters.identity_providers[0].provider;
+  const char* kManifestListMismatchConfigUrl = "https://mismatch.example";
+  EXPECT_NE(std::string(idp_config_url), kManifestListMismatchConfigUrl);
+
+  MockConfiguration config = kConfigurationValid;
+  config.idp_info[idp_config_url].manifest_list = {
+      {kManifestListMismatchConfigUrl}};
+  RunAuthTest(kDefaultRequestParameters, request_not_in_list, config);
 }
 
 // Test that not having the filename in the manifest list fails.
@@ -2206,10 +2209,15 @@ class IdpNetworkRequestManagerClientMetadataTaskRunner
   void FetchClientMetadata(const GURL& client_metadata_endpoint_url,
                            const std::string& client_id,
                            FetchClientMetadataCallback callback) override {
+    // Make copies because running the task might destroy
+    // FederatedAuthRequestImpl and invalidate the references.
+    GURL client_metadata_endpoint_url_copy = client_metadata_endpoint_url;
+    std::string client_id_copy = client_id;
+
     if (client_metadata_task_)
       std::move(client_metadata_task_).Run();
     TestIdpNetworkRequestManager::FetchClientMetadata(
-        client_metadata_endpoint_url, client_id, std::move(callback));
+        client_metadata_endpoint_url_copy, client_id_copy, std::move(callback));
   }
 
  private:

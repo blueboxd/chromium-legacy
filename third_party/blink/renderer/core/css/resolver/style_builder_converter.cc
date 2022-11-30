@@ -2488,20 +2488,20 @@ ScrollbarGutter StyleBuilderConverter::ConvertScrollbarGutter(
   return flags;
 }
 
-Vector<AtomicString> StyleBuilderConverter::ConvertContainerName(
+ScopedCSSNameList* StyleBuilderConverter::ConvertContainerName(
     StyleResolverState& state,
-    const CSSValue& value) {
-  Vector<AtomicString> names;
-
+    const ScopedCSSValue& scoped_value) {
+  const CSSValue& value = scoped_value.GetCSSValue();
   if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
-    return names;
+    return nullptr;
   }
-
-  for (const auto& item : To<CSSValueList>(value))
-    names.push_back(To<CSSCustomIdentValue>(item.Get())->Value());
-
-  return names;
+  HeapVector<Member<const ScopedCSSName>> names;
+  for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
+    names.push_back(ConvertNoneOrCustomIdent(
+        state, ScopedCSSValue(*item, scoped_value.GetTreeScope())));
+  }
+  return MakeGarbageCollected<ScopedCSSNameList>(std::move(names));
 }
 
 absl::optional<StyleIntrinsicLength>
@@ -2854,14 +2854,16 @@ Vector<TimelineInset> StyleBuilderConverter::ConvertViewTimelineInset(
   return insets;
 }
 
-Vector<AtomicString> StyleBuilderConverter::ConvertViewTimelineName(
+ScopedCSSNameList* StyleBuilderConverter::ConvertViewTimelineName(
     StyleResolverState& state,
-    const CSSValue& value) {
-  Vector<AtomicString> names;
-  for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
-    names.push_back(ConvertNoneOrCustomIdent(state, *item));
+    const ScopedCSSValue& value) {
+  HeapVector<Member<const ScopedCSSName>> names;
+  for (const Member<const CSSValue>& item :
+       To<CSSValueList>(value.GetCSSValue())) {
+    names.push_back(ConvertNoneOrCustomIdent(
+        state, ScopedCSSValue(*item, value.GetTreeScope())));
   }
-  return names;
+  return MakeGarbageCollected<ScopedCSSNameList>(std::move(names));
 }
 
 }  // namespace blink

@@ -133,6 +133,7 @@
 <translation id="1974060860693918893">ຂັ້ນສູງ</translation>
 <translation id="1981118202195772574">ມືຖື</translation>
 <translation id="1989112275319619282">ເປີດ​ເບິ່ງ</translation>
+<translation id="1990820278544963435">ຊອກຫາ</translation>
 <translation id="199425419756152024">ເບິ່ງລະຫັດຜ່ານ</translation>
 <translation id="2010008505735295285">ໂຫຼດໃໝ່</translation>
 <translation id="2015722694326466240">ເພື່ອເບິ່ງລະຫັດຜ່ານ, ກ່ອນອື່ນທາງຕ້ອງຕັ້ງລະຫັດຜ່ານໃນອຸປະກອນຂອງທ່ານ.</translation>
@@ -283,6 +284,7 @@
 <translation id="3153862085237805241">ບັນທຶກບັດ</translation>
 <translation id="3157387275655328056">ເພີ່ມໃສ່ລາຍການທີ່ຈະອ່ານ</translation>
 <translation id="3157684681743766797">ໝາຍທັງໝົດ…</translation>
+<translation id="315778507796115851">ປະຫວັດ</translation>
 <translation id="3169472444629675720">ຄົ້ນຫາ</translation>
 <translation id="3174662312949010067">ທ່ານສາມາດໃຊ້ລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ຢູ່ອຸປະກອນອື່ນຂອງທ່ານໄດ້ນຳ.</translation>
 <translation id="3175081911749765310">ການ​ບໍ​ລິ​ການ​ເວັບ</translation>
@@ -874,6 +876,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7531345132340165516">ເວັບໄຊປັດຈຸບັນ</translation>
 <translation id="7537586195939242955">ຂໍ​ອະ​ໄພ​, ບັດຜ່ານ​ຂອງ​ທ່ານ​ບໍ່​ສາ​ມາດຕິດ​ຕັ້ງ​ໃສ່​ປຶ້ມ​ຜ່ານ​ໃນ​ເວ​ລາ​ນີ້​ໄດ້.</translation>
 <translation id="7553234618121028547">ເພື່ອປິດ, ໃຫ້ເປີດ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ<ph name="END_LINK" /> ແລະ ເຂົ້າໄປ ຕົວເລືອກລະຫັດຜ່ານ.</translation>
+<translation id="7554645225856321710">ປິດທັງໝົດ</translation>
 <translation id="7554791636758816595">ແຖບ​ໃຫມ່</translation>
 <translation id="7561196759112975576">ຢູ່ສະເໝີ</translation>
 <translation id="7583004045319035904">ໃຊ້ <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> ເພື່ອປົດລັອກແຖບບໍ່ເປີດເຜີຍຕົວຕົນຂອງທ່ານ.</translation>
@@ -927,7 +930,6 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7966516440812255683">ເວັບໄຊສາມາດໃຊ້ຄຸກກີ້ເພື່ອປັບປຸງປະສົບການທ່ອງເວັບຂອງທ່ານ, ຕົວຢ່າງ: ເພື່ອໃຫ້ທ່ານສືບຕໍ່ຢູ່ໃນລະບົບ ຫຼື ຈື່ລາຍການຕ່າງໆໃນກະຕ່າຊື້ເຄື່ອງຂອງທ່ານ.
 
 ເວັບໄຊສາມາດໃຊ້ຄຸກກີ້ເພື່ອເບິ່ງການເຄື່ອນໄຫວທ່ອງເວັບຂອງທ່ານໃນທົ່ວເວັບໄຊຕ່າງໆ ເຊັ່ນ: ເພື່ອປັບແຕ່ງໂຄສະນາໃຫ້ເປັນແບບສ່ວນຕົວ.</translation>
-<translation id="7966904497916178308">ການປົກປ້ອງມາດຕະຖານເປີດຢູ່</translation>
 <translation id="7971521879845308059">ບລັອກປັອບອັບ</translation>
 <translation id="797413074872316787">ເພື່ອຊິ້ງຂໍ້ມູນ ແລະ ປັບແຕ່ງເປັນແບບສ່ວນຕົວຢູ່ອຸປະກອນຕ່າງໆ, ກະລຸນາເປີດການຊິ້ງຂໍ້ມູນກ່ອນ.</translation>
 <translation id="7978018860671536736">3. ແຕະໃສ່ການຕື່ມຂໍ້ມູນລະຫັດຜ່ານອັດຕະໂນມັດ</translation>
@@ -1088,6 +1090,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="9188680907066685419">ອອກຈາກລະບົບບັນຊີທີ່ຖືກຈັດການ</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> ມ ກ່ອນ</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">ຊອກຫາແຖບ…</translation>
 <translation id="9223358826628549784">​ສົ່ງລາຍງານການຂັດຂ້ອງແລ້ວ.</translation>
 <translation id="941747855997058526">ເລືອກລະຫັດຜ່ານ...</translation>
 <translation id="952704832371081537">ຍົກເລີກ</translation>

@@ -52,6 +52,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Market Tətbiqi</translation>
 <translation id="1225748608451425081">Chromebook cihazınız məlum problemə görə kilidlənib. Bu müddətdən sonra daxil ola biləcəksiniz: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Seçməyi dayandırın</translation>
+<translation id="1235458158152011030">Tanış şəbəkələr</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> qoşulub.</translation>
 <translation id="1240638468526743569">Tətbiq</translation>
 <translation id="1246890715821376239">Dəstəklənməyən tətbiqlər</translation>
@@ -386,7 +387,6 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="3120421559657122717">Cihaz söndürülsün?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Güncəlləşmək üçün yenidən başladın</translation>
-<translation id="3139382871451988441">Kamera girişini deaktiv edin.</translation>
 <translation id="3139942575505304791">Masa 1</translation>
 <translation id="315116470104423982">Mobil data</translation>
 <translation id="3151786313568798007">Oriyentasiya</translation>
@@ -519,7 +519,6 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="385300504083504382">Başlanğıc</translation>
 <translation id="3861651314799684201">Tam ekranı qeydə almaq üçün enter düyməsini basın</translation>
-<translation id="3885531177412808398">Mikrofon icazəsi olan bütün tətbiq və vebsaytlar üçün mikrofona giriş icazəsi verir</translation>
 <translation id="3886872229787704059">Bugün açılıb</translation>
 <translation id="3891340733213178823">Hesabdan çıxmaq üçün iki dəfə Ctrl+Shift+Q basın.</translation>
 <translation id="3893630138897523026">ChromeVox (şifahi geri əlaqə)</translation>
@@ -555,6 +554,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Tətbiqdə deaktivdir}other{# tətbiqdə deaktivdir}}</translation>
 <translation id="4066027111132117168">Aktiv, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Ortaq siqnal</translation>
+<translation id="4086921558679520050">Cihazınızda fiziki mikrofon açarını aktiv edin</translation>
 <translation id="4112140312785995938">Geri çəkin</translation>
 <translation id="4114315158543974537">Telefon Paylayıcısını aktiv edin</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -607,6 +607,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, siqnal gücü: <ph name="SIGNAL_STRENGTH" /> faiz</translation>
 <translation id="4378551569595875038">Qoşulur...</translation>
 <translation id="4379531060876907730">Fırça alətləriniz</translation>
+<translation id="4381031910344220229">Mikrofon icazəsi olan <ph name="APP_NAME" /> və bütün tətbiq və vebsaytlar üçün mikrofona giriş icazəsi verir</translation>
 <translation id="4389184120735010762">Daxili böyüdücü üçün klaviatura qısayoluna basdınız. Onu aktiv etmək istəyirsiniz?</translation>
 <translation id="439598569299422042">Durdurulub, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Enkran yayımını yadda saxlamaq olmur</translation>
@@ -648,11 +649,8 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="4573176682887762361">"[söz / ifadə] yazın"</translation>
 <translation id="4577274620589681794">Vaxt bitdi · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Önbaxışları göstərin</translation>
-<translation id="4578196883126898996">Mikrofonunuz sönülüdür. Cihazınızın mikrofon düyməsini yandırın.</translation>
 <translation id="4578906031062871102">Ayarlar menyusu açılıb</translation>
-<translation id="4581047786858252841">Mikrofon aktivdir</translation>
 <translation id="4585337515783392668">Naməlum alıcının yayımını dayandırın</translation>
-<translation id="4587299710837179226">Mikrofon deaktivdir</translation>
 <translation id="4596144739579517758">Tünd tema deaktivdir</translation>
 <translation id="4611292653554630842">Daxil olun</translation>
 <translation id="4623167406982293031">Hesabı doğrulayın</translation>
@@ -732,6 +730,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="4987738733603015246">Masa 16</translation>
 <translation id="5003993274120026347">Növbəti cümlə</translation>
 <translation id="5016558321564993266">Markeri dəyişin. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Cihazın mikrofon girişi aktivdir</translation>
 <translation id="5030687792513154421">Vaxt bitdi</translation>
 <translation id="5033299697334913360">Tam ekranı çəkmək üçün istənilən yerə klikləyin</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> yeni telefona qoşuldu</translation>
@@ -963,9 +962,11 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> sessiyası <ph name="MANAGER" /> tərəfindən idarə olunur</translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> qoşulub</translation>
 <translation id="6351032674660237738">TƏTBİQ TƏKLİFLƏRİ</translation>
+<translation id="6352082849089527770">Naməlum şəbəkələr</translation>
 <translation id="6359587239691116345">Ən son funksiyaları və təhlükəsizlik təkmilləşdirmələrini əldə edin. Bu güncəlləməni rədd etsəniz, cihazınız artıq düzgün işləməyə bilər və təhlükəsizlik və performans problemləri ilə üzləşə bilərsiniz.</translation>
 <translation id="6376931439017688372">Bluetooth aktivdir</translation>
 <translation id="6381109794406942707">Cihazı kiliddən çıxarmaq üçün PIN'nizi daxil edin.</translation>
+<translation id="638716340450135524">Kamera girişini aktiv edin</translation>
 <translation id="639644700271529076">LOCK off CAPS</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -973,6 +974,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="642644398083277086">Bütün bildirişləri silin</translation>
 <translation id="643147933154517414">Tamamlandı</translation>
 <translation id="6431865393913628856">Ekran çəkilişi</translation>
+<translation id="6442259747294754014">Cihazın mikrofon girişi deaktivdir</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> pəncərəsində <ph name="ROUTE_TITLE" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> tədbir</translation>
 <translation id="6449483711453944360">Linux tətbiqləri və Anonim pəncərələr hazırda dəstəklənmir</translation>
@@ -1024,6 +1026,7 @@ Yeni quraşdırma</translation>
 <translation id="6670153871843998651">Masa 3</translation>
 <translation id="6671495933530132209">Şəkli kopyalayın</translation>
 <translation id="6671661918848783005">Chromebook'u kiliddən çıxarmaq olmur</translation>
+<translation id="6683022854667115063">Qulaqlıq</translation>
 <translation id="6696025732084565524">Çıxarıla bilən klaviatura mühüm yeniləmə tələb edir</translation>
 <translation id="6700713906295497288">IME menyu düyməsi</translation>
 <translation id="6707693040195709527">Cihazın əvvəlki versiyaya dəyişdirilməsi vaxtı keçib</translation>
@@ -1136,6 +1139,7 @@ Yeni quraşdırma</translation>
 <translation id="7360036564632145207">Periferik cihazlar ayarı üçün data giriş qorumasını dəyişsəniz, performans optimallaşa bilər</translation>
 <translation id="736045644501761622">Divar kağızı və üslub ayarlayın</translation>
 <translation id="7371404428569700291">Çəkiliş pəncərəsi</translation>
+<translation id="737315737514430195">Mikrofon icazəsi olan bütün tətbiq və vebsaytlar üçün mikrofona giriş icazəsi verir</translation>
 <translation id="7377169924702866686">Caps Lock aktivdir.</translation>
 <translation id="7377481913241237033">Kod ilə qoşulun</translation>
 <translation id="7378203170292176219">Çəkmək üçün sahə seçmək məqsədilə sürüşdürün</translation>
@@ -1204,12 +1208,14 @@ Yeni quraşdırma</translation>
 <translation id="7671610481353807627">Tətbiqlər rəngə görə sıralanıb</translation>
 <translation id="7672095158465655885"><ph name="NAME" /> şəbəkəsinə qoşuldunuz, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Kamera daxiletməsi <ph name="CAMERA_NAME" /> olaraq ayarlanıb.</translation>
+<translation id="7689817529363080918">Mikrofon icazəsi olan <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> və bütün tətbiq və vebsaytlar üçün mikrofona giriş icazəsi verir</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Yeni mobil şəbəkə əlavə edin</translation>
 <translation id="7720400844887872976">Bu vaxtadək aktiv olacaq: <ph name="TIME" /></translation>
 <translation id="7720410380936703141">YENİDƏN SINAYIN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 bildiriş}other{# bildiriş}}</translation>
 <translation id="7724603315864178912">Kəsin</translation>
+<translation id="7742327441377685481">Bildiriş yoxdur</translation>
 <translation id="7745560842763881396">Rəfdə tətbiqləri göstərin</translation>
 <translation id="7749443890790263709">Maksimum masa sayına çatmısınız.</translation>
 <translation id="776344839111254542">Güncəlləmə detallarını görmək üçün klikləyin</translation>
@@ -1366,6 +1372,7 @@ Yeni quraşdırma</translation>
 <translation id="8598235756057743477">Tətbiqləri ada və ya rəngə görə sıralayın</translation>
 <translation id="8614517853887502247">Baxış qoruması aktiv olduğuna görə <ph name="APP_1_TITLE" /> və <ph name="APP_2_TITLE" /> bildirişləri gizlədilib</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> şəbəkəsinə qoşuldunuz</translation>
+<translation id="8630991711272431708">Kamera girişini deaktiv edin</translation>
 <translation id="8631727435199967028">Əlçatımlılıq Ayarları</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />, Administratorunuz tərəfindən idarə olunur</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> qalıb</translation>
@@ -1381,7 +1388,6 @@ Yeni quraşdırma</translation>
 <translation id="8666856788528804727">Cihazınızı ayarlamaq üçün <ph name="NAME" /> tətbiqini açın</translation>
 <translation id="8676770494376880701">Enerjiyə qənaət edən şarjer qoşuldu</translation>
 <translation id="8683506306463609433">Performansın izlənməsi aktivdir</translation>
-<translation id="8684405646663021166">Mikrofon icazəsi olan <ph name="APP_NAME" /> və bütün tətbiq və vebsaytlar üçün mikrofona giriş icazəsi verir</translation>
 <translation id="8685326675965865247">Cihaz, tətbiqlər, ayarlar və vebdə axtarın. Tətbiqləri axtarmaq üçün ox düymələrindən istifadə edin.</translation>
 <translation id="8703634754197148428">Yazmanı başladın. Yazma başladıqda Alt + Shift + L düymələri ilə rəfə keçin və yazmanın dayandırılması düyməsini tapın</translation>
 <translation id="8721053961083920564">Səsi aktiv edin. <ph name="STATE_TEXT" /></translation>
@@ -1406,7 +1412,6 @@ Yeni quraşdırma</translation>
 <translation id="8819728065740986820">Adaptiv şarj aktivdir</translation>
 <translation id="8825863694328519386">Geri qayıtmaq üçün soldan sürüşdürün</translation>
 <translation id="8834539327799336565">Hazırda qoşulub</translation>
-<translation id="8834657930627018205">Kamera girişini aktiv edin.</translation>
 <translation id="8841375032071747811">"Geri" düyməsi</translation>
 <translation id="8843682306134542540">Fırlanma kilidini aktiv edin. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

@@ -61,8 +61,8 @@ class OverlayPopupAdViolationBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(https://crbug.com/1199860): Fails on Linux MSan.
-#if BUILDFLAG(IS_LINUX) && defined(MEMORY_SANITIZER)
+// TODO(https://crbug.com/1199860): Fails on Linux MSan and ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS) || (BUILDFLAG(IS_LINUX) && defined(MEMORY_SANITIZER))
 #define MAYBE_NoOverlayPopupAd_AdInterventionNotTriggered \
   DISABLED_NoOverlayPopupAd_AdInterventionNotTriggered
 #else
@@ -155,7 +155,7 @@ class OverlayPopupAdViolationBrowserTestWithoutEnforcement
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(https://crbug.com/1287783): Fails on Linux MSan.
+// TODO(https://crbug.com/1394447): Fails on Linux MSan.
 #if BUILDFLAG(IS_LINUX) && defined(MEMORY_SANITIZER)
 #define MAYBE_OverlayPopupAd_NoAdInterventionTriggered \
   DISABLED_OverlayPopupAd_NoAdInterventionTriggered

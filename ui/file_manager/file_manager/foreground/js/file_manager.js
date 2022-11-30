@@ -27,7 +27,7 @@ import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
 import {ForegroundWindow} from '../../externs/foreground_window.js';
 import {PropStatus} from '../../externs/ts/state.js';
-import {searchAction} from '../../state/actions.js';
+import {updateSearch} from '../../state/actions.js';
 import {getStore} from '../../state/store.js';
 
 import {ActionsController} from './actions_controller.js';
@@ -1286,11 +1286,11 @@ export class FileManager extends EventTarget {
     // enabled status from it to determine whether 'Linux files' is shown.
     switch (event.eventType) {
       case chrome.fileManagerPrivate.CrostiniEventType.ENABLE:
-        this.crostini_.setEnabled(event.vmName, true);
+        this.crostini_.setEnabled(event.vmName, event.containerName, true);
         return this.crostiniController_.redraw();
 
       case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
-        this.crostini_.setEnabled(event.vmName, false);
+        this.crostini_.setEnabled(event.vmName, event.containerName, false);
         return this.crostiniController_.redraw();
 
       // Event is sent when a user drops an unshared file on Plugin VM.
@@ -1373,8 +1373,11 @@ export class FileManager extends EventTarget {
     const searchQuery = this.launchParams_.searchQuery;
     if (searchQuery) {
       metrics.startInterval('Load.ProcessInitialSearchQuery');
-      getStore().dispatch(
-          searchAction({query: searchQuery, status: PropStatus.STARTED}));
+      getStore().dispatch(updateSearch({
+        query: searchQuery,
+        status: PropStatus.STARTED,
+        options: undefined,
+      }));
       // Show a spinner, as the crossover search function call could be slow.
       const hideSpinnerCallback = this.spinnerController_.show();
       const queryMatchedDirEntry =

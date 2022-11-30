@@ -38,6 +38,7 @@
 <translation id="10614374240317010">Ніколі не захоўваліся</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Закладкі на працоўным стале</translation>
+<translation id="1067561478268651872">Калі палітыка <ph name="SECURE_DNS_SALT" /> не зададзена, палітыка <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> выкарыстоўвацца не будзе.</translation>
 <translation id="1068672505746868501">Ніколі не перакладаць старонкі на наступнай мове: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Гібрыдныя аўтамабілі і аўтамабілі на альтэрнатыўных відах паліва</translation>
 <translation id="1070901266639972381">Ноч</translation>
@@ -1230,6 +1231,7 @@
 <translation id="4132448310531350254">У спісе "<ph name="POLICY_IDS_LIST" />" праграм зададзена некалькі апрацоўшчыкаў для файлаў з пашырэннем "<ph name="FILE_EXTENSION" />".</translation>
 <translation id="4134123981501319574">Стварыць дакумент</translation>
 <translation id="413544239732274901">Даведацца больш</translation>
+<translation id="4140905530744469899">Ідэнтыфікатар профілю:</translation>
 <translation id="4142935452406587478">Латок 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Канверт Chinese № 4</translation>
@@ -1353,6 +1355,7 @@
 <translation id="4407755609041463909">Агонь</translation>
 <translation id="4408413947728134509">Файлы cookie: <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Бытавая электроніка</translation>
+<translation id="4412074349188076601">Гэта канфігурацыя пазначана як даступная для ўсталявання, але яе нельга ўсталяваць, бо для гэтай архітэктуры няма даступных вобразаў.</translation>
 <translation id="4414515549596849729">файлы сookie і даныя сайтаў</translation>
 <translation id="4415426530740016218">Адрас атрымання</translation>
 <translation id="4424024547088906515">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />; Chrome не давярае яго сертыфікату бяспекі. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
@@ -2096,6 +2099,7 @@
 <translation id="6328786501058569169">Гэты сайт уводзіць у зман</translation>
 <translation id="6337133576188860026">Вызваліцца да <ph name="SIZE" />. Некаторыя сайты могуць загружацца павальней пры наступным наведванні.</translation>
 <translation id="6337534724793800597">Фільтр палітык па назве</translation>
+<translation id="633770708279464947">Значэнне <ph name="SECURE_DNS_SALT" /> з'яўляецца недапушчальным і не будзе выкарыстоўвацца.</translation>
 <translation id="6340739886198108203">Згодна з зададзенай адміністратарам палітыкай, не рэкамендуецца рабіць здымкі або відэазапісы экрана, калі паказваецца канфідэнцыяльнае змесціва:</translation>
 <translation id="6341434961864773665">{0,plural, =1{Палітыка адміністратара не рэкамендуе запампоўваць гэты файл сюды: <ph name="DESTINATION_NAME" />}one{Палітыка адміністратара не рэкамендуе запампоўваць гэтыя файлы сюды: <ph name="DESTINATION_NAME" />}few{Палітыка адміністратара не рэкамендуе запампоўваць гэтыя файлы сюды: <ph name="DESTINATION_NAME" />}many{Палітыка адміністратара не рэкамендуе запампоўваць гэтыя файлы сюды: <ph name="DESTINATION_NAME" />}other{Палітыка адміністратара не рэкамендуе запампоўваць гэтыя файлы сюды: <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="6348220984832452017">Дзеючыя варыянты</translation>
@@ -2992,6 +2996,7 @@
 <translation id="8654126188050905496">55 x 91 мм</translation>
 <translation id="8663226718884576429">Зводка па заказе, <ph name="TOTAL_LABEL" />, дадатковая інфармацыя</translation>
 <translation id="8666678546361132282">Англійская</translation>
+<translation id="8671519637524426245">Значэнне <ph name="SECURE_DNS_SALT" /> не адпавядае патрабаванням да памеру.</translation>
 <translation id="867224526087042813">Подпіс</translation>
 <translation id="8672264262457010862">Бізнес і прамысловасць</translation>
 <translation id="8676424191133491403">Без затрымкі</translation>
@@ -3091,6 +3096,7 @@
 <translation id="8913778647360618320">Кнопка "Наладзіць спосабы аплаты". Каб кіраваць плацяжамі і звесткамі крэдытных картак праз налады Chrome, націсніце Enter</translation>
 <translation id="8922013791253848639">Заўсёды паказваць рэкламу на гэтым сайце</translation>
 <translation id="892588693504540538">Дзірка зверху справа</translation>
+<translation id="8930098617363288380">Калі палітыка <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> не зададзена, значэнне <ph name="SECURE_DNS_SALT" /> будзе лічыцца нерэлевантным і выкарыстоўвацца не будзе.</translation>
 <translation id="8930330541574156305">Нерухомая маёмасць</translation>
 <translation id="8931333241327730545">Захаваць гэту картку ў вашым Уліковым запісе Google?</translation>
 <translation id="8932102934695377596">Ваш гадзіннік спазняецца</translation>
@@ -3203,6 +3209,7 @@
 <translation id="9179907736442194268">Пры зніжэнні цаны на любым з сайтаў вы будзеце атрымліваць абвесткі па электроннай пошце</translation>
 <translation id="9183302530794969518">Дакументы Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> выкарыстоўвае пратакол, які не падтрымліваецца.</translation>
+<translation id="918454845714257218">Праверце код на <ph name="SIDE_OF_CARD" /> і паўтарыце спробу</translation>
 <translation id="9187461866967718678">Экстрэмальныя віды спорту</translation>
 <translation id="9191834167571392248">Дзірка знізу злева</translation>
 <translation id="9199905725844810519">Друкаванне заблакіравана</translation>

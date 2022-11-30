@@ -38,6 +38,7 @@
 <translation id="10614374240317010">Никогаш не е зачувано</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Обележувачи на десктоп</translation>
+<translation id="1067561478268651872">Правилото <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> не се користи освен ако не се постави правилото <ph name="SECURE_DNS_SALT" />.</translation>
 <translation id="1068672505746868501">Никогаш не преведувај страници на <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Хибридни и алтернативни возила</translation>
 <translation id="1070901266639972381">Вечер</translation>
@@ -1231,6 +1232,7 @@
 <translation id="4132448310531350254">Дупликат ракувачи за наставка на датотека „<ph name="FILE_EXTENSION" />“ како референца од апликациите „<ph name="POLICY_IDS_LIST" />“.</translation>
 <translation id="4134123981501319574">Создај документ</translation>
 <translation id="413544239732274901">Дознајте повеќе</translation>
+<translation id="4140905530744469899">ID на профил:</translation>
 <translation id="4142935452406587478">Фиока 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Плик Chinese #4</translation>
@@ -1354,6 +1356,7 @@
 <translation id="4407755609041463909">Оган</translation>
 <translation id="4408413947728134509">Колачиња <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Електронски уреди</translation>
+<translation id="4412074349188076601">Конфигурацијава е означена дека може да се инсталира, но не е дадена слика за архитектурава и затоа не може да се инсталира.</translation>
 <translation id="4414515549596849729">колачиња и податоци за сајтот</translation>
 <translation id="4415426530740016218">Адреса за подигнување</translation>
 <translation id="4424024547088906515">Серверот не може да докаже дека е <ph name="DOMAIN" />; Chrome не му верува на неговиот безбедносен сертификат. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
@@ -1620,7 +1623,7 @@
 <translation id="5078060223219502807">Откриено е дека лозинката која штотуку ја употребивте е меѓу лозинките откриени при упад во податоците. За да ја задржите безбедноста на сметките, Password Manager препорачува веднаш да ја промените, а потоа да ги проверите зачуваните лозинки.</translation>
 <translation id="5086225927071063542">Дистрибуирани и компјутерски услуги во облак</translation>
 <translation id="5087286274860437796">Сертификатот на серверот не е важечки во моментов.</translation>
-<translation id="5087580092889165836">Додај картичка</translation>
+<translation id="5087580092889165836">Додајте картичка</translation>
 <translation id="5088142053160410913">Порака до операторот</translation>
 <translation id="5093232627742069661">Z-превиткување</translation>
 <translation id="5094747076828555589">Серверот не може да докаже дека е <ph name="DOMAIN" />; Chromium не му верува на неговиот безбедносен сертификат. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
@@ -2097,6 +2100,7 @@
 <translation id="6328786501058569169">Сајтов е лажен</translation>
 <translation id="6337133576188860026">Ќе ослободи помалку од <ph name="SIZE" />. Некои сајтови може да се вчитуваат побавно при вашата следна посета.</translation>
 <translation id="6337534724793800597">Филтрирај правила по име</translation>
+<translation id="633770708279464947">Вредноста <ph name="SECURE_DNS_SALT" /> е неважечка и нема да се користи.</translation>
 <translation id="6340739886198108203">Правилото на администраторот не препорачува да се прават слики од екранот или да се снима кога има видливи доверливи содржини:</translation>
 <translation id="6341434961864773665">{0,plural, =1{Администраторското правило не препорачува да се прикачи датотекава во <ph name="DESTINATION_NAME" />}one{Администраторското правило не препорачува да се прикачат датотекиве во <ph name="DESTINATION_NAME" />}other{Администраторското правило не препорачува да се прикачат датотекиве во <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="6348220984832452017">Активни варијации</translation>
@@ -2992,6 +2996,7 @@
 <translation id="8654126188050905496">55 x 91 mm</translation>
 <translation id="8663226718884576429">Краток преглед на нарачка, <ph name="TOTAL_LABEL" />, повеќе детали</translation>
 <translation id="8666678546361132282">англиски</translation>
+<translation id="8671519637524426245">Вредноста <ph name="SECURE_DNS_SALT" /> не ги исполнува барањата за големина.</translation>
 <translation id="867224526087042813">Потпис</translation>
 <translation id="8672264262457010862">Бизнис и индустрија</translation>
 <translation id="8676424191133491403">Без одложување</translation>
@@ -3091,6 +3096,7 @@
 <translation id="8913778647360618320">Копче „Управувајте со начините на плаќање“, притиснете Enter за да управувате со податоците за плаќањата и кредитната картичка во поставките за Chrome</translation>
 <translation id="8922013791253848639">Секогаш дозволувај реклами на сајтов</translation>
 <translation id="892588693504540538">Дупка горе десно</translation>
+<translation id="8930098617363288380">Вредноста <ph name="SECURE_DNS_SALT" /> не е релевантна и нема да се користи освен ако не се постави правилото <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" />.</translation>
 <translation id="8930330541574156305">Недвижности</translation>
 <translation id="8931333241327730545">Дали сакате да ја зачувате картичкава на сметката на Google?</translation>
 <translation id="8932102934695377596">Вашиот часовник доцни</translation>
@@ -3203,6 +3209,7 @@
 <translation id="9179907736442194268">Добивајте предупредувања по е-пошта ако цената се намали на кој било сајт</translation>
 <translation id="9183302530794969518">Документи на Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> користи неподдржан протокол.</translation>
+<translation id="918454845714257218">Проверете го кодот на <ph name="SIDE_OF_CARD" /> и пробајте пак</translation>
 <translation id="9187461866967718678">Екстремни спортови</translation>
 <translation id="9191834167571392248">Дупка долу лево</translation>
 <translation id="9199905725844810519">Печатењето е блокирано</translation>

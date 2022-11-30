@@ -1781,9 +1781,13 @@ const char kForceMajorVersionToMinorPositionInUserAgent[] =
 const char kSidePanelHorizontalAlignment[] = "side_panel.is_right_aligned";
 #endif
 
-// Number of minutes of inactivity before closing the profile and showing the
-// Profile Picker. Controlled via the IdleProfileCloseTimeout policy.
-const char kIdleProfileCloseTimeout[] = "idle_profile_close_timeout";
+// Number of minutes of inactivity before running actions from
+// kIdleTimeoutActions. Controlled via the IdleTimeout policy.
+const char kIdleTimeout[] = "idle_timeout";
+
+// Actions to run when the idle timeout is reached. Controller via the
+// IdleTimeoutActions policy.
+const char kIdleTimeoutActions[] = "idle_timeout_actions";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -3672,5 +3676,11 @@ const char kDIPSTimerLastUpdate[] = "dips_timer_last_update";
 const char kPrintingOAuth2AuthorizationServers[] =
     "printing.oauth2_authorization_servers";
 #endif
+
+// If true, the feature ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes
+// will be allowed, otherwise attempts to enable the feature will be
+// disallowed.
+const char kThrottleNonVisibleCrossOriginIframesAllowed[] =
+    "throttle_non_visible_cross_origin_iframes_allowed";
 
 }  // namespace prefs

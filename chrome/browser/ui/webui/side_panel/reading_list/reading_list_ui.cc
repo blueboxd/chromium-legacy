@@ -12,6 +12,7 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -89,6 +90,8 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
        IDS_BOOKMARKS_EDIT_BOOKMARK_LIST_A11Y_LABEL},
       {"emptyTitle", IDS_BOOKMARKS_EMPTY_STATE_TITLE},
       {"emptyBody", IDS_BOOKMARKS_EMPTY_STATE_BODY},
+      {"searchBookmarks", IDS_BOOKMARK_MANAGER_SEARCH_BUTTON},
+      {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -181,7 +184,7 @@ void ReadingListUI::CreatePageHandler(
     mojo::PendingReceiver<read_anything::mojom::PageHandler> receiver) {
   DCHECK(page);
   read_anything_page_handler_ = std::make_unique<ReadAnythingPageHandler>(
-      std::move(page), std::move(receiver));
+      std::move(page), std::move(receiver), web_ui());
 }
 
 void ReadingListUI::BindInterface(
@@ -204,7 +207,10 @@ void ReadingListUI::CreateHelpBubbleHandler(
     mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
   help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
       std::move(handler), std::move(client), web_ui()->GetWebContents(),
-      std::vector<ui::ElementIdentifier>{});
+      std::vector<ui::ElementIdentifier>{
+          kAddCurrentTabToReadingListElementId,
+          kSidePanelReadingListUnreadElementId,
+      });
 }
 
 void ReadingListUI::CreateShoppingListHandler(

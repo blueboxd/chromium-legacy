@@ -19,8 +19,6 @@
 
 namespace features {
 
-VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAdpf);
-VIZ_COMMON_EXPORT extern const base::FeatureParam<int> kAdpfTargetDurationMs;
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnableOverlayPrioritization);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kDelegatedCompositing);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kRecordSkPicture);
@@ -64,6 +62,7 @@ VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kAggressiveFrameCulling);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEagerSurfaceGarbageCollection);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kOverrideThrottledFrameRateParams);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kRendererAllocatesImages);
+VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kBufferQueueImageSetPurgeable);
 
 VIZ_COMMON_EXPORT extern const char kDraw1Point12Ms[];
 VIZ_COMMON_EXPORT extern const char kDraw2Points6Ms[];
@@ -75,7 +74,6 @@ VIZ_COMMON_EXPORT extern const char kPredictorLinear1[];
 VIZ_COMMON_EXPORT extern const char kPredictorLinear2[];
 VIZ_COMMON_EXPORT extern const char kPredictorLsq[];
 
-VIZ_COMMON_EXPORT bool IsAdpfEnabled();
 VIZ_COMMON_EXPORT bool IsSimpleFrameRateThrottlingEnabled();
 #if BUILDFLAG(IS_ANDROID)
 VIZ_COMMON_EXPORT bool IsDynamicColorGamutEnabled();

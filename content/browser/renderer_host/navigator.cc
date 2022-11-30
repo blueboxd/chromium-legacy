@@ -279,6 +279,28 @@ bool HasEmbeddingControl(NavigationRequest* navigation_request) {
   return false;
 }
 
+// Creates a WebBundleHandleTracker from the WebBundleHandles attached to the
+// current RenderFrameHost. There there are none, it is produced from the parent
+// or the opener.
+std::unique_ptr<WebBundleHandleTracker> MaybeCreateWebBundleHandleTracker(
+    FrameTreeNode* frame) {
+  std::unique_ptr<WebBundleHandleTracker> tracker =
+      frame->current_frame_host()->MaybeCreateWebBundleHandleTracker();
+  if (tracker)
+    return tracker;
+
+  if (frame->parent())
+    return frame->parent()->MaybeCreateWebBundleHandleTracker();
+
+  if (frame->opener()) {
+    return frame->opener()
+        ->current_frame_host()
+        ->MaybeCreateWebBundleHandleTracker();
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 struct Navigator::NavigationMetricsData {
@@ -461,6 +483,11 @@ void Navigator::DidNavigate(
   base::WeakPtr<RenderFrameHostImpl> old_frame_host =
       frame_tree_node->render_manager()->current_frame_host()->GetWeakPtr();
 
+  // Save the activation status of the previous page here before it gets reset
+  // in FrameTreeNode::ResetForNavigation.
+  bool previous_document_was_activated =
+      frame_tree->root()->HasStickyUserActivation();
+
   if (auto& old_page_info = navigation_request->commit_params().old_page_info) {
     // This is a same-site main-frame navigation where we did a proactive
     // BrowsingInstance swap but we're reusing the old page's process, and we
@@ -505,11 +532,6 @@ void Navigator::DidNavigate(
       params.insecure_request_policy);
   render_frame_host->browsing_context_state()->SetInsecureNavigationsSet(
       params.insecure_navigations_set);
-
-  // Save the activation status of the previous page here before it gets reset
-  // in FrameTreeNode::ResetForNavigation.
-  bool previous_document_was_activated =
-      frame_tree->root()->HasStickyUserActivation();
 
   if (!was_within_same_document) {
     // Navigating to a new location means a new, fresh set of http headers
@@ -964,7 +986,6 @@ void Navigator::OnBeginNavigation(
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker,
     mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
         renderer_cancellation_listener) {
   TRACE_EVENT0("navigation", "Navigator::OnBeginNavigation");
@@ -1019,7 +1040,7 @@ void Navigator::OnBeginNavigation(
           controller_.GetEntryCount(), override_user_agent,
           std::move(blob_url_loader_factory), std::move(navigation_client),
           std::move(prefetched_signed_exchange_cache),
-          std::move(web_bundle_handle_tracker),
+          MaybeCreateWebBundleHandleTracker(frame_tree_node),
           std::move(renderer_cancellation_listener)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 

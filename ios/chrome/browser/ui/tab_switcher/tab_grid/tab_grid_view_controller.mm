@@ -28,12 +28,12 @@
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/pinned_tabs_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/disabled_tab_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_provider.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
@@ -82,6 +82,8 @@ typedef NS_ENUM(NSUInteger, PageChangeInteraction) {
   PageChangeInteractionPageControlTap,
   // The user dragged the page control slider to change pages.
   PageChangeInteractionPageControlDrag,
+  // The user dragged an item in another scroll view to change pages.
+  PageChangeInteractionItemDrag,
 };
 
 // Key of the UMA IOS.TabSwitcher.PageChangeInteraction histogram.
@@ -94,7 +96,8 @@ enum class TabSwitcherPageChangeInteraction {
   kScrollDrag = 1,
   kControlTap = 2,
   kControlDrag = 3,
-  kMaxValue = kControlDrag,
+  kItemDrag = 4,
+  kMaxValue = kItemDrag,
 };
 
 // Convenience function to record a page change interaction.
@@ -163,7 +166,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, strong) UIControl* scrimView;
 @property(nonatomic, weak) TabGridTopToolbar* topToolbar;
 @property(nonatomic, weak) TabGridBottomToolbar* bottomToolbar;
-@property(nonatomic, assign) BOOL undoCloseAllAvailable;
 // Bool informing if the confirmation action sheet is displayed.
 @property(nonatomic, assign) BOOL closeAllConfirmationDisplayed;
 @property(nonatomic, assign) TabGridConfiguration configuration;
@@ -398,7 +400,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
-  self.currentPage = GetPageFromScrollView(scrollView);
+  TabGridPage currentPage = GetPageFromScrollView(scrollView);
+  if (currentPage != self.currentPage) {
+    // This happens when the user drags an item from one scroll view into
+    // another.
+    self.pageChangeInteraction = PageChangeInteractionItemDrag;
+    [self recordActionSwitchingToPage:currentPage];
+  }
+  self.currentPage = currentPage;
   self.scrollViewAnimatingContentOffset = NO;
   [self broadcastIncognitoContentVisibility];
   [self configureButtonsForActiveAndCurrentPage];
@@ -577,7 +586,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 #pragma mark - Public Properties
 
-- (id<GridConsumer>)regularTabsConsumer {
+- (id<TabCollectionConsumer>)regularTabsConsumer {
   return self.regularTabsViewController;
 }
 
@@ -595,7 +604,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   _priceCardDataSource = priceCardDataSource;
 }
 
-- (id<GridConsumer>)incognitoTabsConsumer {
+- (id<TabCollectionConsumer>)incognitoTabsConsumer {
   return self.incognitoTabsViewController;
 }
 
@@ -1027,6 +1036,20 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   inset.right = self.scrollView.safeAreaInsets.right;
   inset.top += self.scrollView.safeAreaInsets.top;
   inset.bottom += self.scrollView.safeAreaInsets.bottom;
+
+  if (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.view.isHidden) {
+    CGFloat pinnedViewHeight =
+        self.pinnedTabsViewController.view.bounds.size.height;
+    switch (GetPinnedTabsPosition()) {
+      case PinnedTabsPosition::kBottomPosition:
+        inset.bottom += pinnedViewHeight + kPinnedViewBottomPadding;
+        break;
+      case PinnedTabsPosition::kTopPosition:
+        inset.top += pinnedViewHeight + kPinnedViewTopPadding;
+        break;
+    }
+  }
+
   self.incognitoTabsViewController.gridView.contentInset = inset;
   self.regularTabsViewController.gridView.contentInset = inset;
 }
@@ -1499,14 +1522,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                            constant:-kPinnedViewHorizontalPadding],
       ]];
   switch (GetPinnedTabsPosition()) {
-    case PinnedTabsTopPosition::kBottomPosition:
+    case PinnedTabsPosition::kBottomPosition:
       [pinnedTabsConstraints
           addObject:[pinnedTabsViewController.view.bottomAnchor
                         constraintEqualToAnchor:self.bottomToolbar.topAnchor
                                        constant:-kPinnedViewBottomPadding]];
       break;
 
-    case PinnedTabsTopPosition::kTopPosition:
+    case PinnedTabsPosition::kTopPosition:
       [pinnedTabsConstraints
           addObject:[pinnedTabsViewController.view.topAnchor
                         constraintEqualToAnchor:self.topToolbar.bottomAnchor
@@ -1876,6 +1899,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     case PageChangeInteractionPageControlDrag:
       RecordPageChangeInteraction(
           TabSwitcherPageChangeInteraction::kControlDrag);
+      break;
+    case PageChangeInteractionItemDrag:
+      RecordPageChangeInteraction(TabSwitcherPageChangeInteraction::kItemDrag);
       break;
   }
   // Don't reset `self.pageChangeInteraction` here, because a drag may still be
@@ -2617,6 +2643,29 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+#pragma mark - UIResponder Helper
+
+// Returns YES if "close all" can be performed. Conditions are:
+// * Tab grid is currently displayed,
+// * There are tabs to close in the current page,
+// * Not in an undo scenario.
+- (BOOL)canCloseAllTab {
+  return self.currentState == ViewRevealState::Revealed &&
+         ((self.currentPage == TabGridPageIncognitoTabs &&
+           !self.incognitoTabsViewController.gridEmpty) ||
+          (self.currentPage == TabGridPageRegularTabs &&
+           !self.regularTabsViewController.gridEmpty &&
+           !self.undoCloseAllAvailable));
+}
+
+// Returns YES if "undo" the close all action can be performed.
+- (BOOL)canUndoCloseAllTab {
+  return /* Ensure the tab grid is currently displayed. */ self.currentState ==
+             ViewRevealState::Revealed &&
+         self.currentPage == TabGridPageRegularTabs &&
+         self.undoCloseAllAvailable;
+}
+
 #pragma mark - UIResponder
 
 // To always be able to register key commands via -keyCommands, the VC must be
@@ -2630,6 +2679,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // Other key commands are already declared in the menu.
     return @[
       UIKeyCommand.cr_openNewRegularTab,
+      UIKeyCommand.cr_undo,
+      // TODO(crbug.com/1385469): Move it to the menu builder once we have the
+      // strings.
+      UIKeyCommand.cr_select2,
+      UIKeyCommand.cr_select3,
     ];
   } else {
     return @[
@@ -2649,6 +2703,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (sel_isEqual(action, @selector(keyCommand_find))) {
     return self.currentState == ViewRevealState::Revealed;
   }
+  if (sel_isEqual(action, @selector(keyCommand_closeAll))) {
+    return [self canCloseAllTab];
+  }
+  if (sel_isEqual(action, @selector(keyCommand_undo))) {
+    return [self canUndoCloseAllTab];
+  }
   return [super canPerformAction:action withSender:sender];
 }
 
@@ -2657,6 +2717,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     command.discoverabilityTitle =
         l10n_util::GetNSStringWithFixup(IDS_IOS_KEYBOARD_SEARCH_TABS);
   } else {
+    // TODO(crbug.com/1385469): Add string for change pane's functions.
     return [super validateCommand:command];
   }
 }
@@ -2681,6 +2742,35 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)keyCommand_find {
   base::RecordAction(base::UserMetricsAction("MobileKeyCommandSearchTabs"));
   [self searchButtonTapped:nil];
+}
+
+- (void)keyCommand_select1 {
+  base::RecordAction(
+      base::UserMetricsAction("MobileKeyCommandGoToIncognitoTabGrid"));
+  [self setCurrentPageAndPageControl:TabGridPageIncognitoTabs animated:YES];
+}
+
+- (void)keyCommand_select2 {
+  base::RecordAction(
+      base::UserMetricsAction("MobileKeyCommandGoToRegularTabGrid"));
+  [self setCurrentPageAndPageControl:TabGridPageRegularTabs animated:YES];
+}
+
+- (void)keyCommand_select3 {
+  base::RecordAction(
+      base::UserMetricsAction("MobileKeyCommandGoToRemoteTabGrid"));
+  [self setCurrentPageAndPageControl:TabGridPageRemoteTabs animated:YES];
+}
+
+- (void)keyCommand_closeAll {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandCloseAll"));
+  [self closeAllButtonTapped:nil];
+}
+
+- (void)keyCommand_undo {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandUndo"));
+  // This function is also responsible for handling undo.
+  [self closeAllButtonTapped:nil];
 }
 
 @end

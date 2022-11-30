@@ -253,6 +253,38 @@ chromium-metrics-reviews@google.com.
   <variant name=".VirtualCardEnrollment" summary="virtual card enrollment"/>
 </variants>
 
+<histogram name="Autocomplete.Cleanup" units="entries" expires_after="M85">
+  <owner>battre@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Logs the number of autocomplete entries removed when the Autocomplete
+    Retention Policy cleaned up expired entries (after a major Chrome version
+    update). An entry is expired when it hasn't been used in the last 14 months.
+  </summary>
+</histogram>
+
+<histogram name="Autocomplete.DaysSinceLastUse" units="days"
+    expires_after="2023-04-16">
+  <owner>battre@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Logged when users select Autocomplete entries in the dropdown, this
+    histogram captures the number of days that have passed since the selected
+    autocomplete entry was last submitted on a website. I.e., the distribution
+    of time between uses of an &quot;active&quot; autocomplete entry.
+  </summary>
+</histogram>
+
+<histogram name="Autocomplete.Events" enum="AutocompleteEvents"
+    expires_after="2023-04-16">
+  <owner>battre@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Autocomplete events which are recorded when the user interacts with
+    suggestions served from Autocomplete.
+  </summary>
+</histogram>
+
 <histogram
     name="Autofill.Ablation.FillDurationSinceInteraction.{FormType}.{Group}"
     units="ms" expires_after="M108">
@@ -562,13 +594,15 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.AutocompleteQuery" enum="BooleanCreated"
     expires_after="M85">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
   <summary>Whether an autocomplete query is created for a field.</summary>
 </histogram>
 
 <histogram name="Autofill.AutocompleteSuggestions" enum="BooleanHadSuggestions"
     expires_after="M85">
-  <owner>michaelbai@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
   <summary>Whether there is any suggestions for an autocomplete query.</summary>
 </histogram>
 
@@ -871,6 +905,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.CardUnmaskAuthenticationSelectionDialog.Shown"
     enum="BooleanShown" expires_after="2023-04-16">
+  <obsolete>
+    Deprecated in M109. Subsumed by
+    Autofill.CardUnmaskAuthenticationSelectionDialog.Shown2.
+  </obsolete>
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>siashah@chromium.org</owner>
@@ -878,6 +916,20 @@ chromium-metrics-reviews@google.com.
     Records true every time the card unmask challenge option selection dialog
     was shown. This dialog is shown when a user needs to select a challenge
     option to authenticate a card for payments autofill.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.CardUnmaskAuthenticationSelectionDialog.Shown2"
+    units="challenge_options" expires_after="2023-04-16">
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>siashah@chromium.org</owner>
+  <owner>vinnypersky@google.com</owner>
+  <summary>
+    On every show of the card unmask challenge option selection dialog, this
+    histogram records a count (with a maximum of 10) for the number of challenge
+    options that were shown. This dialog is shown when a user needs to select a
+    challenge option to authenticate a card for payments autofill.
   </summary>
 </histogram>
 
@@ -1004,6 +1056,28 @@ chromium-metrics-reviews@google.com.
       variants="AutofillSeamlessnessMeasurementTime"/>
   <token key="AutofillSeamlessnessVisibility"
       variants="AutofillSeamlessnessVisibility"/>
+</histogram>
+
+<histogram
+    name="Autofill.CreditCard.SuggestionAcceptanceLatencySinceShown.{CardMetadataVisible}"
+    units="ms" expires_after="2023-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    The latency between an Autofill credit card suggestion being shown, and when
+    it was selected, in milliseconds. Logged immediately when a card is selected
+    by the user, on the condition that any card (not necessarily the selected
+    card) in the suggestion list has card metadata available (even if the
+    metadata is not shown).
+  </summary>
+  <token key="CardMetadataVisible">
+    <variant name="ArtImageShown" summary="Only art image was visible"/>
+    <variant name="MetadataNotShown" summary="No metadata was visible"/>
+    <variant name="ProductDescriptionAndArtImageShown"
+        summary="Both product description and art image were visible"/>
+    <variant name="ProductDescriptionShown"
+        summary="Only product description was visible"/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.CreditCardFillingInfoBar"
@@ -2359,6 +2433,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.MigrateUserOptedInToWalletSync"
     enum="AutofillMigrateUserOptedInToWalletSync" expires_after="2020-11-30">
+  <obsolete>
+    Deprecated in M109 as this migration never applied to ChromeOS ASH.
+  </obsolete>
   <owner>msarda@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2915,7 +2992,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.InaccessibleFieldsRemoved.ByFieldType"
-    enum="AutofillSettingsVisibleTypes" expires_after="2023-03-19">
+    enum="AutofillSettingsVisibleTypes" expires_after="2023-05-27">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -2925,7 +3002,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.InaccessibleFieldsRemoved.Total"
-    enum="Boolean" expires_after="2023-03-19">
+    enum="Boolean" expires_after="2023-05-27">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-team@google.com</owner>
   <summary>
@@ -3395,8 +3472,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.SaveCardRequestExpirationDateReason"
     enum="AutofillSaveCardRequestExpirationDateReason"
-    expires_after="2023-01-31">
+    expires_after="2023-11-01">
   <owner>jsaul@google.com</owner>
+  <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     Records the reason expiration date was explicitly requested from the user
@@ -3406,9 +3484,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.SaveCreditCardPromptOffer{AutofillSaveCreditCardPromptDestination}"
-    enum="AutofillSaveCreditCardPromptOfferEnum" expires_after="2023-01-01">
+    enum="AutofillSaveCreditCardPromptOfferEnum" expires_after="2023-11-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
   <summary>
     The relative frequency with which the Autofill save credit card prompt is
     shown or not. Logged when the flow is triggered and the prompt should be
@@ -3422,9 +3501,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.SaveCreditCardPromptResult{AutofillSaveCreditCardPromptDestination}"
-    enum="AutofillSaveCreditCardPromptResultEnum" expires_after="2023-01-01">
+    enum="AutofillSaveCreditCardPromptResultEnum" expires_after="2023-11-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
   <summary>
     The relative frequency with which users accept or deny the Autofill save
     credit card prompt. Logged when users interacted with the prompt.
@@ -3581,9 +3661,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Snackbar.{SnackbarType}.ActionClicked"
-    enum="BooleanShown" expires_after="2022-12-01">
+    enum="BooleanShown" expires_after="2023-11-01">
   <owner>siashah@chromium.org</owner>
   <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
   <summary>
     Emits true when the action button on the autofill snackbar is clicked and
     does not emit any value otherwise.
@@ -3592,9 +3673,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Snackbar.{SnackbarType}.Shown" enum="BooleanShown"
-    expires_after="2022-12-01">
+    expires_after="2023-11-01">
   <owner>siashah@chromium.org</owner>
   <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
   <summary>
     Emits true when the autofill snackbar is displayed and does not emit any
     value otherwise.
@@ -3997,6 +4079,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.UnmaskPrompt.Events" enum="AutofillUnmaskPromptEvent"
     expires_after="2023-03-19">
+  <obsolete>
+    Deprecated in M109. Subsumed by Autofill.UnmaskPrompt.{CardType}.Events.
+  </obsolete>
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -4090,6 +4175,18 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
   <token key="Result" variants="Autofill.PaymentsRpcResult"/>
+</histogram>
+
+<histogram name="Autofill.UnmaskPrompt.{CardType}.Events"
+    enum="AutofillUnmaskPromptEvent" expires_after="2023-11-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Events tracking the usage of the unmasking prompt, recorded for {CardType}.
+    This prompt is triggered when a user selects a masked card in a autofill
+    dropdown.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
 </histogram>
 
 <histogram name="Autofill.Upload.BackoffDelay" units="ms" expires_after="never">

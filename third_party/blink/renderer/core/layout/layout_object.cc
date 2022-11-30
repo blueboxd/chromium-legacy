@@ -36,6 +36,7 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -5071,11 +5072,7 @@ void LayoutObject::SetSVGDescendantMayHaveTransformRelatedAnimation() {
 void LayoutObject::InvalidateSubtreePositionFallback(bool mark_style_dirty) {
   NOT_DESTROYED();
 
-  // TODO(crbug.com/1381623): Currently invalidating the whole document. Could
-  // use a more targeted invalidation when tree-scoped @position-fallback rules
-  // are supported.
-
-  bool invalidate = !StyleRef().PositionFallback().IsNull();
+  bool invalidate = StyleRef().PositionFallback() != nullptr;
   if (invalidate) {
     // Invalidate layout as @position-fallback styles are applied during layout.
     SetNeedsLayout(layout_invalidation_reason::kStyleChange);

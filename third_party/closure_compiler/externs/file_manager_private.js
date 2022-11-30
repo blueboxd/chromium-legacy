@@ -100,6 +100,7 @@ chrome.fileManagerPrivate.FormatFileSystemType = {
 /** @enum {string} */
 chrome.fileManagerPrivate.TransferState = {
   IN_PROGRESS: 'in_progress',
+  QUEUED: 'queued',
   COMPLETED: 'completed',
   FAILED: 'failed',
 };
@@ -494,6 +495,16 @@ chrome.fileManagerPrivate.FileTransferStatus;
 
 /**
  * @typedef {{
+ *   entry: !Entry,
+ *   transferState: !chrome.fileManagerPrivate.TransferState,
+ *   processed: number,
+ *   total: number,
+ * }}
+ */
+chrome.fileManagerPrivate.IndividualFileTransferStatus;
+
+/**
+ * @typedef {{
  *   type: !chrome.fileManagerPrivate.DriveSyncErrorType,
  *   fileUrl: string,
  *   showNotification: boolean
@@ -632,6 +643,7 @@ chrome.fileManagerPrivate.MountableGuest;
  * @typedef {{
  * eventType: chrome.fileManagerPrivate.CrostiniEventType,
  * vmName: string,
+ * containerName: string,
  * entries: !Array<!Entry>,
  * }}
  */
@@ -740,6 +752,7 @@ chrome.fileManagerPrivate.ProgressStatus;
  * @typedef {{
  *   sourceUrl: string,
  *   isDlpRestricted: boolean,
+ *   isRestrictedForDestination: boolean,
  * }}
  */
 chrome.fileManagerPrivate.DlpMetadata;
@@ -1547,6 +1560,12 @@ chrome.fileManagerPrivate.onFileTransfersUpdated;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onPinTransfersUpdated;
+
+/** @type {!ChromeEvent} */
+chrome.fileManagerPrivate.onIndividualFileTransfersUpdated;
+
+/** @type {!ChromeEvent} */
+chrome.fileManagerPrivate.onIndividualPinTransfersUpdated;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onDirectoryChanged;

@@ -133,6 +133,7 @@ Du hast <ph name="DSE_NAME" /> als Suchmaschine festgelegt. Informationen zum L�
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1981118202195772574">Mobil</translation>
 <translation id="1989112275319619282">Durchsuchen</translation>
+<translation id="1990820278544963435">Suchen</translation>
 <translation id="199425419756152024">Passwort anzeigen</translation>
 <translation id="2010008505735295285">Aktualisieren</translation>
 <translation id="2015722694326466240">Um die Passwörter zu sehen, musst du zuerst einen Passcode auf deinem Gerät einrichten.</translation>
@@ -283,6 +284,7 @@ Informationen zum Löschen deines Suchverlaufs findest du in der Anleitung deine
 <translation id="3153862085237805241">Karte speichern</translation>
 <translation id="3157387275655328056">Zur Leseliste hinzufügen</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
+<translation id="315778507796115851">Verlauf</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">Du kannst gespeicherte Passwörter auch auf deinen anderen Geräten verwenden.</translation>
 <translation id="3175081911749765310">Webdienste</translation>
@@ -573,6 +575,7 @@ Wenn du diese Einstellung ändern möchtest, <ph name="BEGIN_LINK" />setze die S
 <translation id="5439599923922718668">Häufig besucht</translation>
 <translation id="54401264925851789">Sicherheitsinformationen zur Seite</translation>
 <translation id="5443952882982198570">Kreditkarten</translation>
+<translation id="5444892875087332195">Lesezeichen</translation>
 <translation id="5457226814769348910">Offlineversion öffnen</translation>
 <translation id="5489208564673669003">Cookies für alle Websites kannst du in den <ph name="BEGIN_LINK" />Cookie-Einstellungen<ph name="END_LINK" /> verwalten.</translation>
 <translation id="5490005495580364134">Alle Cookies blockieren (nicht empfohlen)</translation>
@@ -926,7 +929,6 @@ Wenn der Inkognitomodus aktiviert ist, können Websites keine Cookies verwenden,
 <translation id="7966516440812255683">Websites können Cookies verwenden, um dir das Surfen zu erleichtern; zum Beispiel, damit du angemeldet bleibst oder Artikel in deinem Einkaufswagen gespeichert bleiben.
 
 Websites können Cookies verwenden, um deine Browseraktivitäten auf anderen Websites zu sehen und beispielsweise zur Personalisierung von Werbung zu nutzen.</translation>
-<translation id="7966904497916178308">Standardschutz ist aktiviert</translation>
 <translation id="7971521879845308059">Pop-ups blockieren</translation>
 <translation id="797413074872316787">Aktiviere die Synchronisierung, um geräteübergreifend zu synchronisieren und zu personalisieren.</translation>
 <translation id="7978018860671536736">3. Tippe auf „Passwörter automatisch ausfüllen lassen“</translation>
@@ -1087,6 +1089,7 @@ Websites können Cookies verwenden, um deine Browseraktivitäten auf anderen Web
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9200875785104711666">vor <ph name="TIME" /> Tg.</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Auf Tabs suchen…</translation>
 <translation id="9223358826628549784">Absturzbericht wurde gesendet.</translation>
 <translation id="941747855997058526">Passwort auswählen…</translation>
 <translation id="952704832371081537">Abbrechen</translation>

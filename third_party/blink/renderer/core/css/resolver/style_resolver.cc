@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
@@ -193,9 +194,9 @@ bool HasAnimationsOrTransitions(const StyleResolverState& state) {
 }
 
 bool HasTimelines(const StyleResolverState& state) {
-  if (!state.StyleBuilder().ScrollTimelineName().empty())
+  if (state.StyleBuilder().ScrollTimelineName())
     return true;
-  if (!state.StyleBuilder().ViewTimelineName().empty())
+  if (state.StyleBuilder().ViewTimelineName())
     return true;
   if (ElementAnimations* element_animations = GetElementAnimations(state))
     return element_animations->CssAnimations().HasTimelines();
@@ -1692,8 +1693,8 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
     return false;
 
   if (HasTimelines(state)) {
-    CSSAnimations::CalculateTimelineUpdate(state.AnimationUpdate(),
-                                           *animating_element, *state.Style());
+    CSSAnimations::CalculateTimelineUpdate(
+        state.AnimationUpdate(), *animating_element, state.StyleBuilder());
   }
 
   if (!HasAnimationsOrTransitions(state))
@@ -1713,9 +1714,9 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
 
   CSSAnimations::CalculateAnimationUpdate(
       state.AnimationUpdate(), *animating_element, state.GetElement(),
-      *state.Style(), state.ParentStyle(), this);
-  CSSAnimations::CalculateTransitionUpdate(state.AnimationUpdate(),
-                                           *animating_element, *state.Style());
+      state.StyleBuilder(), state.ParentStyle(), this);
+  CSSAnimations::CalculateTransitionUpdate(
+      state.AnimationUpdate(), *animating_element, state.StyleBuilder());
 
   bool apply = !state.AnimationUpdate().IsEmpty();
   if (apply) {
@@ -2643,31 +2644,39 @@ scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
     Element& element,
     unsigned index) {
   const ComputedStyle& base_style = element.ComputedStyleRef();
-  // TODO(crbug.com/1309178): Support tree-scoped fallback name lookup.
-  DCHECK(base_style.PositionFallback());
-  StyleRulePositionFallback* position_fallback_rule =
-      GetDocument().GetScopedStyleResolver()->PositionFallbackForName(
-          base_style.PositionFallback());
-  if (!position_fallback_rule ||
-      index >= position_fallback_rule->TryRules().size())
-    return nullptr;
-  StyleRuleTry* try_rule = position_fallback_rule->TryRules()[index];
-  StyleResolverState state(GetDocument(), element);
-  state.SetStyle(ComputedStyle::Clone(base_style));
-  const CSSPropertyValueSet& properties = try_rule->Properties();
+  const ScopedCSSName* position_fallback = base_style.PositionFallback();
+  DCHECK(position_fallback);
 
-  STACK_UNINITIALIZED StyleCascade cascade(state);
-  cascade.MutableMatchResult().FinishAddingUARules();
-  cascade.MutableMatchResult().FinishAddingUserRules();
-  cascade.MutableMatchResult().FinishAddingPresentationalHints();
-  cascade.MutableMatchResult().AddMatchedProperties(&properties);
-  // TODO(crbug.com/1381623): Pass proper TreeScope here once @position-fallback
-  // is supported in ShadowDOM.
-  cascade.MutableMatchResult().FinishAddingAuthorRulesForTreeScope(
-      GetDocument());
-  cascade.Apply();
+  const TreeScope* tree_scope = position_fallback->GetTreeScope();
+  if (!tree_scope)
+    tree_scope = &GetDocument();
 
-  return state.TakeStyle();
+  for (; tree_scope; tree_scope = tree_scope->ParentTreeScope()) {
+    if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver()) {
+      StyleRulePositionFallback* position_fallback_rule =
+          resolver->PositionFallbackForName(position_fallback->GetName());
+      if (!position_fallback_rule)
+        continue;
+      if (index >= position_fallback_rule->TryRules().size())
+        return nullptr;
+      StyleRuleTry* try_rule = position_fallback_rule->TryRules()[index];
+      StyleResolverState state(GetDocument(), element);
+      state.SetStyle(ComputedStyle::Clone(base_style));
+      const CSSPropertyValueSet& properties = try_rule->Properties();
+
+      STACK_UNINITIALIZED StyleCascade cascade(state);
+      cascade.MutableMatchResult().FinishAddingUARules();
+      cascade.MutableMatchResult().FinishAddingUserRules();
+      cascade.MutableMatchResult().FinishAddingPresentationalHints();
+      cascade.MutableMatchResult().AddMatchedProperties(&properties);
+      cascade.MutableMatchResult().FinishAddingAuthorRulesForTreeScope(
+          *tree_scope);
+      cascade.Apply();
+
+      return state.TakeStyle();
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace blink

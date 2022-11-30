@@ -364,15 +364,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLoadingTasksUnfreezable);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTargetBlankImpliesNoOpener);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kMediaStreamTrackUseConfigMaxFrameRate);
-
 // Performs additional SubresourceFilter checks when CNAME aliases are found
 // for the host of a requested URL.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kSendCnameAliasesToSubresourceFilterFromRenderer);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDisableDocumentDomainByDefault);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScopeMemoryCachePerContext);
 
@@ -940,6 +935,20 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // SequencedTaskRunner backed by the threadpool instead of the normal IO thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kUseThreadPoolForMediaStreamVideoTaskRunner);
+
+// Forces same-process display:none cross-origin iframes to be throttled in the
+// same manner that OOPIFs are.
+// Note: this feature should never be accessed directly. Instead, use
+// IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled defined
+// below.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes);
+
+// Use to determine if iframe throttling is enabled via the feature
+// kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes and not disabled
+// via enterprise policy.
+BLINK_COMMON_EXPORT bool
+IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled();
 
 }  // namespace features
 }  // namespace blink

@@ -187,8 +187,6 @@ BASE_FEATURE(kCertDualVerificationTrialFeature,
 #if BUILDFLAG(IS_MAC)
 const base::FeatureParam<int> kCertDualVerificationTrialImpl{
     &kCertDualVerificationTrialFeature, "impl", 0};
-const base::FeatureParam<int> kCertDualVerificationTrialCacheSize{
-    &kCertDualVerificationTrialFeature, "cachesize", 0};
 #endif /* BUILDFLAG(IS_MAC) */
 #endif
 
@@ -204,8 +202,6 @@ BASE_FEATURE(kChromeRootStoreUsed,
 #if BUILDFLAG(IS_MAC)
 const base::FeatureParam<int> kChromeRootStoreSysImpl{&kChromeRootStoreUsed,
                                                       "sysimpl", 0};
-const base::FeatureParam<int> kChromeRootStoreSysCacheSize{
-    &kChromeRootStoreUsed, "syscachesize", 0};
 #endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED) */
 
@@ -314,7 +310,7 @@ BASE_FEATURE(kOptimisticBlockfileWrite,
 // Read as much of the net::URLRequest as there is space in the Mojo data pipe.
 BASE_FEATURE(kOptimizeNetworkBuffers,
              "OptimizeNetworkBuffers2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit{
     &kOptimizeNetworkBuffers, "bytes_read_limit", 64 * 1024};
@@ -335,7 +331,7 @@ const base::FeatureParam<int> kOptimizeNetworkBuffersMinInputStreamReadSize{
 const base::FeatureParam<int>
     kOptimizeNetworkBuffersMaxInputStreamBytesToReadWhenAvailableUnknown{
         &kOptimizeNetworkBuffers, "max_input_stream_bytes_available_unknown",
-        32 * 1024};
+        2 * 1024};
 
 const base::FeatureParam<int>
     kOptimizeNetworkBuffersFilterSourceStreamBufferSize{

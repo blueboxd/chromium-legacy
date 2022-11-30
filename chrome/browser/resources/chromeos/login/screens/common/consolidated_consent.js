@@ -18,8 +18,8 @@ import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 import '../../components/oobe_icons.m.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
-import '../../components/dialogs/oobe_loading_dialog.m.js';
-import '../../components/dialogs/oobe_modal_dialog.m.js';
+import '../../components/dialogs/oobe_loading_dialog.js';
+import '../../components/dialogs/oobe_modal_dialog.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {dom, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -27,12 +27,12 @@ import {dom, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
-import {OOBE_UI_STATE, SCREEN_GAIA_SIGNIN} from '../../components/display_manager_types.m.js';
-import {getSelectedTitle, getSelectedValue, SelectListType, setupSelect} from '../../components/oobe_select.m.js';
-import {OobeTypes} from '../../components/oobe_types.m.js';
-import {WebViewHelper} from '../../components/web_view_helper.m.js';
-import {CLEAR_ANCHORS_CONTENT_SCRIPT, WebViewLoader} from '../../components/web_view_loader.m.js';
-import {Oobe} from '../../cr_ui.m.js';
+import {OOBE_UI_STATE, SCREEN_GAIA_SIGNIN} from '../../components/display_manager_types.js';
+import {getSelectedTitle, getSelectedValue, SelectListType, setupSelect} from '../../components/oobe_select.js';
+import {OobeTypes} from '../../components/oobe_types.js';
+import {ContentType, WebViewHelper} from '../../components/web_view_helper.js';
+import {CLEAR_ANCHORS_CONTENT_SCRIPT, WebViewLoader} from '../../components/web_view_loader.js';
+import {Oobe} from '../../cr_ui.js';
 
 
 // Enum that describes the current state of the consolidated consent screen
@@ -383,7 +383,7 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   loadEulaWebview_(webview, online_tos_url, clear_anchors) {
     const loadFailureCallback = () => {
       WebViewHelper.loadUrlContentToWebView(
-          webview, GOOGLE_EULA_TERMS_URL, WebViewHelper.ContentType.HTML);
+          webview, GOOGLE_EULA_TERMS_URL, ContentType.HTML);
     };
 
     const tosLoader = new WebViewLoader(
@@ -443,7 +443,7 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
     var loadFailureCallback = () => {
       if (this.isDemo_) {
         WebViewHelper.loadUrlContentToWebView(
-            webview, PRIVACY_POLICY_URL, WebViewHelper.ContentType.PDF);
+            webview, PRIVACY_POLICY_URL, ContentType.PDF);
       }
     };
 

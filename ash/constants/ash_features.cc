@@ -157,6 +157,11 @@ BASE_FEATURE(kArcInputOverlayBeta,
              "ArcInputOverlayBeta",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether to enable support for ARC Input Overlay Alpha Two.
+BASE_FEATURE(kArcInputOverlayAlphaTwo,
+             "ArcInputOverlayAlphaTwo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to enable support for ARC ADB sideloading for managed
 // accounts and/or devices.
 BASE_FEATURE(kArcManagedAdbSideloadingSupport,
@@ -669,7 +674,7 @@ BASE_FEATURE(kEcheSWAMeasureLatency,
 // Enables sending start signaling to establish Eche's WebRTC connection.
 BASE_FEATURE(kEcheSWASendStartSignaling,
              "EcheSWASendStartSignaling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allows disabling the stun servers when establishing a WebRTC connection to
 // Eche.
@@ -708,7 +713,7 @@ BASE_FEATURE(kEnableHostnameSetting,
 // If enabled, the input device cards will be shown in the diagnostics app.
 BASE_FEATURE(kEnableInputInDiagnosticsApp,
              "EnableInputInDiagnosticsApp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables keyboard backlight toggle.
 BASE_FEATURE(kEnableKeyboardBacklightToggle,
@@ -1374,6 +1379,11 @@ BASE_FEATURE(kMediaAppPhotosIntegrationVideo,
 BASE_FEATURE(kMicMuteNotifications,
              "MicMuteNotifications",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Migrates rule-based input methods from Chromium into an internal codebase.
+BASE_FEATURE(kMigrateRuleBasedInputMethods,
+             "MigrateRuleBasedInputMethods",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Disables the deprecated Messages cross-device integration, to be used
 // along side the flag preinstall-by-default (kMessagesPreinstall).
@@ -2261,6 +2271,10 @@ bool IsArcFuseBoxFileSharingEnabled() {
 
 bool IsArcInputOverlayBetaEnabled() {
   return base::FeatureList::IsEnabled(kArcInputOverlayBeta);
+}
+
+bool IsArcInputOverlayAlphaTwoEnabled() {
+  return base::FeatureList::IsEnabled(kArcInputOverlayAlphaTwo);
 }
 
 bool IsArcNetworkDiagnosticsButtonEnabled() {

@@ -8,6 +8,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/delete_profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -135,8 +136,9 @@ class ProfileCreationSignedInFlowController
     // Record unfinished signed-in profile creation.
     if (!is_finishing_) {
       // Schedule the profile for deletion, it's not needed any more.
-      g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
-          profile()->GetPath());
+      g_browser_process->profile_manager()
+          ->GetDeleteProfileHelper()
+          .ScheduleEphemeralProfileForDeletion(profile()->GetPath());
 
       // TODO(crbug.com/1300109): Consider moving this recording into
       // ProfilePickerTurnSyncOnDelegate and unify this code with Cancel().
@@ -169,8 +171,9 @@ class ProfileCreationSignedInFlowController
     is_finishing_ = true;
 
     // Schedule the profile for deletion, it's not needed any more.
-    g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
-        profile()->GetPath());
+    g_browser_process->profile_manager()
+        ->GetDeleteProfileHelper()
+        .ScheduleEphemeralProfileForDeletion(profile()->GetPath());
   }
 
   void FinishAndOpenBrowser(PostHostClearedCallback callback) override {
@@ -256,21 +259,24 @@ ProfilePickerFlowController::ProfilePickerFlowController(
     ProfilePickerWebContentsHost* host,
     ClearHostClosure clear_host_callback,
     ProfilePicker::EntryPoint entry_point)
-    : ProfileManagementFlowController(host,
-                                      std::move(clear_host_callback),
-                                      Step::kProfilePicker),
-      entry_point_(entry_point) {
-  RegisterStep(initial_step(),
-               ProfileManagementStepController::CreateForProfilePickerApp(
-                   host, GetInitialURL(entry_point_)));
-}
+    : ProfileManagementFlowController(host, std::move(clear_host_callback)),
+      entry_point_(entry_point) {}
 
 ProfilePickerFlowController::~ProfilePickerFlowController() = default;
+
+void ProfilePickerFlowController::Init(
+    StepSwitchFinishedCallback step_switch_finished_callback) {
+  RegisterStep(Step::kProfilePicker,
+               ProfileManagementStepController::CreateForProfilePickerApp(
+                   host(), GetInitialURL(entry_point_)));
+  SwitchToStep(Step::kProfilePicker, /*reset_state=*/true,
+               std::move(step_switch_finished_callback));
+}
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProfilePickerFlowController::SwitchToDiceSignIn(
     absl::optional<SkColor> profile_color,
-    base::OnceCallback<void(bool)> switch_finished_callback) {
+    StepSwitchFinishedCallback switch_finished_callback) {
   DCHECK_EQ(Step::kProfilePicker, current_step());
 
   profile_color_ = profile_color;
@@ -289,11 +295,12 @@ void ProfilePickerFlowController::SwitchToDiceSignIn(
       &ProfilePickerFlowController::SwitchToStep,
       // Unretained ok:`this` outlives the step controllers.
       base::Unretained(this), Step::kProfilePicker,
-      /*reset_state=*/false, /*pop_step_callback=*/base::OnceClosure(),
-      /*step_switch_finished_callback=*/base::OnceCallback<void(bool)>());
+      /*reset_state=*/false,
+      /*step_switch_finished_callback=*/StepSwitchFinishedCallback(),
+      /*pop_step_callback=*/base::OnceClosure());
   SwitchToStep(Step::kAccountSelection,
-               /*reset_state=*/step_needs_registration, std::move(pop_closure),
-               std::move(switch_finished_callback));
+               /*reset_state=*/step_needs_registration,
+               std::move(switch_finished_callback), std::move(pop_closure));
 }
 #endif
 

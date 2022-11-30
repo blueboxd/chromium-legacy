@@ -273,7 +273,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.ApmCaptureOutputLevelAverageRms"
-    units="dBFS (negated)" expires_after="2023-03-19">
+    units="dBFS (negated)" expires_after="2023-05-27">
   <owner>peah@chromium.org</owner>
   <summary>
     This histogram reports the average RMS of the signal in the output of
@@ -285,7 +285,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.ApmCaptureOutputLevelPeakRms"
-    units="dBFS (negated)" expires_after="2023-03-19">
+    units="dBFS (negated)" expires_after="2023-05-27">
   <owner>peah@chromium.org</owner>
   <summary>
     This histogram reports the peak RMS of the signal in the output of WebRTC's
@@ -358,7 +358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.AverageExcessBufferDelayMs" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>hlundin@chromium.org</owner>
   <owner>gustaf@chromium.org</owner>
   <summary>
@@ -383,7 +383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.DelayedPacketOutageEventsPerMinute"
-    units="events/minute" expires_after="2023-03-19">
+    units="events/minute" expires_after="2023-05-27">
   <owner>hlundin@chromium.org</owner>
   <summary>
     Counts the number of delayed packet outage events per minute. The range is
@@ -394,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.EchoCanceller.BufferDelay" units="Blocks/2"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>peah@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <summary>
@@ -634,7 +634,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.Encoder.CodecType" enum="WebRtcAudioCodecs"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>aleloi@chromium.org</owner>
   <summary>
     Histogram of audio codec usage. Every sample corresponds to 5 seconds of
@@ -680,7 +680,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.ReceiverDeviceDelayMs" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>hlundin@chromium.org</owner>
   <summary>
     The sound card's buffering delay for the receiving side. Sampled once every
@@ -689,7 +689,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.ReceiverJitterBufferDelayMs" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>hlundin@chromium.org</owner>
   <summary>
     The jitter buffer delay for the receiving side. Sampled once every 10 ms
@@ -710,7 +710,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Audio.TargetBitrateInKbps" units="kbps"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>hlundin@chromium.org</owner>
   <summary>
     The target bitrate in kbps that the audio codec should try to produce on
@@ -774,7 +774,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.BWE.InitialBandwidthEstimate" units="kbps"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>holmer@chromium.org</owner>
   <summary>The bandwidth estimate 2 seconds into a WebRTC call.</summary>
 </histogram>
@@ -892,7 +892,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.BWE.RampUpTimeTo2000kbpsInMs" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>holmer@chromium.org</owner>
   <summary>
     The time it takes the estimated bandwidth to reach 2000 kbps from the first
@@ -930,7 +930,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Call.BitrateReceivedInKbps" units="kbps"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>holmer@chromium.org</owner>
   <summary>
     Average total bitrate received during a call (audio + video + RTCP), counted
@@ -958,7 +958,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Call.PacerBitrateInKbps" units="kbps"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>holmer@chromium.org</owner>
   <summary>
     Average pacer bitrate during a call, counted from first packet sent until
@@ -1002,7 +1002,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.Call.VideoBitrateReceivedInKbps" units="kbps"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>holmer@chromium.org</owner>
   <summary>
     Average video bitrate received during a call, counted from first packet
@@ -1152,15 +1152,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebRTC.ICE.UdpSocketWriteErrorCode" enum="SocketErrorCode"
-    expires_after="M77">
-  <owner>zhihuang@chromium.org</owner>
-  <summary>
-    Counters on different types of UDP socket error code. Collected when we hit
-    the error code when writing.
-  </summary>
-</histogram>
-
 <histogram name="WebRTC.MediaStreamDevices.HasPanTiltZoomCamera"
     enum="BooleanAvailable" expires_after="2022-04-24">
   <obsolete>
@@ -1268,13 +1259,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.ConnectionState"
-    enum="IceConnectionStates" expires_after="2022-08-21">
-  <owner>qingsi@google.com</owner>
-  <owner>jeroendb@google.com</owner>
+    enum="IceConnectionStates" expires_after="2023-11-01">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
   <summary>
     Counters of ICE Connection states. These values are logged when the
     PeerConnection gets into that state for the first time or after the ICE
     restart.
+
+    Warning: This histogram was expired from 2022-08-21 to 2022-10-29. Data may
+    be missing.
   </summary>
 </histogram>
 
@@ -1389,11 +1383,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.IPv4Interfaces" units="units"
-    expires_after="M81">
-  <owner>qingsi@google.com</owner>
-  <owner>jeroendb@google.com</owner>
+    expires_after="2023-11-01">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
   <summary>
     Number of IPv4 network interfaces discovered in a PeerConnection Session.
+
+    Warning: This histogram was expired from M81 to M110 Canary (2022-10-29).
+    Data may be missing.
   </summary>
 </histogram>
 
@@ -1409,11 +1406,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRTC.PeerConnection.IPv6Interfaces" units="units"
-    expires_after="M81">
-  <owner>qingsi@google.com</owner>
-  <owner>jeroendb@google.com</owner>
+    expires_after="2023-11-01">
+  <owner>hta@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
   <summary>
     Number of IPv6 network interfaces discovered in a PeerConnection Session.
+
+    Warning: This histogram was expired from M81 to M110 Canary (2022-10-29).
+    Data may be missing.
   </summary>
 </histogram>
 
@@ -1828,6 +1828,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.ValidBundledPayloadTypes"
+    units="boolean" expires_after="2023-06-01">
+  <owner>hbos@chromium.org</owner>
+  <owner>webrtc-dev@chromium.org</owner>
+  <owner>phancke@microsoft.com</owner>
+  <summary>
+    Measures whether the remote description contains a payload type collision
+    that is not allowed by the IETFs BUNDLE specification. Enforcing this would
+    allow simplifying the statistics collector. Recorded for every remote
+    description.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.ValidIceChars" units="boolean"
     expires_after="2023-08-01">
   <owner>hta@chromium.org</owner>
@@ -2065,23 +2078,6 @@ chromium-metrics-reviews@google.com.
     log this result. {NatType}
   </summary>
   <token key="NatType" variants="NatType">
-    <variant name=""/>
-  </token>
-</histogram>
-
-<histogram name="WebRTC.SystemSendPacketDuration{IPProtocolType}" units="ms"
-    expires_after="M81">
-  <owner>qingsi@google.com</owner>
-  <owner>jeroendb@google.com</owner>
-  <summary>
-    The duration that it takes to send out a packet in system layer. This
-    includes both the queuing time (under the condition when socket returns
-    EWOULDBLOCK from system) as well as the time system takes to finish the
-    asynchronous send. For UDP, it's the time from P2PSocketHostUdp::Send to
-    P2PSocketHostUdp::HandleSendResult. Tcp part is to be implemented.
-    {IPProtocolType}
-  </summary>
-  <token key="IPProtocolType" variants="IPProtocolType">
     <variant name=""/>
   </token>
 </histogram>
@@ -3991,7 +3987,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebRtcTextLogging{WebRtcLoggingEvent}"
-    enum="WebRtcLoggingWebAppIdHash" expires_after="2022-12-01">
+    enum="WebRtcLoggingWebAppIdHash" expires_after="2023-05-07">
   <owner>toprice@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <owner>webrtc-dev@chromium.org</owner>

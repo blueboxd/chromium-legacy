@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">Փորձել վերացնել անսարքությունները</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">Միացեք որևէ ցանցի և վերաբեռնեք էջը՝ էկրանապահը դիտելու համար։</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Այլ կարգավորումներ</translation>
 <translation id="2085089206770112532">Էկրանի պայծառության նվազեցում</translation>
 <translation id="2105810540595158374">Սարքը խաղային վահանակ է։</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">Չեղարկել տպման առաջադրանքը</translation>
 <translation id="2163937499206714165">Միացնել մուգ ռեժիմը</translation>
 <translation id="2180197493692062006">Սխալ առաջացավ։ Փորձեք նորից բացել հավելվածը։</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">Զրոյացնել թրաֆիկի հաշվիչները</translation>
 <translation id="2212733584906323460">Անվանել լուծաչափը</translation>
 <translation id="2217935453350629363">Ընթացիկ արագությունը</translation>
@@ -268,7 +270,6 @@
 <translation id="360565022852130722">Wi-Fi ցանցը պաշտպանված է WEP 802.1x թույլ հաղորդակարգով</translation>
 <translation id="3606583719724308068">Բարձր հապաղում HTTPS կայքերի համար</translation>
 <translation id="361575905210396100">Շնորհակալություն կարծիք հայտնելու համար</translation>
-<translation id="3621202678540785336">Ներածում</translation>
 <translation id="3632579075709132555">Գաղտնիության էկրանի փոխանջատիչ</translation>
 <translation id="3651050199673793219">Ընտրել ջերմաստիճանի միավոր</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> փորձարկում</translation>
@@ -385,6 +386,7 @@
 <translation id="4793756956024303490">Սեղմման ալգորիթմ</translation>
 <translation id="4794140124556169553">CPU-ի թեստի գործարկումը կարող է ազդել ձեր համակարգի աշխատանքի վրա</translation>
 <translation id="4800589996161293643">Chromebook համայնք</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Տպման առաջադրանքը չեղարկվեց՝ <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Բաց թեմա</translation>
 <translation id="4813136279048157860">Իմ պատկերները</translation>
@@ -396,6 +398,7 @@
 <translation id="4847902821209177679">Ընտրված է «<ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />» տարբերակը։ Սեղմեք Enter՝ <ph name="TOPIC_SOURCE" />ի ալբոմներ ընտրելու համար։</translation>
 <translation id="484790837831576105">DNS-ի լուծաչափ (Android)</translation>
 <translation id="4848429997038228357">ՓՈՐՁԱՐԿՎՈՒՄ Է</translation>
+<translation id="4854586501323951986">Ներկառուցված հպէկրան</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Մնացած փորձերի քանակը՝ {0}}one{<ph name="ERROR_MESSAGE" /> Մնացած փորձերի քանակը՝ {0}}other{<ph name="ERROR_MESSAGE" /> Մնացած փորձերի քանակը՝ {0}}}</translation>
 <translation id="4873827928179867585">Իսկորոշման ալգորիթմ</translation>
 <translation id="4880328057631981605">Մուտքի կետի անունը</translation>
@@ -404,6 +407,7 @@
 <translation id="4891842000192098784">Ծանրաբեռնվածություն</translation>
 <translation id="4897058166682006107">Ձախ ականջակալի մարտկոցի լիցքի մակարդակը՝ <ph name="BATTERY_PERCENTAGE" />%։</translation>
 <translation id="4905998861748258752">Միացրեք գործառույթը՝ էկրանապահի պարամետրեր ընտրելու համար</translation>
+<translation id="4910858703033903787">APN-ի տեսակները</translation>
 <translation id="4917385247580444890">Ուժեղ</translation>
 <translation id="4917889632206600977">Դադարեցվել է – Թուղթ չկա</translation>
 <translation id="491791267030419270">Կարծիք գրելու խորհուրդներ</translation>
@@ -459,6 +463,7 @@
 <translation id="5358174242040570474">Սխալ առաջացավ։ Նորից ընտրեք պաստառ կամ հավելվածը փակեք ու նորից բացեք։</translation>
 <translation id="5372659122375744710">Wi-Fi ցանցն անվտանգ չէ</translation>
 <translation id="5376354385557966694">Ավտոմատ բաց ռեժիմ</translation>
+<translation id="5378184552853359930">IP-ի տեսակը</translation>
 <translation id="5389159777326897627">Պաստառ և ոճ</translation>
 <translation id="5389224261615877010">Ծիածան</translation>
 <translation id="5400907029458559844">Սարքը միանում է։</translation>
@@ -569,6 +574,7 @@
 <translation id="6394634179843537518">Ավելացնել ֆայլ</translation>
 <translation id="6410257289063177456">Պատկերների ֆայլեր</translation>
 <translation id="641081527798843608">Թեմաների համընկնում</translation>
+<translation id="6412715219990689313">Ներկառուցված ստեղնաշար</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Թույլ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Անցնել հաշվի կարգավորումներ</translation>
@@ -667,6 +673,7 @@
 <translation id="7359657277149375382">Ֆայլի տեսակ</translation>
 <translation id="73631062356239394">Ուղարկել դիագնոստիկ տվյալներ</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">Ներկառուցված հպահարթակ</translation>
 <translation id="7397270852490618635">Անջատել բաց թեման</translation>
 <translation id="741244894080940828">փոխարկում</translation>
 <translation id="7415801143053185905">HTTP-ի շատ բարձր հապաղում</translation>
@@ -715,7 +722,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Մատակարարի տեսակը</translation>
 <translation id="7882501334836096755">Բաց բանալի</translation>
-<translation id="7890841768028788197">Ներքին հպէկրան</translation>
 <translation id="7915220255123750251">Կառավարեք ցանցի APN կարգավորումները։ APN-ները կապ են հաստատում բջջային ցանցի և համացանցի միջև։</translation>
 <translation id="7936303884198020182">DNS սերվերներ չեն գտնվել</translation>
 <translation id="7942349550061667556">Կարմիր</translation>
@@ -741,6 +747,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Ընտրել «<ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />» տարբերակը</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183974620058026102">Կցել</translation>
 <translation id="8206859287963243715">Բջջային</translation>
 <translation id="8208861521865154048">Բոնուսներ</translation>
 <translation id="8226628635270268143">Ընտրեք ձեր սիրած լուսանկարներն ու ալբոմները</translation>
@@ -763,7 +770,6 @@
 <translation id="8398927464629426868">Սարքի ընթացիկ լիցքավորման կամ լիցքաթափման արագությունը</translation>
 <translation id="8420955526972171689">Գործարկեք թեստեր և սարքակազմի հետ կապված խնդիրների վերացման գործընթացներ</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">Ներքին ստեղնաշար</translation>
 <translation id="8431300646573772016">Ինչն է ChromeOS-ում նոր</translation>
 <translation id="843568408673868420">Ինտերնետ կապ</translation>
 <translation id="844521431886043384">DNS-ը կարգավորված չէ</translation>
@@ -820,7 +826,6 @@
 <translation id="8930521118335213258">Նմանակ</translation>
 <translation id="8930622219860340959">Անլար</translation>
 <translation id="8936793075252196307">Սպասառուի IP հասցե</translation>
-<translation id="8945750210906526975">Ներքին հպահարթակ</translation>
 <translation id="894617464444543719">Սարքը հեռախոս է։</translation>
 <translation id="8968751544471797276">Լիցքավորման արագությունը</translation>
 <translation id="8970109610781093811">Կրկնել</translation>
@@ -831,6 +836,7 @@
 <translation id="9025198690966128418">Օգտագործել որպես անձնական սարք</translation>
 <translation id="9028832514430399253">Էկրանապահի տարբերակներն ընտրելու համար միացրեք փոխանջատիչը</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS-ի փոխակերպումն ունի բարձր հապաղում</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -838,6 +844,7 @@
 <translation id="9087578468327036362">Հաղորդել այս հարցման մասին</translation>
 <translation id="9088306295921699330">Օգտագործված տարածքը</translation>
 <translation id="9095775724867566971">PluginVm</translation>
+<translation id="9100765901046053179">Լրացուցիչ կարգավորումներ</translation>
 <translation id="910415269708673980">Թարմացրեք <ph name="PRINCIPAL_NAME" /> հաշվի տոմսը</translation>
 <translation id="9106415115617144481">Սկանավորվում է էջ <ph name="PAGE_NUMBER" />-ը</translation>
 <translation id="9111102763498581341">Ապակողպել</translation>

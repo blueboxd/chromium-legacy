@@ -1182,6 +1182,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_IMPORT_LONG_PASSWORD},
     {"importPasswordsLongUsername",
      IDS_SETTINGS_PASSWORDS_IMPORT_LONG_USERNAME},
+    {"importPasswordsLongNote", IDS_SETTINGS_PASSWORDS_IMPORT_LONG_NOTE},
     {"importPasswordsConflictDevice",
      IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICT_DEVICE},
     {"importPasswordsConflictAccount",
@@ -1710,7 +1711,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   html_source->AddBoolean(
       "showChromeRootStoreCertificates",
-      GetChromeCertVerifierServiceParams()->use_chrome_root_store);
+      GetChromeCertVerifierServiceParams(/*localstate=*/nullptr)
+          ->use_chrome_root_store);
 
   html_source->AddString("chromeRootStoreHelpCenterURL",
                          chrome::kChromeRootStoreSettingsHelpCenterURL);
@@ -1848,6 +1850,30 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_2},
       {"privacySandboxSpamAndFraudDialogDescription3",
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_3},
+      {"adPrivacyLinkRowLabel", IDS_SETTINGS_AD_PRIVACY_LINK_ROW_LABEL},
+      {"adPrivacyLinkRowSubLabel", IDS_SETTINGS_AD_PRIVACY_LINK_ROW_SUB_LABEL},
+      {"adPrivacyPageTitle", IDS_SETTINGS_AD_PRIVACY_PAGE_TITLE},
+      {"adPrivacyPageTopicsLinkRowLabel",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_LABEL},
+      {"adPrivacyPageTopicsLinkRowSubLabelEnabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_ENABLED},
+      {"adPrivacyPageTopicsLinkRowSubLabelDisabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_DISABLED},
+      {"adPrivacyPageFledgeLinkRowLabel",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_LABEL},
+      {"adPrivacyPageFledgeLinkRowSubLabelEnabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_ENABLED},
+      {"adPrivacyPageFledgeLinkRowSubLabelDisabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_DISABLED},
+      {"adPrivacyPageAdMeasurementLinkRowLabel",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_LABEL},
+      {"adPrivacyPageAdMeasurementLinkRowSubLabelEnabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_ENABLED},
+      {"adPrivacyPageAdMeasurementLinkRowSubLabelDisabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_DISABLED},
+      {"topicsPageTitle", IDS_SETTINGS_TOPICS_PAGE_TITLE},
+      {"fledgePageTitle", IDS_SETTINGS_FLEDGE_PAGE_TITLE},
+      {"adMeasurementPageTitle", IDS_SETTINGS_AD_MEASUREMENT_PAGE_TITLE},
 
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);

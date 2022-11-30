@@ -5,25 +5,32 @@
 #ifndef COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_STORAGE_H_
 #define COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_STORAGE_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
+#include "base/functional/callback.h"
+#include "base/types/expected.h"
 #include "components/reading_list/core/reading_list_entry.h"
+#include "components/sync/model/metadata_batch.h"
 
-class ReadingListModel;
-class ReadingListSyncBridgeDelegate;
+class GURL;
+class ReadingListSyncBridge;
 
 namespace base {
 class Clock;
-}
-
-namespace syncer {
-class ModelTypeSyncBridge;
-}
+}  // namespace base
 
 // Interface for a persistence layer for reading list.
 // All interface methods have to be called on main thread.
 class ReadingListModelStorage {
  public:
+  using ReadingListEntries = std::map<GURL, ReadingListEntry>;
+  using LoadResult =
+      std::pair<ReadingListEntries, std::unique_ptr<syncer::MetadataBatch>>;
+  using LoadResultOrError = base::expected<LoadResult, std::string>;
+  using LoadCallback = base::OnceCallback<void(LoadResultOrError)>;
+
   class ScopedBatchUpdate;
 
   ReadingListModelStorage() = default;
@@ -33,15 +40,9 @@ class ReadingListModelStorage {
 
   virtual ~ReadingListModelStorage() = default;
 
-  // Sets the model the Storage is backing.
-  // This will trigger store initalization and load persistent entries.
-  // Pass the |clock| from the |model| to ensure synchroization when loading
-  // entries. Must be called no more than once.
-  // TODO(crbug.com/1386158): ReadingListSyncBridgeDelegate shouldn't belong in
-  // this interface.
-  virtual void SetReadingListModel(ReadingListModel* model,
-                                   ReadingListSyncBridgeDelegate* delegate,
-                                   base::Clock* clock) = 0;
+  // Triggers store initialization and loading of persistent entries. Must be
+  // called no more than once. Upon completion, |load_cb| is invoked.
+  virtual void Load(base::Clock* clock, LoadCallback load_cb) = 0;
 
   // Starts a transaction. All Save/Remove entry will be delayed until the
   // transaction is commited.
@@ -52,25 +53,26 @@ class ReadingListModelStorage {
   // the batch update has completed.
   virtual std::unique_ptr<ScopedBatchUpdate> EnsureBatchCreated() = 0;
 
-  // Saves or updates an entry. If the entry is not yet in the database, it is
-  // created.
-  virtual void SaveEntry(const ReadingListEntry& entry) = 0;
-
-  // Removed an entry from the storage.
-  virtual void RemoveEntry(const ReadingListEntry& entry) = 0;
-
-  // Returns the ModelTypeSyncBridge responsible for handling sync message.
+  // Returns the ReadingListSyncBridge responsible for handling sync message,
+  // which is practice is |this| or (in tests) null.
   // TODO(crbug.com/1386158): This shouldn't belong in this interface.
-  virtual syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() = 0;
+  virtual ReadingListSyncBridge* GetSyncBridge() = 0;
 
   class ScopedBatchUpdate {
    public:
-    ScopedBatchUpdate() {}
+    ScopedBatchUpdate() = default;
 
     ScopedBatchUpdate(const ScopedBatchUpdate&) = delete;
     ScopedBatchUpdate& operator=(const ScopedBatchUpdate&) = delete;
 
-    virtual ~ScopedBatchUpdate() {}
+    virtual ~ScopedBatchUpdate() = default;
+
+    // Saves or updates an entry. If the entry is not yet in the database, it is
+    // created.
+    virtual void SaveEntry(const ReadingListEntry& entry) = 0;
+
+    // Removed an entry from the storage.
+    virtual void RemoveEntry(const GURL& entry_url) = 0;
   };
 };
 

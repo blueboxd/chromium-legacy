@@ -36,6 +36,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
+#include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -268,12 +269,6 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
           base::BindRepeating(
               &PasswordsPrivateDelegateImpl::OnPasswordsExportProgress,
               base::Unretained(this)))),
-      password_access_authenticator_(
-          base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthCall,
-                              base::Unretained(this)),
-          base::BindRepeating(
-              &PasswordsPrivateDelegateImpl::OsReauthTimeoutCall,
-              base::Unretained(this))),
       password_account_storage_settings_watcher_(
           std::make_unique<
               password_manager::PasswordAccountStorageSettingsWatcher>(
@@ -288,6 +283,11 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
       current_entries_initialized_(false),
       is_initialized_(false),
       web_contents_(nullptr) {
+  password_access_authenticator_.Init(
+      base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthCall,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthTimeoutCall,
+                          weak_ptr_factory_.GetWeakPtr()));
   saved_passwords_presenter_.AddObserver(this);
   saved_passwords_presenter_.Init();
 }
@@ -707,15 +707,8 @@ bool PasswordsPrivateDelegateImpl::UnmuteInsecureCredential(
 }
 
 void PasswordsPrivateDelegateImpl::RecordChangePasswordFlowStarted(
-    const api::passwords_private::PasswordUiEntry& credential,
-    bool is_manual_flow) {
-  password_check_delegate_.RecordChangePasswordFlowStarted(credential,
-                                                           is_manual_flow);
-}
-
-void PasswordsPrivateDelegateImpl::RefreshScriptsIfNecessary(
-    RefreshScriptsIfNecessaryCallback callback) {
-  password_check_delegate_.RefreshScriptsIfNecessary(std::move(callback));
+    const api::passwords_private::PasswordUiEntry& credential) {
+  password_check_delegate_.RecordChangePasswordFlowStarted(credential);
 }
 
 void PasswordsPrivateDelegateImpl::StartPasswordCheck(
@@ -730,38 +723,6 @@ void PasswordsPrivateDelegateImpl::StopPasswordCheck() {
 api::passwords_private::PasswordCheckStatus
 PasswordsPrivateDelegateImpl::GetPasswordCheckStatus() {
   return password_check_delegate_.GetPasswordCheckStatus();
-}
-
-void PasswordsPrivateDelegateImpl::StartAutomatedPasswordChange(
-    const api::passwords_private::PasswordUiEntry& credential,
-    StartAutomatedPasswordChangeCallback callback) {
-  if (!credential.change_password_url) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  GURL url =
-      url::SchemeHostPort(GURL(*credential.change_password_url)).GetURL();
-  if (!url.is_valid()) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  NavigateParams params(profile_, url,
-                        ui::PageTransition::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  base::WeakPtr<content::NavigationHandle> navigation_handle =
-      Navigate(&params);
-
-  if (!navigation_handle) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  ApcClient* apc_client = ApcClient::GetOrCreateForWebContents(
-      navigation_handle.get()->GetWebContents());
-  apc_client->Start(url, credential.username,
-                    /*skip_login=*/false, std::move(callback));
 }
 
 void PasswordsPrivateDelegateImpl::SwitchBiometricAuthBeforeFillingState(
@@ -916,8 +877,7 @@ void PasswordsPrivateDelegateImpl::ExecuteFunction(base::OnceClosure callback) {
   pre_initialization_callbacks_.emplace_back(std::move(callback));
 }
 
-void PasswordsPrivateDelegateImpl::OnSavedPasswordsChanged(
-    password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords) {
+void PasswordsPrivateDelegateImpl::OnSavedPasswordsChanged() {
   SetCredentials(saved_passwords_presenter_.GetSavedCredentials());
 }
 

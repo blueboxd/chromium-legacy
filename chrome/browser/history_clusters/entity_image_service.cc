@@ -8,10 +8,8 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/i18n/case_conversion.h"
-#include "base/memory/singleton.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/sync/sync_service_factory.h"
 #include "components/history_clusters/core/config.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
@@ -23,40 +21,6 @@
 namespace history_clusters {
 
 namespace {
-
-// Anonymous namespace factory based on LookalikeUrlServiceFactory.
-class EntityImageServiceFactory : public ProfileKeyedServiceFactory {
- public:
-  static EntityImageService* GetForProfile(Profile* profile) {
-    return static_cast<EntityImageService*>(
-        GetInstance()->GetServiceForBrowserContext(profile,
-                                                   /*create=*/true));
-  }
-  static EntityImageServiceFactory* GetInstance() {
-    return base::Singleton<EntityImageServiceFactory>::get();
-  }
-
-  EntityImageServiceFactory(const EntityImageServiceFactory&) = delete;
-  EntityImageServiceFactory& operator=(const EntityImageServiceFactory&) =
-      delete;
-
- private:
-  friend struct base::DefaultSingletonTraits<EntityImageServiceFactory>;
-
-  // EntityImageServiceFactory:
-  EntityImageServiceFactory()
-      : ProfileKeyedServiceFactory("EntityImageServiceFactory") {
-    DependsOn(SyncServiceFactory::GetInstance());
-  }
-
-  ~EntityImageServiceFactory() override = default;
-
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override {
-    return new EntityImageService(static_cast<Profile*>(profile));
-  }
-};
 
 // A one-time use object that encapsulates tagging a vector of clusters with
 // entity images. Used to manage all the fetch jobs dispatched, and runs the
@@ -71,7 +35,7 @@ class FetchJobManager {
   struct Request {
     std::u16string query;
     std::string entity_id;
-    history::ClusterVisit* visit;
+    raw_ptr<history::ClusterVisit> visit;
   };
 
   explicit FetchJobManager(std::vector<history::Cluster>&& clusters)
@@ -145,15 +109,12 @@ void DeleteManagerAndRunCallback(
 class EntityImageService::SuggestEntityImageURLFetcher {
  public:
   SuggestEntityImageURLFetcher(
-      Profile* profile,
-      ChromeAutocompleteProviderClient* autocomplete_provider_client,
+      AutocompleteProviderClient* autocomplete_provider_client,
       const std::u16string& search_query,
       const std::string& entity_id)
-      : profile_(profile),
-        autocomplete_provider_client_(autocomplete_provider_client),
+      : autocomplete_provider_client_(autocomplete_provider_client),
         search_query_(base::i18n::ToLower(search_query)),
         entity_id_(entity_id) {
-    DCHECK(profile);
     DCHECK(autocomplete_provider_client);
   }
   SuggestEntityImageURLFetcher(const SuggestEntityImageURLFetcher&) = delete;
@@ -228,7 +189,6 @@ class EntityImageService::SuggestEntityImageURLFetcher {
       std::move(callback_).Run(GURL());
   }
 
-  const raw_ptr<Profile> profile_;
   const raw_ptr<AutocompleteProviderClient> autocomplete_provider_client_;
 
   // The search query and entity ID we are searching for.
@@ -244,20 +204,15 @@ class EntityImageService::SuggestEntityImageURLFetcher {
   base::WeakPtrFactory<SuggestEntityImageURLFetcher> weak_factory_{this};
 };
 
-EntityImageService::EntityImageService(Profile* profile)
-    : profile_(profile),
-      autocomplete_provider_client_(profile),
-      url_consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
-                              NewPersonalizedDataCollectionConsentHelper(
-                                  SyncServiceFactory::GetForProfile(profile))) {
-}
+EntityImageService::EntityImageService(
+    std::unique_ptr<AutocompleteProviderClient> autocomplete_provider_client,
+    syncer::SyncService* sync_service)
+    : autocomplete_provider_client_(std::move(autocomplete_provider_client)),
+      url_consent_helper_(
+          unified_consent::UrlKeyedDataCollectionConsentHelper::
+              NewPersonalizedDataCollectionConsentHelper(sync_service)) {}
 
 EntityImageService::~EntityImageService() = default;
-
-// static
-EntityImageService* EntityImageService::Get(Profile* profile) {
-  return EntityImageServiceFactory::GetForProfile(profile);
-}
 
 void EntityImageService::PopulateEntityImagesFor(
     std::vector<history::Cluster> clusters,
@@ -283,7 +238,7 @@ bool EntityImageService::FetchImageFor(const std::u16string& search_query,
   DCHECK(url_consent_helper_ && url_consent_helper_->IsEnabled());
 
   auto fetcher = std::make_unique<SuggestEntityImageURLFetcher>(
-      profile_, &autocomplete_provider_client_, search_query, entity_id);
+      autocomplete_provider_client_.get(), search_query, entity_id);
 
   // Use a raw pointer temporary so we can give ownership of the unique_ptr to
   // the callback and have a well defined SuggestEntityImageURLFetcher lifetime.

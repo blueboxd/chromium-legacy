@@ -108,7 +108,7 @@ gfx::SizeF StyleFetchedImageSet::ImageSize(
     RespectImageOrientationEnum respect_orientation) const {
   Image* image = best_fit_image_->GetImage();
   if (auto* svg_image = DynamicTo<SVGImage>(image)) {
-    return ImageSizeForSVGImage(svg_image, multiplier, default_object_size);
+    return ImageSizeForSVGImage(*svg_image, multiplier, default_object_size);
   }
   respect_orientation = ForceOrientationIfNecessary(respect_orientation);
   gfx::SizeF natural_size(image->Size(respect_orientation));
@@ -117,7 +117,10 @@ gfx::SizeF StyleFetchedImageSet::ImageSize(
 }
 
 bool StyleFetchedImageSet::HasIntrinsicSize() const {
-  return best_fit_image_->GetImage()->HasIntrinsicSize();
+  const Image& image = *best_fit_image_->GetImage();
+  if (auto* svg_image = DynamicTo<SVGImage>(image))
+    return HasIntrinsicDimensionsForSVGImage(*svg_image);
+  return image.HasIntrinsicSize();
 }
 
 void StyleFetchedImageSet::AddClient(ImageResourceObserver* observer) {

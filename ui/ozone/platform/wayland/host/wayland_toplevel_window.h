@@ -67,7 +67,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   void Hide() override;
   bool IsVisible() const override;
   void SetTitle(const std::u16string& title) override;
-  void ToggleFullscreen() override;
+  void SetFullscreen(bool fullscreen, int64_t target_display_id) override;
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
@@ -138,6 +138,14 @@ class WaylandToplevelWindow : public WaylandWindow,
   static void DeskChanged(void* data, zaura_surface* surface, int state);
   static void StartThrottle(void* data, zaura_surface* surface);
   static void EndThrottle(void* data, zaura_surface* surface);
+  static void TooltipShown(void* data,
+                           zaura_surface* surface,
+                           const char* text,
+                           int32_t x,
+                           int32_t y,
+                           int32_t width,
+                           int32_t height) {}
+  static void TooltipHidden(void* data, zaura_surface* surface) {}
 
   // Calls UpdateWindowShape, set_input_region and set_opaque_region for this
   // toplevel window.

@@ -139,6 +139,7 @@
 <translation id="2161394479394250669">මුද්‍රණ කාර්යය අවලංගු කරන්න</translation>
 <translation id="2163937499206714165">අඳුරු ප්‍රකාරය ක්‍රියාත්මක කරන්න</translation>
 <translation id="2180197493692062006">යම් දෙයක් වැරදිණි. යෙදුම නැවත විවෘත කිරීමට උත්සාහ කරන්න.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">තදබදය ගණනය කිරීම් යළි සකසන්න</translation>
 <translation id="2212733584906323460">විභේදනය නම් කරන්න</translation>
 <translation id="2217935453350629363">වත්මන් වේගය</translation>
@@ -268,7 +269,6 @@
 <translation id="360565022852130722">WiFi ජාලය දුර්වල ප්‍රොටොකෝලයකින් ආරක්ෂිතයි WEP 802.1x</translation>
 <translation id="3606583719724308068">HTTPS වෙබ් අඩවිවලට ඉහළ පමාව</translation>
 <translation id="361575905210396100">ඔබගේ ප්‍රතිපෝෂණයට ස්තුතියි</translation>
-<translation id="3621202678540785336">ආදානය</translation>
 <translation id="3632579075709132555">පෞද්ගලිකත්ව තිරය ටොගල කිරීම</translation>
 <translation id="3651050199673793219">උෂ්ණත්ව ඒකකයක් තෝරන්න</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> පරීක්ෂණය</translation>
@@ -396,6 +396,7 @@
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> තෝරන ලදි, <ph name="TOPIC_SOURCE" /> ඇල්බම තේරීමට Enter ඔබන්න</translation>
 <translation id="484790837831576105">(Android) DNS විභේදනය</translation>
 <translation id="4848429997038228357">ධාවන වෙමින්</translation>
+<translation id="4854586501323951986">එක්ව තැනූ ස්පර්ශ තිරය</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> උත්සාහයන් {0}ක් ඉතිරිය}one{<ph name="ERROR_MESSAGE" /> උත්සාහයන් {0}ක් ඉතිරිය}other{<ph name="ERROR_MESSAGE" /> උත්සාහයන් {0}ක් ඉතිරිය}}</translation>
 <translation id="4873827928179867585">සත්‍යාපන ඇල්ගොරිතමය</translation>
 <translation id="4880328057631981605">ප්‍රවේශ ලක්ෂ්‍යයේ නම</translation>
@@ -569,6 +570,7 @@
 <translation id="6394634179843537518">ගොනුව එක් කරන්න</translation>
 <translation id="6410257289063177456">පින්තූර ගොනු</translation>
 <translation id="641081527798843608">විෂය ගැළපුම</translation>
+<translation id="6412715219990689313">එක්ව තැනූ යතුරු පුවරුව</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">දුර්වලයි (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">ගිණුම් සැකසීම් වෙත යන්න</translation>
@@ -667,6 +669,7 @@
 <translation id="7359657277149375382">ගොනු වර්ගය</translation>
 <translation id="73631062356239394">දෝෂ නිර්ණ දත්ත බෙදා ගන්න</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">එක්ව තැනූ ස්පර්ශ පුවරුව</translation>
 <translation id="7397270852490618635">ආලෝක තේමාව ක්‍රියාවිරහිත කරන්න</translation>
 <translation id="741244894080940828">පරිවර්තනය</translation>
 <translation id="7415801143053185905">ඉතා ඉහළ HTTP පමාව</translation>
@@ -715,7 +718,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">සැපයුම්කරු වර්ගය</translation>
 <translation id="7882501334836096755">පොදු යතුර</translation>
-<translation id="7890841768028788197">අභ්‍යන්තර ස්පර්ශ තිරය</translation>
 <translation id="7915220255123750251">ජාල APN සැකසීම් කළමනාකරණය කරන්න. APN සෙලියුලර් ජාලයක් සහ අන්තර්ජාලය අතර සම්බන්ධතාවයක් ඇති කරයි.</translation>
 <translation id="7936303884198020182">නම් සේවාදායක හමු නොවීය</translation>
 <translation id="7942349550061667556">රතු</translation>
@@ -763,7 +765,6 @@
 <translation id="8398927464629426868">උපාංගය දැනට ආරෝපණය වන හෝ විසර්ජනය වන වේගය</translation>
 <translation id="8420955526972171689">දෘඪාංග ගැටළු සඳහා පරීක්ෂණ සහ දෝෂාවේක්ෂය ධාවනය කරන්න</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">අභ්‍යන්තර යතුරු පුවරුව</translation>
 <translation id="8431300646573772016">ChromeOS හි අලුත් දේවල්</translation>
 <translation id="843568408673868420">අන්තර්ජාල සබැඳුම</translation>
 <translation id="844521431886043384">DNS පිහිටුවා නැත</translation>
@@ -820,7 +821,6 @@
 <translation id="8930521118335213258">සාමානයා</translation>
 <translation id="8930622219860340959">නොරැහැන්</translation>
 <translation id="8936793075252196307">සේවාලාභී IP ලිපිනය</translation>
-<translation id="8945750210906526975">අභ්‍යන්තර ස්පර්ශ පුවරුව</translation>
 <translation id="894617464444543719">උපාංගය දුරකථනයකි.</translation>
 <translation id="8968751544471797276">ආරෝපණ වේගය</translation>
 <translation id="8970109610781093811">නැවත ධාවනය කරන්න</translation>
@@ -838,6 +838,7 @@
 <translation id="9087578468327036362">මෙම විමසුම වාර්තා කරන්න</translation>
 <translation id="9088306295921699330">වත්මන් භාවිතය</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="9100765901046053179">උසස් සැකසුම්</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> සඳහා ප්‍රවේශපත්‍රය නැවුම් කරන්න</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" /> පිටුව ස්කෑන් කරමින්</translation>
 <translation id="9111102763498581341">අගුලු හරන්න</translation>

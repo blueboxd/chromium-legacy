@@ -34,6 +34,7 @@
 @protocol CRWWebViewProxy;
 @protocol CRWWebViewNavigationProxy;
 @class UIViewController;
+enum WKPermissionDecision : NSInteger;
 
 namespace web {
 
@@ -212,21 +213,6 @@ class WebStateImpl final : public WebState {
   // Returns true if a javascript dialog is running.
   bool IsJavaScriptDialogRunning();
 
-  // DISCOURAGED. Prefer using `WebFrame CallJavaScriptFunction` instead because
-  // it restricts JavaScript execution to functions within __gCrWeb and can also
-  // call those functions on any frame in the page. ExecuteJavaScript here can
-  // execute arbitrary JavaScript code, which is not as safe and is restricted
-  // to executing only on the main frame.
-  // Runs JavaScript in the main frame's context. If a callback is provided, it
-  // will be used to return the result, when the result is available or script
-  // execution has failed due to an error.
-  // NOTE: Integer values will be returned as Type::DOUBLE because of underlying
-  // library limitation.
-  typedef base::OnceCallback<void(const base::Value*)> JavaScriptResultCallback;
-  void ExecuteJavaScript(const std::u16string& javascript);
-  void ExecuteJavaScript(const std::u16string& javascript,
-                         JavaScriptResultCallback callback);
-
   // Instructs the delegate to create a new web state. Called when this WebState
   // wants to open a new window. `url` is the URL of the new window;
   // `opener_url` is the URL of the page which requested a window to be open;
@@ -261,6 +247,13 @@ class WebStateImpl final : public WebState {
   // Removes all current web frames.
   void RemoveAllWebFrames();
 
+  // Requests the user's permission to access requested `permissions`.
+  typedef void (^PermissionDecisionHandler)(WKPermissionDecision decision)
+      API_AVAILABLE(ios(15.0));
+  void RequestPermissionsWithDecisionHandler(NSArray<NSNumber*>* permissions,
+                                             PermissionDecisionHandler handler)
+      API_AVAILABLE(ios(15.0));
+
   // WebState:
   WebStateDelegate* GetDelegate() final;
   void SetDelegate(WebStateDelegate* delegate) final;
@@ -294,7 +287,6 @@ class WebStateImpl final : public WebState {
       const final;
   SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() final;
   CRWSessionStorage* BuildSessionStorage() final;
-  CRWJSInjectionReceiver* GetJSInjectionReceiver() const final;
   void LoadData(NSData* data, NSString* mime_type, const GURL& url) final;
   void ExecuteUserJavaScript(NSString* javaScript) final;
   NSString* GetStableIdentifier() const final;

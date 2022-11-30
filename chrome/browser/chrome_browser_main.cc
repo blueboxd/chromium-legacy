@@ -188,6 +188,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -202,6 +203,7 @@
 #include "chrome/browser/ui/page_info/chrome_page_info_client.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #else
+#include "chrome/browser/profiles/delete_profile_helper.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resources_integrity.h"
@@ -567,7 +569,7 @@ void ChromeBrowserMainParts::ProfileInitManager::OnProfileAdded(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ignore ChromeOS helper profiles (sign-in, lockscreen, etc).
-  if (!chromeos::ProfileHelper::IsUserProfile(profile)) {
+  if (!ash::ProfileHelper::IsUserProfile(profile)) {
     // Notify of new profile initialization only for regular profiles. The
     // startup profile initialization is triggered by another code path.
     return;
@@ -1029,7 +1031,15 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // properly. See issue 37766.
   // (Note that the callback mask here is empty. I don't want to register for
   // any callbacks, I just want to initialize the mechanism.)
+
+  // Much of the Keychain API was marked deprecated as of the macOS 13 SDK.
+  // Removal of its use is tracked in https://crbug.com/1348251 but deprecation
+  // warnings are disabled in the meanwhile.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   SecKeychainAddCallback(&KeychainCallback, 0, nullptr);
+#pragma clang diagnostic pop
+
 #endif  // BUILDFLAG(IS_MAC)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -1066,6 +1076,14 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
         switches::kDisableSiteIsolationForPolicy);
   }
 #endif
+
+  if (local_state->IsManagedPreference(
+          prefs::kThrottleNonVisibleCrossOriginIframesAllowed) &&
+      !local_state->GetBoolean(
+          prefs::kThrottleNonVisibleCrossOriginIframesAllowed)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        blink::switches::kDisableThrottleNonVisibleCrossOriginIframes);
+  }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
   // this.
@@ -1147,9 +1165,13 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
 #if !BUILDFLAG(IS_ANDROID)
   // Ephemeral profiles may have been left behind if the browser crashed.
-  g_browser_process->profile_manager()->CleanUpEphemeralProfiles();
+  g_browser_process->profile_manager()
+      ->GetDeleteProfileHelper()
+      .CleanUpEphemeralProfiles();
   // Files of deleted profiles can also be left behind after a crash.
-  g_browser_process->profile_manager()->CleanUpDeletedProfiles();
+  g_browser_process->profile_manager()
+      ->GetDeleteProfileHelper()
+      .CleanUpDeletedProfiles();
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

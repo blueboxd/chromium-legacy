@@ -68,10 +68,6 @@ BASE_DECLARE_FEATURE(kAppManagementAppDetails);
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kAppPreloadService);
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kAppProvisioningStatic);
-#endif
-
 #if BUILDFLAG(IS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kAppShimRemoteCocoa);
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -153,6 +149,16 @@ BASE_DECLARE_FEATURE(kPreinstalledWebAppInstallation);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kPreinstalledWebAppDuplicationFixer);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kOsIntegrationSubManagers);
+enum class OsIntegrationSubManagersStage {
+  kWriteConfig,
+  kExecuteAndWriteConfig,
+};
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<OsIntegrationSubManagersStage>
+    kOsIntegrationSubManagersStageParam;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kPWAsDefaultOfflinePage);
@@ -705,8 +711,14 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<int>
     kTrustSafetySentimentSurveyV2NtpVisitsMaxRange;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kTrustSafetySentimentSurveyV2MinSessionTime;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2BrowsingDataProbability;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2ControlGroupProbability;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2PasswordCheckProbability;
@@ -717,8 +729,14 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2TrustedSurfaceProbability;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PrivacyGuideProbability;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2BrowsingDataTriggerId;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2ControlGroupTriggerId;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2PasswordCheckTriggerId;
@@ -728,6 +746,9 @@ extern const base::FeatureParam<std::string>
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2TrustedSurfaceTriggerId;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PrivacyGuideTriggerId;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<base::TimeDelta>
     kTrustSafetySentimentSurveyV2TrustedSurfaceTime;

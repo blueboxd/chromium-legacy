@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/android/chrome_jni_headers/PasswordChangeLauncher_jni.h"
 #include "chrome/browser/password_manager/android/password_checkup_launcher_helper.h"
 #include "chrome/browser/ui/android/passwords/credential_leak_dialog_view_android.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
@@ -64,18 +63,6 @@ void CredentialLeakControllerAndroid::OnAcceptDialog() {
     case LeakDialogType::kCheckupAndChange:
       dismissal_reason = LeakDialogDismissalReason::kClickedCheckPasswords;
       break;
-    case LeakDialogType::kChangeAutomatically:
-      dismissal_reason =
-          LeakDialogDismissalReason::kClickedChangePasswordAutomatically;
-      // Register that an automated password change flow was started.
-      // |password_change_success_tracker_| might be null in tests.
-      if (password_change_success_tracker_) {
-        password_change_success_tracker_->OnChangePasswordFlowStarted(
-            origin_, base::UTF16ToUTF8(username_),
-            PasswordChangeSuccessTracker::StartEvent::kAutomatedFlow,
-            PasswordChangeSuccessTracker::EntryPoint::kLeakWarningDialog);
-      }
-      break;
   }
 
   metrics_recorder_->LogLeakDialogTypeAndDismissalReason(dismissal_reason);
@@ -90,20 +77,11 @@ void CredentialLeakControllerAndroid::OnAcceptDialog() {
 
   switch (dialog_type) {
     case LeakDialogType::kChange:
-      // No-op.
-      break;
     case LeakDialogType::kCheckup:
     case LeakDialogType::kCheckupAndChange:
       PasswordCheckupLauncherHelper::LaunchLocalCheckup(
           env, window_android_->GetJavaObject(),
           PasswordCheckReferrerAndroid::kLeakDialog);
-      break;
-    case LeakDialogType::kChangeAutomatically:
-      Java_PasswordChangeLauncher_start(
-          env, window_android_->GetJavaObject(),
-          url::GURLAndroid::FromNativeGURL(env, origin_),
-          base::android::ConvertUTF16ToJavaString(env, username_),
-          /*skip_login=*/true);
       break;
   }
 
@@ -134,9 +112,4 @@ std::u16string CredentialLeakControllerAndroid::GetTitle() const {
 
 bool CredentialLeakControllerAndroid::ShouldShowCancelButton() const {
   return leak_dialog_traits_->ShouldShowCancelButton();
-}
-
-bool CredentialLeakControllerAndroid::ShouldShowAutomaticChangePasswordButton()
-    const {
-  return password_manager::ShouldShowAutomaticChangePasswordButton(leak_type_);
 }

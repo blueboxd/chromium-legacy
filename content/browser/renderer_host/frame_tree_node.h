@@ -23,10 +23,10 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_type.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
+#include "services/network/public/mojom/referrer_policy.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
@@ -365,18 +365,6 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // FrameTreeNode.
   void BeforeUnloadCanceled();
 
-  // Updates the user activation state in the browser frame tree and in the
-  // frame trees in all renderer processes except the renderer for this node
-  // (which initiated the update).  Returns |false| if the update tries to
-  // consume an already consumed/expired transient state, |true| otherwise.  See
-  // the comment on user_activation_state_ below.
-  //
-  // The |notification_type| parameter is used for histograms, only for the case
-  // |update_state == kNotifyActivation|.
-  bool UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType update_type,
-      blink::mojom::UserActivationNotificationType notification_type);
-
   // Returns the sandbox flags currently in effect for this frame. This includes
   // flags inherited from parent frames, the currently active flags from the
   // <iframe> element hosting this frame, as well as any flags set from a
@@ -405,16 +393,18 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   void set_was_discarded() { was_discarded_ = true; }
   bool was_discarded() const { return was_discarded_; }
 
+  // Deprecated. Use directly HasStickyUserActivation in RFHI.
   // Returns the sticky bit of the User Activation v2 state of the
   // |FrameTreeNode|.
   bool HasStickyUserActivation() const {
-    return user_activation_state_.HasBeenActive();
+    return current_frame_host()->HasStickyUserActivation();
   }
 
+  // Deprecated. Use directly HasStickyUserActivation in RFHI.
   // Returns the transient bit of the User Activation v2 state of the
   // |FrameTreeNode|.
   bool HasTransientUserActivation() {
-    return user_activation_state_.IsActive();
+    return current_frame_host()->HasTransientUserActivation();
   }
 
   // Remove history entries for all frames created by script in this frame's
@@ -602,7 +592,43 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;
   Navigator& GetCurrentNavigator() override;
+  RenderFrameHostManager& GetRenderFrameHostManager() override;
   void SetFocusedFrame(SiteInstanceGroup* source) override;
+  void DidChangeReferrerPolicy(
+      network::mojom::ReferrerPolicy referrer_policy) override;
+
+  // Updates the user activation state in the browser frame tree and in the
+  // frame trees in all renderer processes except the renderer for this node
+  // (which initiated the update).  Returns |false| if the update tries to
+  // consume an already consumed/expired transient state, |true| otherwise.  See
+  // the comment on `user_activation_state_` in RenderFrameHostImpl.
+  //
+  // The |notification_type| parameter is used for histograms, only for the case
+  // |update_state == kNotifyActivation|.
+  bool UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType update_type,
+      blink::mojom::UserActivationNotificationType notification_type) override;
+
+  std::unique_ptr<NavigationRequest>
+  CreateNavigationRequestForSynchronousRendererCommit(
+      RenderFrameHostImpl* render_frame_host,
+      bool is_same_document,
+      const GURL& url,
+      const url::Origin& origin,
+      const net::IsolationInfo& isolation_info_for_subresources,
+      blink::mojom::ReferrerPtr referrer,
+      const ui::PageTransition& transition,
+      bool should_replace_current_entry,
+      const std::string& method,
+      bool has_transient_activation,
+      bool is_overriding_user_agent,
+      const std::vector<GURL>& redirects,
+      const GURL& original_url,
+      std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
+      std::unique_ptr<SubresourceWebBundleNavigationInfo>
+          subresource_web_bundle_navigation_info,
+      int http_response_code) override;
 
  private:
   friend class CSPEmbeddedEnforcementUnitTest;
@@ -749,10 +775,6 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   base::TimeTicks last_focus_time_;
 
   bool was_discarded_ = false;
-
-  // The user activation state of the current frame.  See |UserActivationState|
-  // for details on how this state is maintained.
-  blink::UserActivationState user_activation_state_;
 
   const FencedFrameStatus fenced_frame_status_ =
       FencedFrameStatus::kNotNestedInFencedFrame;

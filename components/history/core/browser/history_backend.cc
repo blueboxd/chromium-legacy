@@ -377,15 +377,18 @@ void HistoryBackend::Init(
             syncer::HISTORY, /*dump_stack=*/base::RepeatingClosure()));
   }
 
-  if (base::FeatureList::IsEnabled(kDeleteForeignVisitsOnStartup) && db_ &&
-      (db_->GetDeleteForeignVisitsUntilId() != kInvalidVisitID)) {
-    // A deletion of foreign visits was still ongoing during the previous
-    // browser shutdown. Continue it.
-    StartDeletingForeignVisits();
+  if (base::FeatureList::IsEnabled(kDeleteForeignVisitsOnStartup) && db_) {
+    if (!base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType) &&
+        db_->MayContainForeignVisits()) {
+      // If the History Sync data type is disabled, but there are foreign visits
+      // left (because it was previously enabled), then clean them up now.
+      DeleteAllForeignVisits();
+    } else if (db_->GetDeleteForeignVisitsUntilId() != kInvalidVisitID) {
+      // A deletion of foreign visits was still ongoing during the previous
+      // browser shutdown. Continue it.
+      StartDeletingForeignVisits();
+    }
   }
-  // TODO(crbug.com/1347733): If there is no ongoing deletion, but the
-  // kSyncEnableHistoryDataType feature is disabled, then any existing foreign
-  // visits should also be cleaned up.
 
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
       FROM_HERE, base::BindRepeating(&HistoryBackend::OnMemoryPressure,
@@ -1418,6 +1421,12 @@ bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
   return false;
 }
 
+bool HistoryBackend::GetMostRecentVisitForURL(URLID id, VisitRow* visit_row) {
+  if (db_)
+    return db_->GetMostRecentVisitForURL(id, visit_row);
+  return false;
+}
+
 bool HistoryBackend::GetMostRecentVisitsForURL(URLID id,
                                                int max_visits,
                                                VisitVector* visits) {
@@ -1508,11 +1517,16 @@ VisitID HistoryBackend::AddSyncedVisit(
                                       content_annotations->password_state);
   }
 
+  db_->SetMayContainForeignVisits(true);
+
   ScheduleCommit();
   return visit_id;
 }
 
 VisitID HistoryBackend::UpdateSyncedVisit(
+    const GURL& url,
+    const std::u16string& title,
+    bool hidden,
     const VisitRow& visit,
     const absl::optional<VisitContextAnnotations>& context_annotations,
     const absl::optional<VisitContentAnnotations>& content_annotations) {
@@ -1543,6 +1557,18 @@ VisitID HistoryBackend::UpdateSyncedVisit(
   if (visit_id <= db_->GetDeleteForeignVisitsUntilId()) {
     return 0;
   }
+
+  // If we can't find the corresponding URLRow, or its actual URL doesn't match,
+  // something's wrong.
+  URLRow url_row;
+  if (!db_->GetURLRow(original_row.url_id, &url_row) || url_row.url() != url) {
+    return 0;
+  }
+
+  // Update the URLRow - its title may have changed.
+  url_row.set_title(title);
+  url_row.set_hidden(hidden);
+  db_->UpdateURLRow(url_row.id(), url_row);
 
   VisitRow updated_row = visit;
   // The fields `visit_id` and `url_id` aren't set in visits coming from sync,
@@ -1604,6 +1630,12 @@ bool HistoryBackend::DeleteAllForeignVisits() {
   if (!db_)
     return false;
 
+  if (!db_->MayContainForeignVisits()) {
+    // The DB doesn't contain any foreign visits, or all the foreign visits are
+    // already scheduled for deletion - nothing to do.
+    return true;
+  }
+
   bool already_running =
       db_->GetDeleteForeignVisitsUntilId() != kInvalidVisitID;
 
@@ -1614,6 +1646,11 @@ bool HistoryBackend::DeleteAllForeignVisits() {
   // deletion process has completed.)
   VisitID max_visit_to_delete = db_->GetMaxVisitIDInUse();
   db_->SetDeleteForeignVisitsUntilId(max_visit_to_delete);
+  // Already set the "may contain foreign visits" bit to false, since all the
+  // existing foreign visits are about to be deleted. This ensures that the bit
+  // can be safely set to true again if new foreign visits are added, even
+  // before the deletion completes.
+  db_->SetMayContainForeignVisits(false);
 
   // Only schedule a deletion task if there isn't one already running. If there
   // is one already running, it'll pick up the new limit automatically.

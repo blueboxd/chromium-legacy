@@ -34,6 +34,10 @@ BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantitites,
 BASE_FEATURE(kAutofillAccountProfilesUnionView,
              "AutofillAccountProfilesUnionView",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// Account profiles are not considered for regular updates on import, but if
+// this parameter is enabeld, they are considered for silent updates.
+const base::FeatureParam<bool> kAutofillEnableSilentUpdatesForAccountProfiles{
+    &kAutofillAccountProfilesUnionView, "enable_silent_updates", true};
 
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
@@ -118,6 +122,13 @@ BASE_FEATURE(kAutofillCountryFromLocalName,
 BASE_FEATURE(kAutofillCreateDataForTest,
              "AutofillCreateDataForTest",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the last blur votes per form signature are sent not the first
+// ones.
+// TODO(crbug.com/1383502): Cleanup when this has proven on stable.
+BASE_FEATURE(kAutofillDelayBlurVotes,
+             "AutofillDelayBlurVotes",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // FormStructure::RetrieveFromCache used to preserve an AutofillField's
 // is_autofilled from the cache of previously parsed forms. This makes little

@@ -113,6 +113,7 @@
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/base/resource/resource_scale_factor.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "v8/include/v8.h"
 
@@ -1155,10 +1156,11 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(kBackBuffer);
   if (image_bitmap) {
+    auto image_unaccelerated = image_bitmap->MakeUnaccelerated();
     auto* options = ImageEncodeOptions::Create();
     options->setType(ImageEncodingMimeTypeName(encoding_mime_type));
     async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
-        image_bitmap, options,
+        std::move(image_unaccelerated), options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
         GetExecutionContext(),
         IdentifiabilityStudySettings::Get()->ShouldSampleType(

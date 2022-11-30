@@ -39,7 +39,7 @@ struct SelectedFileInfo;
 }
 
 namespace policy {
-FORWARD_DECLARE_TEST(DlpFilesControllerBrowserTest, FilesUploadRestrictedFile);
+FORWARD_DECLARE_TEST(DlpFilesControllerBrowserTest, FilesUploadCallerPassed);
 }  // namespace policy
 
 // This class handles file-selection requests coming from renderer processes.
@@ -101,7 +101,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, GetFileTypesFromAcceptType);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, MultipleFileExtensionsForMime);
   FRIEND_TEST_ALL_PREFIXES(policy::DlpFilesControllerBrowserTest,
-                           FilesUploadRestrictedFile);
+                           FilesUploadCallerPassed);
 
   explicit FileSelectHelper(Profile* profile);
   ~FileSelectHelper() override;
@@ -220,11 +220,6 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // cases the file selection is aborted and the state cleaned up.
   void ConvertToFileChooserFileInfoList(
       const std::vector<ui::SelectedFileInfo>& files);
-
-  // Checks to see if any file is restricted to be transferred according to the
-  // rules of the DataLeakPrevention policy.
-  void CheckIfPolicyAllowed(
-      std::vector<blink::mojom::FileChooserFileInfoPtr> list);
 
   // Checks to see if scans are required for the specified files.
   void PerformContentAnalysisIfNeeded(

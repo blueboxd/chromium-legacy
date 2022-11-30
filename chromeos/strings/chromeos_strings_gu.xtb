@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">સમસ્યા નિવારણના પગલાં અજમાવી જુઓ</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">કૃપા કરીને નેટવર્ક સાથે કનેક્ટ કરો અને સ્ક્રીન સેવર જોવા માટે પેજને ફરીથી લોડ કરો.</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">વધુ સેટિંગ</translation>
 <translation id="2085089206770112532">ડિસ્પ્લેનું બ્રાઇટનેસ ઘટાડવાની કી</translation>
 <translation id="2105810540595158374">ડિવાઇસ એક ગેમ કન્ટ્રોલર છે.</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">પ્રિન્ટ જોબ રદ કરો</translation>
 <translation id="2163937499206714165">ઘેરો મોડ ચાલુ કરો</translation>
 <translation id="2180197493692062006">કંઈક ખોટું થયું. ઍપ ફરીથી ખોલવાનો પ્રયાસ કરી જુઓ.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">ટ્રાફિક કાઉન્ટર રીસેટ કરો</translation>
 <translation id="2212733584906323460">નામનું રિઝોલ્યુશન</translation>
 <translation id="2217935453350629363">વર્તમાન ઝડપ</translation>
@@ -152,7 +154,6 @@
 <translation id="2271469253353559191">ઘેરા મોડનું શેડ્યૂલ</translation>
 <translation id="2276999893457278469">લોકપ્રિય સહાયક કન્ટેન્ટ</translation>
 <translation id="2287186687001756809">કોઈ છબી ઉપલબ્ધ નથી. ફોટા ઉમેરવા માટે, <ph name="LINK" /> પર જાઓ</translation>
-<translation id="2304783958703511257">વિગતવાર સેટિંગ્સ</translation>
 <translation id="2307344026739914387">હાલની કીની જોડીનો ઉપયોગ કરો</translation>
 <translation id="2320295602967756579">ઝાંખી થીમ ચાલુ કરો</translation>
 <translation id="2323506179655536734">છોડ્યું</translation>
@@ -269,7 +270,6 @@
 <translation id="360565022852130722">વાઇ-ફાઇ નેટવર્કની સુરક્ષા પ્રમાણમાં નબળા WEP 802.1x પ્રોટોકૉલ વડે કરવામાં આવી છે</translation>
 <translation id="3606583719724308068">HTTPS વેબસાઇટ માટે વિલંબતાનો સમય ઘણો વધુ છે</translation>
 <translation id="361575905210396100">તમારા પ્રતિસાદ બદલ આભાર</translation>
-<translation id="3621202678540785336">ઇનપુટ</translation>
 <translation id="3632579075709132555">પ્રાઇવસી સ્ક્રીન ટૉગલ કરો</translation>
 <translation id="3651050199673793219">તાપમાનનો એકમ પસંદ કરો</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> પરીક્ષણ</translation>
@@ -386,6 +386,7 @@
 <translation id="4793756956024303490">કમ્પ્રેશન ઍલ્ગોરિધમ</translation>
 <translation id="4794140124556169553">CPUનું પરીક્ષણ ચલાવવાથી તમારી સિસ્ટમની કાર્યક્ષમતા પર અસર થઈ શકે છે</translation>
 <translation id="4800589996161293643">Chromebookનો સમુદાય</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" />ને પ્રિન્ટ કરવાનું રદ કર્યું</translation>
 <translation id="4809927044794281115">ઝાંખી થીમ</translation>
 <translation id="4813136279048157860">મારી છબીઓ</translation>
@@ -397,6 +398,7 @@
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />ની પસંદગી કરવામાં આવી, <ph name="TOPIC_SOURCE" /> આલ્બમ પસંદ કરવા માટે Enter કી દબાવો</translation>
 <translation id="484790837831576105">(Android) DNS રિઝોલ્યુશન</translation>
 <translation id="4848429997038228357">ચાલુ છે</translation>
+<translation id="4854586501323951986">બિલ્ટ-ઇન ટચસ્ક્રીન</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} પ્રયત્ન બાકી}one{<ph name="ERROR_MESSAGE" /> {0} પ્રયત્ન બાકી}other{<ph name="ERROR_MESSAGE" /> {0} પ્રયત્ન બાકી}}</translation>
 <translation id="4873827928179867585">પ્રમાણીકરણનું ઍલ્ગોરિધમ</translation>
 <translation id="4880328057631981605">ઍક્સેસ પૉઇન્ટનું નામ</translation>
@@ -405,6 +407,7 @@
 <translation id="4891842000192098784">તાણ</translation>
 <translation id="4897058166682006107">ડિવાઇસના ડાબા ઇયરબડમાં <ph name="BATTERY_PERCENTAGE" />% બૅટરી છે.</translation>
 <translation id="4905998861748258752">સ્ક્રીન સેવરના વિકલ્પો પસંદ કરવા માટે ઍમ્બિઅન્ટ મોડની સુવિધા ચાલુ કરો</translation>
+<translation id="4910858703033903787">APNના પ્રકાર</translation>
 <translation id="4917385247580444890">સશક્ત</translation>
 <translation id="4917889632206600977">બંધ - કાગળ ખલાસ થઈ ગયા</translation>
 <translation id="491791267030419270">પ્રતિસાદ લખવા માટેની ટિપ</translation>
@@ -459,6 +462,7 @@
 <translation id="5358174242040570474">કંઈક ખોટું થયું. વૉલપેપર ફરીથી પસંદ કરવાનો પ્રયાસ કરો અથવા ઍપ ફરીથી ખોલો.</translation>
 <translation id="5372659122375744710">આ વાઇ-ફાઇ નેટવર્ક સુરક્ષિત નથી</translation>
 <translation id="5376354385557966694">ઑટોમૅટિક લાઇટ મોડ</translation>
+<translation id="5378184552853359930">IPનો પ્રકાર</translation>
 <translation id="5389159777326897627">વૉલપેપર અને સ્ટાઇલ</translation>
 <translation id="5389224261615877010">મેઘધનુષ</translation>
 <translation id="5400907029458559844">ડિવાઇસ કનેક્ટ થઈ રહ્યું છે.</translation>
@@ -569,6 +573,7 @@
 <translation id="6394634179843537518">ફાઇલ ઉમેરો</translation>
 <translation id="6410257289063177456">છબી ફાઇલો</translation>
 <translation id="641081527798843608">વિષય મેળ</translation>
+<translation id="6412715219990689313">બિલ્ટ-ઇન કીબોર્ડ</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">નબળું (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">એકાઉન્ટ સેટિંગ પર જાઓ</translation>
@@ -667,6 +672,7 @@
 <translation id="7359657277149375382">ફાઇલ પ્રકાર</translation>
 <translation id="73631062356239394">ડાયગ્નોસ્ટિક ડેટા શેર કરો</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">બિલ્ટ-ઇન ટચપૅડ</translation>
 <translation id="7397270852490618635">ઝાંખી થીમ બંધ કરો</translation>
 <translation id="741244894080940828">રૂપાંતરણ</translation>
 <translation id="7415801143053185905">HTTPની અતિ ઉચ્ચ વિલંબતા</translation>
@@ -715,7 +721,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">પ્રદાતાનો પ્રકાર</translation>
 <translation id="7882501334836096755">જાહેર કી</translation>
-<translation id="7890841768028788197">આંતરિક ટચસ્ક્રીન</translation>
 <translation id="7915220255123750251">નેટવર્ક APN સેટિંગ મેનેજ કરો. APN સેલ્યુલર નેટવર્ક અને ઇન્ટરનેટ વચ્ચે કનેક્શન સ્થાપિત કરે છે.</translation>
 <translation id="7936303884198020182">IP કન્ફિગ્યુરેશનમાં કોઈ નામ સર્વર મળ્યા નથી</translation>
 <translation id="7942349550061667556">લાલ</translation>
@@ -741,6 +746,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> પસંદ કરો</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183974620058026102">જોડો</translation>
 <translation id="8206859287963243715">સેલ્યુલર</translation>
 <translation id="8208861521865154048">લાભ</translation>
 <translation id="8226628635270268143">તમારા મનગમતા ફોટા અને આલ્બમ પસંદ કરો</translation>
@@ -763,7 +769,6 @@
 <translation id="8398927464629426868">ડિવાઇસ હાલમાં જે ઝડપથી ચાર્જ કે ડિસ્ચાર્જ થઈ રહ્યું છે તે ઝડપ</translation>
 <translation id="8420955526972171689">હાર્ડવેર સંબંધિત સમસ્યાઓ માટે, પરીક્ષણો અને સમસ્યા નિવારણ ચલાવો</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">આંતરિક કીબોર્ડ</translation>
 <translation id="8431300646573772016">ChromeOSમાં નવું શું છે</translation>
 <translation id="843568408673868420">ઇન્ટરનેટ કનેક્ટિવિટી</translation>
 <translation id="844521431886043384">DNSનું સેટઅપ કર્યું</translation>
@@ -820,7 +825,6 @@
 <translation id="8930521118335213258">પીઅર</translation>
 <translation id="8930622219860340959">વાયરલેસ</translation>
 <translation id="8936793075252196307">ક્લાયન્ટનું IP ઍડ્રેસ</translation>
-<translation id="8945750210906526975">ટચપૅડ</translation>
 <translation id="894617464444543719">ડિવાઇસ એક ફોન છે.</translation>
 <translation id="8968751544471797276">ચાર્જ થવાની ટકાવારી</translation>
 <translation id="8970109610781093811">ફરીથી ચલાવો</translation>
@@ -831,6 +835,7 @@
 <translation id="9025198690966128418">વ્યક્તિગત ડિવાઇસ તરીકે ઉપયોગ કરો</translation>
 <translation id="9028832514430399253">સ્ક્રીન સેવરના વિકલ્પો પસંદ કરવા માટે ટૉગલને ચાલુ કરો</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNSના રિઝોલ્યુશનની વિલંબતાનો સમય ઘણો વધુ છે</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">બ્લૂટૂથ</translation>
@@ -838,6 +843,7 @@
 <translation id="9087578468327036362">આ ક્વેરીની જાણ કરો</translation>
 <translation id="9088306295921699330">વર્તમાન વપરાશ</translation>
 <translation id="9095775724867566971">PluginVM</translation>
+<translation id="9100765901046053179">વિગતવાર સેટિંગ</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> માટે ટિકિટ રિફ્રેશ કરો</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" /> નંબરનું પેજ સ્કૅન કરી રહ્યાં છીએ</translation>
 <translation id="9111102763498581341">અનલોક કરો</translation>

@@ -209,8 +209,7 @@ class SyncConsentTest
     // Although, sync consent screen is not the first screen in the onboarding
     // flow when OobeConsolidatedConsent feature is enabled, it can be reached
     // and skipped after its predecessors are skipped.
-    if (chromeos::features::IsOobeConsolidatedConsentEnabled() &&
-        !screen_exited_)
+    if (features::IsOobeConsolidatedConsentEnabled() && !screen_exited_)
       LoginDisplayHost::default_host()->StartWizard(
           SyncConsentScreenView::kScreenId);
 
@@ -413,10 +412,8 @@ class SyncConsentTestWithModesParams
  public:
   SyncConsentTestWithModesParams() {
     std::tie(is_minor_user_, is_arc_restricted_) = GetParam();
-    if (is_arc_restricted_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::features::kLacrosSupport);
-    }
+    if (is_arc_restricted_)
+      scoped_feature_list_.InitAndEnableFeature(features::kLacrosSupport);
   }
 
   SyncConsentTestWithModesParams(const SyncConsentTestWithModesParams&) =
@@ -431,7 +428,8 @@ class SyncConsentTestWithModesParams
 };
 
 // TODO(crbug.com/1312384): Test failed on linux-chromeos-dbg.
-#if !defined(NDEBUG)
+// TODO(crbug.com/1392782): Test failed on MSan/LSan.
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_Accept DISABLED_Accept
 #else
 #define MAYBE_Accept Accept
@@ -676,9 +674,9 @@ class SyncConsentMinorModeTest : public SyncConsentTest {
   base::test::ScopedFeatureList sync_feature_list_;
 };
 
-// TODO(crbug.com/1312384): Test failed on linux-chromeos-dbg.
+// TODO(crbug.com/1312384): Test failed on linux-chromeos-dbg and MSAN and LSAN.
 #undef MAYBE_Accept
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_Accept DISABLED_Accept
 #else
 #define MAYBE_Accept Accept
@@ -745,7 +743,8 @@ IN_PROC_BROWSER_TEST_F(SyncConsentMinorModeTest, MAYBE_Accept) {
 }
 
 // TODO(crbug.com/1312384): Test failed on linux-chromeos-dbg.
-#if !defined(NDEBUG)
+// TODO(crbug.com/1392782): Test failed on MSan/LSan.
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_Decline DISABLED_Decline
 #else
 #define MAYBE_Decline Decline

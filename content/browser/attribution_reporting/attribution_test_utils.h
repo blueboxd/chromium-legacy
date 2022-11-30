@@ -22,12 +22,14 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/bounded_list.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
@@ -133,7 +135,7 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
   void WaitForSourceData(size_t num_source_data);
   void WaitForTriggerData(size_t num_trigger_data);
 
-  const std::vector<blink::mojom::AttributionSourceDataPtr>& source_data()
+  const std::vector<attribution_reporting::SourceRegistration>& source_data()
       const {
     return source_data_;
   }
@@ -149,13 +151,12 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
 
  private:
   // blink::mojom::AttributionDataHost:
-  void SourceDataAvailable(
-      blink::mojom::AttributionSourceDataPtr data) override;
+  void SourceDataAvailable(attribution_reporting::SourceRegistration) override;
   void TriggerDataAvailable(
       blink::mojom::AttributionTriggerDataPtr data) override;
 
   size_t min_source_data_count_ = 0;
-  std::vector<blink::mojom::AttributionSourceDataPtr> source_data_;
+  std::vector<attribution_reporting::SourceRegistration> source_data_;
 
   size_t min_trigger_data_count_ = 0;
   std::vector<blink::mojom::AttributionTriggerDataPtr> trigger_data_;
@@ -591,6 +592,9 @@ class TriggerBuilder {
 
   TriggerBuilder& SetDebugReporting(bool debug_reporting);
 
+  TriggerBuilder& SetAggregationCoordinator(
+      ::aggregation_service::mojom::AggregationCoordinator);
+
   AttributionTrigger Build(bool generate_event_trigger_data = true) const;
 
  private:
@@ -607,6 +611,9 @@ class TriggerBuilder {
   absl::optional<uint64_t> aggregatable_dedup_key_;
   bool is_within_fenced_frame_ = false;
   bool debug_reporting_ = false;
+  ::aggregation_service::mojom::AggregationCoordinator
+      aggregation_coordinator_ =
+          ::aggregation_service::mojom::AggregationCoordinator::kDefault;
 };
 
 // Helper class to construct an `AttributionInfo` for tests using default data.
@@ -652,6 +659,9 @@ class ReportBuilder {
   ReportBuilder& SetAggregatableHistogramContributions(
       std::vector<AggregatableHistogramContribution> contributions);
 
+  ReportBuilder& SetAggregationCoordinator(
+      ::aggregation_service::mojom::AggregationCoordinator);
+
   AttributionReport Build() const;
 
   AttributionReport BuildAggregatableAttribution() const;
@@ -667,6 +677,9 @@ class ReportBuilder {
   AttributionReport::AggregatableAttributionData::Id
       aggregatable_attribution_report_id_{0};
   std::vector<AggregatableHistogramContribution> contributions_;
+  ::aggregation_service::mojom::AggregationCoordinator
+      aggregation_coordinator_ =
+          ::aggregation_service::mojom::AggregationCoordinator::kDefault;
 };
 
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
@@ -885,6 +898,11 @@ MATCHER_P(AggregatableHistogramContributionsAre, matcher, "") {
 
 MATCHER_P(InitialReportTimeIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.initial_report_time, result_listener);
+}
+
+MATCHER_P(AggregationCoordinatorIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.aggregation_coordinator,
+                            result_listener);
 }
 
 // `CreateReportResult` matchers

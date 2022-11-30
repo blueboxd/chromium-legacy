@@ -133,6 +133,7 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. Se din søgemaskines vejledn
 <translation id="1974060860693918893">Avanceret</translation>
 <translation id="1981118202195772574">Mobil</translation>
 <translation id="1989112275319619282">Gennemse</translation>
+<translation id="1990820278544963435">Find</translation>
 <translation id="199425419756152024">Se adgangskode</translation>
 <translation id="2010008505735295285">Genindlæs</translation>
 <translation id="2015722694326466240">Angiv en adgangskode på din enhed, før du kan se adgangskoder.</translation>
@@ -283,6 +284,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3153862085237805241">Gem kortet</translation>
 <translation id="3157387275655328056">Føj til læseliste</translation>
 <translation id="3157684681743766797">Markér alle…</translation>
+<translation id="315778507796115851">Historik</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">Du kan også bruge gemte adgangskoder på dine andre enheder.</translation>
 <translation id="3175081911749765310">Webtjenester</translation>
@@ -927,7 +929,6 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7966516440812255683">Websites kan bruge cookies til at forbedre din browseroplevelse ved f.eks. at sørge for, at du forbliver logget ind, eller ved at huske varerne i din kurv.
 
 Websites kan bruge cookies til at se din browseraktivitet på forskellige websites for f.eks. at tilpasse annoncer.</translation>
-<translation id="7966904497916178308">Standardbeskyttelse er aktiveret</translation>
 <translation id="7971521879845308059">Bloker pop op-vinduer</translation>
 <translation id="797413074872316787">Aktivér synkronisering for at synkronisere og tilpasse på alle dine enheder.</translation>
 <translation id="7978018860671536736">3. Tryk på Autoudfyld adgangskoder</translation>
@@ -1088,6 +1089,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9200875785104711666">For <ph name="TIME" /> d. siden</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Søg i faner…</translation>
 <translation id="9223358826628549784">Der er sendt en nedbrudsrapport.</translation>
 <translation id="941747855997058526">Vælg adgangskode...</translation>
 <translation id="952704832371081537">Annuller</translation>

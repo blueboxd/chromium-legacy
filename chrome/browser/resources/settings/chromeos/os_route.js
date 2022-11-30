@@ -240,9 +240,6 @@ function createOSSettingsRoutes() {
       r.A11Y_KEYBOARD_AND_TEXT_INPUT,
       routesMojomWebui.SWITCH_ACCESS_OPTIONS_SUBPAGE_PATH,
       Subpage.kSwitchAccessOptions);
-  r.MANAGE_CAPTION_SETTINGS = createSubpage(
-      r.MANAGE_ACCESSIBILITY, routesMojomWebui.CAPTIONS_SUBPAGE_PATH,
-      Subpage.kCaptions);
 
   // Crostini section.
   r.CROSTINI = createSection(
@@ -291,6 +288,10 @@ function createOSSettingsRoutes() {
         r.BRUSCHETTA_DETAILS,
         routesMojomWebui.BRUSCHETTA_USB_PREFERENCES_SUBPAGE_PATH,
         Subpage.kBruschettaUsbPreferences);
+    r.BRUSCHETTA_SHARED_PATHS = createSubpage(
+        r.BRUSCHETTA_DETAILS,
+        routesMojomWebui.BRUSCHETTA_MANAGE_SHARED_FOLDERS_SUBPAGE_PATH,
+        Subpage.kBruschettaManageSharedFolders);
   }
 
   // Date and Time section.

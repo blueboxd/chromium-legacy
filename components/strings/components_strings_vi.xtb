@@ -38,6 +38,7 @@
 <translation id="10614374240317010">Không bao giờ lưu</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Dấu trang máy tính</translation>
+<translation id="1067561478268651872">Chính sách <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> sẽ không được sử dụng trừ phi bạn đặt chính sách <ph name="SECURE_DNS_SALT" />.</translation>
 <translation id="1068672505746868501">Không bao giờ dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Xe sử dụng nhiên liệu thay thế &amp; xe có động cơ lai</translation>
 <translation id="1070901266639972381">Đêm</translation>
@@ -1231,6 +1232,7 @@ Nếu bạn từ chối, chế độ cài đặt quyền riêng tư của bạn 
 <translation id="4132448310531350254">Trình xử lý trùng lặp cho file_extension "<ph name="FILE_EXTENSION" />" được các ứng dụng "<ph name="POLICY_IDS_LIST" />" tham chiếu.</translation>
 <translation id="4134123981501319574">Tạo tài liệu</translation>
 <translation id="413544239732274901">Tìm hiểu thêm</translation>
+<translation id="4140905530744469899">Mã hồ sơ:</translation>
 <translation id="4142935452406587478">Khay 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Phong bì kiểu Trung số 4</translation>
@@ -1354,6 +1356,7 @@ Nếu bạn từ chối, chế độ cài đặt quyền riêng tư của bạn 
 <translation id="4407755609041463909">Bừng cháy</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Điện tử gia dụng</translation>
+<translation id="4412074349188076601">Cấu hình này được đánh dấu là dễ dàng cài đặt, nhưng vì không có hình ảnh nào được cung cấp cho cấu trúc này nên bạn không thể cài đặt cấu hình này.</translation>
 <translation id="4414515549596849729">cookie và dữ liệu trang web</translation>
 <translation id="4415426530740016218">Địa chỉ nhận hàng</translation>
 <translation id="4424024547088906515">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chrome tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -2097,6 +2100,7 @@ Nếu bạn từ chối, chế độ cài đặt quyền riêng tư của bạn 
 <translation id="6328786501058569169">Đây là trang web lừa đảo</translation>
 <translation id="6337133576188860026">Bộ nhớ đệm còn chưa đầy <ph name="SIZE" />. Một số trang web có thể tải chậm hơn vào lần tới bạn truy cập.</translation>
 <translation id="6337534724793800597">Lọc chính sách theo tên</translation>
+<translation id="633770708279464947">Giá trị <ph name="SECURE_DNS_SALT" /> không hợp lệ và sẽ không được sử dụng.</translation>
 <translation id="6340739886198108203">Chính sách của quản trị viên không khuyến khích chụp ảnh màn hình hoặc ghi âm khi đang có nội dung bảo mật trên màn hình:</translation>
 <translation id="6341434961864773665">{0,plural, =1{Theo chính sách của quản trị viên, bạn không nên tải tệp này lên <ph name="DESTINATION_NAME" />}other{Theo chính sách của quản trị viên, bạn không nên tải các tệp này lên <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="6348220984832452017">Biến thể đang hoạt động</translation>
@@ -2993,6 +2997,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8654126188050905496">55 x 91 mm</translation>
 <translation id="8663226718884576429">Tóm tắt đơn hàng, <ph name="TOTAL_LABEL" />, chi tiết khác</translation>
 <translation id="8666678546361132282">Tiếng Anh</translation>
+<translation id="8671519637524426245">Giá trị <ph name="SECURE_DNS_SALT" /> không đáp ứng các yêu cầu về kích thước.</translation>
 <translation id="867224526087042813">Chữ ký</translation>
 <translation id="8672264262457010862">Kinh doanh và công nghiệp</translation>
 <translation id="8676424191133491403">Không trì hoãn</translation>
@@ -3092,6 +3097,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8913778647360618320">Nút Quản lý phương thức thanh toán, nhấn phím Enter để quản lý thông tin thanh toán và thẻ tín dụng trong phần cài đặt của Chrome</translation>
 <translation id="8922013791253848639">Luôn cho phép quảng cáo trên trang web này</translation>
 <translation id="892588693504540538">Đục lỗ trên cùng bên phải</translation>
+<translation id="8930098617363288380">Giá trị <ph name="SECURE_DNS_SALT" /> không phù hợp và sẽ không được dùng trừ phi bạn đặt chính sách <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" />.</translation>
 <translation id="8930330541574156305">Bất động sản</translation>
 <translation id="8931333241327730545">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>
@@ -3204,6 +3210,7 @@ Thông tin chi tiết bổ sung:
 <translation id="9179907736442194268">Nhận email thông báo nếu có chương trình giảm giá trên một trang web bất kỳ</translation>
 <translation id="9183302530794969518">Google Tài liệu</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> sử dụng giao thức không được hỗ trợ.</translation>
+<translation id="918454845714257218">Hãy kiểm tra mã trên <ph name="SIDE_OF_CARD" /> rồi thử lại</translation>
 <translation id="9187461866967718678">Thể thao mạo hiểm</translation>
 <translation id="9191834167571392248">Đục lỗ dưới cùng bên trái</translation>
 <translation id="9199905725844810519">Tính năng in đã bị chặn</translation>

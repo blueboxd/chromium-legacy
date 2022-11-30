@@ -164,6 +164,26 @@ class Server {
                                                bool read_only)>;
   void Stat(const std::string& fs_url_as_string, StatCallback callback);
 
+  // Stat2 returns the file or directory's metadata.
+  //
+  // Unlike Stat, it speaks protobufs.
+  using Stat2Callback = base::OnceCallback<void(
+      const fusebox_staging::Stat2ResponseProto& response)>;
+  void Stat2(const fusebox_staging::Stat2RequestProto& request,
+             Stat2Callback callback);
+
+  // Truncate sets a file's size.
+  using TruncateCallback = base::OnceCallback<void(
+      const fusebox_staging::TruncateResponseProto& response)>;
+  void Truncate(const fusebox_staging::TruncateRequestProto& request,
+                TruncateCallback callback);
+
+  // Unlink deletes a file.
+  using UnlinkCallback = base::OnceCallback<void(
+      const fusebox_staging::UnlinkResponseProto& response)>;
+  void Unlink(const fusebox_staging::UnlinkRequestProto& request,
+              UnlinkCallback callback);
+
   // Write2 writes to a virtual file opened by Open2.
   using Write2Callback = base::OnceCallback<void(
       const fusebox_staging::Write2ResponseProto& response)>;
@@ -345,7 +365,6 @@ class Server {
   // ----
 
  private:
-  void MakeTempDirOnWorkerThread(MakeTempDirCallback callback);
   void ReplyToMakeTempDir(base::ScopedTempDir scoped_temp_dir,
                           bool create_succeeded,
                           MakeTempDirCallback callback);

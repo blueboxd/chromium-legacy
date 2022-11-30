@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">Δοκιμή βημάτων αντιμετώπισης προβλημάτων</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">Συνδεθείτε σε ένα δίκτυο και επαναλάβετε τη φόρτωση της σελίδας για να δείτε την προφύλαξη οθόνης.</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Περισσότερες ρυθμίσεις</translation>
 <translation id="2085089206770112532">Μείωση φωτεινότητας οθόνης</translation>
 <translation id="2105810540595158374">Η συσκευή είναι χειριστήριο παιχνιδιού.</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">Ακύρωση εργασίας εκτύπωσης</translation>
 <translation id="2163937499206714165">Ενεργοποίηση λειτουργίας χαμηλού φωτισμού</translation>
 <translation id="2180197493692062006">Παρουσιάστηκε κάποιο πρόβλημα. Δοκιμάστε να ανοίξετε ξανά την εφαρμογή.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">Επαναφορά μετρητών επισκεψιμότητας</translation>
 <translation id="2212733584906323460">Ανάλυση ονόματος</translation>
 <translation id="2217935453350629363">Τρέχουσα ταχύτητα</translation>
@@ -152,7 +154,6 @@
 <translation id="2271469253353559191">Πρόγραμμα λειτουργίας χαμηλού φωτισμού</translation>
 <translation id="2276999893457278469">Κορυφαίο περιεχόμενο βοήθειας</translation>
 <translation id="2287186687001756809">Δεν υπάρχει διαθέσιμη εικόνα. Για προσθήκη φωτογραφιών, μεταβείτε στη διεύθυνση <ph name="LINK" /></translation>
-<translation id="2304783958703511257">Σύνθετες ρυθμίσεις</translation>
 <translation id="2307344026739914387">Χρήση τρέχοντος ζεύγους κλειδιών</translation>
 <translation id="2320295602967756579">Ενεργοποίηση φωτεινού θέματος</translation>
 <translation id="2323506179655536734">ΠΑΡΑΒΛΕΦΘΗΚΕ</translation>
@@ -269,7 +270,6 @@
 <translation id="360565022852130722">Η ασφάλεια του δικτύου Wi-Fi βασίζεται σε αδύναμο πρωτόκολλο WEP 802.1x.</translation>
 <translation id="3606583719724308068">Υψηλός λανθάνων χρόνος σε ιστοτόπους HTTPS</translation>
 <translation id="361575905210396100">Σας ευχαριστούμε για τα σχόλιά σας</translation>
-<translation id="3621202678540785336">Είσοδος</translation>
 <translation id="3632579075709132555">Εναλλαγή οθόνης απορρήτου</translation>
 <translation id="3651050199673793219">Επιλέξτε μια μονάδα θερμοκρασίας</translation>
 <translation id="3689839747745352263">Δοκιμή <ph name="TEST_NAME" /></translation>
@@ -386,6 +386,7 @@
 <translation id="4793756956024303490">Αλγόριθμος συμπίεσης</translation>
 <translation id="4794140124556169553">Η εκτέλεση μιας δοκιμής CPU μπορεί να επηρεάσει την απόδοση του συστήματος</translation>
 <translation id="4800589996161293643">Κοινότητα Chromebook</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Ακυρώθηκε η εργασία εκτύπωσης <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Φωτεινό θέμα</translation>
 <translation id="4813136279048157860">Οι εικόνες μου</translation>
@@ -397,6 +398,7 @@
 <translation id="4847902821209177679">Επιλέχθηκε το στοιχείο <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />. Πατήστε Enter για να επιλέξετε λευκώματα από <ph name="TOPIC_SOURCE" />.</translation>
 <translation id="484790837831576105">(Android) Επίλυση DNS</translation>
 <translation id="4848429997038228357">ΕΚΤΕΛΕΙΤΑΙ</translation>
+<translation id="4854586501323951986">Ενσωματωμένη οθόνη αφής</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Απομένει {0} προσπάθεια}other{<ph name="ERROR_MESSAGE" /> Απομένουν {0} προσπάθειες}}</translation>
 <translation id="4873827928179867585">Αλγόριθμος ελέγχου ταυτότητας</translation>
 <translation id="4880328057631981605">Όνομα σημείου πρόσβασης</translation>
@@ -405,6 +407,7 @@
 <translation id="4891842000192098784">Καταπόνηση</translation>
 <translation id="4897058166682006107">Η μπαταρία αριστερού ακουστικού της συσκευής βρίσκεται στο <ph name="BATTERY_PERCENTAGE" />%.</translation>
 <translation id="4905998861748258752">Ενεργοποιήστε τη λειτουργία για να ορίσετε επιλογές για την προφύλαξη οθόνης</translation>
+<translation id="4910858703033903787">Τύποι APN</translation>
 <translation id="4917385247580444890">Ισχυρό</translation>
 <translation id="4917889632206600977">Διακοπή - Τελείωσε το χαρτί</translation>
 <translation id="491791267030419270">Συμβουλές για τη σύνταξη σχολίων</translation>
@@ -460,6 +463,7 @@
 <translation id="5358174242040570474">Κάτι δεν πήγε καλά. Δοκιμάστε να επιλέξετε ξανά μια ταπετσαρία ή να επαναλάβετε το άνοιγμα της εφαρμογής.</translation>
 <translation id="5372659122375744710">Το δίκτυο Wi-Fi δεν είναι ασφαλές.</translation>
 <translation id="5376354385557966694">Αυτόματη φωτεινή λειτουργία</translation>
+<translation id="5378184552853359930">Τύπος IP</translation>
 <translation id="5389159777326897627">Ταπετσαρία και στιλ</translation>
 <translation id="5389224261615877010">Ουράνιο τόξο</translation>
 <translation id="5400907029458559844">Η συσκευή συνδέεται.</translation>
@@ -570,6 +574,7 @@
 <translation id="6394634179843537518">Προσθήκη αρχείου</translation>
 <translation id="6410257289063177456">Αρχεία εικόνας</translation>
 <translation id="641081527798843608">Αντιστοιχία θέματος</translation>
+<translation id="6412715219990689313">Ενσωματωμένο πληκτρολόγιο</translation>
 <translation id="6423239382391657905">Άνοιγμα VPN</translation>
 <translation id="6439505561246192797">Αδύναμο (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Μετάβαση στις ρυθμίσεις λογαριασμού</translation>
@@ -668,6 +673,7 @@
 <translation id="7359657277149375382">Τύπος αρχείου</translation>
 <translation id="73631062356239394">Κοινοποίηση διαγνωστικών δεδομένων</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">Ενσωματωμένη επιφάνεια αφής</translation>
 <translation id="7397270852490618635">Απενεργοποίηση φωτεινού θέματος</translation>
 <translation id="741244894080940828">μετατροπή</translation>
 <translation id="7415801143053185905">Πολύ υψηλός λανθάνων χρόνος HTTP</translation>
@@ -716,7 +722,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Τύπος παρόχου</translation>
 <translation id="7882501334836096755">Δημόσιο κλειδί</translation>
-<translation id="7890841768028788197">Ενσωματωμένη οθόνη αφής</translation>
 <translation id="7915220255123750251">Διαχείριση ρυθμίσεων APN δικτύου. Τα APN δημιουργούν μια σύνδεση μεταξύ ενός δικτύου κινητής τηλεφωνίας και του διαδικτύου.</translation>
 <translation id="7936303884198020182">Δεν βρέθηκαν διακομιστές ονομάτων.</translation>
 <translation id="7942349550061667556">Κόκκινο</translation>
@@ -742,6 +747,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Επιλέξτε <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183974620058026102">Προσθήκη</translation>
 <translation id="8206859287963243715">Κινητό</translation>
 <translation id="8208861521865154048">Προνόμια</translation>
 <translation id="8226628635270268143">Επιλέξτε τις αγαπημένες σας φωτογραφίες και λευκώματα.</translation>
@@ -764,7 +770,6 @@
 <translation id="8398927464629426868">Ο ρυθμός με τον οποίο φορτίζεται ή εκφορτίζεται η συσκευή αυτήν τη στιγμή.</translation>
 <translation id="8420955526972171689">Εκτέλεση δοκιμών και αντιμετώπιση προβλημάτων για προβλήματα εξοπλισμού</translation>
 <translation id="8422748173858722634">Αριθμός ΙΜΕΙ</translation>
-<translation id="8428073762635678092">Ενσωματωμένο πληκτρολόγιο</translation>
 <translation id="8431300646573772016">Νέα στοιχεία Chrome OS</translation>
 <translation id="843568408673868420">Συνδεσιμότητα στο διαδίκτυο</translation>
 <translation id="844521431886043384">Το DNS δεν έχει ρυθμιστεί.</translation>
@@ -821,7 +826,6 @@
 <translation id="8930521118335213258">Ομότιμη</translation>
 <translation id="8930622219860340959">Ασύρματο</translation>
 <translation id="8936793075252196307">Διεύθυνση IP εφαρμογής-πελάτη</translation>
-<translation id="8945750210906526975">Ενσωματωμένη οθόνη αφής</translation>
 <translation id="894617464444543719">Η συσκευή είναι τηλέφωνο.</translation>
 <translation id="8968751544471797276">Ρυθμός φόρτισης</translation>
 <translation id="8970109610781093811">Επανεκτέλεση</translation>
@@ -832,6 +836,7 @@
 <translation id="9025198690966128418">Χρήση ως προσωπική συσκευή</translation>
 <translation id="9028832514430399253">Ενεργοποιήστε την εναλλαγή για να ορίσετε τις επιλογές προφύλαξης οθόνης</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">Η επίλυση DNS έχει υψηλό λανθάνοντα χρόνο</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -839,6 +844,7 @@
 <translation id="9087578468327036362">Υποβάλετε αναφορά για αυτό το ερώτημα.</translation>
 <translation id="9088306295921699330">Τρέχουσα χρήση</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="9100765901046053179">Σύνθετες ρυθμίσεις</translation>
 <translation id="910415269708673980">Ανανέωση εισιτηρίου για το <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Σάρωση σελίδας <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Ξεκλείδωμα</translation>

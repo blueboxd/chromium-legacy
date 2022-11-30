@@ -934,15 +934,6 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "document-domain-disabled-by-default",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [
-      "external/wpt/document-policy/experimental-features/document-domain"
-    ],
-    "args": [ "--enable-features=DisableDocumentDomainByDefault" ],
-    "expires": "Jul 1, 2023"
-  },
-  {
     "prefix": "backface-visibility-interop",
     "platforms": ["Linux"],
     "bases": [ "external/wpt/css/css-transforms" ],
@@ -1174,6 +1165,22 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "expose-lcp-render-time",
+    "platforms": [
+      "Linux",
+      "Mac",
+      "Win"
+    ],
+    "bases": [
+      "external/wpt/performance-timeline/cross-origin-non-tao-image.sub.html"
+    ],
+    "exclusive_tests": "ALL",
+    "args": [
+      "--enable-blink-features=ExposeRenderTimeNonTaoDelayedImage"
+    ],
+    "expires": "Jul 1, 2023"
+  },
+  {
     "prefix": "object-param-url",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/html/semantics/embedded-content/the-object-element/object-param-url.html"],
@@ -1281,6 +1288,18 @@
     ],
     "args": [
       "--enable-features=LCPMultipleUpdatesPerElement"
+    ],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "lcp-mouseover-heuristics",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/largest-contentful-paint/mouseover-heuristics-element.tentative.html",
+      "external/wpt/largest-contentful-paint/mouseover-heuristics-background.tentative.html"
+    ],
+    "args": [
+      "--enable-features=LCPMouseoverHeuristics"
     ],
     "expires": "Jul 1, 2023"
   },
@@ -1521,7 +1540,7 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesReferrerPolicyKey",
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesReferrerPolicyKey,SpeculationRulesDocumentRules",
       "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test",
       "--isolated-prerender-allow-all-domains"

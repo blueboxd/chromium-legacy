@@ -86,6 +86,9 @@ class ASH_EXPORT UnifiedSystemTray
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Callback called when this is pressed.
+  void OnButtonPressed(const ui::Event& event);
+
   // True if the bubble is shown. It does not include slider bubbles, and when
   // they're shown it still returns false.
   bool IsBubbleShown() const;
@@ -176,7 +179,6 @@ class ASH_EXPORT UnifiedSystemTray
   void MaybeRecordFirstInteraction(FirstInteractionType type);
 
   // TrayBackgroundView:
-  bool PerformAction(const ui::Event& event) override;
   void ShowBubble() override;
   void CloseBubble() override;
   std::u16string GetAccessibleNameForBubble() override;
@@ -191,6 +193,8 @@ class ASH_EXPORT UnifiedSystemTray
   views::Widget* GetBubbleWidget() const override;
   const char* GetClassName() const override;
   absl::optional<AcceleratorAction> GetAcceleratorAction() const override;
+  void OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
+                                    bool visible) override;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;

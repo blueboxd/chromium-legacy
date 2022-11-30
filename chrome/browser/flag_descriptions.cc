@@ -85,10 +85,6 @@ const char kAttributionReportingDebugModeDescription[] =
     "reporting delays and noise. Only works if the Attribution Reporting API "
     "is already enabled.";
 
-const char kBatchFetchRequestsName[] = "Batch Fetch Requests";
-const char kBatchFetchRequestsDescription[] =
-    "Process resource requests in batches while parsing a HTML document.";
-
 const char kBrokerFileOperationsOnDiskCacheInNetworkServiceName[] =
     "Broker file operations on disk cache in the Network Service";
 const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[] =
@@ -137,6 +133,10 @@ const char kGaiaIdCacheInAccountManagerFacadeName[] =
 const char kGaiaIdCacheInAccountManagerFacadeDescription[] =
     "If enabled, starts fetching gaia id from android accounts in "
     "AccountManagerFacade (AMF)";
+
+const char kIdentityStatusConsistencyName[] = "Identity Status Consistency";
+const char kIdentityStatusConsistencyDescription[] =
+    "If enabled, always show identity status - even for signed-out users";
 
 const char kTangibleSyncName[] = "Tangible Sync";
 const char kTangibleSyncDescription[] =
@@ -253,11 +253,6 @@ const char kUseCustomMessagesDomainName[] = "Use custom Messages domain";
 const char kUseCustomMessagesDomainDescription[] =
     "Use a custom URL as part of the \"Messages\" feature under "
     "\"Connected Devices\" settings.";
-
-const char kAndroidPictureInPictureAPIName[] =
-    "Picture-in-Picture Web API for Android";
-const char kAndroidPictureInPictureAPIDescription[] =
-    "Enable Picture-in-Picture Web API for Android";
 
 const char kUseDMSAAForTilesName[] = "Use DMSAA for tiles";
 const char kUseDMSAAForTilesDescription[] =
@@ -1544,6 +1539,13 @@ const char kContextualPageActionsReaderModeName[] =
 const char kContextualPageActionsReaderModeDescription[] =
     "Enables reader mode as a contextual page action.";
 
+const char kEnableOsIntegrationSubManagersName[] =
+    "OS Integration sub managers";
+const char kEnableOsIntegrationSubManagersDescription[] =
+    "Enable OS integration sub managers to either just write new OS "
+    "integration states to DB or execute on the OS integration states before "
+    "writing to the DB";
+
 const char kHandwritingGestureEditingName[] = "Handwriting Gestures Editing";
 const char kHandwritingGestureEditingDescription[] =
     "Enables editing with handwriting gestures within the virtual keyboard.";
@@ -1755,6 +1757,12 @@ const char kJourneysShowAllClustersDescription[] =
 const char kJourneysVisitDedupingName[] = "History Journeys Visit Deduping";
 const char kJourneysVisitDedupingDescription[] =
     "Enables variations for how visits are deduped";
+
+const char kExtractRelatedSearchesFromPrefetchedZPSResponseName[] =
+    "Extract Related Searches from Prefetched ZPS Response";
+const char kExtractRelatedSearchesFromPrefetchedZPSResponseDescription[] =
+    "Enables page annotation logic to source related searches data from "
+    "prefetched ZPS responses";
 
 const char kLargeFaviconFromGoogleName[] = "Large favicons from Google";
 const char kLargeFaviconFromGoogleDescription[] =
@@ -4398,6 +4406,10 @@ const char kWebAuthenticationPermitEnterpriseAttestationDescription[] =
     "attestation statement from a security key when creating a Web "
     "Authentication credential.";
 
+const char kDevToolsTabTargetLiteralName[] = "DevTools using Tab Target";
+const char kDevToolsTabTargetLiteralDescription[] =
+    "Makes DevTools use an experimental CDP Tab target.";
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Windows ---------------------------------------------------------------------
@@ -4668,12 +4680,6 @@ const char kAppDiscoveryForOobeName[] =
 const char kAppDiscoveryForOobeDescription[] =
     "Use the App Discovery Service to request recommended apps for OOBE.";
 
-const char kAppProvisioningStaticName[] =
-    "App Provisioning with static server setup.";
-const char kAppProvisioningStaticDescription[] =
-    "Enables pulling apps from a static server setup to enable new app serving "
-    "possibilities. ";
-
 const char kArcCustomTabsExperimentName[] =
     "Enable Custom Tabs experiment for ARC";
 const char kArcCustomTabsExperimentDescription[] =
@@ -4747,12 +4753,6 @@ const char kArcUsbDeviceDefaultAttachToVmName[] =
     "Attach unclaimed USB devices to ARCVM";
 const char kArcUsbDeviceDefaultAttachToVmDescription[] =
     "When ARCVM is enabled, always attach unclaimed USB devices to ARCVM";
-
-const char kArcVmBalloonPolicyName[] =
-    "Enable ARCVM limit cache balloon policy";
-const char kArcVmBalloonPolicyDesc[] =
-    "Trigger reclaim in ARCVM to reduce memory use when ChromeOS is running "
-    "low on memory.";
 
 const char kArcEnableUsapName[] =
     "Enable ARC Unspecialized Application Processes";
@@ -5327,6 +5327,10 @@ const char kAudioPeripheralVolumeGranularityDescription[] =
 const char kEcheSWAName[] = "Enable Eche feature";
 const char kEcheSWADescription[] = "This is the main flag for enabling Eche.";
 
+const char kEcheLauncherName[] = "Enable the Eche launcher";
+const char kEcheLauncherDescription[] =
+    "Enables the launcher for all apps for Eche.";
+
 const char kEcheSWADebugModeName[] = "Enable Eche Debug Mode";
 const char kEcheSWADebugModeDescription[] =
     "Save console logs of Eche in the system log";
@@ -5833,8 +5837,14 @@ const char kArcWindowPredictorDescription[] =
 
 const char kArcInputOverlayNameBeta[] = "Enable ARC Input Overlay Beta";
 const char kArcInputOverlayDescriptionBeta[] =
-    "Enable more features based on ARC Input Overlay Alpha, "
-    "so it can change the touch point position.";
+    "Enable full editor feature for Gaming Input Overlay based on Alpha two, "
+    "so users can add and remove actions.";
+
+const char kArcInputOverlayNameAlphaTwo[] =
+    "Enable ARC Input Overlay Alpha Two";
+const char kArcInputOverlayDescriptionAlphaTwo[] =
+    "Enable menu and action reposition feature for Gaming Input Overlay based "
+    "on Alpha.";
 
 const char kShelfAutoHideSeparationName[] =
     "Enable separate shelf auto-hide preferences.";

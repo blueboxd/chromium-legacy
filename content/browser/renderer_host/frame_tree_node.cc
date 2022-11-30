@@ -20,6 +20,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/fenced_frame/fenced_frame.h"
+#include "content/browser/network/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -27,6 +28,8 @@
 #include "content/browser/renderer_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_package/subresource_web_bundle_navigation_info.h"
+#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -694,7 +697,7 @@ bool FrameTreeNode::NotifyUserActivation(
   for (RenderFrameHostImpl* rfh = current_frame_host(); rfh;
        rfh = rfh->GetParent()) {
     rfh->DidReceiveUserActivation();
-    rfh->frame_tree_node()->user_activation_state_.Activate(notification_type);
+    rfh->ActivateUserActivation(notification_type);
   }
 
   current_frame_host()->browsing_context_state()->set_has_active_user_gesture(
@@ -709,7 +712,7 @@ bool FrameTreeNode::NotifyUserActivation(
     for (FrameTreeNode* node : frame_tree()->Nodes()) {
       if (node->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
               current_origin)) {
-        node->user_activation_state_.Activate(notification_type);
+        node->current_frame_host()->ActivateUserActivation(notification_type);
       }
     }
   }
@@ -721,9 +724,9 @@ bool FrameTreeNode::NotifyUserActivation(
 }
 
 bool FrameTreeNode::ConsumeTransientUserActivation() {
-  bool was_active = user_activation_state_.IsActive();
+  bool was_active = current_frame_host()->IsActiveUserActivation();
   for (FrameTreeNode* node : frame_tree()->Nodes()) {
-    node->user_activation_state_.ConsumeIfActive();
+    node->current_frame_host()->ConsumeTransientUserActivation();
   }
   current_frame_host()->browsing_context_state()->set_has_active_user_gesture(
       false);
@@ -732,7 +735,7 @@ bool FrameTreeNode::ConsumeTransientUserActivation() {
 
 bool FrameTreeNode::ClearUserActivation() {
   for (FrameTreeNode* node : frame_tree()->SubtreeNodes(this))
-    node->user_activation_state_.Clear();
+    node->current_frame_host()->ClearUserActivation();
   current_frame_host()->browsing_context_state()->set_has_active_user_gesture(
       false);
   return true;
@@ -985,8 +988,46 @@ Navigator& FrameTreeNode::GetCurrentNavigator() {
   return navigator();
 }
 
+RenderFrameHostManager& FrameTreeNode::GetRenderFrameHostManager() {
+  return render_manager_;
+}
+
 void FrameTreeNode::SetFocusedFrame(SiteInstanceGroup* source) {
   frame_tree_->delegate()->SetFocusedFrame(this, source);
+}
+
+void FrameTreeNode::DidChangeReferrerPolicy(
+    network::mojom::ReferrerPolicy referrer_policy) {
+  navigator().controller().DidChangeReferrerPolicy(this, referrer_policy);
+}
+
+std::unique_ptr<NavigationRequest>
+FrameTreeNode::CreateNavigationRequestForSynchronousRendererCommit(
+    RenderFrameHostImpl* render_frame_host,
+    bool is_same_document,
+    const GURL& url,
+    const url::Origin& origin,
+    const net::IsolationInfo& isolation_info_for_subresources,
+    blink::mojom::ReferrerPtr referrer,
+    const ui::PageTransition& transition,
+    bool should_replace_current_entry,
+    const std::string& method,
+    bool has_transient_activation,
+    bool is_overriding_user_agent,
+    const std::vector<GURL>& redirects,
+    const GURL& original_url,
+    std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
+    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
+    std::unique_ptr<SubresourceWebBundleNavigationInfo>
+        subresource_web_bundle_navigation_info,
+    int http_response_code) {
+  return NavigationRequest::CreateForSynchronousRendererCommit(
+      this, render_frame_host, is_same_document, url, origin,
+      isolation_info_for_subresources, std::move(referrer), transition,
+      should_replace_current_entry, method, has_transient_activation,
+      is_overriding_user_agent, redirects, original_url,
+      std::move(coep_reporter), std::move(web_bundle_navigation_info),
+      std::move(subresource_web_bundle_navigation_info), http_response_code);
 }
 
 }  // namespace content

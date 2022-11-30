@@ -62,7 +62,7 @@ class PrivacySandboxSettings : public KeyedService {
     // the Privacy Sandbox is restricted, all API access is disabled. This is
     // consulted on every access check, and it is acceptable for this to change
     // return value over the life of the service.
-    virtual bool IsPrivacySandboxRestricted() = 0;
+    virtual bool IsPrivacySandboxRestricted() const = 0;
   };
 
   PrivacySandboxSettings(
@@ -140,17 +140,11 @@ class PrivacySandboxSettings : public KeyedService {
   // combined with the more generic IsFledgeAllowed().
   bool IsFledgeJoiningAllowed(const url::Origin& top_frame_origin) const;
 
-  // Determine whether |auction_party| can register an interest group, or sell /
+  // Determine whether |auction_party| can register an interest group, or sell
   // buy in an auction, on |top_frame_origin|.
+  // TODO(crbug.com/1378703): Remove |top_frame_origin| after m1 is launched.
   bool IsFledgeAllowed(const url::Origin& top_frame_origin,
-                       const url::Origin& auction_party);
-
-  // Filter |auction_parties| down to those that may participate as a buyer for
-  // auctions run on |top_frame_origin|. Logically equivalent to calling
-  // IsFledgeAllowed() for each element of |auction_parties|.
-  std::vector<GURL> FilterFledgeAllowedParties(
-      const url::Origin& top_frame_origin,
-      const std::vector<GURL>& auction_parties);
+                       const url::Origin& auction_party) const;
 
   // Determines whether Shared Storage is allowable in a particular context.
   // `top_frame_origin` can be the same as `accessing_origin` in the case of a
@@ -185,7 +179,7 @@ class PrivacySandboxSettings : public KeyedService {
   // Returns whether the Privacy Sandbox is being restricted by the associated
   // delegate. Forwards directly to the corresponding delegate function.
   // Virtual to allow mocking in tests.
-  virtual bool IsPrivacySandboxRestricted();
+  virtual bool IsPrivacySandboxRestricted() const;
 
   // Called when there's a broad cookies clearing action. For example, this
   // should be called on "Clear browsing data", but shouldn't be called on the
@@ -223,6 +217,9 @@ class PrivacySandboxSettings : public KeyedService {
   // Whether the site associated with the URL is allowed to access site data or
   // not, as a primary context.
   bool IsSiteDataAllowed(const GURL& url) const;
+  // Whether the privacy sandbox associated with  the |pref_name| is enabled.
+  // For individual sites, check as well with IsSiteDataAllowed.
+  bool IsM1PrivacySandboxApiEnabled(const std::string& pref_name) const;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

@@ -208,6 +208,12 @@ CloudUploadDialog::CloudUploadDialog(mojom::DialogArgsPtr args,
 
 CloudUploadDialog::~CloudUploadDialog() = default;
 
+bool CloudUploadDialog::ShouldCloseDialogOnEscape() const {
+  // The One Drive setup dialog handles escape in the webui as it needs to
+  // display a confirmation dialog on cancellation.
+  return dialog_page_ != mojom::DialogPage::kOneDriveSetup;
+}
+
 bool CloudUploadDialog::ShouldShowCloseButton() const {
   return false;
 }
@@ -217,7 +223,7 @@ const int kDialogWidthForOneDriveSetup = 512;
 const int kDialogHeightForOneDriveSetup = 532;
 
 const int kDialogWidthForFileHandlerDialog = 512;
-const int kDialogHeightForFileHandlerDialog = 532;
+const int kDialogHeightForFileHandlerDialog = 338;
 
 const int kDialogWidthForDriveSetup = 512;
 const int kDialogHeightForDriveSetup = 220;

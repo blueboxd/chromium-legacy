@@ -33,7 +33,6 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/about_ui.h"
-#include "chrome/browser/ui/webui/apc_internals/apc_internals_ui.h"
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui.h"
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/browser/ui/webui/browsing_topics/browsing_topics_internals_ui.h"
@@ -267,12 +266,12 @@
 #include "chrome/browser/ui/webui/ash/drive_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
 #include "chrome/browser/ui/webui/ash/human_presence_internals_ui.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_network_ui.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_start_reauth_ui.h"
 #include "chrome/browser/ui/webui/ash/in_session_password_change/password_change_ui.h"
 #include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_network_ui.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_start_reauth_ui.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_internals/multidevice_internals_ui.h"
@@ -753,8 +752,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // print dialog.
   if (url.host_piece() == chrome::kChromeUIAccessibilityHost)
     return &NewWebUI<AccessibilityUI>;
-  if (url.host_piece() == chrome::kChromeUIAPCInternalsHost)
-    return &NewWebUI<APCInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAutofillInternalsHost)
     return &NewWebUI<AutofillInternalsUI>;
 
@@ -986,10 +983,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == ash::kChromeUIMediaAppHost)
     return &NewComponentUI<ash::MediaAppUI, ChromeMediaAppUIDelegate>;
-  if (ash::features::IsFirmwareUpdaterAppEnabled()) {
-    if (url.host_piece() == ash::kChromeUIFirmwareUpdateAppHost)
-      return &NewWebUI<ash::FirmwareUpdateAppUI>;
-  }
   if (url.host_piece() == ash::multidevice::kChromeUIProximityAuthHost &&
       !profile->IsOffTheRecord()) {
     return &NewWebUI<ash::multidevice::ProximityAuthUI>;

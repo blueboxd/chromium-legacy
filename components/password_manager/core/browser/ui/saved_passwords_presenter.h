@@ -39,8 +39,6 @@ class PasswordUndoHelper;
 class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
                                 public PasswordStoreConsumer {
  public:
-  using SavedPasswordsView = base::span<const PasswordForm>;
-
   // Observer interface. Clients can implement this to get notified about
   // changes to the list of saved passwords or if a given password was edited
   // Clients can register and de-register themselves, and are expected to do so
@@ -51,14 +49,14 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
     // passwords changed.
     //
     // OnEdited() will be invoked synchronously if EditPassword() is invoked
-    // with a password that was present in |passwords_|.
+    // with a password that was present in cache.
     // |password.password_value| will be equal to |new_password| in this case.
     virtual void OnEdited(const PasswordForm& password) {}
     // OnSavedPasswordsChanged() gets invoked asynchronously after a change to
     // the underlying password store happens. This might be due to a call to
     // EditPassword(), but can also happen if passwords are added or removed due
     // to other reasons.
-    virtual void OnSavedPasswordsChanged(SavedPasswordsView passwords) {}
+    virtual void OnSavedPasswordsChanged() {}
   };
 
   // Result of EditSavedCredentials.
@@ -101,10 +99,9 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
       base::OnceCallback<void(const std::vector<AddResult>&)>;
   using DuplicatePasswordsMap = std::multimap<std::string, PasswordForm>;
 
-  SavedPasswordsPresenter(
-      AffiliationService* affiliation_service,
-      scoped_refptr<PasswordStoreInterface> profile_store,
-      scoped_refptr<PasswordStoreInterface> account_store = nullptr);
+  SavedPasswordsPresenter(AffiliationService* affiliation_service,
+                          scoped_refptr<PasswordStoreInterface> profile_store,
+                          scoped_refptr<PasswordStoreInterface> account_store);
   ~SavedPasswordsPresenter() override;
 
   // Initializes the presenter and makes it issue the first request for all
@@ -148,9 +145,6 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   EditResult EditSavedCredentials(const CredentialUIEntry& original_credential,
                                   const CredentialUIEntry& updated_credential);
 
-  // Returns a list of the currently saved credentials.
-  SavedPasswordsView GetSavedPasswords() const;
-
   // Returns a list of unique passwords which includes normal credentials,
   // federated credentials and blocked forms. If a same form is present both on
   // account and profile stores it will be represented as a single entity.
@@ -161,6 +155,10 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
 
   // Returns a list of affiliated groups for the Password Manager.
   std::vector<AffiliatedGroup> GetAffiliatedGroups();
+
+  // Returns a list of saved passwords (excluding blocked and federated
+  // credentials).
+  std::vector<CredentialUIEntry> GetSavedPasswords() const;
 
   // Returns a list of sites blocked by users for the Password Manager.
   std::vector<CredentialUIEntry> GetBlockedSites();
@@ -230,9 +228,6 @@ class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
   int pending_store_updates = 0;
 
   std::unique_ptr<PasswordUndoHelper> undo_helper_;
-
-  // Cache of the most recently obtained saved passwords.
-  std::vector<PasswordForm> passwords_;
 
   // Cache of the most recently generated affiliated groups.
   std::vector<AffiliatedGroup> affiliated_groups_;

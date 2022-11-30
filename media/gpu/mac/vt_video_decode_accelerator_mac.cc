@@ -1064,17 +1064,21 @@ void VTVideoDecodeAccelerator::DecodeTaskH264(
       }
 
       case H264NALU::kSEIMessage: {
-        H264SEIMessage sei_msg;
-        result = h264_parser_.ParseSEI(&sei_msg);
-        if (result == H264Parser::kOk &&
-            sei_msg.type == H264SEIMessage::kSEIRecoveryPoint &&
-            sei_msg.recovery_point.recovery_frame_cnt == 0) {
-          // We only support immediate recovery points. Supporting future points
-          // would require dropping |recovery_frame_cnt| frames when needed.
-          frame->has_recovery_point = true;
-        }
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
+        H264SEI sei;
+        result = h264_parser_.ParseSEI(&sei);
+        if (result != H264Parser::kOk)
+          break;
+        for (auto& sei_msg : sei.msgs) {
+          if (sei_msg.type == H264SEIMessage::kSEIRecoveryPoint &&
+              sei_msg.recovery_point.recovery_frame_cnt == 0) {
+            // We only support immediate recovery points. Supporting
+            // future points would require dropping |recovery_frame_cnt|
+            // frames when needed.
+            frame->has_recovery_point = true;
+          }
+        }
         break;
       }
 
@@ -1443,10 +1447,28 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
       case H265NALU::PREFIX_SEI_NUT: {
         H265SEIMessage sei_msg;
         result = hevc_parser_.ParseSEI(&sei_msg);
-        if (result == H265Parser::kOk &&
-            sei_msg.type == H265SEIMessage::kSEIAlphaChannelInfo &&
-            sei_msg.alpha_channel_info.alpha_channel_cancel_flag == 0) {
-          has_alpha_ = true;
+        if (result == H265Parser::kOk) {
+          switch (sei_msg.type) {
+            case H265SEIMessage::kSEIAlphaChannelInfo:
+              if (sei_msg.alpha_channel_info.alpha_channel_cancel_flag == 0)
+                has_alpha_ = true;
+              break;
+            case H265SEIMessage::kSEIMasteringDisplayInfo:
+              if (!config_.hdr_metadata)
+                config_.hdr_metadata = gfx::HDRMetadata();
+              sei_msg.mastering_display_info.PopulateColorVolumeMetadata(
+                  config_.hdr_metadata->color_volume_metadata);
+              break;
+            case H265SEIMessage::kSEIContentLightLevelInfo: {
+              if (!config_.hdr_metadata)
+                config_.hdr_metadata = gfx::HDRMetadata();
+              sei_msg.content_light_level_info.PopulateHDRMetadata(
+                  config_.hdr_metadata.value());
+              break;
+            }
+            default:
+              break;
+          }
         }
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
@@ -1574,6 +1596,7 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
 
   if (frame->is_idr)
     waiting_for_idr_ = false;
+  frame->hdr_metadata = config_.hdr_metadata;
 
   // If no IDR has been seen yet, skip decoding. Note that Flash sends
   // configuration changes as a bitstream with only SPS/PPS/VPS; we don't print
@@ -1946,8 +1969,7 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
     picture_info->scoped_shared_images.clear();
   } else {
     gl_client_.bind_image.Run(picture_info->client_texture_id,
-                              gpu::GetPlatformSpecificTextureTarget(), nullptr,
-                              false);
+                              gpu::GetPlatformSpecificTextureTarget(), nullptr);
   }
   picture_info->gl_images.clear();
   picture_info->bitstream_id = 0;
@@ -2270,7 +2292,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
       if (!gl_client_.bind_image.Run(picture_info->client_texture_id,
                                      gpu::GetPlatformSpecificTextureTarget(),
-                                     gl_image, false)) {
+                                     gl_image)) {
         DLOG(ERROR) << "Failed to bind image";
         NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
         return false;
@@ -2295,6 +2317,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   // we don't need to use them when the image is never bound? Bindings are
   // typically only created when WebGL is in use.
   picture.set_read_lock_fences_enabled(true);
+  if (frame.hdr_metadata)
+    picture.set_hdr_metadata(frame.hdr_metadata);
   if (picture_info->uses_shared_images) {
     for (size_t plane = 0; plane < planes.size(); ++plane) {
       picture.set_scoped_shared_image(picture_info->scoped_shared_images[plane],

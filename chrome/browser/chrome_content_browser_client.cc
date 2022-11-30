@@ -414,7 +414,6 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_descriptors.h"
-#include "components/autofill_assistant/content/common/switches.h"
 #include "components/browser_ui/accessibility/android/font_size_prefs_android.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
@@ -1518,6 +1517,8 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
   registry->RegisterBooleanPref(prefs::kTabFreezingEnabled, true);
   registry->RegisterIntegerPref(prefs::kSCTAuditingHashdanceReportCount, 0);
+  registry->RegisterBooleanPref(
+      prefs::kThrottleNonVisibleCrossOriginIframesAllowed, true);
 }
 
 // static
@@ -2910,16 +2911,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     switches::kChangeStackGuardOnForkEnabled);
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-
-#if BUILDFLAG(IS_ANDROID)
-  if (browser_command_line.HasSwitch(
-          autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom)) {
-    command_line->AppendSwitchASCII(
-        autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom,
-        browser_command_line.GetSwitchValueASCII(
-            autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom));
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 std::string
@@ -3387,7 +3378,13 @@ ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
 
 cert_verifier::mojom::CertVerifierServiceParamsPtr
 ChromeContentBrowserClient::GetCertVerifierServiceParams() {
-  return GetChromeCertVerifierServiceParams();
+  PrefService* local_state;
+  if (g_browser_process) {
+    local_state = g_browser_process->local_state();
+  } else {
+    local_state = startup_data_.chrome_feature_list_creator()->local_state();
+  }
+  return GetChromeCertVerifierServiceParams(local_state);
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(

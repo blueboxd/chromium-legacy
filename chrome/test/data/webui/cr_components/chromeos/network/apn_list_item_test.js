@@ -11,7 +11,7 @@ import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
-suite('ApnListTest', function() {
+suite('ApnListItemTest', function() {
   /** @type {ApnListItemElement} */
   let apnListItem = null;
 
@@ -37,7 +37,21 @@ suite('ApnListTest', function() {
 
     assertFalse(subLabel.hasAttribute('hidden'));
     assertEquals(
-        subLabel.innerText, apnListItem.i18n('NetworkHealthStateConnected'));
+        apnListItem.i18n('NetworkHealthStateConnected'), subLabel.innerText);
+  });
+
+  test('Check if auto detected label is shown', async function() {
+    apnListItem.isAutoDetected = false;
+    await flushTasks();
+
+    const subLabel = apnListItem.shadowRoot.querySelector('#autoDetected');
+    assertTrue(!!subLabel);
+    assertTrue(subLabel.hasAttribute('hidden'));
+    apnListItem.isAutoDetected = true;
+    await flushTasks();
+
+    assertFalse(subLabel.hasAttribute('hidden'));
+    assertEquals(apnListItem.i18n('apnAutoDetected'), subLabel.innerText);
   });
 
   test('Check if APN three dot menu shows', async function() {

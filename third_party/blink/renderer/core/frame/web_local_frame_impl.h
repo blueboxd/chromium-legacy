@@ -381,7 +381,8 @@ class CORE_EXPORT WebLocalFrameImpl final
           soft_navigation_heuristics_task_id) override;
   void SetIsNotOnInitialEmptyDocument() override;
   bool IsOnInitialEmptyDocument() override;
-  void WillPotentiallyStartNavigation(const WebURL&) const override;
+  void WillPotentiallyStartOutermostMainFrameNavigation(
+      const WebURL&) const override;
   bool WillStartNavigation(const WebNavigationInfo&) override;
   void DidDropNavigation() override;
   void DownloadURL(
@@ -614,6 +615,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const DocumentToken& document_token,
       std::unique_ptr<PolicyContainer> policy_container,
       const StorageKey& storage_key,
+      ukm::SourceId document_ukm_source_id,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
           network::mojom::blink::WebSandboxFlags::kNone);
 

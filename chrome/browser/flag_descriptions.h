@@ -75,9 +75,6 @@ extern const char kAriaElementReflectionDescription[];
 extern const char kAttributionReportingDebugModeName[];
 extern const char kAttributionReportingDebugModeDescription[];
 
-extern const char kBatchFetchRequestsName[];
-extern const char kBatchFetchRequestsDescription[];
-
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceName[];
 extern const char kBrokerFileOperationsOnDiskCacheInNetworkServiceDescription[];
 
@@ -115,6 +112,9 @@ extern const char kForceStartupSigninPromoDescription[];
 
 extern const char kGaiaIdCacheInAccountManagerFacadeName[];
 extern const char kGaiaIdCacheInAccountManagerFacadeDescription[];
+
+extern const char kIdentityStatusConsistencyName[];
+extern const char kIdentityStatusConsistencyDescription[];
 
 extern const char kTangibleSyncName[];
 extern const char kTangibleSyncDescription[];
@@ -164,9 +164,6 @@ extern const char kUseMessagesStagingUrlDescription[];
 
 extern const char kUseCustomMessagesDomainName[];
 extern const char kUseCustomMessagesDomainDescription[];
-
-extern const char kAndroidPictureInPictureAPIName[];
-extern const char kAndroidPictureInPictureAPIDescription[];
 
 extern const char kAssistantConsentModalName[];
 extern const char kAssistantConsentModalDescription[];
@@ -864,6 +861,9 @@ extern const char kContextualPageActionsPriceTrackingDescription[];
 extern const char kContextualPageActionsReaderModeName[];
 extern const char kContextualPageActionsReaderModeDescription[];
 
+extern const char kEnableOsIntegrationSubManagersName[];
+extern const char kEnableOsIntegrationSubManagersDescription[];
+
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 
@@ -992,6 +992,9 @@ extern const char kJourneysShowAllClustersDescription[];
 
 extern const char kJourneysVisitDedupingName[];
 extern const char kJourneysVisitDedupingDescription[];
+
+extern const char kExtractRelatedSearchesFromPrefetchedZPSResponseName[];
+extern const char kExtractRelatedSearchesFromPrefetchedZPSResponseDescription[];
 
 extern const char kLargeFaviconFromGoogleName[];
 extern const char kLargeFaviconFromGoogleDescription[];
@@ -2526,6 +2529,9 @@ extern const char kSharingDesktopShareToGoogleCollectionsDescription[];
 extern const char kWebAuthenticationPermitEnterpriseAttestationName[];
 extern const char kWebAuthenticationPermitEnterpriseAttestationDescription[];
 
+extern const char kDevToolsTabTargetLiteralName[];
+extern const char kDevToolsTabTargetLiteralDescription[];
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Windows --------------------------------------------------------------------
@@ -2687,9 +2693,6 @@ extern const char kApnRevampDescription[];
 extern const char kAppDiscoveryForOobeName[];
 extern const char kAppDiscoveryForOobeDescription[];
 
-extern const char kAppProvisioningStaticName[];
-extern const char kAppProvisioningStaticDescription[];
-
 extern const char kArcCustomTabsExperimentName[];
 extern const char kArcCustomTabsExperimentDescription[];
 
@@ -2731,9 +2734,6 @@ extern const char kArcUpdateO4CListViaA2C2Desc[];
 
 extern const char kArcUsbDeviceDefaultAttachToVmName[];
 extern const char kArcUsbDeviceDefaultAttachToVmDescription[];
-
-extern const char kArcVmBalloonPolicyName[];
-extern const char kArcVmBalloonPolicyDesc[];
 
 extern const char kArcEnableUsapName[];
 extern const char kArcEnableUsapDesc[];
@@ -3049,6 +3049,9 @@ extern const char kAudioPeripheralVolumeGranularityDescription[];
 extern const char kEcheSWAName[];
 extern const char kEcheSWADescription[];
 
+extern const char kEcheLauncherName[];
+extern const char kEcheLauncherDescription[];
+
 extern const char kEcheSWADebugModeName[];
 extern const char kEcheSWADebugModeDescription[];
 
@@ -3356,6 +3359,9 @@ extern const char kArcWindowPredictorDescription[];
 
 extern const char kArcInputOverlayNameBeta[];
 extern const char kArcInputOverlayDescriptionBeta[];
+
+extern const char kArcInputOverlayNameAlphaTwo[];
+extern const char kArcInputOverlayDescriptionAlphaTwo[];
 
 extern const char kSecondaryGoogleAccountUsageName[];
 extern const char kSecondaryGoogleAccountUsageDescription[];

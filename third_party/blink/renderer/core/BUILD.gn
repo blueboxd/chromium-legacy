@@ -279,10 +279,7 @@ component("core") {
 
   configs -= core_config_remove
   configs += core_config_add
-  configs += [
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-    "//v8:external_startup_data",
-  ]
+  configs += [ "//v8:external_startup_data" ]
 
   public_deps = [
     ":core_generated",
@@ -338,6 +335,7 @@ component("core") {
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
     "//third_party/blink/public/strings",
+    "//tools/v8_context_snapshot:buildflags",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/dragdrop/mojom:mojom_blink",
     "//ui/gfx/geometry",
@@ -1356,6 +1354,7 @@ source_set("unit_tests") {
                          "intersection_observer")
   sources += rebase_path(blink_core_tests_layout, "", "layout")
   sources += rebase_path(blink_core_tests_loader, "", "loader")
+  sources += rebase_path(blink_core_tests_mathml, "", "mathml")
   sources += rebase_path(blink_core_tests_messaging, "", "messaging")
   sources += rebase_path(blink_core_tests_mobile_metrics, "", "mobile_metrics")
   sources += rebase_path(blink_core_tests_navigation_api, "", "navigation_api")
@@ -1686,19 +1685,6 @@ fuzzer_test("permissions_policy_fuzzer") {
   ]
   dict = "//third_party/blink/renderer/core/permissions_policy/permissions_policy.dict"
   seed_corpus = "//third_party/blink/renderer/core/permissions_policy/permissions_policy_corpus"
-}
-
-fuzzer_test("attribution_source_registration_fuzzer") {
-  sources = [ "frame/attribution_source_registration_fuzzer.cc" ]
-  deps = [
-    ":core",
-    "//testing/libfuzzer/proto:json_proto",
-    "//testing/libfuzzer/proto:json_proto_converter",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-    "//third_party/libprotobuf-mutator",
-  ]
-  seed_corpus =
-      "//components/attribution_reporting/source_registration_fuzzer_corpus"
 }
 
 fuzzer_test("attribution_trigger_registration_fuzzer") {

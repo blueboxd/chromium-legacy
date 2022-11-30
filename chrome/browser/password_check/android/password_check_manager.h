@@ -139,7 +139,7 @@ class PasswordCheckManager
 
     // Increments the counts corresponding to `password`. Intended to be called
     // for each credential that is passed to the bulk check.
-    void IncrementCounts(const password_manager::PasswordForm& password);
+    void IncrementCounts(const password_manager::CredentialUIEntry& password);
 
     // Updates the counts after a `credential` has been processed by the bulk
     // check.
@@ -162,9 +162,7 @@ class PasswordCheckManager
   };
 
   // password_manager::SavedPasswordsPresenter::Observer:
-  void OnSavedPasswordsChanged(
-      password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)
-      override;
+  void OnSavedPasswordsChanged() override;
 
   // InsecureCredentialsManager::Observer
   void OnInsecureCredentialsChanged() override;

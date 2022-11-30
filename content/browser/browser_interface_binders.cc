@@ -128,6 +128,7 @@
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/font_access/font_access.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/pending_beacon.mojom.h"
 #include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
@@ -209,8 +210,8 @@
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
-#include "content/browser/renderer_host/media/media_resource_provider_fuchsia.h"
-#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
+#include "content/browser/renderer_host/media/fuchsia_media_cdm_provider_impl.h"
+#include "media/fuchsia/mojom/fuchsia_media.mojom.h"
 #endif
 
 namespace blink {
@@ -983,6 +984,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
       base::BindRepeating(&RenderFrameHostImpl::BindRenderAccessibilityHost,
                           base::Unretained(host)));
 
+  map->Add<blink::mojom::NonAssociatedLocalFrameHost>(
+      base::BindRepeating(&RenderFrameHostImpl::BindNonAssociatedLocalFrameHost,
+                          base::Unretained(host)));
+
 #if BUILDFLAG(IS_FUCHSIA)
   map->Add<media::mojom::FuchsiaMediaCodecProvider>(
       base::BindRepeating(&RenderProcessHost::BindMediaCodecProvider,
@@ -1100,8 +1105,8 @@ void PopulateBinderMapWithContext(
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
-  map->Add<media::mojom::FuchsiaMediaResourceProvider>(
-      base::BindRepeating(&MediaResourceProviderFuchsia::Bind));
+  map->Add<media::mojom::FuchsiaMediaCdmProvider>(
+      base::BindRepeating(&FuchsiaMediaCdmProviderImpl::Bind));
 #endif
 }
 

@@ -11,16 +11,6 @@ import {
 } from './stream_manager.js';
 
 /**
- * Thrown for no camera available on the device.
- */
-export class NoCameraError extends Error {
-  constructor(message = 'No camera available on the device') {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
-
-/**
  * Contains information of all cameras on the device and will updates its value
  * when any plugin/unplug external camera changes.
  */
@@ -42,26 +32,21 @@ export class DeviceInfoUpdater {
    */
   private camera3DevicesInfo: Camera3DeviceInfo[]|null = null;
 
-  /**
-   * Pending device Information.
-   */
-  private pendingDevicesInfo: DeviceInfo[] = [];
-
   constructor() {
     StreamManager.getInstance().addRealDeviceChangeListener((devicesInfo) => {
-      this.pendingDevicesInfo = devicesInfo;
-      this.update();
+      this.update(devicesInfo);
     });
   }
 
   /**
    * Updates devices information.
+   *
+   * @param devicesInfo Updated devices info.
    */
-  private update() {
-    this.devicesInfo = this.pendingDevicesInfo.map((d) => d.v1Info);
+  private update(devicesInfo: DeviceInfo[]) {
+    this.devicesInfo = devicesInfo.map((d) => d.v1Info);
     if (DeviceOperator.isSupported()) {
-      this.camera3DevicesInfo =
-          this.pendingDevicesInfo.map((d) => assertExists(d.v3Info));
+      this.camera3DevicesInfo = devicesInfo.map((d) => assertExists(d.v3Info));
     } else {
       this.camera3DevicesInfo = null;
     }
@@ -83,16 +68,6 @@ export class DeviceInfoUpdater {
    */
   getDevicesInfo(): MediaDeviceInfo[] {
     return this.devicesInfo;
-  }
-
-  /**
-   * Gets MediaDeviceInfo of specific video device.
-   *
-   * @param deviceId Device id of video device to get information from.
-   */
-  getDeviceInfo(deviceId: string): MediaDeviceInfo|null {
-    const infos = this.getDevicesInfo();
-    return infos.find((d) => d.deviceId === deviceId) ?? null;
   }
 
   /**

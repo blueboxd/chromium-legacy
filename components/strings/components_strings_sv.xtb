@@ -38,6 +38,7 @@
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1064054731605354900">A3 x 5</translation>
 <translation id="106701514854093668">Bokmärken på skrivbordet</translation>
+<translation id="1067561478268651872">Principen <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> används endast om principen <ph name="SECURE_DNS_SALT" /> är inställd.</translation>
 <translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Hybrider och alternativa fordon</translation>
 <translation id="1070901266639972381">nattetid</translation>
@@ -1231,6 +1232,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="4132448310531350254">Dubbla hanterare för filnamnstillägget <ph name="FILE_EXTENSION" /> refereras av apparna <ph name="POLICY_IDS_LIST" />.</translation>
 <translation id="4134123981501319574">Skapa dokument</translation>
 <translation id="413544239732274901">Läs mer</translation>
+<translation id="4140905530744469899">Profil-id:</translation>
 <translation id="4142935452406587478">Fack 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Kinesiskt nr 4-kuvert</translation>
@@ -1354,6 +1356,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="4407755609041463909">Eld</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Hemelektronik</translation>
+<translation id="4412074349188076601">Denna konfiguration har markerats som installerbar, men ingen avbildning tillhandahålls för denna arkitektur och kan därför inte installeras.</translation>
 <translation id="4414515549596849729">cookies och webbplatsdata</translation>
 <translation id="4415426530740016218">Hämtningsadress</translation>
 <translation id="4424024547088906515">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chrome inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
@@ -2097,6 +2100,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="6328786501058569169">Den här webbplatsen är bedräglig</translation>
 <translation id="6337133576188860026">Frigör mindre än <ph name="SIZE" />. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="6337534724793800597">Filtrera princip efter namn</translation>
+<translation id="633770708279464947">Värdet <ph name="SECURE_DNS_SALT" /> är ogiltigt och används inte.</translation>
 <translation id="6340739886198108203">Enligt administratörspolicyn är det inte rekommenderat att ta skärmbilder eller göra inspelningar när konfidentiellt innehåll är synligt:</translation>
 <translation id="6341434961864773665">{0,plural, =1{Enligt administratörspolicyn är det inte rekommenderat att ladda upp den här filen till <ph name="DESTINATION_NAME" />}other{Enligt administratörspolicyn är det inte rekommenderat att ladda upp dessa filer till <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="6348220984832452017">Aktiva variationer</translation>
@@ -2993,6 +2997,7 @@ Mer information:
 <translation id="8654126188050905496">55 x 91 mm</translation>
 <translation id="8663226718884576429">Beställningsöversikt, <ph name="TOTAL_LABEL" />, mer information</translation>
 <translation id="8666678546361132282">engelska</translation>
+<translation id="8671519637524426245">Värdet <ph name="SECURE_DNS_SALT" /> uppfyller inte storlekskraven.</translation>
 <translation id="867224526087042813">Signatur</translation>
 <translation id="8672264262457010862">Företag och industri</translation>
 <translation id="8676424191133491403">Ingen fördröjning</translation>
@@ -3092,6 +3097,7 @@ Mer information:
 <translation id="8913778647360618320">Knappen Hantera betalningsmetoder, tryck på Retur om du vill hantera betalningar och kreditkortsuppgifter i inställningarna för Chrome</translation>
 <translation id="8922013791253848639">Tillåt alltid annonser på den här webbplatsen</translation>
 <translation id="892588693504540538">Hål uppe till höger</translation>
+<translation id="8930098617363288380">Värdet <ph name="SECURE_DNS_SALT" /> är inte relevant och används endast om principen <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> är inställd.</translation>
 <translation id="8930330541574156305">Fastigheter</translation>
 <translation id="8931333241327730545">Vill du spara det här kortet i ditt Google-konto?</translation>
 <translation id="8932102934695377596">Klockan går efter</translation>
@@ -3204,6 +3210,7 @@ Mer information:
 <translation id="9179907736442194268">Få aviseringar via e-post när priset sjunker på en webbplats</translation>
 <translation id="9183302530794969518">Google Dokument</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> använder ett protokoll som inte stöds.</translation>
+<translation id="918454845714257218">Kontrollera koden på <ph name="SIDE_OF_CARD" /> och försök igen</translation>
 <translation id="9187461866967718678">Extremsporter</translation>
 <translation id="9191834167571392248">Hål nere till vänster</translation>
 <translation id="9199905725844810519">Utskrift har blockerats</translation>

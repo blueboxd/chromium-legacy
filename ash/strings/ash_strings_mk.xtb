@@ -52,6 +52,7 @@
 <translation id="1218444235442067213"><ph name="APP_NAME" />, апликација од Play Store</translation>
 <translation id="1225748608451425081">Вашиот Chromebook е заклучен поради познат проблем. Ќе може да се најавите по: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Сопрете со избирање</translation>
+<translation id="1235458158152011030">Познати мрежи</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> е поврзана.</translation>
 <translation id="1240638468526743569">Некоја апликација</translation>
 <translation id="1246890715821376239">Неподдржани апликации</translation>
@@ -386,7 +387,6 @@
 <translation id="3120421559657122717">Да се исклучи уредот?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Рестартирај за да се ажурира</translation>
-<translation id="3139382871451988441">Исклучете го пристапот до камерата.</translation>
 <translation id="3139942575505304791">Биро 1</translation>
 <translation id="315116470104423982">Мобилен интернет</translation>
 <translation id="3151786313568798007">Ориентација</translation>
@@ -520,7 +520,6 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="385300504083504382">Почеток</translation>
 <translation id="3861651314799684201">Притиснете Enter за да го снимите целиот екран</translation>
-<translation id="3885531177412808398">Дозволува пристап до микрофонот за сите апликации и веб-сајтови со дозвола за микрофонот</translation>
 <translation id="3886872229787704059">Отворено денес</translation>
 <translation id="3891340733213178823">Притиснете Ctrl+Shift+Q двапати за да се одјавите.</translation>
 <translation id="3893630138897523026">ChromeVox (говорни повратни информации)</translation>
@@ -556,6 +555,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Искл. за 1 апл.}one{Искл. за # апл.}other{Искл. за # апл.}}</translation>
 <translation id="4066027111132117168">Вклучено, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Среден сигнал</translation>
+<translation id="4086921558679520050">Вклучете физички прекинувач за микрофонот на вашиот уред</translation>
 <translation id="4112140312785995938">Премотај наназад</translation>
 <translation id="4114315158543974537">Вклучете ја Phone Hub</translation>
 <translation id="4115378294792113321">Магента</translation>
@@ -608,6 +608,7 @@
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4378551569595875038">Се поврзува…</translation>
 <translation id="4379531060876907730">Ова се вашите пенкала</translation>
+<translation id="4381031910344220229">Ова дозволува пристап до микрофонот за <ph name="APP_NAME" /> и сите апликации и веб-сајтови со дозвола за микрофонот</translation>
 <translation id="4389184120735010762">Ја притиснавте кратенката од тастатура за закотвената лупа. Дали сакате да ја вклучите?</translation>
 <translation id="439598569299422042">Паузирано, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Не може да се зачува снимка на екран</translation>
@@ -649,11 +650,8 @@
 <translation id="4573176682887762361">„Напишете [збор/фраза]“</translation>
 <translation id="4577274620589681794">Времето истече · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Прикажи ги прегледите</translation>
-<translation id="4578196883126898996">Микрофонот е исклучен. Вклучете го микрофонот на уредот.</translation>
 <translation id="4578906031062871102">Менито со поставки е отворено</translation>
-<translation id="4581047786858252841">Микрофонот е вклучен</translation>
 <translation id="4585337515783392668">Престани со емитување на непознат приемник</translation>
-<translation id="4587299710837179226">Микрофонот е исклучен</translation>
 <translation id="4596144739579517758">Темната тема е исклучена</translation>
 <translation id="4611292653554630842">Најави се</translation>
 <translation id="4623167406982293031">Потврдете ја сметката</translation>
@@ -733,6 +731,7 @@
 <translation id="4987738733603015246">Работна површина 16</translation>
 <translation id="5003993274120026347">Следна реченица</translation>
 <translation id="5016558321564993266">Вклучете/исклучете го означувачот. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Вклучен е пристап до микрофонот на уредот</translation>
 <translation id="5030687792513154421">Времето истече</translation>
 <translation id="5033299697334913360">Кликнете каде било за да го сликате целиот екран</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> е поврзан со нов телефон</translation>
@@ -964,9 +963,11 @@
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> е управувана сесија со којашто управува <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> е поврзан</translation>
 <translation id="6351032674660237738">ПРЕДЛОЗИ ЗА АПЛИКАЦИИ</translation>
+<translation id="6352082849089527770">Непознати мрежи</translation>
 <translation id="6359587239691116345">Преземете ги најновите функции и подобрувања на безбедноста. Ако го одбиете ажурирањево, можно е уредот да не ви функционира правилно и може да наидете на проблеми со безбедноста и изведбата.</translation>
 <translation id="6376931439017688372">Bluetooth е вклучен</translation>
 <translation id="6381109794406942707">За да го отклучите уредот, внесете го вашиот PIN.</translation>
+<translation id="638716340450135524">Вклучете го пристапот до камерата</translation>
 <translation id="639644700271529076">CAPS LOCK е исклучено</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Помошник на Google</translation>
@@ -974,6 +975,7 @@
 <translation id="642644398083277086">Избриши ги сите известувања</translation>
 <translation id="643147933154517414">Готово</translation>
 <translation id="6431865393913628856">Снимање екран</translation>
+<translation id="6442259747294754014">Исклучен е пристап до микрофонот на уредот</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> се емитува на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> настан</translation>
 <translation id="6449483711453944360">Апликациите на Linux и прозорците „Инкогнито“ не се поддржани моментално</translation>
@@ -1025,6 +1027,7 @@
 <translation id="6670153871843998651">Биро 3</translation>
 <translation id="6671495933530132209">Копирај слика</translation>
 <translation id="6671661918848783005">Не може да се отклучи вашиот Chromebook</translation>
+<translation id="6683022854667115063">Слушалки</translation>
 <translation id="6696025732084565524">Отстранливата тастатура има потреба од важно ажурирање</translation>
 <translation id="6700713906295497288">Копче за мени на IME</translation>
 <translation id="6707693040195709527">Рокот за промена на уредот кон претходната верзија е изминат</translation>
@@ -1137,6 +1140,7 @@
 <translation id="7360036564632145207">Ако ја промените поставката за заштита на пристапот до податоци за перфиферните уреди, перформансите може да се оптимизираат</translation>
 <translation id="736045644501761622">Поставете тапет и стил</translation>
 <translation id="7371404428569700291">Снимање прозорец</translation>
+<translation id="737315737514430195">Ова дозволува пристап до микрофонот за сите апликации и веб-сајтови со дозвола за микрофонот</translation>
 <translation id="7377169924702866686">Вклучено е Caps Lock.</translation>
 <translation id="7377481913241237033">Поврзете со код</translation>
 <translation id="7378203170292176219">Повлечете за да изберете област за снимање</translation>
@@ -1205,12 +1209,14 @@
 <translation id="7671610481353807627">Апликациите се подредени по боја</translation>
 <translation id="7672095158465655885">Поврзано со <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Влезот на камерата е поставен на <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">Ова дозволува пристап до микрофонот за <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> и сите апликации и веб-сајтови со дозвола за микрофонот</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Додајте нова мобилна мрежа</translation>
 <translation id="7720400844887872976">Вклучено до <ph name="TIME" /></translation>
 <translation id="7720410380936703141">ОБИДЕТЕ СЕ ПОВТОРНО</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 известување}one{# известување}other{# известувања}}</translation>
 <translation id="7724603315864178912">Исечи</translation>
+<translation id="7742327441377685481">Нема известувања</translation>
 <translation id="7745560842763881396">Прикажи ги апликациите од полицата</translation>
 <translation id="7749443890790263709">Достигнат е максималниот број работни простори.</translation>
 <translation id="776344839111254542">Кликнете за да ги погледнете деталите за ажурирањето</translation>
@@ -1367,6 +1373,7 @@
 <translation id="8598235756057743477">Подредете ги апликациите по име или боја.</translation>
 <translation id="8614517853887502247">Известувањата од <ph name="APP_1_TITLE" /> и <ph name="APP_2_TITLE" /> се сокриени бидејќи има вклучено заштита од прикажување</translation>
 <translation id="8627191004499078455">Поврзан со <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Исклучете го пристапот до камерата</translation>
 <translation id="8631727435199967028">Поставки за пристапност</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, управувана од администраторот</translation>
 <translation id="8639760480004882931">Преостануваат <ph name="PERCENTAGE" /></translation>
@@ -1382,7 +1389,6 @@
 <translation id="8666856788528804727">Отворете ја <ph name="NAME" /> за да го поставите уредот</translation>
 <translation id="8676770494376880701">Поврзан е полнач со ниско напојување</translation>
 <translation id="8683506306463609433">Следењето на изведбата е активно</translation>
-<translation id="8684405646663021166">Дозволува пристап до микрофонот за <ph name="APP_NAME" /> и сите апликации и веб-сајтови со дозвола за микрофонот</translation>
 <translation id="8685326675965865247">Пребарувајте низ уредот, апликациите, поставките и на интернет. Користете ги копчињата со стрелки за навигација низ апликациите.</translation>
 <translation id="8703634754197148428">Започни со снимање. Откако ќе започне снимањето, користете Alt + Shift + L за да одите на полицата и најдете го копчето за сопирање на снимањето</translation>
 <translation id="8721053961083920564">Вклучување/исклучување звук. <ph name="STATE_TEXT" /></translation>
@@ -1407,7 +1413,6 @@
 <translation id="8819728065740986820">„Адаптивното полнење“ е вклучено</translation>
 <translation id="8825863694328519386">Повлечете одлево за да се вратите назад</translation>
 <translation id="8834539327799336565">Моментално поврзани</translation>
-<translation id="8834657930627018205">Вклучете го пристапот до камерата.</translation>
 <translation id="8841375032071747811">Копче за назад</translation>
 <translation id="8843682306134542540">Заклучи/отклучи ротација. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Пребарај+Esc</translation>

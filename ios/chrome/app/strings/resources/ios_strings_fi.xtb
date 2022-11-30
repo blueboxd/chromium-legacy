@@ -133,6 +133,7 @@ Hakukoneesi on <ph name="DSE_NAME" />. Katso tarvittaessa hakukoneen ohjeet haku
 <translation id="1974060860693918893">Lisäasetukset</translation>
 <translation id="1981118202195772574">Mobiili</translation>
 <translation id="1989112275319619282">Selaa</translation>
+<translation id="1990820278544963435">Hae</translation>
 <translation id="199425419756152024">Näytä salasana</translation>
 <translation id="2010008505735295285">Päivitä</translation>
 <translation id="2015722694326466240">Jos haluat nähdä salasanat, sinun on ensin määritettävä tunnuskoodi laitteellesi.</translation>
@@ -283,6 +284,7 @@ Katso tarvittaessa hakukoneesi ohjeet hakuhistorian poistamiselle.</translation>
 <translation id="3153862085237805241">Tallenna kortti</translation>
 <translation id="3157387275655328056">Lisää lukulistalle</translation>
 <translation id="3157684681743766797">Merkitse kaikki…</translation>
+<translation id="315778507796115851">Historia</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">Voit käyttää tallennettuja salasanoja myös muilla laitteillasi.</translation>
 <translation id="3175081911749765310">Verkkopalvelut</translation>
@@ -874,6 +876,7 @@ Kun olet incognito-tilassa, sivustot eivät näe selaustoimintaasi eri sivustoil
 <translation id="7531345132340165516">Nykyinen sivusto</translation>
 <translation id="7537586195939242955">Passiasi ei voi asentaa Passbookiin tällä hetkellä.</translation>
 <translation id="7553234618121028547">Jos haluat laittaa ominaisuuden pois päältä, avaa <ph name="BEGIN_LINK" />Asetukset<ph name="END_LINK" /> ja sitten Salasana-asetukset.</translation>
+<translation id="7554645225856321710">Sulje kaikki</translation>
 <translation id="7554791636758816595">Uusi välilehti</translation>
 <translation id="7561196759112975576">Aina</translation>
 <translation id="7583004045319035904">Valitse <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> incognito-välilehtien lukituksen avaamiseen.</translation>
@@ -927,7 +930,6 @@ Kun olet incognito-tilassa, sivustot eivät näe selaustoimintaasi eri sivustoil
 <translation id="7966516440812255683">Sivustot voivat käyttää evästeitä selauskokemuksesi parantamiseen, esimerkiksi pitää sinut kirjautuneena tai muistaa ostoskorisi sisällön.
 
 Sivustot voivat nähdä selaustoimintaasi eri sivustoilta evästeiden kautta esim. personoidakseen mainoksia.</translation>
-<translation id="7966904497916178308">Perustason suojaus on päällä</translation>
 <translation id="7971521879845308059">Estä ponn.ikk.</translation>
 <translation id="797413074872316787">Ota synkronointi käyttöön, niin sisältö synkronoidaan ja personoidaan eri laitteilla.</translation>
 <translation id="7978018860671536736">3. Valitse Automaattisen täytön salasanat</translation>
@@ -1088,6 +1090,7 @@ Sivustot voivat nähdä selaustoimintaasi eri sivustoilta evästeiden kautta esi
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> pv sitten</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Hae välilehtiä…</translation>
 <translation id="9223358826628549784">Virheraportti lähetettiin.</translation>
 <translation id="941747855997058526">Valitse salasana…</translation>
 <translation id="952704832371081537">Peru</translation>

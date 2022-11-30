@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "chrome/browser/ash/arc/arc_migration_constants.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
 #include "chromeos/ash/components/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
@@ -27,6 +30,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 namespace {
@@ -122,15 +126,29 @@ class EncryptionMigrationScreenTest : public testing::Test {
     // Set up fake dbus clients.
     UserDataAuthClient::InitializeFake();
     fake_userdataauth_client_ = FakeUserDataAuthClient::Get();
+    auto cryptohome_account_id =
+        cryptohome::CreateAccountIdentifierFromAccountId(account_id_);
+    FakeUserDataAuthClient::TestApi::Get()->AddExistingUser(
+        std::move(cryptohome_account_id));
     chromeos::PowerManagerClient::InitializeFake();
 
     chromeos::PowerPolicyController::Initialize(
         chromeos::PowerManagerClient::Get());
 
     // Build dummy user context.
-    user_context_.SetAccountId(account_id_);
-    user_context_.SetKey(
+    auto user_context = std::make_unique<UserContext>();
+    user_context->SetAccountId(account_id_);
+    user_context->SetKey(
         Key(Key::KeyType::KEY_TYPE_SALTED_SHA256, "salt", "secret"));
+
+    base::test::TestFuture<bool, std::unique_ptr<UserContext>,
+                           absl::optional<AuthenticationError>>
+        future;
+    AuthPerformer auth_performer(fake_userdataauth_client_);
+    auth_performer.StartAuthSession(
+        std::move(user_context), /*ephemeral=*/false,
+        AuthSessionIntent::kDecrypt, future.GetCallback());
+    user_context = std::get<1>(future.Take());
 
     encryption_migration_screen_ =
         std::make_unique<TestEncryptionMigrationScreen>(std::move(mock_view_));
@@ -139,7 +157,7 @@ class EncryptionMigrationScreenTest : public testing::Test {
                        base::Unretained(this)));
     encryption_migration_screen_->set_free_disk_space(
         arc::kMigrationMinimumAvailableStorage);
-    encryption_migration_screen_->SetUserContext(user_context_);
+    encryption_migration_screen_->SetUserContext(std::move(user_context));
   }
 
   void TearDown() override {
@@ -168,12 +186,11 @@ class EncryptionMigrationScreenTest : public testing::Test {
 
   const AccountId account_id_ =
       AccountId::FromUserEmail(user_manager::kStubUserEmail);
-  UserContext user_context_;
 
  private:
   // This will be called by EncryptionMigrationScreen upon finished
   // minimal migration when sign-in should continue.
-  void OnContinueLogin(const UserContext& user_context) {
+  void OnContinueLogin(std::unique_ptr<UserContext> user_context) {
     EXPECT_FALSE(skip_migration_callback_called_)
         << "ContinueLogin/RestartLogin may only be called once.";
 

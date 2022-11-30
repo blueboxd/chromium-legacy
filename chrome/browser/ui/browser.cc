@@ -69,6 +69,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
+#include "chrome/browser/profiles/nuke_profile_directory_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -431,7 +432,7 @@ Browser::CreationStatus Browser::GetCreationStatusForProfile(Profile* profile) {
   if (!IncognitoModePrefs::CanOpenBrowser(profile) ||
       (profile->IsGuestSession() && !profile->IsOffTheRecord()) ||
       !profile->AllowsBrowserWindows() ||
-      ProfileManager::IsProfileDirectoryMarkedForDeletion(profile->GetPath())) {
+      IsProfileDirectoryMarkedForDeletion(profile->GetPath())) {
     return CreationStatus::kErrorProfileUnsuitable;
   }
 
@@ -1283,6 +1284,14 @@ int Browser::GetTopControlsHeight() {
 bool Browser::DoBrowserControlsShrinkRendererSize(
     content::WebContents* contents) {
   return window_->DoBrowserControlsShrinkRendererSize(contents);
+}
+
+int Browser::GetVirtualKeyboardHeight(content::WebContents* contents) {
+  // This API is currently only used by View Transitions when the virtual
+  // keyboard resizes content.  On desktop platforms, the virtual keyboard can
+  // only inset the visual viewport so it shouldn't ever be called.
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/password_manager/android/password_infobar_utils.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/identity_manager/tribool.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -139,8 +141,19 @@ void SaveUpdatePasswordMessageDelegate::DisplaySaveUpdatePasswordPromptInternal(
   } else {
     passwords_state_.OnPendingPassword(std::move(form_to_save));
   }
-  account_email_ =
-      account_info.has_value() ? account_info.value().email : std::string();
+
+  if (account_info.has_value()) {
+    if (base::FeatureList::IsEnabled(
+            chrome::android::kHideNonDisplayableAccountEmail) &&
+        account_info->capabilities.can_have_email_address_displayed() ==
+            signin::Tribool::kFalse) {
+      account_email_ = account_info.value().full_name;
+    } else {
+      account_email_ = account_info.value().email;
+    }
+  } else {
+    account_email_ = std::string();
+  }
 
   CreateMessage(update_password);
   RecordMessageShownMetrics();
@@ -197,9 +210,9 @@ void SaveUpdatePasswordMessageDelegate::CreateMessage(bool update_password) {
 
   update_password_ = update_password;
 
-  bool use_followup_button_text = HasMultipleCredentialsStored();
+  bool use_followup_button = HasMultipleCredentialsStored();
   message_->SetPrimaryButtonText(l10n_util::GetStringUTF16(
-      GetPrimaryButtonTextId(update_password, use_followup_button_text)));
+      GetPrimaryButtonTextId(update_password, use_followup_button)));
 
   if (password_manager::features::UsesUnifiedPasswordManagerBranding()) {
     message_->SetIconResourceId(ResourceMapper::MapToJavaDrawableId(
@@ -210,11 +223,18 @@ void SaveUpdatePasswordMessageDelegate::CreateMessage(bool update_password) {
         ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_INFOBAR_SAVE_PASSWORD));
   }
 
-  // With detailed dialog feature enabled the cog button is always shown
-  // (it was shown only for Save password dialog before)
-  if (base::FeatureList::IsEnabled(kPasswordEditDialogWithDetails)) {
+  // With kPasswordEditDialogWithDetails feature on: the cog button is always
+  // shown for the save message and for the update message when there is
+  // just one password stored for the web site. When there are multiple
+  // credentials stored, the dialog will be called anyway from the followup
+  // button, so there are no options to put under the cog.
+  // With kPasswordEditDialogWithDetails feature off: the cog button is
+  // shown only for the Save password message.
+  if (base::FeatureList::IsEnabled(kPasswordEditDialogWithDetails) &&
+      (!update_password || !use_followup_button)) {
     SetupCogMenuForDialogWithDetails(message_, update_password);
-  } else if (!update_password) {
+  } else if (!base::FeatureList::IsEnabled(kPasswordEditDialogWithDetails) &&
+             !update_password) {
     SetupCogMenu(message_, update_password);
   }
 }

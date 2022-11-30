@@ -70,6 +70,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
+#include "components/autofill/core/browser/metrics/payments/card_metadata_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -517,6 +518,14 @@ BrowserAutofillManager::~BrowserAutofillManager() {
   }
 
   single_field_form_fill_router_->CancelPendingQueries(this);
+
+  // We don't flush the `queued_vote_uploads_` here because that would trigger
+  // network requests in the AutofillDownloadManager, which are managed with
+  // by SimpleURLLoaders owned by the AutofillDownloadManager. Destroying the
+  // BrowserAutofillManager destroys the AutofillDownloadManager and its
+  // SimpleURLLoaders, which would immediately cancel the uploads.
+  // As a consequence of this, votes are lost if the user generates blur votes
+  // and closes the tab before the votes are sent (due to a navigation).
 }
 
 base::WeakPtr<AutofillManager> BrowserAutofillManager::GetWeakPtr() {
@@ -662,7 +671,7 @@ void BrowserAutofillManager::RefetchCardsAndUpdatePopup(
 
   bool should_display_gpay_logo;
   auto cards = GetCreditCardSuggestions(FormStructure(form), field_data, type,
-                                        &should_display_gpay_logo);
+                                        should_display_gpay_logo);
 
   DCHECK(!cards.empty());
 
@@ -901,29 +910,50 @@ bool BrowserAutofillManager::MaybeStartVoteUploadProcess(
   // |AlternativeStateNameMap| can only be accessed on the main UI thread.
   PreProcessStateMatchingTypes(copied_profiles, form_structure.get());
 
-  // Ownership of |form_structure| is passed to the second task so that
-  // DeterminePossibleFieldTypesForUpload() can safely modify it before the
-  // callback.
+  // Ownership of |form_structure| is passed to the
+  // BrowserAutofillManager::UploadVotesAndLogQuality() call.
   FormStructure* raw_form = form_structure.get();
-  base::ThreadPool::PostTaskAndReply(
-      FROM_HERE,
-      // If the priority is BEST_EFFORT, the task can be preempted, which is
-      // thought to cause high memory usage (as memory is retained by the task
-      // while it is preempted).
-      //
-      // TODO(fdoray): Update when the hypothesis that setting the priority to
-      // USER_VISIBLE instead of BEST_EFFORT fixes memory usage. Consider
-      // keeping BEST_EFFORT priority, but manually enforcing a limit on the
-      // number of outstanding tasks. https://crbug.com/974249
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(
-          &BrowserAutofillManager::DeterminePossibleFieldTypesForUpload,
-          copied_profiles, copied_credit_cards, last_unlocked_credit_card_cvc_,
-          app_locale_, raw_form),
+
+  base::OnceClosure call_after_determine_field_types =
       base::BindOnce(&BrowserAutofillManager::UploadVotesAndLogQuality,
                      weak_ptr_factory_.GetWeakPtr(), std::move(form_structure),
                      initial_interaction_timestamp_,
-                     AutofillTickClock::NowTicks(), observed_submission));
+                     AutofillTickClock::NowTicks(), observed_submission);
+
+  // If the form was not submitted (e.g. the user just removed the focus from
+  // the form), it's possible that later modifications lead to more accurate
+  // votes. In this case we just want to cache the upload and have a chance to
+  // override it with better data.
+  // TODO(crbug.com/1383502) Remove the "&& IsEnabled()" part.
+  if (!observed_submission &&
+      base::FeatureList::IsEnabled(features::kAutofillDelayBlurVotes)) {
+    call_after_determine_field_types = base::BindOnce(
+        &BrowserAutofillManager::StoreUploadVotesAndLogQualityCallback,
+        weak_ptr_factory_.GetWeakPtr(), raw_form->form_signature(),
+        std::move(call_after_determine_field_types));
+  }
+
+  if (!vote_upload_task_runner_) {
+    // If the priority is BEST_EFFORT, the task can be preempted, which is
+    // thought to cause high memory usage (as memory is retained by the task
+    // while it is preempted).
+    //
+    // TODO(fdoray): Update when the hypothesis that setting the priority to
+    // USER_VISIBLE instead of BEST_EFFORT fixes memory usage. Consider
+    // keeping BEST_EFFORT priority, but manually enforcing a limit on the
+    // number of outstanding tasks. https://crbug.com/974249
+    vote_upload_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  }
+
+  vote_upload_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(
+          &BrowserAutofillManager::DeterminePossibleFieldTypesForUpload,
+          std::move(copied_profiles), std::move(copied_credit_cards),
+          last_unlocked_credit_card_cvc_, app_locale_, raw_form),
+      std::move(call_after_determine_field_types));
+
   return true;
 }
 
@@ -1824,6 +1854,41 @@ void BrowserAutofillManager::OnSuggestionsReturned(
                                             autoselect_first_suggestion);
 }
 
+void BrowserAutofillManager::StoreUploadVotesAndLogQualityCallback(
+    FormSignature form_signature,
+    base::OnceClosure callback) {
+  // Remove entries with the same FormSignature to replace them.
+  WipeLogQualityAndVotesUploadCallback(form_signature);
+
+  // Entries in queued_vote_uploads_ are submitted after navigations or form
+  // submissions. To reduce the risk of collecting too much data that is not
+  // send, we allow only `kMaxEntriesInQueue` entries. Anything in excess will
+  // be sent when the queue becomes to long.
+  constexpr int kMaxEntriesInQueue = 10;
+  while (queued_vote_uploads_.size() >= kMaxEntriesInQueue) {
+    base::OnceCallback oldest_callback =
+        std::move(queued_vote_uploads_.back().second);
+    queued_vote_uploads_.pop_back();
+    std::move(oldest_callback).Run();
+  }
+
+  queued_vote_uploads_.emplace_front(form_signature, std::move(callback));
+}
+
+void BrowserAutofillManager::WipeLogQualityAndVotesUploadCallback(
+    FormSignature form_signature) {
+  base::EraseIf(queued_vote_uploads_, [form_signature](const auto& entry) {
+    return entry.first == form_signature;
+  });
+}
+
+void BrowserAutofillManager::FlushPendingLogQualityAndVotesUploadCallbacks() {
+  std::list<std::pair<FormSignature, base::OnceClosure>> queued_vote_uploads =
+      std::exchange(queued_vote_uploads_, {});
+  for (auto& i : queued_vote_uploads)
+    std::move(i.second).Run();
+}
+
 // We explicitly pass in all the time stamps of interest, as the cached ones
 // might get reset before this method executes.
 void BrowserAutofillManager::UploadVotesAndLogQuality(
@@ -1831,6 +1896,11 @@ void BrowserAutofillManager::UploadVotesAndLogQuality(
     base::TimeTicks interaction_time,
     base::TimeTicks submission_time,
     bool observed_submission) {
+  // If the form is submitted, we don't need to send pending votes from blur
+  // (un-focus) events.
+  if (observed_submission)
+    WipeLogQualityAndVotesUploadCallback(submitted_form->form_signature());
+
   if (submitted_form->ShouldRunHeuristics() ||
       submitted_form->ShouldRunHeuristicsForSingleFieldForms() ||
       submitted_form->ShouldBeQueried()) {
@@ -1847,6 +1917,12 @@ void BrowserAutofillManager::UploadVotesAndLogQuality(
         submitted_form->form_parsed_timestamp(), interaction_time,
         submission_time, form_interactions_ukm_logger(), did_show_suggestions_,
         observed_submission, form_interaction_counts);
+
+    if (observed_submission) {
+      // Ensure that callbacks for blur votes get sent as well here because
+      // we are not sure whether a full navigation with a Reset() call follows.
+      FlushPendingLogQualityAndVotesUploadCallbacks();
+    }
   }
 
   if (!submitted_form->ShouldBeUploaded())
@@ -1887,6 +1963,7 @@ void BrowserAutofillManager::Reset() {
   // Note that upload_request_ is not reset here because the prompt to
   // save a card is shown after page navigation.
   ProcessPendingFormForUpload();
+  FlushPendingLogQualityAndVotesUploadCallbacks();
   DCHECK(!pending_form_data_);
   // {address, credit_card}_form_event_logger_ need to be reset before
   // AutofillManager::Reset() because ~FormEventLoggerBase() uses
@@ -2399,17 +2476,20 @@ std::vector<Suggestion> BrowserAutofillManager::GetCreditCardSuggestions(
     const FormStructure& form_structure,
     const FormFieldData& field,
     const AutofillType& type,
-    bool* should_display_gpay_logo) const {
+    bool& should_display_gpay_logo) const {
   credit_card_form_event_logger_->OnDidPollSuggestions(field, sync_state_);
 
   std::vector<Suggestion> suggestions;
   bool with_offer = false;
+  autofill_metrics::CardMetadataLoggingContext context;
   if (!IsInAutofillSuggestionsDisabledExperiment()) {
     suggestions = suggestion_generator_->GetSuggestionsForCreditCards(
-        field, type, app_locale_, should_display_gpay_logo, &with_offer);
+        field, type, app_locale_, should_display_gpay_logo, with_offer,
+        context);
   }
 
-  credit_card_form_event_logger_->OnDidFetchSuggestion(suggestions, with_offer);
+  credit_card_form_event_logger_->OnDidFetchSuggestion(suggestions, with_offer,
+                                                       context);
   return suggestions;
 }
 
@@ -2883,7 +2963,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   if (context->is_filling_credit_card) {
     *suggestions = GetCreditCardSuggestions(*context->form_structure, field,
                                             context->focused_field->Type(),
-                                            &context->should_display_gpay_logo);
+                                            context->should_display_gpay_logo);
   } else {
     *suggestions = GetProfileSuggestions(*context->form_structure, field,
                                          *context->focused_field);

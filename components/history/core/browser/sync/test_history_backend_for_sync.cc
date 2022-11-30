@@ -20,6 +20,17 @@ URLID TestHistoryBackendForSync::AddURL(URLRow row) {
   return id;
 }
 
+bool TestHistoryBackendForSync::UpdateURL(URLRow row) {
+  DCHECK_NE(row.id(), 0);
+  for (URLRow& url : urls_) {
+    if (url.id() == row.id()) {
+      url = row;
+      return true;
+    }
+  }
+  return false;
+}
+
 VisitID TestHistoryBackendForSync::AddVisit(VisitRow row) {
   DCHECK_EQ(row.visit_id, 0);
   VisitID id = next_visit_id_++;
@@ -93,6 +104,20 @@ bool TestHistoryBackendForSync::GetVisitByID(VisitID visit_id,
     }
   }
   return false;
+}
+
+bool TestHistoryBackendForSync::GetMostRecentVisitForURL(URLID id,
+                                                         VisitRow* visit_row) {
+  *visit_row = VisitRow();
+  for (const VisitRow& candidate : visits_) {
+    if (candidate.url_id == id &&
+        (candidate.visit_time > visit_row->visit_time ||
+         (candidate.visit_time == visit_row->visit_time &&
+          candidate.visit_id > visit_row->visit_id))) {
+      *visit_row = candidate;
+    }
+  }
+  return visit_row->visit_id != 0;
 }
 
 bool TestHistoryBackendForSync::GetLastVisitByTime(base::Time visit_time,
@@ -184,9 +209,19 @@ VisitID TestHistoryBackendForSync::AddSyncedVisit(
 }
 
 VisitID TestHistoryBackendForSync::UpdateSyncedVisit(
+    const GURL& url,
+    const std::u16string& title,
+    bool hidden,
     const VisitRow& visit,
     const absl::optional<VisitContextAnnotations>& context_annotations,
     const absl::optional<VisitContentAnnotations>& content_annotations) {
+  for (URLRow& existing_url : urls_) {
+    if (existing_url.url() == url) {
+      existing_url.set_title(title);
+      existing_url.set_hidden(hidden);
+    }
+  }
+
   for (VisitRow& existing_visit : visits_) {
     if (existing_visit.originator_cache_guid == visit.originator_cache_guid &&
         existing_visit.originator_visit_id == visit.originator_visit_id) {

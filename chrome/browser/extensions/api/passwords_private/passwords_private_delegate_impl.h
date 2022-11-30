@@ -103,16 +103,10 @@ class PasswordsPrivateDelegateImpl
   bool UnmuteInsecureCredential(
       const api::passwords_private::PasswordUiEntry& credential) override;
   void RecordChangePasswordFlowStarted(
-      const api::passwords_private::PasswordUiEntry& credential,
-      bool is_manual_flow) override;
-  void RefreshScriptsIfNecessary(
-      RefreshScriptsIfNecessaryCallback callback) override;
+      const api::passwords_private::PasswordUiEntry& credential) override;
   void StartPasswordCheck(StartPasswordCheckCallback callback) override;
   void StopPasswordCheck() override;
   api::passwords_private::PasswordCheckStatus GetPasswordCheckStatus() override;
-  void StartAutomatedPasswordChange(
-      const api::passwords_private::PasswordUiEntry& credential,
-      StartAutomatedPasswordChangeCallback callback) override;
   password_manager::InsecureCredentialsManager* GetInsecureCredentialsManager()
       override;
   void ExtendAuthValidity() override;
@@ -145,9 +139,7 @@ class PasswordsPrivateDelegateImpl
 
  private:
   // password_manager::SavedPasswordsPresenter::Observer implementation.
-  void OnSavedPasswordsChanged(
-      password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)
-      override;
+  void OnSavedPasswordsChanged() override;
 
   // Called after the lists are fetched. Once both lists have been set, the
   // class is considered initialized and any queued functions (which could

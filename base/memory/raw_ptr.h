@@ -23,34 +23,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 
-// A strange dance is done here to provide `CHECK` for `raw_ptr<T>`
-// in the presence of NaCl. The constraints are:
-// 1. PA doesn't build under NaCl and cannot be a GN `public_dep` under
-//    NaCl.
-// 2. Individual PA headers may leak into `raw_ptr.h` (and other parts
-//    of `//base`) by inclusion, but using implementations (e.g. of
-//    `CheckError`) will cause a linker error. (Not sure if this is
-//    good form or if it is merely accidentally permissible.)
-// 3. `raw_ptr.h` is part of the standalone PA distribution and must not
-//    have a hard dependency on `//base/check.h`.
-//
-// The solution appears to be to use `//base/check.h` under NaCl to
-// provide `raw_ptr`-level `CHECK()`s. `raw_ref.h` follows suit. This
-// macro isn't used _everywhere_ (e.g. not in the implementation of
-// BRP) because we assert that NaCl always uses RawPtrNoOpImpl (see
-// `static_assert` below).
-#if BUILDFLAG(IS_NACL)
-#include "base/check.h"
-#define PA_RAW_PTR_CHECK(condition) CHECK(condition)
-#else
-#include "base/allocator/partition_allocator/partition_alloc_base/check.h"
-#define PA_RAW_PTR_CHECK(condition) PA_BASE_CHECK(condition)
-#endif  // BUILDFLAG(IS_NACL)
-
-#if BUILDFLAG(PA_USE_BASE_TRACING)
-#include "base/trace_event/base_tracing_forward.h"
-#endif  // BUILDFLAG(PA_USE_BASE_TRACING)
-
 #if BUILDFLAG(USE_MTE_CHECKED_PTR) && \
     defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag.h"
@@ -68,17 +40,39 @@
 #endif  // BUILDFLAG(USE_MTE_CHECKED_PTR) && \
     // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR) || defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
+    defined(RAW_PTR_USE_MTE_CHECKED_PTR)
 // USE_BACKUP_REF_PTR implies USE_PARTITION_ALLOC, needed for code under
 // allocator/partition_allocator/ to be built.
 #include "base/allocator/partition_allocator/address_pool_manager_bitmap.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR) || defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
+        // defined(RAW_PTR_USE_MTE_CHECKED_PTR)
 
 #if BUILDFLAG(IS_WIN)
 #include "base/allocator/partition_allocator/partition_alloc_base/win/win_handle_types.h"
 #endif
+
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+#include "base/allocator/partition_allocator/partition_alloc_base/check.h"
+// Live implementation of MiraclePtr being built.
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
+    BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) || defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#define PA_RAW_PTR_CHECK(condition) PA_BASE_CHECK(condition)
+#else
+// No-op implementation of MiraclePtr being built.
+// Note that `PA_BASE_DCHECK()` evaporates from non-DCHECK builds,
+// minimizing impact of generated code.
+#define PA_RAW_PTR_CHECK(condition) PA_BASE_DCHECK(condition)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
+        // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+        // || defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#else   // BUILDFLAG(USE_PARTITION_ALLOC
+// Without PartitionAlloc, there's no `PA_BASE_D?CHECK()` implementation
+// available.
+#define PA_RAW_PTR_CHECK(condition)
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 namespace cc {
 class Scheduler;
@@ -398,7 +392,7 @@ struct MTECheckedPtrImpl {
 
 #endif  // defined(RAW_PTR_USE_MTE_CHECKED_PTR)
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 #if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
 BASE_EXPORT void CheckThatAddressIsntWithinFirstPartitionPage(
@@ -676,8 +670,9 @@ struct BackupRefPtrImpl {
       size_t delta_in_bytes);
 };
 
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
+#if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 // Implementation that allows us to detect BackupRefPtr problems in ASan builds.
 struct AsanBackupRefPtrImpl {
   // Wraps a pointer.
@@ -758,6 +753,7 @@ struct AsanBackupRefPtrImpl {
   static BASE_EXPORT PA_NOINLINE void AsanCheckIfValidExtraction(
       void const volatile* ptr);
 };
+#endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
 template <class Super>
 struct RawPtrCountingImplWrapperForTest
@@ -923,7 +919,7 @@ struct RawPtrTypeToImpl<internal::RawPtrCountingImplWrapperForTest<T>> {
 
 template <>
 struct RawPtrTypeToImpl<RawPtrMayDangle> {
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   using Impl = internal::BackupRefPtrImpl</*AllowDangling=*/true>;
 #elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
   using Impl = internal::AsanBackupRefPtrImpl;
@@ -937,7 +933,7 @@ struct RawPtrTypeToImpl<RawPtrMayDangle> {
 
 template <>
 struct RawPtrTypeToImpl<RawPtrBanDanglingIfSupported> {
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   using Impl = internal::BackupRefPtrImpl</*AllowDangling=*/false>;
 #elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
   using Impl = internal::AsanBackupRefPtrImpl;
@@ -993,16 +989,16 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
       raw_ptr<T, internal::RawPtrCountingImplWrapperForTest<RawPtrMayDangle>>,
       raw_ptr<T, RawPtrMayDangle>>;
 
-#if BUILDFLAG(IS_NACL)
+#if !BUILDFLAG(USE_PARTITION_ALLOC)
   // See comment at top about `PA_RAW_PTR_CHECK()`.
   static_assert(std::is_same_v<Impl, internal::RawPtrNoOpImpl>);
-#endif  // BUILDFLAG(IS_NACL)
+#endif  // !BUILDFLAG(USE_PARTITION_ALLOC)
 
  public:
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
                 "raw_ptr<T> doesn't work with this kind of pointee type T");
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   // BackupRefPtr requires a non-trivial default constructor, destructor, etc.
   constexpr PA_ALWAYS_INLINE raw_ptr() noexcept : wrapped_ptr_(nullptr) {}
 
@@ -1045,7 +1041,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     wrapped_ptr_ = nullptr;
   }
 
-#else  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#else  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
   // raw_ptr can be trivially default constructed (leaving |wrapped_ptr_|
   // uninitialized).  This is needed for compatibility with raw pointers.
@@ -1066,7 +1062,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
 
   PA_ALWAYS_INLINE ~raw_ptr() noexcept = default;
 
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
   // Deliberately implicit, because raw_ptr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(google-explicit-constructor)
@@ -1094,7 +1090,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   // NOLINTNEXTLINE(google-explicit-constructor)
   PA_ALWAYS_INLINE raw_ptr(raw_ptr<U, RawPtrType>&& ptr) noexcept
       : wrapped_ptr_(Impl::template Upcast<T, U>(ptr.wrapped_ptr_)) {
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     ptr.wrapped_ptr_ = nullptr;
 #endif
   }
@@ -1141,7 +1137,7 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
 #endif
     Impl::ReleaseWrappedPtr(wrapped_ptr_);
     wrapped_ptr_ = Impl::template Upcast<T, U>(ptr.wrapped_ptr_);
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     ptr.wrapped_ptr_ = nullptr;
 #endif
     return *this;
@@ -1374,18 +1370,8 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     std::swap(lhs.wrapped_ptr_, rhs.wrapped_ptr_);
   }
 
-#if BUILDFLAG(PA_USE_BASE_TRACING)
-  // If T can be serialised into trace, its alias is also
-  // serialisable.
-  template <class U = T>
-  typename perfetto::check_traced_value_support<U>::type WriteIntoTrace(
-      perfetto::TracedValue&& context) const {
-    perfetto::WriteIntoTracedValue(std::move(context), get());
-  }
-#endif  // BUILDFLAG(PA_USE_BASE_TRACING)
-
   PA_ALWAYS_INLINE void ReportIfDangling() const noexcept {
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     Impl::ReportIfDangling(wrapped_ptr_);
 #endif
   }

@@ -41,10 +41,10 @@ import javax.annotation.concurrent.GuardedBy;
 
 /**
  * This class provides functionality to load and register the native libraries.
- * Callers are allowed to separate loading the libraries from initializing them.
- * This may be an advantage for Android Webview, where the libraries can be loaded
- * by the zygote process, but then needs per process initialization after the
- * application processes are forked from the zygote process.
+ * Callers are allowed to separate loading the libraries from initializing
+ * them. When a zygote process is used (WebView or AppZygote) the per process
+ * initialization happens after the application processes are forked from the
+ * zygote process.
  *
  * The libraries may be loaded and initialized from any thread. Synchronization
  * primitives are used to ensure that overlapping requests from different
@@ -118,10 +118,6 @@ public class LibraryLoader {
     // Whether to use the Chromium linker vs. the system linker.
     // Avoids locking: should be initialized very early.
     private boolean mUseChromiumLinker = NativeLibraries.sUseLinker;
-
-    // Whether to use ModernLinker vs. LegacyLinker.
-    // Avoids locking: should be initialized very early.
-    private boolean mUseModernLinker = NativeLibraries.sUseModernLinker;
 
     // The type of process the shared library is loaded in. Gets passed to native after loading.
     // Avoids locking: should be initialized very early.
@@ -421,7 +417,7 @@ public class LibraryLoader {
     @VisibleForTesting
     protected LibraryLoader() {
         if (DEBUG) {
-            logLinkersUsed();
+            logLinkerUsed();
         }
         if (BuildConfig.ENABLE_ASSERTS) {
             NativeLibraryLoadedStatus.setProvider(new NativeLibraryLoadedStatusProvider() {
@@ -479,75 +475,40 @@ public class LibraryLoader {
      * in startup, locking is not required.
      *
      * @param useChromiumLinker Whether to use a chromium linker.
-     * @param useModernLinker Given that one of the Chromium linkers is used, whether to use
-     *                        ModernLinker instead of the LegacyLinker.
      */
-    public void setLinkerImplementation(boolean useChromiumLinker, boolean useModernLinker) {
+    public void setLinkerImplementation(boolean useChromiumLinker) {
         assert !mInitialized;
         mUseChromiumLinker = useChromiumLinker;
-        mUseModernLinker = useModernLinker;
-        if (DEBUG) logLinkersUsed();
+        if (DEBUG) logLinkerUsed();
     }
 
-    private void logLinkersUsed() {
-        Log.i(TAG, "Configuration: useChromiumLinker() = %b, mUseModernLinker = %b",
-                useChromiumLinker(), mUseModernLinker);
+    private void logLinkerUsed() {
+        Log.i(TAG, "Configuration: useChromiumLinker() = %b", useChromiumLinker());
     }
 
-    // Whether a Linker subclass is used for loading. Even if returns |true|, the Linker can
-    // fall back to using the system dynamic linker on failure. Also it is common for App Zygote to
-    // choose loading with the system linker when sharing RELRO with the browser process is not
-    // supported.
-    // TODO(crbug.com/1383210): Remove the LegacyLinker and fold the ModernLinker into Linker.
+    // Whether a Linker subclass replaces the system dynamic linker for loading. Even if returns
+    // |true|, when the Linker fails, the system dynamic linker is used as a fallback. Also it is
+    // common for App Zygote to choose loading with the system linker when sharing RELRO with the
+    // browser process is not supported.
     private boolean useChromiumLinker() {
-        return mUseChromiumLinker && mUseModernLinker;
+        return mUseChromiumLinker;
     }
 
     /**
-     * Returns either a LegacyLinker or a ModernLinker.
-     *
-     * ModernLinker requires OS features from Android M and later: a system linker that handles
-     * packed relocations and load from APK, and |android_dlopen_ext()| for shared RELRO support. It
-     * cannot run on Android releases earlier than M.
-     *
-     * LegacyLinker runs on all Android releases but it is slower and more complex than
-     * ModernLinker. The LegacyLinker is used on M as it avoids writing the relocation to disk.
+     * Returns the singleton Linker instance.
      *
      * On N, O and P Monochrome is selected by Play Store. With Monochrome this code is not used,
      * instead Chrome asks the WebView to provide the library (and the shared RELRO). If the WebView
      * fails to provide the library, the system linker is used as a fallback.
-     *
-     * LegacyLinker can run on all Android releases, but is unused on P+ as it may cause issues.
-     * LegacyLinker is preferred on M- because it does not write the shared RELRO to disk at
-     * almost every cold startup.
-     *
-     * Finally, ModernLinker is used on Android Q+ with Trichrome.
      *
      * More: docs/android_native_libraries.md
      *
      * @return the Linker implementation instance.
      */
     private Linker getLinker() {
-        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
-        // circumstances:
-        // * installing APK manually
-        // * after OTA from M to N
-        // * side-installing Chrome (possibly from another release channel)
-        // * Play Store bugs leading to incorrect APK flavor being installed
-        // * installing other Chromium-based browsers
-        //
-        // For Chrome builds regularly shipped to users on N+, the system linker (or the Android
-        // Framework) provides the necessary functionality to load without crazylinker. The
-        // LegacyLinker is risky to auto-enable on newer Android releases, as it may interfere with
-        // regular library loading. See http://crbug.com/980304 as example.
-        //
-        // This is only called if LibraryLoader.useChromiumLinker() returns true, meaning this is
-        // either Chrome{,Modern} or Trichrome.
+        assert useChromiumLinker();
         synchronized (mLock) {
-            if (mLinker == null) {
-                mLinker = mUseModernLinker ? new ModernLinker() : new LegacyLinker();
-                Log.i(TAG, mUseModernLinker ? "Using ModernLinker" : "Using LegacyLinker");
-            }
+            if (mLinker == null) mLinker = new Linker();
             return mLinker;
         }
     }
@@ -584,6 +545,7 @@ public class LibraryLoader {
      */
     public void ensureMainDexInitialized() {
         synchronized (mLock) {
+            if (DEBUG) logLinkerUsed();
             loadMainDexAlreadyLocked(
                     ContextUtils.getApplicationContext().getApplicationInfo(), false);
             initializeAlreadyLocked();
@@ -778,7 +740,6 @@ public class LibraryLoader {
     private void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
         Linker linker = getLinker();
         String sourceDir = appInfo.sourceDir;
-        linker.setApkFilePath(sourceDir);
         Log.i(TAG, "Loading %s from within %s", library, sourceDir);
         linker.loadLibrary(library); // May throw UnsatisfiedLinkError.
         getMediator().recordLinkerHistogramsAfterLibraryLoad();
@@ -972,7 +933,7 @@ public class LibraryLoader {
     public static void setEnvForNative() {
         // The setenv API was added in L. On older versions of Android, we should still see ubsan
         // reports, but they will not have stack traces.
-        if (BuildConfig.IS_UBSAN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (BuildConfig.IS_UBSAN) {
             try {
                 // This value is duplicated in build/android/pylib/constants/__init__.py.
                 Os.setenv("UBSAN_OPTIONS",

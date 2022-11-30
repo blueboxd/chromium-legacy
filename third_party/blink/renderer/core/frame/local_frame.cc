@@ -307,7 +307,8 @@ LocalFrame* LocalFrame::FromFrameToken(const LocalFrameToken& frame_token) {
 void LocalFrame::Init(Frame* opener,
                       const DocumentToken& document_token,
                       std::unique_ptr<PolicyContainer> policy_container,
-                      const StorageKey& storage_key) {
+                      const StorageKey& storage_key,
+                      ukm::SourceId document_ukm_source_id) {
   if (!policy_container)
     policy_container = PolicyContainer::CreateEmpty();
 
@@ -319,7 +320,8 @@ void LocalFrame::Init(Frame* opener,
   mojo_handler_ = MakeGarbageCollected<LocalFrameMojoHandler>(*this);
 
   SetOpenerDoNotNotify(opener);
-  loader_.Init(document_token, std::move(policy_container), storage_key);
+  loader_.Init(document_token, std::move(policy_container), storage_key,
+               document_ukm_source_id);
 }
 
 void LocalFrame::SetView(LocalFrameView* view) {
@@ -1873,10 +1875,13 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   return false;
 }
 
-void LocalFrame::WillPotentiallyStartNavigation(const KURL& url) const {
-  TRACE_EVENT1("navigation", "LocalFrame::WillPotentiallyStartNavigation",
+void LocalFrame::WillPotentiallyStartOutermostMainFrameNavigation(
+    const KURL& url) const {
+  TRACE_EVENT1("navigation",
+               "LocalFrame::WillPotentiallyStartOutermostMainFrameNavigation",
                "url", url);
-  GetLocalFrameHostRemote().WillPotentiallyStartNavigation(url);
+  mojo_handler_->NonAssociatedLocalFrameHostRemote()
+      .WillPotentiallyStartOutermostMainFrameNavigation(url);
 }
 
 ContentCaptureManager* LocalFrame::GetOrResetContentCaptureManager() {
@@ -2620,12 +2625,13 @@ LocalFrameToken LocalFrame::GetLocalFrameToken() const {
 }
 
 LoaderFreezeMode LocalFrame::GetLoaderFreezeMode() {
-  if (GetPage()->GetPageScheduler()->IsInBackForwardCache() &&
-      IsInflightNetworkRequestBackForwardCacheSupportEnabled()) {
-    return LoaderFreezeMode::kBufferIncoming;
-  }
-  if (paused_ || frozen_)
+  if (paused_ || frozen_) {
+    if (GetPage()->GetPageScheduler()->IsInBackForwardCache() &&
+        IsInflightNetworkRequestBackForwardCacheSupportEnabled()) {
+      return LoaderFreezeMode::kBufferIncoming;
+    }
     return LoaderFreezeMode::kStrict;
+  }
   return LoaderFreezeMode::kNone;
 }
 
@@ -2663,6 +2669,15 @@ void LocalFrame::DidFreeze() {
 void LocalFrame::DidResume() {
   TRACE_EVENT0("blink", "LocalFrame::DidResume");
   DCHECK(IsAttached());
+  // Before doing anything, set the "is in BFCache" state to false. This might
+  // affect calculations of other states triggered by the code below, e.g. the
+  // LoaderFreezeMode.
+  DomWindow()->SetIsInBackForwardCache(false);
+
+  // TODO(yuzus): Figure out if we should call GetLoaderFreezeMode().
+  GetDocument()->Fetcher()->SetDefersLoading(LoaderFreezeMode::kNone);
+  Loader().SetDefersLoading(LoaderFreezeMode::kNone);
+
   const base::TimeTicks resume_event_start = base::TimeTicks::Now();
   GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
   const base::TimeTicks resume_event_end = base::TimeTicks::Now();
@@ -2675,12 +2690,6 @@ void LocalFrame::DidResume() {
     document_resource_coordinator->SetLifecycleState(
         performance_manager::mojom::LifecycleState::kRunning);
   }
-
-  // TODO(yuzus): Figure out if we should call GetLoaderFreezeMode().
-  GetDocument()->Fetcher()->SetDefersLoading(LoaderFreezeMode::kNone);
-  Loader().SetDefersLoading(LoaderFreezeMode::kNone);
-
-  DomWindow()->SetIsInBackForwardCache(false);
 
   // TODO(yuzus): Figure out where these calls should really belong.
   GetDocument()->DispatchHandleLoadStart();

@@ -744,7 +744,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Debugd.Perf.{FunctionName}" units="ms"
-    expires_after="2023-01-01">
+    expires_after="2023-07-01">
   <owner>enlightened@google.com</owner>
   <owner>jorgelo@google.com</owner>
   <owner>chromeos-security-core@google.com</owner>
@@ -916,17 +916,6 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="Memory"/>
     <variant name="SignalStrength"/>
   </token>
-</histogram>
-
-<histogram name="ChromeOS.FastPair.SubsequentPairing"
-    enum="FastPairSubsequentSuccessFunnelEvent" expires_after="2023-06-01">
-  <owner>jackshira@chromium.org</owner>
-  <owner>chromeos-cross-device-eng@google.com</owner>
-  <summary>
-    Records each sucessful step in the Subsequent Pairing flow. These steps are:
-    on notification click, on initialization start, on pairing start, and on
-    completion of the entire pairing process.
-  </summary>
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}" enum="FeatureUsageEvent"
@@ -1265,7 +1254,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent2"
-    enum="LinkCapturingEvent" expires_after="2023-05-14">
+    enum="LinkCapturingEvent" expires_after="2023-05-28">
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1665,7 +1654,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.PlatformVerification.Result2"
-    enum="ChromeOSPlatformVerificationResult2" expires_after="2023-03-19">
+    enum="ChromeOSPlatformVerificationResult2" expires_after="2023-05-27">
   <owner>erikchen@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>

@@ -491,6 +491,14 @@ BASE_FEATURE(kInMemoryCodeCache,
              "InMemoryCodeCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// During compositor frame eviction, collect not only the surfaces that are
+// reachable from the main frame tree, but also recurse into inner
+// frames. Otherwise only toplevel frames and OOPIF are handled, and other
+// cases, e.g. PDF tiles are ignored. See https://crbug.com/1360351 for details.
+BASE_FEATURE(kInnerFrameCompositorSurfaceEviction,
+             "InnerFrameCompositorSurfaceEviction",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Kill switch for the GetInstalledRelatedApps API.
 BASE_FEATURE(kInstalledApp, "InstalledApp", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -695,6 +703,11 @@ BASE_FEATURE(kNotificationTriggers,
              "NotificationTriggers",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Feature which holdbacks NoStatePrefetch on all surfaces.
+BASE_FEATURE(kNoStatePrefetchHoldback,
+             "NoStatePrefetchHoldback",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls the Origin-Agent-Cluster header. Tracking bug
 // https://crbug.com/1042415; flag removal bug (for when this is fully launched)
 // https://crbug.com/1148057.
@@ -794,6 +807,15 @@ BASE_FEATURE(kPrivacySandboxAdsAPIsOverride,
 //
 BASE_FEATURE(kPrivateNetworkAccessForWorkers,
              "PrivateNetworkAccessForWorkers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Private Network Access checks in warning mode for all types of web
+// workers.
+//
+// Similar to `kPrivateNetworkAccessForWorkers`, except that it does not require
+// CORS preflight requests to succeed, and shows a warning in devtools instead.
+BASE_FEATURE(kPrivateNetworkAccessForWorkersWarningOnly,
+             "PrivateNetworkAccessForWorkersWarningOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Requires that CORS preflight requests succeed before sending private network

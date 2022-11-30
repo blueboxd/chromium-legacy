@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_instances.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
@@ -182,6 +183,9 @@ class TestCascade {
   CascadeOrigin GetOrigin(String name) { return GetPriority(name).GetOrigin(); }
 
   void AddInterpolations() {
+    state_.StyleBuilder().SetBaseData(
+        StyleBaseData::Create(state_.StyleBuilder().CloneStyle(), nullptr));
+
     CalculateInterpolationUpdate();
 
     // Add to cascade:
@@ -264,10 +268,10 @@ class TestCascade {
 
   void CalculateInterpolationUpdate() {
     CSSAnimations::CalculateTransitionUpdate(
-        state_.AnimationUpdate(), state_.GetElement(), *state_.Style());
+        state_.AnimationUpdate(), state_.GetElement(), state_.StyleBuilder());
     CSSAnimations::CalculateAnimationUpdate(
         state_.AnimationUpdate(), state_.GetElement(), state_.GetElement(),
-        *state_.Style(), state_.ParentStyle(),
+        state_.StyleBuilder(), state_.ParentStyle(),
         &GetDocument().GetStyleResolver());
   }
 
@@ -3092,7 +3096,7 @@ TEST_F(StyleCascadeTest, InternalVisitedColorLonghand) {
   EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("color"));
 
   Color red(255, 0, 0);
-  const CSSProperty& color = GetCSSPropertyColor();
+  const css_longhand::Color& color = GetCSSPropertyColor();
   EXPECT_EQ(red, cascade.TakeStyle()->VisitedDependentColor(color));
 }
 
@@ -3110,7 +3114,8 @@ TEST_F(StyleCascadeTest, VarInInternalVisitedColorShorthand) {
   EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("outline-color"));
 
   Color red(255, 0, 0);
-  const CSSProperty& outline_color = GetCSSPropertyOutlineColor();
+  const css_longhand::OutlineColor& outline_color =
+      GetCSSPropertyOutlineColor();
   EXPECT_EQ(red, cascade.TakeStyle()->VisitedDependentColor(outline_color));
 }
 

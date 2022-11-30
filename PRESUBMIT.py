@@ -1118,25 +1118,9 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      ('base::ThreadRestrictions::ScopedAllowIO'),
-      (
-        'ScopedAllowIO is deprecated, use ScopedAllowBlocking instead.',
-      ),
-      False,
-      (),
-    ),
-    BanRule(
       r'/\bRunMessageLoop\b',
       (
           'RunMessageLoop is deprecated, use RunLoop instead.',
-      ),
-      False,
-      (),
-    ),
-    BanRule(
-      'RunThisRunLoop',
-      (
-          'RunThisRunLoop is deprecated, use RunLoop directly instead.',
       ),
       False,
       (),
@@ -1535,7 +1519,6 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/create_ui_locale_resources.pydeps',
     'build/android/gyp/dex.pydeps',
     'build/android/gyp/dex_jdk_libs.pydeps',
-    'build/android/gyp/dexsplitter.pydeps',
     'build/android/gyp/dist_aar.pydeps',
     'build/android/gyp/filter_zip.pydeps',
     'build/android/gyp/flatc_java.pydeps',

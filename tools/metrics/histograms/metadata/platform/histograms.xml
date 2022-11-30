@@ -924,7 +924,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-03-19">
+<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-05-27">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -1045,6 +1045,18 @@ chromium-metrics-reviews@google.com.
     the last upload. This metrics is recorded right after booting into ChromeOS.
     This metrics leverages a coreboot command, elogtool, to retrieve the event
     log and count launch events.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.ClientEnqueueResult"
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-11-30">
+  <owner>lbaraz@chromium.org</owner>
+  <owner>xuhong@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Recorded when missive clientlib calls ReportQueue::Enqueue to post an event
+    to ERP. It counts occurrences of the call returning success or each possible
+    error Status.
   </summary>
 </histogram>
 
@@ -1549,7 +1561,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.FirmwareUpdate.Result"
-    enum="TPMFirmwareUpdateResult" expires_after="2023-03-19">
+    enum="TPMFirmwareUpdateResult" expires_after="2023-05-27">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Status of a complete TPM firmware update attempt.</summary>

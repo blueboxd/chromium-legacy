@@ -5,14 +5,12 @@
 #ifndef COMPONENTS_NAMED_MOJO_IPC_SERVER_NAMED_MOJO_SERVER_ENDPOINT_CONNECTOR_H_
 #define COMPONENTS_NAMED_MOJO_IPC_SERVER_NAMED_MOJO_SERVER_ENDPOINT_CONNECTOR_H_
 
-#include <memory>
-
 #include "base/memory/scoped_refptr.h"
 #include "base/process/process_handle.h"
 #include "base/threading/sequence_bound.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
-#include "mojo/public/cpp/system/isolated_connection.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -38,8 +36,7 @@ class NamedMojoServerEndpointConnector {
 
     // Called when the client has connected to the server endpoint.
     virtual void OnServerEndpointConnected(
-        std::unique_ptr<mojo::IsolatedConnection> connection,
-        mojo::ScopedMessagePipeHandle message_pipe,
+        mojo::PlatformChannelEndpoint endpoint,
         base::ProcessId peer_pid) = 0;
 
     // Called when error occurred during the connection process.
@@ -55,7 +52,8 @@ class NamedMojoServerEndpointConnector {
   // the |callback_sequence|.
   static base::SequenceBound<NamedMojoServerEndpointConnector> Create(
       base::SequenceBound<Delegate> delegate,
-      scoped_refptr<base::SequencedTaskRunner> io_sequence);
+      scoped_refptr<base::SequencedTaskRunner> io_sequence,
+      const mojo::NamedPlatformChannel::ServerName& server_name);
 
   virtual ~NamedMojoServerEndpointConnector() = default;
 

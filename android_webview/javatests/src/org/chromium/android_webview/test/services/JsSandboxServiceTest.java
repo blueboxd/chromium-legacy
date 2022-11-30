@@ -15,6 +15,7 @@ import androidx.javascriptengine.JavaScriptIsolate;
 import androidx.javascriptengine.JavaScriptSandbox;
 import androidx.javascriptengine.MemoryLimitExceededException;
 import androidx.javascriptengine.SandboxDeadException;
+import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -577,7 +578,7 @@ public class JsSandboxServiceTest {
     }
 
     @Test
-    @MediumTest
+    @LargeTest
     public void testHeapSizeEnforced() throws Throwable {
         final long maxHeapSize = REASONABLE_HEAP_SIZE;
         // We need to beat the v8 optimizer to ensure it really allocates the required memory. Note
@@ -614,7 +615,9 @@ public class JsSandboxServiceTest {
                 // Check that the heap limit is enforced and that it reports this was the evaluation
                 // that exceeded the limit.
                 try {
-                    oomResultFuture.get(5, TimeUnit.SECONDS);
+                    // Use a generous timeout for OOM, as it may involve multiple rounds of garbage
+                    // collection.
+                    oomResultFuture.get(60, TimeUnit.SECONDS);
                     Assert.fail("Should have thrown.");
                 } catch (ExecutionException e) {
                     if (!(e.getCause() instanceof MemoryLimitExceededException)) {
@@ -661,7 +664,7 @@ public class JsSandboxServiceTest {
     }
 
     @Test
-    @MediumTest
+    @LargeTest
     public void testIsolateCreationAfterCrash() throws Throwable {
         final long maxHeapSize = REASONABLE_HEAP_SIZE;
         // We need to beat the v8 optimizer to ensure it really allocates the required memory. Note
@@ -689,7 +692,9 @@ public class JsSandboxServiceTest {
                 // Check that the heap limit is enforced and that it reports this was the evaluation
                 // that exceeded the limit.
                 try {
-                    oomResultFuture.get(5, TimeUnit.SECONDS);
+                    // Use a generous timeout for OOM, as it may involve multiple rounds of garbage
+                    // collection.
+                    oomResultFuture.get(60, TimeUnit.SECONDS);
                     Assert.fail("Should have thrown.");
                 } catch (ExecutionException e) {
                     if (!(e.getCause() instanceof MemoryLimitExceededException)) {
@@ -726,6 +731,74 @@ public class JsSandboxServiceTest {
             ListenableFuture<String> resultFuture = jsIsolate.evaluateJavaScriptAsync(stableCode);
             String result = resultFuture.get(5, TimeUnit.SECONDS);
             Assert.assertEquals(stableExpected, result);
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testAsyncPromiseCallbacks() throws Throwable {
+        // Unlike testPromiseReturn and testPromiseEvaluationThrow, this test is guaranteed to
+        // exercise promises in an asynchronous way, rather than in ways which cause a promise to
+        // resolve or reject immediately within the v8::Script::Run call.
+        Context context = ContextUtils.getApplicationContext();
+        ListenableFuture<JavaScriptSandbox> jsSandboxFuture =
+                JavaScriptSandbox.createConnectedInstanceForTestingAsync(context);
+        try (JavaScriptSandbox jsSandbox = jsSandboxFuture.get(5, TimeUnit.SECONDS)) {
+            Assume.assumeTrue(
+                    jsSandbox.isFeatureSupported(JavaScriptSandbox.JS_FEATURE_PROMISE_RETURN));
+            Assume.assumeTrue(jsSandbox.isFeatureSupported(
+                    JavaScriptSandbox.JS_FEATURE_PROVIDE_CONSUME_ARRAY_BUFFER));
+            try (JavaScriptIsolate jsIsolate = jsSandbox.createIsolate()) {
+                // Set up a promise that we can resolve
+                final String goodPromiseCode = ""
+                        + "let ext_resolve;"
+                        + "new Promise((resolve, reject) => {"
+                        + " ext_resolve = resolve;"
+                        + "})";
+                ListenableFuture<String> goodPromiseFuture =
+                        jsIsolate.evaluateJavaScriptAsync(goodPromiseCode);
+
+                // Set up a promise that we can reject
+                final String badPromiseCode = ""
+                        + "let ext_reject;"
+                        + "new Promise((resolve, reject) => {"
+                        + " ext_reject = reject;"
+                        + "})";
+                ListenableFuture<String> badPromiseFuture =
+                        jsIsolate.evaluateJavaScriptAsync(badPromiseCode);
+
+                // This acts as a barrier to ensure promise code finishes (to the extent of
+                // returning the promises) before we ask to evaluate the trigger code - else the
+                // potentially async `ext_resolve = resolve` (or `ext_reject = reject`) code might
+                // not have been run or queued yet.
+                jsIsolate.evaluateJavaScriptAsync("''").get(5, TimeUnit.SECONDS);
+
+                // Trigger the resolve and rejection from another evaluation to ensure the promises
+                // are truly asynchronous.
+                final String triggerCode = ""
+                        + "ext_resolve('I should succeed!');"
+                        + "ext_reject(new Error('I should fail!'));"
+                        + "'DONE'";
+                ListenableFuture<String> triggerFuture =
+                        jsIsolate.evaluateJavaScriptAsync(triggerCode);
+                String triggerResult = triggerFuture.get(5, TimeUnit.SECONDS);
+                Assert.assertEquals("DONE", triggerResult);
+
+                // Check resolve
+                String goodPromiseResult = goodPromiseFuture.get(5, TimeUnit.SECONDS);
+                Assert.assertEquals("I should succeed!", goodPromiseResult);
+
+                // Check reject
+                try {
+                    String badPromiseResult = badPromiseFuture.get(5, TimeUnit.SECONDS);
+                    Assert.fail("Should have thrown");
+                } catch (ExecutionException e) {
+                    if (!(e.getCause() instanceof EvaluationFailedException)) {
+                        throw e;
+                    }
+                    Assert.assertTrue(e.getCause().getMessage().contains("I should fail!"));
+                }
+            }
         }
     }
 }

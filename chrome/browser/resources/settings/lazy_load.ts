@@ -20,7 +20,10 @@ import './privacy_page/privacy_guide/privacy_guide_dialog.js';
 import './privacy_page/privacy_guide/privacy_guide_history_sync_fragment.js';
 import './privacy_page/privacy_guide/privacy_guide_msbb_fragment.js';
 import './privacy_page/privacy_guide/privacy_guide_page.js';
+import './privacy_page/privacy_sandbox/privacy_sandbox_ad_measurement_subpage.js';
+import './privacy_page/privacy_sandbox/privacy_sandbox_fledge_subpage.js';
 import './privacy_page/privacy_sandbox/privacy_sandbox_page.js';
+import './privacy_page/privacy_sandbox/privacy_sandbox_topics_subpage.js';
 import './privacy_page/security_keys_subpage.js';
 import './privacy_page/security_keys_phones_subpage.js';
 import './privacy_page/security_keys_phones_list.js';
@@ -73,6 +76,7 @@ export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 export {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 export {CrSliderElement} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
+export {CrTextareaElement} from 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
 export {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 export {SettingsAppearanceFontsPageElement} from './appearance_page/appearance_fonts_page.js';
@@ -120,7 +124,6 @@ export {ControlledButtonElement} from './controls/controlled_button.js';
 export {SettingsCheckboxElement} from './controls/settings_checkbox.js';
 export {SettingsRadioGroupElement} from './controls/settings_radio_group.js';
 export {SettingsSliderElement} from './controls/settings_slider.js';
-export {SettingsTextareaElement} from './controls/settings_textarea.js';
 export {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
 export {SettingsDownloadsPageElement} from './downloads_page/downloads_page.js';
 // <if expr="_google_chrome and is_win">
@@ -165,6 +168,10 @@ export {PrivacyGuideHistorySyncFragmentElement} from './privacy_page/privacy_gui
 export {PrivacyGuideMsbbFragmentElement} from './privacy_page/privacy_guide/privacy_guide_msbb_fragment.js';
 export {SettingsPrivacyGuidePageElement} from './privacy_page/privacy_guide/privacy_guide_page.js';
 export {PrivacyGuideWelcomeFragmentElement} from './privacy_page/privacy_guide/privacy_guide_welcome_fragment.js';
+export {SettingsPrivacySandboxAdMeasurementSubpageElement} from './privacy_page/privacy_sandbox/privacy_sandbox_ad_measurement_subpage.js';
+export {SettingsPrivacySandboxFledgeSubpageElement} from './privacy_page/privacy_sandbox/privacy_sandbox_fledge_subpage.js';
+export {SettingsPrivacySandboxPageElement} from './privacy_page/privacy_sandbox/privacy_sandbox_page.js';
+export {SettingsPrivacySandboxTopicsSubpageElement} from './privacy_page/privacy_sandbox/privacy_sandbox_topics_subpage.js';
 export {SettingsSecureDnsElement} from './privacy_page/secure_dns.js';
 export {SecureDnsInputElement} from './privacy_page/secure_dns_input.js';
 export {BioEnrollDialogPage, SettingsSecurityKeysBioEnrollDialogElement} from './privacy_page/security_keys_bio_enroll_dialog.js';

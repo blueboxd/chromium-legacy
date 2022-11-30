@@ -73,7 +73,6 @@ BASE_DECLARE_FEATURE(kSkipUndecryptablePasswords);
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kPasswordEditDialogWithDetails);
 BASE_DECLARE_FEATURE(kShowUPMErrorNotification);
-BASE_DECLARE_FEATURE(kTouchToFillPasswordSubmission);
 BASE_DECLARE_FEATURE(kUnifiedCredentialManagerDryRun);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerAndroid);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerErrorMessages);
@@ -85,17 +84,18 @@ BASE_DECLARE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing);
 
 // All features parameters are in alphabetical order.
 
-// If `true`, then password change in settings will also be offered for
-// insecure credentials that are weak (and not phished or leaked).
-constexpr base::FeatureParam<bool>
-    kPasswordChangeInSettingsWeakCredentialsParam = {&kPasswordChangeInSettings,
-                                                     "weak_credentials", false};
-
 // True if the client is part of the live_experiment group for
 // |kPasswordDomainCapabilitiesFetching|, otherwise, the client is assumed to be
 // in the regular launch group.
 constexpr base::FeatureParam<bool> kPasswordChangeLiveExperimentParam = {
     &kPasswordDomainCapabilitiesFetching, "live_experiment", false};
+
+// If true, then password strength indicator will display a minimized state for
+// passwords with more than 5 characters as long as they are weak. Otherwise,
+// the full dropdown will be displayed as long as the password is weak.
+constexpr base::FeatureParam<bool>
+    kPasswordStrengthIndicatorWithMinimizedState = {
+        &kPasswordStrengthIndicator, "strength_indicator_minimized", false};
 
 #if BUILDFLAG(IS_ANDROID)
 extern const base::FeatureParam<int> kMigrationVersion;
@@ -189,10 +189,6 @@ extern const char kTouchToFillPasswordSubmissionWithConservativeHeuristics[];
 
 // Returns true the password script fetching flag is enabled.
 bool IsPasswordScriptsFetchingEnabled();
-
-// Returns true if any of the features that unlock entry points for password
-// change flows are enabled.
-bool IsAutomatedPasswordChangeEnabled();
 
 #if BUILDFLAG(IS_ANDROID)
 // Returns true if the unified password manager feature is active and in a stage

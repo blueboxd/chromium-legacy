@@ -28,7 +28,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "build/chromeos_buildflags.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -302,6 +301,7 @@ ShellSurfaceBase::ShellSurfaceBase(Surface* surface,
       container_(container),
       can_minimize_(can_minimize) {
   WMHelper::GetInstance()->AddActivationObserver(this);
+  WMHelper::GetInstance()->AddTooltipObserver(this);
   surface->AddSurfaceObserver(this);
   SetRootSurface(surface);
   host_window()->Show();
@@ -349,6 +349,7 @@ ShellSurfaceBase::~ShellSurfaceBase() {
     root_surface()->RemoveSurfaceObserver(this);
   if (has_grab_)
     WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
+  WMHelper::GetInstance()->RemoveTooltipObserver(this);
   CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
@@ -1290,6 +1291,19 @@ void ShellSurfaceBase::OnWindowActivated(ActivationReason reason,
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// wm::TooltipObserver overrides:
+
+void ShellSurfaceBase::OnTooltipShown(aura::Window* target,
+                                      const std::u16string& text,
+                                      const gfx::Rect& bounds) {
+  root_surface()->OnTooltipShown(text, bounds);
+}
+
+void ShellSurfaceBase::OnTooltipHidden(aura::Window* target) {
+  root_surface()->OnTooltipHidden();
+}
+
 // Returns true if surface is currently being resized.
 bool ShellSurfaceBase::IsDragged() const {
   if (in_extended_drag_)
@@ -1450,7 +1464,6 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName(base::StringPrintf("ExoShellSurface-%d", shell_id++));
   window->AddChild(host_window());
-  // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(
       aura::EventTargetingPolicy::kTargetAndDescendants);
   InstallCustomWindowTargeter();

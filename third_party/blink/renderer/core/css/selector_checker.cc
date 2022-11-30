@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -222,7 +223,8 @@ bool SelectorChecker::Match(const SelectorCheckingContext& context,
   }
   if (MatchSelector(context, result) != kSelectorMatches)
     return false;
-  if (RuntimeEnabledFeatures::CSSScopeEnabled() &&
+  if (context.style_scope != nullptr &&
+      RuntimeEnabledFeatures::CSSScopeEnabled() &&
       !CheckInStyleScope(context, result)) {
     return false;
   }
@@ -293,8 +295,11 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForSubSelector(
   // actually computing style for scrollbar pseudo elements. This is to
   // avoid incorrectly setting affected-by flags on actual elements for
   // cases like: div::-webkit-scrollbar-thumb:hover { }
+  // Also allow pseudo-classes after ::view-transition* pseudo-elements if the
+  // class is the rightmost compound in the selector.
   if (context.in_rightmost_compound && dynamic_pseudo != kPseudoIdNone &&
       dynamic_pseudo != kPseudoIdSelection &&
+      !IsTransitionPseudoElement(dynamic_pseudo) &&
       !next_context.has_scrollbar_pseudo) {
     return kSelectorFailsCompletely;
   }
@@ -1240,6 +1245,18 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return IsLastOfType(element, element.TagQName());
     }
     case CSSSelector::kPseudoOnlyChild: {
+      if (IsTransitionPseudoElement(context.pseudo_id)) {
+        DCHECK(element.IsDocumentElement());
+        DCHECK_NE(context.pseudo_id, kPseudoIdViewTransition);
+        DCHECK(context.pseudo_argument);
+
+        auto* transition =
+            ViewTransitionUtils::GetActiveTransition(element.GetDocument());
+        DCHECK(transition);
+        return transition->MatchForOnlyChild(context.pseudo_id,
+                                             context.pseudo_argument);
+      }
+
       ContainerNode* parent = element.ParentElementOrDocumentFragment();
       if (mode_ == kResolvingStyle) {
         if (parent) {
@@ -2123,10 +2140,6 @@ bool SelectorChecker::MatchesWithScope(Element& element,
 
 bool SelectorChecker::CheckInStyleScope(const SelectorCheckingContext& context,
                                         MatchResult& result) const {
-  const StyleScope* style_scope = context.style_scope;
-  if (!style_scope)
-    return true;
-
   SelectorCheckingContext local_context(context);
 
   // TODO(crbug.com/1280240): We can probably skip this if the main selector

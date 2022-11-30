@@ -108,6 +108,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/fullscreen_request_token.h"
+#include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_declaration.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -288,6 +289,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public blink::mojom::AssociatedInterfaceProvider,
       public blink::mojom::BackForwardCacheControllerHost,
       public blink::mojom::LocalFrameHost,
+      public blink::mojom::NonAssociatedLocalFrameHost,
       public blink::mojom::LocalMainFrameHost,
       public ui::AXActionHandlerBase,
       public network::mojom::CookieAccessObserver,
@@ -586,6 +588,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCacheBrowserTest::AddBlocklistedFeature should be used.
   void UseDummyStickyBackForwardCacheDisablingFeatureForTesting();
 
+  // Update NotRestoredReasons for |navigation_request| if this is a
+  // cross-document main frame navigation and is not served from back/forward
+  // cache. This will create a metrics object if there is none. This can happen
+  // when we create a new navigation entry such as session restore.
+  // TODO(yuzus): Move this to NavigationEntry.
+  void UpdateBackForwardCacheNotRestoredReasons(
+      NavigationRequest* navigation_request);
+
   const blink::mojom::BackForwardCacheNotRestoredReasonsPtr&
   NotRestoredReasonsForTesting() {
     return not_restored_reasons_for_testing_;
@@ -700,7 +710,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const blink::DocumentToken& document_token,
       const blink::FramePolicy& frame_policy,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-      blink::FrameOwnerElementType owner_type);
+      blink::FrameOwnerElementType owner_type,
+      ukm::SourceId document_ukm_source_id);
 
   // Update this frame's state at the appropriate time when a navigation
   // commits. This is called by Navigator::DidNavigate as a helper, in the
@@ -1775,8 +1786,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Clears the entries in the PrefetchedSignedExchangeCache if exists.
   void ClearPrefetchedSignedExchangeCache();
 
-  // Creates a WebBundleHandleTracker from WebBundleHandles which are attached
-  // |this| or the parent frame or the opener frame.
+  // Creates a WebBundleHandleTracker from WebBundleHandles which is attached
+  // to `this`, if one exists.
   std::unique_ptr<WebBundleHandleTracker> MaybeCreateWebBundleHandleTracker();
 
   void set_did_stop_loading_callback_for_testing(base::OnceClosure callback) {
@@ -1999,6 +2010,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindRenderAccessibilityHost(
       mojo::PendingReceiver<blink::mojom::RenderAccessibilityHost> receiver);
+
+  void BindNonAssociatedLocalFrameHost(
+      mojo::PendingReceiver<blink::mojom::NonAssociatedLocalFrameHost>
+          receiver);
 
   // Prerender2:
   // Tells PrerenderHostRegistry to cancel the prerendering of the page this
@@ -2232,7 +2247,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             RunModalPromptDialogCallback callback) override;
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
-  void WillPotentiallyStartNavigation(const GURL& url) override;
+  void WillPotentiallyStartOutermostMainFrameNavigation(
+      const GURL& url) override;
   void UpdateFaviconURL(
       std::vector<blink::mojom::FaviconURLPtr> favicon_urls) override;
   void DownloadURL(blink::mojom::DownloadURLParamsPtr params) override;
@@ -2503,6 +2519,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Builds and return a ClientSecurityState based on the internal
   // RenderFrameHostImpl state. This is never null.
   network::mojom::ClientSecurityStatePtr BuildClientSecurityState() const;
+  // For worker script fetches/updates or fetches within workers.
+  network::mojom::ClientSecurityStatePtr BuildClientSecurityStateForWorkers()
+      const;
 
   void OnDidRunInsecureContent(const GURL& security_origin,
                                const GURL& target_url);
@@ -2727,6 +2746,26 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #if BUILDFLAG(ENABLE_PPAPI)
   RenderFrameHostImplPpapiSupport& GetPpapiSupport();
 #endif
+
+  // Returns the sticky bit of the User Activation v2 state of this document.
+  bool HasStickyUserActivation() const {
+    return user_activation_state_.HasBeenActive();
+  }
+
+  bool IsActiveUserActivation() const {
+    return user_activation_state_.IsActive();
+  }
+
+  void ClearUserActivation() { user_activation_state_.Clear(); }
+
+  void ConsumeTransientUserActivation() {
+    user_activation_state_.ConsumeIfActive();
+  }
+
+  void ActivateUserActivation(
+      blink::mojom::UserActivationNotificationType notification_type) {
+    user_activation_state_.Activate(notification_type);
+  }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2979,7 +3018,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool is_created_by_script,
       const blink::FramePolicy& frame_policy,
       blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties,
-      blink::FrameOwnerElementType owner_type) override;
+      blink::FrameOwnerElementType owner_type,
+      ukm::SourceId document_ukm_source_id) override;
   void DidCommitSameDocumentNavigation(
       mojom::DidCommitProvisionalLoadParamsPtr params,
       mojom::DidCommitSameDocumentNavigationParamsPtr same_document_params)
@@ -3544,11 +3584,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHost.
   void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
 
-  // Records a DocumentCreated UKM event. Called when a Document is committed in
-  // this frame.
-  void RecordDocumentCreatedUkmEvent(const url::Origin& origin,
-                                     const ukm::SourceId document_ukm_source_id,
-                                     ukm::UkmRecorder* ukm_recorder);
+  // Records a DocumentCreated UKM event and the corresponding identifiability
+  // study metric. Called when a Document is committed in this frame.
+  void RecordDocumentCreatedUkmEvent(
+      const url::Origin& origin,
+      const ukm::SourceId document_ukm_source_id,
+      ukm::UkmRecorder* ukm_recorder,
+      bool only_record_identifiability_metric = false);
 
   // Has the RenderFrame been created in the renderer process and not yet been
   // deleted, exited or crashed. See RenderFrameState.
@@ -3833,7 +3875,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // `has_user_gesture` is true or not. Note that this is just the cached value
   // of what happened during the last navigation, and does not reflect the
   // user activation state of this RenderFrameHost. To get the current/live user
-  // activation state, get the value from FrameTreeNode's
+  // activation state, get the value from RenderFrameHostImpl's
   // HasStickyUserActivation() or HasTransientUserActivation() instead.
   bool last_navigation_started_with_transient_activation_ = false;
 
@@ -4069,6 +4111,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedRemote<mojom::FrameBindingsControl> frame_bindings_control_;
   mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>
       local_frame_host_receiver_{this};
+  mojo::Receiver<blink::mojom::NonAssociatedLocalFrameHost>
+      non_associated_local_frame_host_receiver_{this};
   // Should only be bound when the frame is a swapped in main frame.
   mojo::AssociatedReceiver<blink::mojom::LocalMainFrameHost>
       local_main_frame_host_receiver_{this};
@@ -4601,6 +4645,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Manages a transient affordance for this frame to request fullscreen.
   blink::FullscreenRequestToken fullscreen_request_token_;
+
+  // The user activation state of this document.  See |UserActivationState| for
+  // details on how this state is maintained.
+  blink::UserActivationState user_activation_state_;
 
   // Used to avoid sending AXTreeData to the renderer if the renderer has not
   // been told root ID yet. See UpdateAXTreeData() for more details.

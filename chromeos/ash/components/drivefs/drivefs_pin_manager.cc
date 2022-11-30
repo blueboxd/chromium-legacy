@@ -4,8 +4,266 @@
 
 #include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
 
+#include <vector>
+
+#include "base/barrier_callback.h"
+#include "base/functional/callback_forward.h"
+#include "base/logging.h"
+#include "base/ranges/algorithm.h"
+#include "base/system/sys_info.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "components/drive/file_errors.h"
+
 namespace drivefs::pinning {
 
-DriveFsPinManager::DriveFsPinManager(bool enabled) : enabled_(enabled) {}
+namespace {
+
+mojom::QueryParametersPtr CreateMyDriveQuery() {
+  mojom::QueryParametersPtr query = mojom::QueryParameters::New();
+  // TODO(b/259454320): 50 is chosen arbitrarily, this needs to be updated as
+  // different batch sizes are experimented with.
+  query->page_size = 50;
+  query->query_kind = mojom::QueryKind::kRegular;
+  query->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+  // TODO(b/259454320): The query.proto for this says the C++ clients don't
+  // handle `false` for this boolean, need to investigate if that is true or
+  // not.
+  query->available_offline = false;
+  query->shared_with_me = false;
+  return query;
+}
+
+class FreeDiskSpaceImpl : public FreeDiskSpaceDelegate {
+ public:
+  FreeDiskSpaceImpl() = default;
+
+  FreeDiskSpaceImpl(const FreeDiskSpaceImpl&) = delete;
+  FreeDiskSpaceImpl& operator=(const FreeDiskSpaceImpl&) = delete;
+
+  ~FreeDiskSpaceImpl() override = default;
+
+  void AmountOfFreeDiskSpace(
+      const base::FilePath& path,
+      base::OnceCallback<void(int64_t)> callback) override {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace, path),
+        std::move(callback));
+  }
+};
+
+}  // namespace
+
+constexpr char kGCacheFolderName[] = "GCache";
+
+DriveFsPinManager::DriveFsPinManager(bool enabled,
+                                     const base::FilePath& profile_path,
+                                     mojom::DriveFs* drivefs_interface)
+    : enabled_(enabled),
+      free_disk_space_(std::make_unique<FreeDiskSpaceImpl>()),
+      profile_path_(profile_path),  // The GCache directory is located in the
+                                    // users profile path.
+      drivefs_interface_(drivefs_interface) {}
+
+DriveFsPinManager::DriveFsPinManager(
+    bool enabled,
+    const base::FilePath& profile_path,
+    mojom::DriveFs* drivefs_interface,
+    std::unique_ptr<FreeDiskSpaceDelegate> free_disk_space)
+    : DriveFsPinManager(enabled, profile_path, drivefs_interface) {
+  free_disk_space_ = std::move(free_disk_space);
+}
+
+DriveFsPinManager::~DriveFsPinManager() = default;
+
+// TODO(b/259454320): Pass through a `base::RepeatingCallback` here to enable
+// the callsite to receive progress updates.
+void DriveFsPinManager::Start(
+    base::OnceCallback<void(PinError)> complete_callback) {
+  if (!enabled_) {
+    LOG(ERROR) << "The pin manager is not enabled";
+    std::move(complete_callback).Run(PinError::kManagerDisabled);
+    return;
+  }
+
+  VLOG(1) << "Caculating free disk space";
+  timer_.Begin();
+  complete_callback_ = std::move(complete_callback);
+
+  base::FilePath gcache_path(profile_path_.AppendASCII(kGCacheFolderName));
+
+  free_disk_space_->AmountOfFreeDiskSpace(
+      gcache_path, base::BindOnce(&DriveFsPinManager::OnFreeDiskSpaceRetrieved,
+                                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveFsPinManager::OnFreeDiskSpaceRetrieved(int64_t free_space) {
+  if (free_space == -1) {
+    LOG(ERROR) << "Error calculating free disk space";
+    std::move(complete_callback_).Run(PinError::kErrorCalculatingFreeDiskSpace);
+    return;
+  }
+
+  free_space_ = free_space;
+
+  VLOG(1) << "Starting to search for items to calculate required space";
+  VLOG(2) << "Free disk space in bytes: " << free_space_;
+  mojom::QueryParametersPtr query = CreateMyDriveQuery();
+  drivefs_interface_->StartSearchQuery(
+      search_query_.BindNewPipeAndPassReceiver(), std::move(query));
+  search_query_->GetNextPage(
+      base::BindOnce(&DriveFsPinManager::OnSearchResultForSizeCalculation,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveFsPinManager::OnSearchResultForSizeCalculation(
+    drive::FileError error,
+    absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Error retrieving search results for size calculation: "
+               << error;
+    Complete(PinError::kErrorRetrievingSearchResults);
+    return;
+  }
+
+  if (!items.has_value()) {
+    LOG(ERROR) << "Items returned are invalid";
+    Complete(PinError::kErrorResultsReturnedInvalid);
+    return;
+  }
+
+  if (items.value().size() == 0) {
+    VLOG(2) << "Iterated all files and calculated " << size_required_
+            << " bytes required with " << free_space_ << " bytes available in "
+            << timer_.Elapsed().InMilliseconds() << "ms";
+    StartBatchPinning();
+    return;
+  }
+
+  VLOG(2) << "Iterating over " << items.value().size()
+          << " for space calculation";
+  for (const auto& item : items.value()) {
+    if (item->metadata->pinned) {
+      VLOG(1) << "Item is already pinned, ignoring in space calculation";
+      continue;
+    }
+    size_required_ += item->metadata->size;
+  }
+
+  // TODO(b/259454320): This should really not use up all free space but instead
+  // include a buffer threshold. Update this once the thresholds have been
+  // identified.
+  if (size_required_ >= free_space_) {
+    LOG(ERROR) << "The required size (" << size_required_
+               << " bytes) exceeds the available free space (" << free_space_
+               << "bytes)";
+    Complete(PinError::kErrorNotEnoughFreeSpace);
+    return;
+  }
+
+  search_query_->GetNextPage(
+      base::BindOnce(&DriveFsPinManager::OnSearchResultForSizeCalculation,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveFsPinManager::Complete(PinError status) {
+  search_query_.reset();
+  free_space_ = 0;
+  size_required_ = 0;
+  std::move(complete_callback_).Run(status);
+}
+
+void DriveFsPinManager::StartBatchPinning() {
+  // Restart the search query.
+  search_query_.reset();
+
+  mojom::QueryParametersPtr query = CreateMyDriveQuery();
+  drivefs_interface_->StartSearchQuery(
+      search_query_.BindNewPipeAndPassReceiver(), std::move(query));
+  search_query_->GetNextPage(
+      base::BindOnce(&DriveFsPinManager::OnSearchResultsForPinning,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveFsPinManager::OnSearchResultsForPinning(
+    drive::FileError error,
+    absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Error retrieving search results to pin: " << error;
+    Complete(PinError::kErrorRetrievingSearchResultsForPinning);
+    return;
+  }
+
+  if (!items.has_value()) {
+    LOG(ERROR) << "Items returned are invalid";
+    Complete(PinError::kErrorResultsReturnedInvalidForPinning);
+    return;
+  }
+
+  if (items.value().size() == 0) {
+    VLOG(1) << "Finished pinning all files in "
+            << timer_.Elapsed().InMilliseconds() << "ms";
+    Complete(PinError::kSuccess);
+    return;
+  }
+
+  // TODO(b/259454320): Free disk space should be retrieved here and after the
+  // batch of pinning operations has completed to identify if any other
+  // operations writing to disk might cause cause the free space to get used
+  // faster than anticipated.
+  auto unpinned_items =
+      base::ranges::count_if(items.value().begin(), items.value().end(),
+                             [](const drivefs::mojom::QueryItemPtr& item) {
+                               return !item->metadata->pinned;
+                             });
+
+  if (unpinned_items == 0) {
+    VLOG(1) << "All items in current batch are already pinned";
+    search_query_->GetNextPage(
+        base::BindOnce(&DriveFsPinManager::OnSearchResultsForPinning,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  auto pinned_all = base::BarrierCallback<DrivePathAndStatus>(
+      unpinned_items, base::BindOnce(&DriveFsPinManager::OnFilesPinned,
+                                     weak_ptr_factory_.GetWeakPtr()));
+  for (const auto& item : items.value()) {
+    if (item->metadata->pinned) {
+      VLOG(1) << "Item is already pinned, ignoring when batch pinning";
+      continue;
+    }
+    base::FilePath path(item->path);
+    drivefs_interface_->SetPinned(
+        path, /*pinned=*/true,
+        base::BindOnce(
+            [](const base::FilePath& path, drive::FileError status) {
+              DrivePathAndStatus path_status = {path, status};
+              return path_status;
+            },
+            path)
+            .Then(pinned_all));
+  }
+}
+
+void DriveFsPinManager::OnFilesPinned(
+    std::vector<DrivePathAndStatus> pinned_files) {
+  for (const auto& [path, status] : pinned_files) {
+    if (status != drive::FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed pinning an item: " << status;
+      VLOG(2) << "Path that failed to pin: " << path.value() << " with error "
+              << drive::FileErrorToString(status);
+      std::move(complete_callback_).Run(PinError::kErrorFailedToPinItem);
+      return;
+    }
+  }
+
+  VLOG(2) << "Finished setting pinned status on " << pinned_files.size()
+          << " items";
+  search_query_->GetNextPage(
+      base::BindOnce(&DriveFsPinManager::OnSearchResultsForPinning,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
 }  // namespace drivefs::pinning

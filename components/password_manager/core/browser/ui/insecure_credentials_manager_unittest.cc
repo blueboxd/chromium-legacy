@@ -100,12 +100,11 @@ class InsecureCredentialsManagerTest : public ::testing::Test {
   // be empty, unless it's a federated credential or "Never save" entry.
   std::u16string GetSavedPasswordForUsername(const std::string& signon_realm,
                                              const std::u16string& username) {
-    SavedPasswordsPresenter::SavedPasswordsView saved_passwords =
-        presenter_.GetSavedPasswords();
-    for (const auto& form : saved_passwords) {
-      if (form.signon_realm == signon_realm &&
-          form.username_value == username) {
-        return form.password_value;
+    const auto saved_passwords = presenter_.GetSavedPasswords();
+    for (const auto& password : saved_passwords) {
+      if (password.GetFirstSignonRealm() == signon_realm &&
+          password.username == username) {
+        return password.password;
       }
     }
     return std::u16string();
@@ -122,8 +121,10 @@ class InsecureCredentialsManagerTest : public ::testing::Test {
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
   MockAffiliationService affiliation_service_;
-  SavedPasswordsPresenter presenter_{&affiliation_service_, store_};
-  InsecureCredentialsManager provider_{&presenter_, store_};
+  SavedPasswordsPresenter presenter_{&affiliation_service_, store_,
+                                     /*account_store=*/nullptr};
+  InsecureCredentialsManager provider_{&presenter_, store_,
+                                       /*account_store=*/nullptr};
 };
 
 }  // namespace

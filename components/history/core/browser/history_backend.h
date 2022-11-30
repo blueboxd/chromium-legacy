@@ -564,6 +564,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   bool GetVisitsForURL(URLID id, VisitVector* visits);
 
+  bool GetMostRecentVisitForURL(URLID id, VisitRow* visit_row) override;
+
   // Fetches up to `max_visits` most recent visits for the passed URL.
   bool GetMostRecentVisitsForURL(URLID id, int max_visits, VisitVector* visits);
 
@@ -603,6 +605,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // instead. Returns the local VisitID of the updated visit, or 0 if no
   // matching visit was found.
   VisitID UpdateSyncedVisit(
+      const GURL& url,
+      const std::u16string& title,
+      bool hidden,
       const VisitRow& visit,
       const absl::optional<VisitContextAnnotations>& context_annotations,
       const absl::optional<VisitContentAnnotations>& content_annotations)

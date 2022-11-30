@@ -52,6 +52,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" /> – Play Butikk-app</translation>
 <translation id="1225748608451425081">Chromebooken er låst på grunn av en kjent feil. Du kan logge på om <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Slutt å merke</translation>
+<translation id="1235458158152011030">Kjente nettverk:</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> er tilkoblet.</translation>
 <translation id="1240638468526743569">En app</translation>
 <translation id="1246890715821376239">Apper som ikke støttes</translation>
@@ -386,7 +387,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3120421559657122717">Vil du slå av enheten?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
-<translation id="3139382871451988441">Slå av kameratilgangen.</translation>
 <translation id="3139942575505304791">Skrivebord 1</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151786313568798007">Retning</translation>
@@ -519,7 +519,6 @@ Koble enheten til strøm.</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="385300504083504382">Begynnelsen</translation>
 <translation id="3861651314799684201">Trykk på Enter for å ta opp hele skjermen</translation>
-<translation id="3885531177412808398">Gir mikrofontilgang til alle apper og nettsteder som har mikrofontillatelsen</translation>
 <translation id="3886872229787704059">Åpnet i dag</translation>
 <translation id="3891340733213178823">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="3893630138897523026">ChromeVox (muntlig tilbakemelding)</translation>
@@ -555,6 +554,7 @@ Koble enheten til strøm.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Av for én app}other{Av for # apper}}</translation>
 <translation id="4066027111132117168">På, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
+<translation id="4086921558679520050">Slå på den fysiske mikrofonbryteren på enheten</translation>
 <translation id="4112140312785995938">Spol bakover</translation>
 <translation id="4114315158543974537">Slå på Phone Hub</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -607,6 +607,7 @@ Koble enheten til strøm.</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> prosent.</translation>
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4379531060876907730">Dette er pekepennverktøyene dine</translation>
+<translation id="4381031910344220229">Dette gir mikrofontilgang til <ph name="APP_NAME" /> og alle apper og nettsteder som har mikrofontillatelsen</translation>
 <translation id="4389184120735010762">Du trykket på hurtigtasten for den dokkede lupen. Vil du slå den på?</translation>
 <translation id="439598569299422042">Satt på pause, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Kan ikke lagre skjermopptaket</translation>
@@ -648,11 +649,8 @@ Koble enheten til strøm.</translation>
 <translation id="4573176682887762361">«Skriv inn [ord/frase]»</translation>
 <translation id="4577274620589681794">Tiden er ute · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Se forhåndsvisninger</translation>
-<translation id="4578196883126898996">Mikrofonen din er av. Slå på mikrofonknappen på enheten.</translation>
 <translation id="4578906031062871102">Innstillinger-menyen er åpnet</translation>
-<translation id="4581047786858252841">Mikrofonen er på</translation>
 <translation id="4585337515783392668">Stopp casting på en ukjent mottaker</translation>
-<translation id="4587299710837179226">Mikrofonen er av</translation>
 <translation id="4596144739579517758">Mørkt tema er av</translation>
 <translation id="4611292653554630842">Logg på</translation>
 <translation id="4623167406982293031">Bekreft kontoen</translation>
@@ -732,6 +730,7 @@ Koble enheten til strøm.</translation>
 <translation id="4987738733603015246">Skrivebord 16</translation>
 <translation id="5003993274120026347">Neste setning</translation>
 <translation id="5016558321564993266">Slå av/på markøren. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Tilgang til enhetsmikrofonen er på</translation>
 <translation id="5030687792513154421">Tiden er ute</translation>
 <translation id="5033299697334913360">Klikk hvor som helst for å ta bilde i fullskjerm</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> koblet til en ny telefon</translation>
@@ -963,9 +962,11 @@ Koble enheten til strøm.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> er en administrert økt som administreres av <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> er tilkoblet</translation>
 <translation id="6351032674660237738">APPFORSLAG</translation>
+<translation id="6352082849089527770">Ukjente nettverk</translation>
 <translation id="6359587239691116345">Få de nyeste funksjonene og sikkerhetsforbedringene. Hvis du avviser denne oppdateringen, kan det hende at enheten slutter å fungere som den skal, og du kan oppleve sikkerhets- og ytelsesproblemer.</translation>
 <translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="6381109794406942707">For å låse opp enheten, skriv inn PIN-koden.</translation>
+<translation id="638716340450135524">Slå på kameratilgang</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
 <translation id="6406704438230478924">alt gr</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -973,6 +974,7 @@ Koble enheten til strøm.</translation>
 <translation id="642644398083277086">Fjern alle varsler</translation>
 <translation id="643147933154517414">Ingen varsler</translation>
 <translation id="6431865393913628856">Skjermopptak</translation>
+<translation id="6442259747294754014">Tilgang til enhetsmikrofonen er av</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" /> – <ph name="NUMBER" /> hendelse</translation>
 <translation id="6449483711453944360">Linux-apper og inkognitovinduer støttes ikke for øyeblikket</translation>
@@ -1136,6 +1138,7 @@ Nylig installert</translation>
 <translation id="7360036564632145207">Hvis du endrer innstillingen for datatilgangsbeskyttelse for eksterne enheter, kan det optimalisere ytelsen</translation>
 <translation id="736045644501761622">Angi bakgrunn og stil</translation>
 <translation id="7371404428569700291">Ta opp vinduet</translation>
+<translation id="737315737514430195">Dette gir mikrofontilgang til alle apper og nettsteder som har mikrofontillatelsen</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
 <translation id="7377481913241237033">Tilknytt med en kode</translation>
 <translation id="7378203170292176219">Dra for å velge området du vil ta opp</translation>
@@ -1204,12 +1207,14 @@ Nylig installert</translation>
 <translation id="7671610481353807627">Appene er sortert etter farge</translation>
 <translation id="7672095158465655885">Koblet til <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Kamerakilden er satt til <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">Dette gir mikrofontilgang til <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> og alle apper og nettsteder som har mikrofontillatelsen</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Legg til nytt mobilnettverk</translation>
 <translation id="7720400844887872976">Påslått til <ph name="TIME" /></translation>
 <translation id="7720410380936703141">PRØV PÅ NYTT</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 varsel}other{# varsler}}</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
+<translation id="7742327441377685481">Ingen varsler</translation>
 <translation id="7745560842763881396">Vis apper på hyllen</translation>
 <translation id="7749443890790263709">Maksimalt antall skrivebord er nådd.</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
@@ -1366,6 +1371,7 @@ Nylig installert</translation>
 <translation id="8598235756057743477">Sorter apper etter navn eller farge</translation>
 <translation id="8614517853887502247">Varsler fra <ph name="APP_1_TITLE" /> og <ph name="APP_2_TITLE" /> er skjult fordi visningsbeskyttelse er på</translation>
 <translation id="8627191004499078455">Koblet til <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Slå av kameratilgang</translation>
 <translation id="8631727435199967028">Tilgjengelighetsinnstillinger</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>
@@ -1381,7 +1387,6 @@ Nylig installert</translation>
 <translation id="8666856788528804727">Åpne <ph name="NAME" /> for å konfigurere enheten din</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
 <translation id="8683506306463609433">Ytelsessporing er aktiv</translation>
-<translation id="8684405646663021166">Gir mikrofontilgang til <ph name="APP_NAME" /> og alle apper og nettsteder som har mikrofontillatelsen</translation>
 <translation id="8685326675965865247">Søk på enheten, i apper, i innstillinger og på nettet. Bruk piltastene til å navigere i appene.</translation>
 <translation id="8703634754197148428">Start opptak. Når opptaket har startet, kan du bruke Alt + Shift + L for å navigere til hyllen og finne knappen for å stoppe opptaket</translation>
 <translation id="8721053961083920564">Slå lyden av/på. <ph name="STATE_TEXT" /></translation>
@@ -1406,7 +1411,6 @@ Nylig installert</translation>
 <translation id="8819728065740986820">Tilpasset lading er på</translation>
 <translation id="8825863694328519386">Sveip fra venstre for å gå tilbake</translation>
 <translation id="8834539327799336565">Tilkoblet nå</translation>
-<translation id="8834657930627018205">Slå på kameratilgang.</translation>
 <translation id="8841375032071747811">Tilbakeknapp</translation>
 <translation id="8843682306134542540">Slå av/på rotasjonslås. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Søk+Esc</translation>

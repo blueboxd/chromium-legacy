@@ -210,6 +210,9 @@ constexpr WebSchedulerTrackedFeatures kAllowedFeatures(
     // We don't block on subresource cache-control:no-store or no-cache.
     WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache,
     WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore,
+    // We only record this if "Cache-Control: no-store" header is present on the
+    // main frame.
+    WebSchedulerTrackedFeature::kAuthorizationHeader,
     // TODO(crbug.com/1357482): Figure out if this should be allowed.
     WebSchedulerTrackedFeature::kWebNfc);
 
@@ -854,9 +857,10 @@ void BackForwardCacheImpl::PopulateReasonsForMainDocument(
     result.No(BackForwardCacheMetrics::NotRestoredReason::kDomainNotAllowed);
 }
 
-void BackForwardCacheImpl::PopulateStickyReasonsForDocument(
-    BackForwardCacheCanStoreDocumentResult& result,
-    RenderFrameHostImpl* rfh) {
+void BackForwardCacheImpl::NotRestoredReasonBuilder::
+    PopulateStickyReasonsForDocument(
+        BackForwardCacheCanStoreDocumentResult& result,
+        RenderFrameHostImpl* rfh) {
   // If the rfh has ever granted media access, prevent it from entering cache.
   // TODO(crbug.com/989379): Consider only blocking when there's an active
   //                         media stream.
@@ -903,11 +907,24 @@ void BackForwardCacheImpl::PopulateStickyReasonsForDocument(
       result.NoDueToFeatures(banned_features);
     }
   }
+  // If the main document had CCNS and this document is same-origin with the
+  // main document and used the "Authorization" header then add that reason.
+  // This does not use `IsSameOriginForTreeResult` because we want to be more
+  // conservative and react to *any* same-origin frame using it.
+  if (root_rfh_->GetBackForwardCacheDisablingFeatures().Has(
+          WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore) &&
+      rfh->GetLastCommittedOrigin().IsSameOriginWith(
+          root_rfh_->GetLastCommittedOrigin()) &&
+      rfh->GetBackForwardCacheDisablingFeatures().Has(
+          WebSchedulerTrackedFeature::kAuthorizationHeader)) {
+    result.NoDueToFeatures(WebSchedulerTrackedFeature::kAuthorizationHeader);
+  }
 }
 
-void BackForwardCacheImpl::PopulateNonStickyReasonsForDocument(
-    BackForwardCacheCanStoreDocumentResult& result,
-    RenderFrameHostImpl* rfh) {
+void BackForwardCacheImpl::NotRestoredReasonBuilder::
+    PopulateNonStickyReasonsForDocument(
+        BackForwardCacheCanStoreDocumentResult& result,
+        RenderFrameHostImpl* rfh) {
   if (!rfh->IsDOMContentLoaded())
     result.No(BackForwardCacheMetrics::NotRestoredReason::kLoading);
 
@@ -931,7 +948,7 @@ void BackForwardCacheImpl::PopulateNonStickyReasonsForDocument(
   }
 }
 
-void BackForwardCacheImpl::PopulateReasonsForDocument(
+void BackForwardCacheImpl::NotRestoredReasonBuilder::PopulateReasonsForDocument(
     BackForwardCacheCanStoreDocumentResult& result,
     RenderFrameHostImpl* rfh,
     bool include_non_sticky) {
@@ -1022,8 +1039,7 @@ BackForwardCacheImpl::NotRestoredReasonBuilder::PopulateReasons(
     }
   } else {
     // Populate |result_for_rfh| by checking the bfcache eligibility of |rfh|.
-    bfcache_->PopulateReasonsForDocument(result_for_rfh, rfh,
-                                         include_non_sticky_);
+    PopulateReasonsForDocument(result_for_rfh, rfh, include_non_sticky_);
   }
   bfcache_->UpdateCanStoreToIncludeCacheControlNoStore(result_for_rfh, rfh);
   flattened_result_.AddReasonsFrom(result_for_rfh);
@@ -1425,10 +1441,18 @@ bool BackForwardCacheImpl::IsScreenReaderAllowed() {
 // static
 void BackForwardCacheImpl::VlogUnexpectedRendererToBrowserMessage(
     const char* interface_name,
-    uint32_t message_name) {
+    uint32_t message_name,
+    RenderFrameHostImpl* rfh) {
   VLOG(1) << "BackForwardCacheMessageFilter::WillDispatch bad_message "
-          << "interface_name " << interface_name << "message_name "
+          << "interface_name " << interface_name << " message_name "
           << message_name;
+  // TODO(https://crbug.com/1379490): Remove these when bug is fixed.
+  PageLifecycleStateManager* page_lifecycle_state_manager =
+      rfh->render_view_host()->GetPageLifecycleStateManager();
+  VLOG(1) << "URL: " << rfh->GetLastCommittedURL() << " current "
+          << page_lifecycle_state_manager->IsInBackForwardCache() << " acked "
+          << page_lifecycle_state_manager->last_acknowledged_state()
+                 .is_in_back_forward_cache;
 }
 
 BackForwardCache::DisabledReason::DisabledReason(
@@ -1472,17 +1496,13 @@ BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
       url_(url) {}
 
 BackForwardCacheCanStoreTreeResult::BackForwardCacheCanStoreTreeResult(
-    BackForwardCacheCanStoreDocumentResult& result_for_this_document,
     bool is_same_origin,
-    const std::string& id,
-    const std::string& name,
-    const std::string& src,
     const GURL& url)
-    : document_result_(std::move(result_for_this_document)),
+    : document_result_(BackForwardCacheCanStoreDocumentResult()),
       is_same_origin_(is_same_origin),
-      id_(id),
-      name_(name),
-      src_(src),
+      id_(""),
+      name_(""),
+      src_(""),
       url_(url) {}
 
 BackForwardCacheCanStoreTreeResult::~BackForwardCacheCanStoreTreeResult() =
@@ -1514,31 +1534,24 @@ void BackForwardCacheCanStoreTreeResult::FlattenTreeHelper(
 }
 
 std::unique_ptr<BackForwardCacheCanStoreTreeResult>
+BackForwardCacheCanStoreTreeResult::CreateEmptyTreeForNavigation(
+    NavigationRequest* navigation) {
+  DCHECK(!navigation->GetRenderFrameHost()->IsNestedWithinFencedFrame());
+  DCHECK(BackForwardCacheMetrics::IsCrossDocumentMainFrameHistoryNavigation(
+      navigation));
+  std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
+      new BackForwardCacheCanStoreTreeResult(
+          /*is_same_origin=*/true, navigation->GetURL()));
+  return empty_tree;
+}
+
+std::unique_ptr<BackForwardCacheCanStoreTreeResult>
 BackForwardCacheCanStoreTreeResult::CreateEmptyTree(RenderFrameHostImpl* rfh) {
   BackForwardCacheCanStoreDocumentResult empty_result;
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
       new BackForwardCacheCanStoreTreeResult(rfh, rfh->GetLastCommittedOrigin(),
                                              rfh->GetLastCommittedURL(),
                                              empty_result));
-  return empty_tree;
-}
-
-std::unique_ptr<BackForwardCacheCanStoreTreeResult>
-BackForwardCacheCanStoreTreeResult::CreateEmptyTreeBeforeCommit(
-    NavigationRequest* navigation) {
-  // This method should only be called when a RenderFrameHostImpl is in the
-  // process of committing a navigation.
-  DCHECK_GE(navigation->state(), NavigationRequest::WILL_PROCESS_RESPONSE);
-  RenderFrameHostImpl* frame = navigation->GetRenderFrameHost();
-  DCHECK(frame);
-  // Non-null `frame` indicates a non-`nullopt` `origin`.
-  absl::optional<url::Origin> origin = navigation->GetOriginToCommit();
-  DCHECK(origin.has_value());
-
-  BackForwardCacheCanStoreDocumentResult empty_result;
-  std::unique_ptr<BackForwardCacheCanStoreTreeResult> empty_tree(
-      new BackForwardCacheCanStoreTreeResult(
-          frame, origin.value(), navigation->GetURL(), empty_result));
   return empty_tree;
 }
 

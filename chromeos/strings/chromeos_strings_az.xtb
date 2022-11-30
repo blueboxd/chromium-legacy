@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">Nasazlıqların aradan qaldırılması addımlarını sınayın</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">Ekran qoruyucusu görmək üçün şəbəkəyə qoşulun və səhifəni yenidən yükləyin.</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Digər ayarlar</translation>
 <translation id="2085089206770112532">Displey parlaqlığını azaldın</translation>
 <translation id="2105810540595158374">Cihaz oyun nizamlayıcısıdır.</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">Çap işini ləğv edin</translation>
 <translation id="2163937499206714165">Qaranlıq rejimi aktiv edin</translation>
 <translation id="2180197493692062006">Xəta oldu. Tətbiqi yenidən açmağa çalışın.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">Nəqliyyat Sayğaclarını sıfırlayın</translation>
 <translation id="2212733584906323460">Ad Həlli</translation>
 <translation id="2217935453350629363">Cari sürət</translation>
@@ -268,7 +270,6 @@
 <translation id="360565022852130722">WiFi şəbəkəsi zəif protokol WEP 802.1x ilə qorunur</translation>
 <translation id="3606583719724308068">HTTPS veb saytlarında yüksək gecikmə</translation>
 <translation id="361575905210396100">Rəyinizə görə çox sağolun</translation>
-<translation id="3621202678540785336">Daxiletmə</translation>
 <translation id="3632579075709132555">Məxfilik ekranı keçiricisi</translation>
 <translation id="3651050199673793219">Temperatur vahidi seçin</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> testi</translation>
@@ -385,6 +386,7 @@
 <translation id="4793756956024303490">Sıxılma alqoritmi</translation>
 <translation id="4794140124556169553">CPU testi etmək sistem performansınıza təsir göstərə bilər</translation>
 <translation id="4800589996161293643">Chromebook icması</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> çap işi ləğv edilib</translation>
 <translation id="4809927044794281115">İşıqlı tema</translation>
 <translation id="4813136279048157860">Şəkillərim</translation>
@@ -396,6 +398,7 @@
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> seçilib, <ph name="TOPIC_SOURCE" /> albomlarını seçmək üçün Enter düyməsinə basın</translation>
 <translation id="484790837831576105">(Android) DNS ayırdetmə dəqiqliyi</translation>
 <translation id="4848429997038228357">İCRA EDİLİR</translation>
+<translation id="4854586501323951986">Quraşdırılmış taçskrin</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} cəhd qalıb}other{<ph name="ERROR_MESSAGE" /> {0} cəhd qalıb}}</translation>
 <translation id="4873827928179867585">Doğrulama alqoritmi</translation>
 <translation id="4880328057631981605">Giriş nöqtəsi adı</translation>
@@ -404,6 +407,7 @@
 <translation id="4891842000192098784">Gərginlik</translation>
 <translation id="4897058166682006107">Sol qulaqlığın batareya səviyyəsi: <ph name="BATTERY_PERCENTAGE" />%.</translation>
 <translation id="4905998861748258752">Ekran qoruyucu seçimlərini seçmək üçün funksiyanı aktiv edin</translation>
+<translation id="4910858703033903787">APN növləri</translation>
 <translation id="4917385247580444890">Güclü</translation>
 <translation id="4917889632206600977">Dayanıb - Kağız yoxdur</translation>
 <translation id="491791267030419270">Rəy yazmaq üzrə məsləhətlər</translation>
@@ -458,6 +462,7 @@
 <translation id="5358174242040570474">Xəta oldu. Yenidən divar kağızı seçin və ya tətbiqi yenidən açın.</translation>
 <translation id="5372659122375744710">WiFi şəbəkəsi güvənli deyil</translation>
 <translation id="5376354385557966694">Avtomatik işıqlı rejim</translation>
+<translation id="5378184552853359930">IP növü</translation>
 <translation id="5389159777326897627">Divar kağızı və üslub</translation>
 <translation id="5389224261615877010">Göy qurşağı</translation>
 <translation id="5400907029458559844">Cihaz qoşulur.</translation>
@@ -568,6 +573,7 @@
 <translation id="6394634179843537518">Fayl əlavə edin</translation>
 <translation id="6410257289063177456">Təsvir Faylları</translation>
 <translation id="641081527798843608">Subyekt uyğunluğu</translation>
+<translation id="6412715219990689313">Quraşdırılmış klaviatura</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Zəif (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Hesab ayarlarına keçin</translation>
@@ -666,6 +672,7 @@
 <translation id="7359657277149375382">Fayl növü</translation>
 <translation id="73631062356239394">Diaqnostika datasını paylaşın</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">Quraşdırılmış taçped</translation>
 <translation id="7397270852490618635">İşıqlı temanı deaktiv edin</translation>
 <translation id="741244894080940828">çevirmə</translation>
 <translation id="7415801143053185905">Çox yüksək HTTP gecikməsi</translation>
@@ -714,7 +721,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Provayder növü</translation>
 <translation id="7882501334836096755">İctimai açar</translation>
-<translation id="7890841768028788197">Daxili taçskrin</translation>
 <translation id="7915220255123750251">Şəbəkə APN ayarlarını idarə edin. APN-lər mobil şəbəkə ilə internet arasında əlaqə yaradır.</translation>
 <translation id="7936303884198020182">Ad serveri tapılmadı</translation>
 <translation id="7942349550061667556">Qırmızı</translation>
@@ -740,6 +746,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> seçin</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183974620058026102">Əlavə edin</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8208861521865154048">İmtiyazlar</translation>
 <translation id="8226628635270268143">Sevimli fotolarınızı və albomlarınızı seçin</translation>
@@ -762,7 +769,6 @@
 <translation id="8398927464629426868">Cihazın hazırda şarj və ya deşarj olma sürəti</translation>
 <translation id="8420955526972171689">Aparat problemləri üçün testlər və problem həllini icra edin</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">Daxili klaviatura</translation>
 <translation id="8431300646573772016">ChromeOS üzrə yeniliklər</translation>
 <translation id="843568408673868420">İnternet Bağlantısı</translation>
 <translation id="844521431886043384">DNS ayarlanmayıb</translation>
@@ -819,7 +825,6 @@
 <translation id="8930521118335213258">Eynisəviyyəli tətbiq</translation>
 <translation id="8930622219860340959">Simsiz</translation>
 <translation id="8936793075252196307">Müştərinin IP ünvanı</translation>
-<translation id="8945750210906526975">Daxili taçped</translation>
 <translation id="894617464444543719">Cihaz telefondur.</translation>
 <translation id="8968751544471797276">Şarj sürəti</translation>
 <translation id="8970109610781093811">Yenidən icra edin</translation>
@@ -830,6 +835,7 @@
 <translation id="9025198690966128418">Şəxsi cihaz kimi istifadə edin</translation>
 <translation id="9028832514430399253">Ekran qoruyucu seçimlərini etmək üçün keçiricini aktiv edin</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS ayırdetmə dəqiqliyində yüksək gecikmə var</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -837,6 +843,7 @@
 <translation id="9087578468327036362">Bu sorğunu bildirin</translation>
 <translation id="9088306295921699330">Cari istifadə</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="9100765901046053179">Qabaqcıl ayarlar</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> üçün bileti yeniləyin</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" /> saylı səhifə skanlanır</translation>
 <translation id="9111102763498581341">Kiliddən çıxarın</translation>

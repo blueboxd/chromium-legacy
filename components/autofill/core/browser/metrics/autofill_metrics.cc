@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
 #include "components/autofill/core/browser/metrics/form_events/form_event_logger_base.h"
+#include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -842,9 +843,18 @@ void AutofillMetrics::LogCardUnmaskAuthenticationSelectionDialogResultMetric(
 }
 
 // static
-void AutofillMetrics::LogCardUnmaskAuthenticationSelectionDialogShown() {
-  base::UmaHistogramBoolean(
-      "Autofill.CardUnmaskAuthenticationSelectionDialog.Shown", true);
+void AutofillMetrics::LogCardUnmaskAuthenticationSelectionDialogShown(
+    size_t number_of_challenge_options) {
+  static_assert(static_cast<int>(CardUnmaskChallengeOptionType::kMaxValue) <
+                10);
+  DCHECK_GE(number_of_challenge_options, 0U);
+  // We are using an exact linear histogram, with a max of 10. This is a
+  // reasonable max so that the histogram is not sparse, as we do not foresee
+  // ever having more than 10 challenge options at the same time on a dialog to
+  // authenticate a virtual card.
+  base::UmaHistogramExactLinear(
+      "Autofill.CardUnmaskAuthenticationSelectionDialog.Shown2",
+      number_of_challenge_options, /*exclusive_max=*/10);
 }
 
 // static
@@ -1121,9 +1131,12 @@ void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
 
 // static
 void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event,
-                                           bool has_valid_nickname) {
-  base::UmaHistogramEnumeration("Autofill.UnmaskPrompt.Events", event,
-                                NUM_UNMASK_PROMPT_EVENTS);
+                                           bool has_valid_nickname,
+                                           CreditCard::RecordType card_type) {
+  base::UmaHistogramEnumeration("Autofill.UnmaskPrompt" +
+                                    GetHistogramStringForCardType(card_type) +
+                                    ".Events",
+                                event, NUM_UNMASK_PROMPT_EVENTS);
   if (has_valid_nickname) {
     base::UmaHistogramEnumeration("Autofill.UnmaskPrompt.Events.WithNickname",
                                   event, NUM_UNMASK_PROMPT_EVENTS);
@@ -2423,22 +2436,8 @@ void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
 }
 
 // static
-void AutofillMetrics::LogAutocompleteQuery(bool created) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteQuery", created);
-}
-
-// static
-void AutofillMetrics::LogAutocompleteSuggestions(bool has_suggestions) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteSuggestions", has_suggestions);
-}
-
-// static
 void AutofillMetrics::OnAutocompleteSuggestionsShown() {
   AutofillMetrics::Log(AutocompleteEvent::AUTOCOMPLETE_SUGGESTIONS_SHOWN);
-}
-
-void AutofillMetrics::LogNumberOfAutocompleteEntriesCleanedUp(int nb_entries) {
-  UMA_HISTOGRAM_COUNTS_1000("Autocomplete.Cleanup", nb_entries);
 }
 
 // static

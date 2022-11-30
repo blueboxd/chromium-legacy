@@ -38,6 +38,7 @@
 <translation id="10614374240317010">Nikada nije sačuvano</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Oznake radne površine</translation>
+<translation id="1067561478268651872">Pravilo <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> se ne koristi osim ako je postavljeno pravilo <ph name="SECURE_DNS_SALT" />.</translation>
 <translation id="1068672505746868501">Nemoj nikada prevoditi stranice na <ph name="SOURCE_LANGUAGE" /> jezik</translation>
 <translation id="1070853536588271387">Hibridna i alternativna vozila</translation>
 <translation id="1070901266639972381">Noć</translation>
@@ -1231,6 +1232,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. Ovo će o
 <translation id="4132448310531350254">Duplicirani obrađivači za stavku file_extension "<ph name="FILE_EXTENSION" />" koja se spominje u pravilima aplikacija "<ph name="POLICY_IDS_LIST" />".</translation>
 <translation id="4134123981501319574">Kreiraj dokument</translation>
 <translation id="413544239732274901">Saznajte više</translation>
+<translation id="4140905530744469899">ID profila:</translation>
 <translation id="4142935452406587478">Ladica 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Koverta Chinese #4</translation>
@@ -1354,6 +1356,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. Ovo će o
 <translation id="4407755609041463909">Vatra</translation>
 <translation id="4408413947728134509">Broj kolačića: <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Potrošačka elektronika</translation>
+<translation id="4412074349188076601">Konfiguracija je označena kao instalacijska, ali slika za ovu arhitekturu nije dostavljena, pa se ne može instalirati.</translation>
 <translation id="4414515549596849729">kolačići i podaci web lokacije</translation>
 <translation id="4415426530740016218">Adresa preuzimanja</translation>
 <translation id="4424024547088906515">Ovaj server nije uspio dokazati da predstavlja domenu <ph name="DOMAIN" />. Chrome ne smatra njenu potvrdu sigurnosti pouzdanom. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
@@ -2097,6 +2100,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. Ovo će o
 <translation id="6328786501058569169">Ova web lokacija vas obmanjuje</translation>
 <translation id="6337133576188860026">Oslobodit će se manje od <ph name="SIZE" />. Neke web lokacije će se prilikom sljedeće posjete možda sporije učitavati.</translation>
 <translation id="6337534724793800597">Filtriraj pravila po nazivu</translation>
+<translation id="633770708279464947">Vrijednost <ph name="SECURE_DNS_SALT" /> nije važeća i neće se koristiti.</translation>
 <translation id="6340739886198108203">Pravila administratora ne preporučuju pravljenje snimaka ekrana niti snimanje kada je vidljiv povjerljiv sadržaj:</translation>
 <translation id="6341434961864773665">{0,plural, =1{Pravila administratora ne preporučuju otpremanje ovog fajla na <ph name="DESTINATION_NAME" />}one{Pravila administratora ne preporučuju otpremanje ovih fajlova na <ph name="DESTINATION_NAME" />}few{Pravila administratora ne preporučuju otpremanje ovih fajlova na <ph name="DESTINATION_NAME" />}other{Pravila administratora ne preporučuju otpremanje ovih fajlova na <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="6348220984832452017">Aktivne varijacije</translation>
@@ -2992,6 +2996,7 @@ Dodatni detalji:
 <translation id="8654126188050905496">55 x 91 mm</translation>
 <translation id="8663226718884576429">Sažetak narudžbe, <ph name="TOTAL_LABEL" />, više detalja</translation>
 <translation id="8666678546361132282">Engleski</translation>
+<translation id="8671519637524426245">Vrijednost <ph name="SECURE_DNS_SALT" /> ne ispunjava zahtjeve veličine.</translation>
 <translation id="867224526087042813">Potpis</translation>
 <translation id="8672264262457010862">Poslovanje i industrija</translation>
 <translation id="8676424191133491403">Bez odgode</translation>
@@ -3091,6 +3096,7 @@ Dodatni detalji:
 <translation id="8913778647360618320">Dugme Upravljaj načinima plaćanja, pritisnite Enter da upravljate plaćanjima i informacijama o kreditnim karticama u postavkama Chromea</translation>
 <translation id="8922013791253848639">Uvijek omogući oglase na ovoj web lokaciji</translation>
 <translation id="892588693504540538">Bušenje u gornjem desnom uglu</translation>
+<translation id="8930098617363288380">Vrijednost <ph name="SECURE_DNS_SALT" /> nije relevantna i neće se koristiti, osim ako je postavljeno praviolo <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" />.</translation>
 <translation id="8930330541574156305">Nekretnine</translation>
 <translation id="8931333241327730545">Želite li sačuvati ovu karticu na svoj Google račun?</translation>
 <translation id="8932102934695377596">Vaš sat kasni</translation>
@@ -3203,6 +3209,7 @@ Dodatni detalji:
 <translation id="9179907736442194268">Primajte obavještenja putem e-pošte ako cijena padne na bilo kojoj web lokaciji</translation>
 <translation id="9183302530794969518">Google Dokumenti</translation>
 <translation id="9183425211371246419">Host računar <ph name="HOST_NAME" /> koristi protokol koji nije podržan.</translation>
+<translation id="918454845714257218">Provjerite kôd na kartici <ph name="SIDE_OF_CARD" /> i pokušajte ponovo</translation>
 <translation id="9187461866967718678">Ekstremni sportovi</translation>
 <translation id="9191834167571392248">Bušenje u donjem lijevom uglu</translation>
 <translation id="9199905725844810519">Štampanje je blokirano</translation>

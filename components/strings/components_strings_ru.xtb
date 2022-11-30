@@ -38,6 +38,7 @@
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Закладки на компьютере</translation>
+<translation id="1067561478268651872">Если правило <ph name="SECURE_DNS_SALT" /> не настроено, то правило <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> не будет работать.</translation>
 <translation id="1068672505746868501">Не переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Гибридные автомобили и транспортные средства, работающие на альтернативном топливе</translation>
 <translation id="1070901266639972381">До ночи</translation>
@@ -1230,6 +1231,7 @@
 <translation id="4132448310531350254">Для расширения <ph name="FILE_EXTENSION" /> обнаружено несколько обработчиков по умолчанию: <ph name="POLICY_IDS_LIST" />.</translation>
 <translation id="4134123981501319574">Создать документ</translation>
 <translation id="413544239732274901">Подробнее</translation>
+<translation id="4140905530744469899">Идентификатор профиля:</translation>
 <translation id="4142935452406587478">Лоток 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Конверт Chinese 4</translation>
@@ -1353,6 +1355,7 @@
 <translation id="4407755609041463909">Огонь</translation>
 <translation id="4408413947728134509">Настройки файлов cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Бытовая электроника</translation>
+<translation id="4412074349188076601">Установка ВМ в этой конфигурации допустима, однако это невозможно сделать, так как для данной архитектуры отсутствует необходимый образ.</translation>
 <translation id="4414515549596849729">Файлы cookie и данные сайтов</translation>
 <translation id="4415426530740016218">Адрес получения</translation>
 <translation id="4424024547088906515">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Chrome не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
@@ -2096,6 +2099,7 @@
 <translation id="6328786501058569169">Это поддельный сайт</translation>
 <translation id="6337133576188860026">Освободится менее <ph name="SIZE" /> пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="6337534724793800597">Фильтровать правила по названию</translation>
+<translation id="633770708279464947">Значение строки <ph name="SECURE_DNS_SALT" /> недопустимо и не будет использовано.</translation>
 <translation id="6340739886198108203">Администратор не рекомендует делать снимки и видеозаписи экрана, когда на нем показаны конфиденциальные данные:</translation>
 <translation id="6341434961864773665">{0,plural, =1{Администратор не рекомендует загружать этот файл на <ph name="DESTINATION_NAME" />.}one{Администратор не рекомендует загружать эти файлы на <ph name="DESTINATION_NAME" />.}few{Администратор не рекомендует загружать эти файлы на <ph name="DESTINATION_NAME" />.}many{Администратор не рекомендует загружать эти файлы на <ph name="DESTINATION_NAME" />.}other{Администратор не рекомендует загружать эти файлы на <ph name="DESTINATION_NAME" />.}}</translation>
 <translation id="6348220984832452017">Текущие изменения</translation>
@@ -2991,6 +2995,7 @@
 <translation id="8654126188050905496">55 x 91 мм</translation>
 <translation id="8663226718884576429">Информация о заказе, <ph name="TOTAL_LABEL" />, дополнительные сведения</translation>
 <translation id="8666678546361132282">Английский</translation>
+<translation id="8671519637524426245">Значение правила <ph name="SECURE_DNS_SALT" /> не соответствует требованиям по длине.</translation>
 <translation id="867224526087042813">Подпись</translation>
 <translation id="8672264262457010862">Бизнес и промышленность</translation>
 <translation id="8676424191133491403">Без задержки</translation>
@@ -3090,6 +3095,7 @@
 <translation id="8913778647360618320">Кнопка управления способами оплаты. Нажмите Ввод, чтобы изменить данные о способах оплаты и банковских картах в настройках Chrome.</translation>
 <translation id="8922013791253848639">Всегда разрешать рекламу на этом сайте</translation>
 <translation id="892588693504540538">Отверстие в правом верхнем углу</translation>
+<translation id="8930098617363288380">Если правило <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> не настроено, то значение строки <ph name="SECURE_DNS_SALT" /> нерелевантно и не будет использовано.</translation>
 <translation id="8930330541574156305">Недвижимость</translation>
 <translation id="8931333241327730545">Сохранить эту карту в аккаунте Google?</translation>
 <translation id="8932102934695377596">Часы отстают</translation>
@@ -3202,6 +3208,7 @@
 <translation id="9179907736442194268">Если на одном из сайтов появится скидка, вы получите оповещение по электронной почте.</translation>
 <translation id="9183302530794969518">Google Документы</translation>
 <translation id="9183425211371246419">На сайте <ph name="HOST_NAME" /> используется неподдерживаемый протокол.</translation>
+<translation id="918454845714257218">Проверьте код <ph name="SIDE_OF_CARD" /> и повторите попытку</translation>
 <translation id="9187461866967718678">Экстремальные виды спорта</translation>
 <translation id="9191834167571392248">Отверстие в левом нижнем углу</translation>
 <translation id="9199905725844810519">Печать заблокирована</translation>

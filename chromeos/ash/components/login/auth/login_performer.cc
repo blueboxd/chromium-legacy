@@ -14,7 +14,7 @@
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/login/auth/metrics_recorder.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
-#include "chromeos/metrics/login_event_recorder.h"
+#include "chromeos/ash/components/metrics/login_event_recorder.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -93,14 +93,16 @@ void LoginPerformer::OnPasswordChangeDetected(const UserContext& user_context) {
                                 weak_factory_.GetWeakPtr(), user_context));
 }
 
-void LoginPerformer::OnOldEncryptionDetected(const UserContext& user_context,
-                                             bool has_incomplete_migration) {
+void LoginPerformer::OnOldEncryptionDetected(
+    std::unique_ptr<UserContext> user_context,
+    bool has_incomplete_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindOnce(&LoginPerformer::NotifyOldEncryptionDetected,
-                                weak_factory_.GetWeakPtr(), user_context,
-                                has_incomplete_migration));
+      FROM_HERE,
+      base::BindOnce(&LoginPerformer::NotifyOldEncryptionDetected,
+                     weak_factory_.GetWeakPtr(), std::move(user_context),
+                     has_incomplete_migration));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +193,13 @@ void LoginPerformer::LoginAsWebKioskAccount(
   authenticator_->LoginAsWebKioskAccount(web_app_account_id);
 }
 
+void LoginPerformer::LoginAuthenticated(
+    std::unique_ptr<UserContext> user_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureAuthenticator();
+  authenticator_->LoginAuthenticated(std::move(user_context));
+}
+
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->RecoverEncryptedData(
@@ -244,17 +253,18 @@ void LoginPerformer::NotifyPasswordChangeDetected(
 }
 
 void LoginPerformer::NotifyOldEncryptionDetected(
-    const UserContext& user_context,
+    std::unique_ptr<UserContext> user_context,
     bool has_incomplete_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
-  delegate_->OnOldEncryptionDetected(user_context, has_incomplete_migration);
+  delegate_->OnOldEncryptionDetected(std::move(user_context),
+                                     has_incomplete_migration);
 }
 
 void LoginPerformer::StartLoginCompletion() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "Online login completion started.";
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
+  LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
   EnsureAuthenticator();
   authenticator_->CompleteLogin(std::make_unique<UserContext>(user_context_));
   user_context_.ClearSecrets();
@@ -263,7 +273,7 @@ void LoginPerformer::StartLoginCompletion() {
 void LoginPerformer::StartAuthentication() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "Offline auth started.";
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
+  LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
   DCHECK(delegate_);
   EnsureAuthenticator();
   authenticator_->AuthenticateToLogin(

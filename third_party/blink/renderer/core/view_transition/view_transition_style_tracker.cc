@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -276,6 +277,62 @@ void ViewTransitionStyleTracker::AddSharedElement(Element* element,
   // to sort later.
   value.insert(std::make_pair(name, set_element_sequence_id_));
   ++set_element_sequence_id_;
+}
+
+bool ViewTransitionStyleTracker::MatchForOnlyChild(
+    PseudoId pseudo_id,
+    AtomicString view_transition_name) const {
+  DCHECK(view_transition_name);
+
+  switch (pseudo_id) {
+    case kPseudoIdViewTransitionGroup: {
+      const bool has_root = old_root_data_ || new_root_data_;
+      if (has_root) {
+        return element_data_map_.empty();
+      } else {
+        DCHECK(!element_data_map_.empty());
+        return element_data_map_.size() == 1;
+      }
+    }
+    case kPseudoIdViewTransitionImagePair:
+      return true;
+    case kPseudoIdViewTransitionOld: {
+      if (new_root_data_ &&
+          new_root_data_->names.Contains(view_transition_name)) {
+        return false;
+      }
+
+      auto it = element_data_map_.find(view_transition_name);
+      if (it == element_data_map_.end()) {
+        DCHECK(old_root_data_ &&
+               old_root_data_->names.Contains(view_transition_name));
+        return true;
+      }
+
+      const auto& element_data = it->value;
+      return !element_data->new_snapshot_id.IsValid();
+    }
+    case kPseudoIdViewTransitionNew: {
+      if (old_root_data_ &&
+          old_root_data_->names.Contains(view_transition_name)) {
+        return false;
+      }
+
+      auto it = element_data_map_.find(view_transition_name);
+      if (it == element_data_map_.end()) {
+        DCHECK(new_root_data_ &&
+               new_root_data_->names.Contains(view_transition_name));
+        return true;
+      }
+
+      const auto& element_data = it->value;
+      return !element_data->old_snapshot_id.IsValid();
+    }
+    default:
+      NOTREACHED();
+  }
+
+  return false;
 }
 
 void ViewTransitionStyleTracker::AddSharedElementsFromCSS() {
@@ -1040,9 +1097,11 @@ gfx::Outsets GetFixedToSnapshotViewportOutsets(Document& document) {
       top += controls.TopHeight() - controls.TopMinHeight();
     if (controls.BottomShownRatio())
       bottom += controls.BottomHeight() - controls.BottomMinHeight();
-  }
 
-  // TODO(bokan): Account for virtual-keyboard
+    bottom += document.GetFrame()
+                  ->GetWidgetForLocalRoot()
+                  ->GetVirtualKeyboardResizeHeight();
+  }
 
   // A left-side scrollbar (i.e. in an RTL writing-mode) should overlay the
   // snapshot viewport as well. This cannot currently happen in Chrome but it

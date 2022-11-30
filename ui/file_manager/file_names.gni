@@ -250,13 +250,19 @@ ts_files = [
   "file_manager/lib/concurrency_models.ts",
 
   # State.
+  "file_manager/state/file_key.ts",
   "file_manager/state/store.ts",
+
+  # Actions.
+  "file_manager/state/actions.ts",
+  "file_manager/state/actions/all_entries.ts",
+  "file_manager/state/actions/current_directory.ts",
+
+  # Reducers.
   "file_manager/state/reducers/root.ts",
   "file_manager/state/reducers/all_entries.ts",
   "file_manager/state/reducers/current_directory.ts",
   "file_manager/state/reducers/search.ts",
-  "file_manager/state/actions.ts",
-  "file_manager/state/file_key.ts",
 
   # Containers.
   "file_manager/containers/breadcrumb_container.ts",
@@ -272,10 +278,15 @@ ts_files = [
   "file_manager/widgets/xf_search_options.ts",
   "file_manager/widgets/xf_select.ts",
   "file_manager/foreground/js/ui/search_autocomplete_list.ts",
+  "file_manager/widgets/xf_tree.ts",
+  "file_manager/widgets/xf_tree_item.ts",
 
   # Foreground.
   "file_manager/foreground/js/file_tasks.ts",
   "file_manager/foreground/js/task_controller.ts",
+
+  # Util
+  "file_manager/widgets/xf_tree_util.ts",
 ]
 
 # Isolate Polymer TS to avoid sending them to Closure via the rule `js_from_ts`.
@@ -302,7 +313,10 @@ ts_test_files = [
   "file_manager/lib/for_tests.ts",
 
   # Reducers:
+  "file_manager/state/for_tests.ts",
   "file_manager/state/reducers/all_entries_unittest.ts",
+  "file_manager/state/reducers/current_directory_unittest.ts",
+  "file_manager/state/reducers/search_unittest.ts",
 
   # Widgets:
   "file_manager/widgets/xf_breadcrumb_unittest.ts",
@@ -311,6 +325,8 @@ ts_test_files = [
   "file_manager/widgets/xf_nudge_unittest.ts",
   "file_manager/widgets/xf_search_options_unittest.ts",
   "file_manager/widgets/xf_select_unittest.ts",
+  "file_manager/widgets/xf_tree_unittest.ts",
+  "file_manager/widgets/xf_tree_item_unittest.ts",
 
   # Foreground:
   "file_manager/foreground/js/file_tasks_unittest.ts",
@@ -346,6 +362,7 @@ checked_in_dts_files = [
   "file_manager/foreground/js/ui/command.d.ts",
   "file_manager/foreground/js/ui/list.d.ts",
   "file_manager/foreground/js/ui/list_item.d.ts",
+  "file_manager/foreground/js/ui/menu_item.d.ts",
   "file_manager/foreground/js/ui/multi_menu_button.d.ts",
 ]
 

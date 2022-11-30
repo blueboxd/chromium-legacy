@@ -152,7 +152,7 @@ public class Fido2CredentialRequestTest {
                         .name("notSupportedError"),
                 new ParameterSet()
                         .value(Fido2Api.CONSTRAINT_ERR, FILLER_ERROR_MSG,
-                                Integer.valueOf(AuthenticatorStatus.CREDENTIAL_EXCLUDED))
+                                Integer.valueOf(AuthenticatorStatus.UNKNOWN_ERROR))
                         .name("constraintErrorReRegistration"),
                 new ParameterSet()
                         .value(Fido2Api.INVALID_STATE_ERR, FILLER_ERROR_MSG,
@@ -1200,6 +1200,7 @@ public class Fido2CredentialRequestTest {
                         "One of the excluded credentials exists on the local device"));
 
         mCreationOptions.isPaymentCredentialCreation = true;
+        mCreationOptions.authenticatorSelection.residentKey = ResidentKeyRequirement.PREFERRED;
         Assert.assertFalse(mFrameHost.mIsPaymentCredentialCreation);
         mRequest.handleMakeCredentialRequest(mCreationOptions, mFrameHost, mOrigin,
                 (responseStatus, response)

@@ -202,6 +202,7 @@
 #include "chromeos/ash/components/device_activity/device_activity_controller.h"
 #include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/ash/components/drivefs/fake_drivefs_launcher_client.h"
+#include "chromeos/ash/components/fwupd/firmware_update_manager.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
@@ -516,6 +517,8 @@ class DBusServices {
     NetworkHandler::Initialize();
 
     chromeos::sensors::SensorHalDispatcher::Initialize();
+    chromeos::sensors::SensorHalDispatcher::GetInstance()
+        ->TryToEstablishMojoChannelByServiceManager();
 
     DeviceSettingsService::Get()->SetSessionManager(
         SessionManagerClient::Get(),
@@ -629,6 +632,13 @@ ChromeBrowserMainPartsAsh::~ChromeBrowserMainPartsAsh() {
 int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
+  // Initialize mojo service manager. Note that this depends on the
+  // |mojo_ipc_support_| in |content::BrowserMainLoop| to be created. This
+  // should be initialized before sending any mojo invitations. Thus, those dbus
+  // service which send mojo invitation should be initialized after.
+  mojo_service_manager_closer_ =
+      mojo_service_manager::CreateConnectionAndPassCloser();
+
   if (command_line->HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
     command_line->AppendSwitch(::syncer::kDisableSync);
@@ -711,21 +721,6 @@ void ChromeBrowserMainPartsAsh::PostCreateMainMessageLoop() {
 
   dbus_services_ = std::make_unique<internal::DBusServices>(
       std::move(feature_list_accessor_));
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshUseCrOSMojoServiceManager)) {
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        ::switches::kDisableMojoBroker))
-        << "Mojo broker must be disabled to use the ChromeOS mojo service "
-           "manager.";
-    // Initialize mojo service manager. Note that this depends on the
-    // |mojo_ipc_support_| in |content::BrowserMainLoop| to be created.
-    mojo_service_manager_closer_ =
-        mojo_service_manager::CreateConnectionAndPassCloser();
-
-    chromeos::sensors::SensorHalDispatcher::GetInstance()
-        ->TryToEstablishMojoChannelByServiceManager();
-  }
 
   // Need to be done after LoginState has been initialized in DBusServices().
   ::memory::MemoryKillsMonitor::Initialize();

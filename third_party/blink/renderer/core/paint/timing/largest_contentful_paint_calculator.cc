@@ -4,10 +4,13 @@
 
 #include "third_party/blink/renderer/core/paint/timing/largest_contentful_paint_calculator.h"
 
+#include "base/debug/stack_trace.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/paint/timing/image_element_timing.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -23,25 +26,26 @@ LargestContentfulPaintCalculator::LargestContentfulPaintCalculator(
     WindowPerformance* window_performance)
     : window_performance_(window_performance) {}
 
-void LargestContentfulPaintCalculator::UpdateLargestContentfulPaintIfNeeded(
-    const TextRecord* largest_text,
-    const ImageRecord* largest_image) {
+void LargestContentfulPaintCalculator::
+    UpdateWebExposedLargestContentfulPaintIfNeeded(
+        const TextRecord* largest_text,
+        const ImageRecord* largest_image) {
   uint64_t text_size = largest_text ? largest_text->recorded_size : 0u;
   uint64_t image_size = largest_image ? largest_image->recorded_size : 0u;
   if (image_size > text_size) {
     if (image_size > largest_reported_size_ &&
         largest_image->paint_time > base::TimeTicks()) {
-      UpdateLargestContentfulImage(largest_image);
+      UpdateWebExposedLargestContentfulImage(largest_image);
     }
   } else {
     if (text_size > largest_reported_size_ &&
         largest_text->paint_time > base::TimeTicks()) {
-      UpdateLargestContentfulText(*largest_text);
+      UpdateWebExposedLargestContentfulText(*largest_text);
     }
   }
 }
 
-void LargestContentfulPaintCalculator::UpdateLargestContentfulImage(
+void LargestContentfulPaintCalculator::UpdateWebExposedLargestContentfulImage(
     const ImageRecord* largest_image) {
   DCHECK(window_performance_);
   DCHECK(largest_image);
@@ -81,9 +85,22 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulImage(
   const AtomicString& image_id =
       image_element ? image_element->GetIdAttribute() : AtomicString();
 
+  base::TimeTicks paint_time =
+      expose_paint_time_to_api ? largest_image->paint_time : base::TimeTicks();
+
+  if (RuntimeEnabledFeatures::ExposeRenderTimeNonTaoDelayedImageEnabled()) {
+    base::TimeTicks fcp =
+        PaintTiming::From(*window_performance_->DomWindow()->document())
+            .FirstContentfulPaintPresentation();
+
+    if (!media_timing->TimingAllowPassed() &&
+        largest_image->paint_time <= fcp) {
+      paint_time = fcp;
+    }
+  }
+
   window_performance_->OnLargestContentfulPaintUpdated(
-      expose_paint_time_to_api ? largest_image->paint_time : base::TimeTicks(),
-      largest_image->recorded_size, largest_image->load_time,
+      paint_time, largest_image->recorded_size, largest_image->load_time,
       expose_paint_time_to_api ? largest_image->first_animated_frame_time
                                : base::TimeTicks(),
       image_id, image_url, image_element);
@@ -102,7 +119,7 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulImage(
   }
 }
 
-void LargestContentfulPaintCalculator::UpdateLargestContentfulText(
+void LargestContentfulPaintCalculator::UpdateWebExposedLargestContentfulText(
     const TextRecord& largest_text) {
   DCHECK(window_performance_);
   // |node_| could be null and |largest_text| should be ignored in this

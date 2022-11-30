@@ -122,6 +122,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.FamilyLinkUser.FaviconAvailability"
+    enum="SupervisedUserFaviconAvailability" expires_after="2023-01-20">
+  <owner>courtneywong@chromium.org</owner>
+  <owner>cros-families-eng@google.com</owner>
+  <summary>
+    Records whether the favicon is available when it is being requested. The
+    favicon is requested for UI related to supervised users, including the local
+    web approvals parent access dialog. This metric is only recorded on
+    ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.FamilyLinkUser.LogSegment"
     enum="FamilyLinkUserLogSegment" expires_after="never">
 <!-- expires-never: used internally for filtering -->
@@ -136,6 +148,21 @@ chromium-metrics-reviews@google.com.
     applied to their accounts. Users over the age of consent can opt into
     supervision.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.FamilyLinkUser.ParentAccess.FlowResult.{FlowType}"
+    enum="ParentAccessFlowResult" expires_after="2023-11-15">
+  <owner>courtneywong@chromium.org</owner>
+  <owner>cros-families-eng@google.com</owner>
+  <summary>
+    Records the state at which the Parent Access dialog is closed for all parent
+    access flows. Allows to track the drop rate by important states during the
+    parent access flow. This metric is recorded for ChromeOS only.
+  </summary>
+  <token key="FlowType">
+    <variant name="All"/>
+    <variant name="WebApprovals"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.FamilyUser.ChildUserTypeMismatchError"
@@ -628,7 +655,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SupervisedUsers.ExtensionInstallDialog"
-    enum="SupervisedUserExtensionInstallDialog" expires_after="2023-03-26">
+    enum="SupervisedUserExtensionInstallDialog" expires_after="2023-05-27">
   <owner>tobyhuang@chromium.org</owner>
   <owner>agawronska@chromium.org</owner>
   <owner>danan@chromium.org</owner>
@@ -660,7 +687,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SupervisedUsers.ExtensionsMayRequestPermissions"
-    enum="BooleanEnabled" expires_after="2023-03-26">
+    enum="BooleanEnabled" expires_after="2023-05-27">
   <owner>tobyhuang@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
@@ -677,18 +704,6 @@ chromium-metrics-reviews@google.com.
     in while the toggle is in the on state. While the double counting upon
     logging in is less than ideal, at least the counts are balanced relative to
     each other.
-  </summary>
-</histogram>
-
-<histogram name="SupervisedUsers.FaviconAvailability"
-    enum="SupervisedUserFaviconAvailability" expires_after="2023-05-14">
-  <owner>courtneywong@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <summary>
-    Records whether the favicon is available when it is being requested. The
-    favicon is requested for UI related to supervised users, including the local
-    web approvals parent access dialog. This metric is only recorded on
-    ChromeOS.
   </summary>
 </histogram>
 
@@ -757,7 +772,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Supervision.ParentAccessCode.Action"
-    enum="ParentAccessCodeAction" expires_after="2023-03-26">
+    enum="ParentAccessCodeAction" expires_after="2023-05-27">
   <owner>agawronska@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>

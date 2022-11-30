@@ -578,6 +578,10 @@ class InterestGroupAuction::BuyerHelper
         auction_->config_->non_shared_params.auction_signals,
         GetPerBuyerSignals(*auction_->config_,
                            bid_state->bidder.interest_group.owner),
+        GetDirectFromSellerPerBuyerSignals(
+            *auction_->subresource_url_builder_,
+            bid_state->bidder.interest_group.owner),
+        GetDirectFromSellerAuctionSignals(*auction_->subresource_url_builder_),
         auction_->PerBuyerTimeout(bid_state), auction_->config_->seller,
         auction_->parent_ ? auction_->parent_->config_->seller
                           : absl::optional<url::Origin>(),
@@ -620,7 +624,10 @@ class InterestGroupAuction::BuyerHelper
 
     // If `new_priority` has a value and is negative, need to record the bidder
     // as no longer participating in the auction and cancel bid generation.
-    if (new_priority.has_value() && *new_priority < 0) {
+    bool bid_filtered = new_priority.has_value() && *new_priority < 0;
+    UMA_HISTOGRAM_BOOLEAN("Ads.InterestGroup.Auction.BidFiltered",
+                          bid_filtered);
+    if (bid_filtered) {
       // Record if there are other bidders, as if there are not, the next call
       // may delete `this`.
       bool other_bidders = (num_outstanding_bids_ > 1);
@@ -971,6 +978,7 @@ InterestGroupAuction::InterestGroupAuction(
       config_(config),
       parent_(parent),
       auction_start_time_(auction_start_time),
+      creation_time_(base::TimeTicks::Now()),
       subresource_url_builder_(std::make_unique<SubresourceUrlBuilder>(
           config->direct_from_seller_signals)) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("fledge", "auction", trace_id_,
@@ -1002,18 +1010,18 @@ InterestGroupAuction::~InterestGroupAuction() {
     switch (*final_auction_result_) {
       case AuctionResult::kAborted:
         UMA_HISTOGRAM_MEDIUM_TIMES("Ads.InterestGroup.Auction.AbortTime",
-                                   base::Time::Now() - auction_start_time_);
+                                   base::TimeTicks::Now() - creation_time_);
         break;
       case AuctionResult::kNoBids:
       case AuctionResult::kAllBidsRejected:
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "Ads.InterestGroup.Auction.CompletedWithoutWinnerTime",
-            base::Time::Now() - auction_start_time_);
+            base::TimeTicks::Now() - creation_time_);
         break;
       case AuctionResult::kSuccess:
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "Ads.InterestGroup.Auction.AuctionWithWinnerTime",
-            base::Time::Now() - auction_start_time_);
+            base::TimeTicks::Now() - creation_time_);
         break;
       default:
         break;
@@ -1498,6 +1506,29 @@ absl::optional<std::string> InterestGroupAuction::GetPerBuyerSignals(
   return absl::nullopt;
 }
 
+absl::optional<GURL> InterestGroupAuction::GetDirectFromSellerAuctionSignals(
+    const SubresourceUrlBuilder& subresource_url_builder) {
+  if (subresource_url_builder.auction_signals())
+    return subresource_url_builder.auction_signals()->subresource_url;
+  return absl::nullopt;
+}
+
+absl::optional<GURL> InterestGroupAuction::GetDirectFromSellerPerBuyerSignals(
+    const SubresourceUrlBuilder& subresource_url_builder,
+    const url::Origin& owner) {
+  auto it = subresource_url_builder.per_buyer_signals().find(owner);
+  if (it == subresource_url_builder.per_buyer_signals().end())
+    return absl::nullopt;
+  return it->second.subresource_url;
+}
+
+absl::optional<GURL> InterestGroupAuction::GetDirectFromSellerSellerSignals(
+    const SubresourceUrlBuilder& subresource_url_builder) {
+  if (subresource_url_builder.seller_signals())
+    return subresource_url_builder.seller_signals()->subresource_url;
+  return absl::nullopt;
+}
+
 InterestGroupAuction::LeaderInfo::LeaderInfo() = default;
 InterestGroupAuction::LeaderInfo::~LeaderInfo() = default;
 
@@ -1630,6 +1661,13 @@ void InterestGroupAuction::OnStartLoadInterestGroupsPhaseComplete(
   DCHECK(!final_auction_result_);
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "load_groups_phase", trace_id_);
+  if (auction_result == AuctionResult::kNoInterestGroups) {
+    UMA_HISTOGRAM_TIMES("Ads.InterestGroup.Auction.LoadNoGroupsTime",
+                        base::TimeTicks::Now() - creation_time_);
+  } else {
+    UMA_HISTOGRAM_TIMES("Ads.InterestGroup.Auction.LoadGroupsTime",
+                        base::TimeTicks::Now() - creation_time_);
+  }
 
   // `final_auction_result_` should only be set to kSuccess when the entire
   // auction is complete.
@@ -1764,6 +1802,8 @@ void InterestGroupAuction::ScoreBidIfReady(std::unique_ptr<Bid> bid) {
       this, score_ad_remote.InitWithNewPipeAndPassReceiver(), std::move(bid));
   seller_worklet_handle_->GetSellerWorklet()->ScoreAd(
       bid_raw->ad_metadata, bid_raw->bid, config_->non_shared_params,
+      GetDirectFromSellerSellerSignals(*subresource_url_builder_),
+      GetDirectFromSellerAuctionSignals(*subresource_url_builder_),
       GetOtherSellerParam(*bid_raw), bid_raw->interest_group->owner,
       bid_raw->render_url, bid_raw->ad_components,
       bid_raw->bid_duration.InMilliseconds(), SellerTimeout(),

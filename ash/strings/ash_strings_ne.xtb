@@ -52,6 +52,7 @@
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store एप</translation>
 <translation id="1225748608451425081">कुनै ज्ञात समस्याका कारण तपाईंको Chromebook लक गरिएको छ। तपाईं यति समयपछि साइन इन गर्न सक्नु हुने छ: <ph name="TIME_LEFT" />।</translation>
 <translation id="1229194443904279055">पाठ चयन गर्न छाडियोस्</translation>
+<translation id="1235458158152011030">ज्ञात नेटवर्कहरू</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> कनेक्ट गरिएको छ।</translation>
 <translation id="1240638468526743569">कुनै एप</translation>
 <translation id="1246890715821376239">प्रयोग गर्न नमिल्ने एपहरू</translation>
@@ -386,7 +387,6 @@
 <translation id="3120421559657122717">यो डिभाइस सट डाउन गर्ने हो?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">अपडेट गर्न पुनः सुरु गर्नुहोस्</translation>
-<translation id="3139382871451988441">क्यामेरा प्रयोग गर्ने अनुमति अफ गर्नुहोस्।</translation>
 <translation id="3139942575505304791">डेस्क १</translation>
 <translation id="315116470104423982">मोबाइल डाटा</translation>
 <translation id="3151786313568798007">अभिमुखीकरण</translation>
@@ -519,7 +519,6 @@
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
 <translation id="385300504083504382">पाठको सुरुवातमा जानुहोस्</translation>
 <translation id="3861651314799684201">पूरा स्क्रिन रेकर्ड गर्न इन्टर थिच्नुहोस्</translation>
-<translation id="3885531177412808398">यसले माइक्रोफोन प्रयोग गर्ने अनुमति चाहिने सबै एप तथा वेबसाइटहरूलाई माइक्रोफोन प्रयोग गर्ने अनुमति दिन्छ</translation>
 <translation id="3886872229787704059">आज खोलिएको</translation>
 <translation id="3891340733213178823">साइन आउट गर्न Ctrl+Shift+Q लाई दुईपटक थिच्नुहोस्।</translation>
 <translation id="3893630138897523026">ChromeVox (बोली पृष्ठपोषण)</translation>
@@ -555,6 +554,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एउटा एपमा अफ}other{# एपमा अफ}}</translation>
 <translation id="4066027111132117168">अन छ, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
+<translation id="4086921558679520050">आफ्नो डिभाइसमा माइकको स्विच अन गर्नुहोस्</translation>
 <translation id="4112140312785995938">पछाडि जानुहोस्</translation>
 <translation id="4114315158543974537">फोन हब अन गर्नुहोस्</translation>
 <translation id="4115378294792113321">म्याग्नेटा</translation>
@@ -607,6 +607,7 @@
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" /> प्रतिशत छ</translation>
 <translation id="4378551569595875038">जडान गर्दै...</translation>
 <translation id="4379531060876907730">यी तपाईंका स्टाइलस उपकरणहरू हुन्</translation>
+<translation id="4381031910344220229">यसले <ph name="APP_NAME" /> र माइक्रोफोन प्रयोग गर्ने अनुमति चाहिने सबै एप तथा वेबसाइटहरूलाई माइक्रोफोन प्रयोग गर्ने अनुमति दिन्छ</translation>
 <translation id="4389184120735010762">तपाईंले डक गरिएको म्याग्निफायरको किबोर्ड सर्टकट थिच्नुभयो। तपाईं यसलाई सक्रिय गर्न चाहनुहुन्छ?</translation>
 <translation id="439598569299422042">पज गरिएको छ, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">स्क्रिनकास्ट सेभ गर्न सकिएन</translation>
@@ -648,11 +649,8 @@
 <translation id="4573176682887762361">"[word / phrase] टाइप गर"</translation>
 <translation id="4577274620589681794">समय सकियो · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">प्रिभ्यूहरू देखाउनुहोस्</translation>
-<translation id="4578196883126898996">तपाईंको माइक्रोफोन अफ छ। आफ्नो डिभाइसको माइक्रोफोन बटन अन गर्नुहोस्।</translation>
 <translation id="4578906031062871102">'सेटिङ' मेनु खोलियो</translation>
-<translation id="4581047786858252841">माइक्रोफोन अन छ</translation>
 <translation id="4585337515783392668">कुनै अज्ञात प्रापकमा casting गर्न छाड्नुहोस्</translation>
-<translation id="4587299710837179226">माइक्रोफोन अफ छ</translation>
 <translation id="4596144739579517758">अँध्यारो थिम अफ छ</translation>
 <translation id="4611292653554630842">लग इन गर्नुहोस्</translation>
 <translation id="4623167406982293031">खाता पुष्टि गर्नुहोस्</translation>
@@ -732,6 +730,7 @@
 <translation id="4987738733603015246">डेस्क १६</translation>
 <translation id="5003993274120026347">अर्को वाक्य</translation>
 <translation id="5016558321564993266">मार्कर टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">डिभाइसको माइक्रोफोन प्रयोग गर्ने अनुमति अन गरिएको छ</translation>
 <translation id="5030687792513154421">समय सकियो</translation>
 <translation id="5033299697334913360">फुल स्क्रिनको फोटो खिच्न कुनै ठाउँमा क्लिक गर्नुहोस्</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> कुनै नयाँ फोनसँग जोडियो</translation>
@@ -963,9 +962,11 @@
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> <ph name="MANAGER" /> ले व्यवस्थापन गर्ने सत्र हो</translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> कनेक्ट गरियो</translation>
 <translation id="6351032674660237738">एपसम्बन्धी सुझावहरू</translation>
+<translation id="6352082849089527770">अज्ञात नेटवर्कहरू</translation>
 <translation id="6359587239691116345">नयाँ सुविधा तथा सुरक्षासम्बन्धी सुधारहरू प्राप्त गर्नुहोस्। तपाईंले यो अपडेट लागू गर्नुभएन भने तपाईंको डिभाइसले राम्रोसँग काम गर्न छाड्न सक्छ र सुरक्षा तथा पर्फर्मेन्ससम्बन्धी समस्या आउन सक्छ।</translation>
 <translation id="6376931439017688372">ब्लुटुथ सक्रिय छ</translation>
 <translation id="6381109794406942707">यो डिभाइस अनलक गर्न आफ्नो PIN प्रविष्टि गर्नुहोस्।</translation>
+<translation id="638716340450135524">क्यामेरा प्रयोग गर्ने अनुमति अन गर्नुहोस्</translation>
 <translation id="639644700271529076">CAPS LOCK बन्द छ</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google सहायक</translation>
@@ -973,6 +974,7 @@
 <translation id="642644398083277086">सबै सूचनाहरू हटाउनुहोस्</translation>
 <translation id="643147933154517414">सबै सम्पन्न भयो</translation>
 <translation id="6431865393913628856">स्क्रिन रेकर्ड</translation>
+<translation id="6442259747294754014">डिभाइसको माइक्रोफोन प्रयोग गर्ने अनुमति अफ गरिएको छ</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> मा <ph name="ROUTE_TITLE" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> कार्यक्रम</translation>
 <translation id="6449483711453944360">Linux एप र इन्कोग्निटो विन्डो हाल प्रयोग गर्न मिल्दैन</translation>
@@ -1024,6 +1026,7 @@
 <translation id="6670153871843998651">डेस्क ३</translation>
 <translation id="6671495933530132209">छविको प्रतिलिपि गर्नुहोस्</translation>
 <translation id="6671661918848783005">तपाईंको Chromebook अनलक गर्न सकिएन</translation>
+<translation id="6683022854667115063">हेडफोन</translation>
 <translation id="6696025732084565524">तपाईंको अलग्याउन मिल्ने किबोर्डलाई महत्त्वपूर्ण अद्यावधिक आवश्यक छ</translation>
 <translation id="6700713906295497288">IME सम्बन्धी मेनुको बटन</translation>
 <translation id="6707693040195709527">यो डिभाइसमा अझै पनि अघिल्लो संस्करण रिस्टोर गरिएको छैन</translation>
@@ -1136,6 +1139,7 @@
 <translation id="7360036564632145207">तपाईंले 'सहायक यन्त्रलाई डेटा प्रयोग गर्न रोक लगाउने सुविधा' का सेटिङ बदल्नुभयो भने ती यन्त्रहरूले अझ राम्रोसँग काम गर्न सक्छन्</translation>
 <translation id="736045644501761622">वालपेपर र शैली तय गर्नुहोस्</translation>
 <translation id="7371404428569700291">विन्डोको भिडियो रेकर्ड गर्नुहोस्</translation>
+<translation id="737315737514430195">यसले माइक्रोफोन प्रयोग गर्ने अनुमति चाहिने सबै एप तथा वेबसाइटहरूलाई माइक्रोफोन प्रयोग गर्ने अनुमति दिन्छ</translation>
 <translation id="7377169924702866686">क्याप्स लक सक्रिय छ।</translation>
 <translation id="7377481913241237033">कोड प्रयोग गरी कनेक्ट गर्नुहोस्</translation>
 <translation id="7378203170292176219">रेकर्ड गर्ने कुनै क्षेत्र चयन गर्न ड्र्याग गर्नुहोस्</translation>
@@ -1204,12 +1208,14 @@
 <translation id="7671610481353807627">एपहरू रङअनुसार क्रमबद्ध गरिन्छन्</translation>
 <translation id="7672095158465655885"><ph name="NAME" /> मा कनेक्ट गरिएको छ, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067"><ph name="CAMERA_NAME" /> लाई क्यामेरा इनपुटका रूपमा सेट गरियो।</translation>
+<translation id="7689817529363080918">यसले <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> र माइक्रोफोन प्रयोग गर्ने अनुमति चाहिने सबै एप तथा वेबसाइटहरूलाई माइक्रोफोन प्रयोग गर्ने अनुमति दिन्छ</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">नयाँ मोबाइल नेटवर्क हाल्नुहोस्</translation>
 <translation id="7720400844887872976"><ph name="TIME" /> सम्म अन रहने छ</translation>
 <translation id="7720410380936703141">फेरि प्रयास गर्नुहोस्</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{१ सूचना}other{# सूचनाहरू}}</translation>
 <translation id="7724603315864178912">काट्नुहोस्</translation>
+<translation id="7742327441377685481">कुनै पनि सूचना छैन</translation>
 <translation id="7745560842763881396">सेल्फमा एपहरू देखाउनुहोस्</translation>
 <translation id="7749443890790263709">डेस्कको अधिकतम सङ्ख्या पुगेको छ।</translation>
 <translation id="776344839111254542">अद्यावधिकसम्बन्धी विवरणहरू हेर्न क्लिक गर्नुहोस्</translation>
@@ -1366,6 +1372,7 @@
 <translation id="8598235756057743477">आफ्ना एपहरू नाम वा रङअनुसार क्रमबद्ध गर्नुहोस्</translation>
 <translation id="8614517853887502247">सुरक्षित रूपमा हेर्ने सुविधा अन गरिएको हुनाले <ph name="APP_1_TITLE" /> र <ph name="APP_2_TITLE" /> सम्बन्धी सूचनाहरू लुकाइएका छन्</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> मा जोडियो</translation>
+<translation id="8630991711272431708">क्यामेरा प्रयोग गर्ने अनुमति अफ गर्नुहोस्</translation>
 <translation id="8631727435199967028">पहुँचसम्बन्धी सेटिङहरू</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> बाँकी छ</translation>
@@ -1381,7 +1388,6 @@
 <translation id="8666856788528804727">तपाईं आफ्नो डिभाइस सेटअप गर्न चाहनुहुन्छ भने <ph name="NAME" /> खोल्नुहोस्</translation>
 <translation id="8676770494376880701">अल्प-पावर चार्जर जडित</translation>
 <translation id="8683506306463609433">प्रदर्शन ट्रेस सक्रिय छ</translation>
-<translation id="8684405646663021166">यसले माइक्रोफोन प्रयोग गर्ने अनुमति चाहिने <ph name="APP_NAME" /> र सबै एप तथा वेबसाइटहरूलाई माइक्रोफोन प्रयोग गर्ने अनुमति दिन्छ</translation>
 <translation id="8685326675965865247">आफ्नो यन्त्र, एप, सेटिङ र वेबमा खोज्नुहोस्। आफ्ना एपहरूमा नेभिगेट गर्न तीर कुञ्जीहरू प्रयोग गर्नुहोस्।</translation>
 <translation id="8703634754197148428">रेकर्ड गर्न थाल्नुहोस्। रेकर्ड हुन थालेपछि सेल्फमा जान Alt + Shift + L थिच्नुहोस् र रेकर्ड गर्न बन्द गर्ने बटन भेट्टाउनुहोस्</translation>
 <translation id="8721053961083920564">भोल्युम टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
@@ -1406,7 +1412,6 @@
 <translation id="8819728065740986820">एड्याप्टिभ चार्जिङ अन छ</translation>
 <translation id="8825863694328519386">पछि फर्कन दायाँबाट स्वाइप गर्नुहोस्</translation>
 <translation id="8834539327799336565">हाल कनेक्ट गरिएका डिभाइस</translation>
-<translation id="8834657930627018205">क्यामेरा प्रयोग गर्ने अनुमति अन गर्नुहोस्।</translation>
 <translation id="8841375032071747811">पछाडि नामक बटन</translation>
 <translation id="8843682306134542540">परिक्रमासम्बन्धी लक टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

@@ -131,11 +131,6 @@ TEST_F(PrivacySandboxSettingsTest, DefaultContentSettingBlockOverridePref) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -184,11 +179,6 @@ TEST_F(PrivacySandboxSettingsTest, DefaultContentSettingBlockOverridePref) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -231,11 +221,6 @@ TEST_F(PrivacySandboxSettingsTest, CookieExceptionsApply) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -277,11 +262,6 @@ TEST_F(PrivacySandboxSettingsTest, CookieExceptionsApply) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -338,11 +318,6 @@ TEST_F(PrivacySandboxSettingsTest, CookieExceptionsApply) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{GURL("https://another-embedded.com")},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -410,11 +385,6 @@ TEST_F(PrivacySandboxSettingsTest, CookieExceptionsApply) {
   EXPECT_TRUE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://another-test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{GURL("https://another-embedded.com/")},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_TRUE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://another-test.com")),
@@ -454,11 +424,6 @@ TEST_F(PrivacySandboxSettingsTest, CookieExceptionsApply) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{GURL("https://another-embedded.com")},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -496,11 +461,6 @@ TEST_F(PrivacySandboxSettingsTest, ThirdPartyCookies) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -536,11 +496,6 @@ TEST_F(PrivacySandboxSettingsTest, ThirdPartyCookies) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -581,11 +536,6 @@ TEST_F(PrivacySandboxSettingsTest, ThirdPartyCookies) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsFledgeAllowed(
       url::Origin::Create(GURL("https://test.com")),
       url::Origin::Create(GURL("https://embedded.com"))));
-  EXPECT_EQ(std::vector<GURL>{},
-            privacy_sandbox_settings()->FilterFledgeAllowedParties(
-                url::Origin::Create(GURL("https://test.com")),
-                {GURL("https://embedded.com"),
-                 GURL("https://another-embedded.com")}));
 
   EXPECT_FALSE(privacy_sandbox_settings()->IsSharedStorageAllowed(
       url::Origin::Create(GURL("https://test.com")),
@@ -962,12 +912,17 @@ TEST_F(PrivacySandboxSettingLocalOverrideTest, FollowsOverrideBehavior) {
 
 /**
  * A test fixture for privacy sandbox M1 for Topics.
+ *
+ * TODO(crbug.com/1378703): Add tests for Incognito and supervised accounts to
+ * see that API is disabled for them.  The tests could be potentially also added
+ * in privacy_sandbox_settings_delegate_unittest.cc
  */
 class PrivacySandboxSettingsTopicsM1Test : public PrivacySandboxSettingsTest {
  public:
   void InitializeFeaturesBeforeStart() override {
     feature_list_.InitWithFeatureState(
         privacy_sandbox::kPrivacySandboxSettings4, GetParam());
+    mock_delegate()->SetUpDefaultResponse(/*restricted= */ false);
   }
 
   void InitializePrefsBeforeStart() override {

@@ -133,6 +133,7 @@
 <translation id="1974060860693918893">प्रगत</translation>
 <translation id="1981118202195772574">मोबाइल</translation>
 <translation id="1989112275319619282">ब्राउझ करा</translation>
+<translation id="1990820278544963435">शोधा</translation>
 <translation id="199425419756152024">पासवर्ड पहा</translation>
 <translation id="2010008505735295285">रीलोड करा</translation>
 <translation id="2015722694326466240">पासवर्ड पाहण्यासाठी, तुम्ही प्रथम तुमच्या डीव्हाइसवर पासकोड सेट करणे आवश्यक आहे.</translation>
@@ -283,6 +284,7 @@
 <translation id="3153862085237805241">कार्ड सेव्ह करा</translation>
 <translation id="3157387275655328056">वाचन सूचीमध्ये जोडा</translation>
 <translation id="3157684681743766797">सर्व चिन्हांकित करा…</translation>
+<translation id="315778507796115851">इतिहास</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">तुम्ही तुमच्या इतर डिव्हाइसवर सेव्ह केलेले पासवर्डदेखील वापरू शकता.</translation>
 <translation id="3175081911749765310">वेब सेवा</translation>
@@ -876,6 +878,7 @@
 <translation id="7531345132340165516">सध्याची साइट</translation>
 <translation id="7537586195939242955">क्षमस्व, यावेळी तुमचा पास पासबुकमध्ये इंस्टॉल केला जाऊ शकत नाही.</translation>
 <translation id="7553234618121028547">बंद करण्यासाठी, <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> उघडा आणि पासवर्ड पर्याय वर जा.</translation>
+<translation id="7554645225856321710">सर्व बंद करा</translation>
 <translation id="7554791636758816595">नवीन टॅब</translation>
 <translation id="7561196759112975576">नेहमी</translation>
 <translation id="7583004045319035904">तुमचे गुप्त टॅब अनलॉक करण्यासाठी <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> वापरा.</translation>
@@ -929,7 +932,6 @@
 <translation id="7966516440812255683">तुमच्या ब्राउझिंग अनुभवात सुधारणा करण्यासाठी, उदाहरणार्थ, तुम्हाला साइन इन केलेले ठेवण्यासाठी किंवा तुमच्या शॉपिंग कार्टमधील आयटम लक्षात ठेवण्यासाठी साइट कुकी वापरू शकतात.
 
 वेगवेगळ्या साइटवरील तुमची ब्राउझिंग ॲक्टिव्हिटी पाहण्यासाठी साइट कुकी वापरू शकतात, उदाहरणार्थ, जाहिराती पर्सनलाइझ करण्यासाठी.</translation>
-<translation id="7966904497916178308">मानक संरक्षण सुरू आहे</translation>
 <translation id="7971521879845308059">पॉप-अप ब्लॉक करा</translation>
 <translation id="797413074872316787">सर्व डिव्हाइसवर सिंक आणि पर्सनलाइझ करण्यासाठी, सिंक सुरू करा.</translation>
 <translation id="7978018860671536736">३. AutoFill पासवर्ड वर टॅप करा</translation>
@@ -1090,6 +1092,7 @@
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> दिवसांपूर्वी</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">टॅब शोधा…</translation>
 <translation id="9223358826628549784">क्रॅश अहवाल पाठवला.</translation>
 <translation id="941747855997058526">पासवर्ड निवडा...</translation>
 <translation id="952704832371081537">रद्द करा</translation>

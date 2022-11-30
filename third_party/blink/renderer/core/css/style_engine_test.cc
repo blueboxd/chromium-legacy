@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
@@ -4349,6 +4350,108 @@ TEST_F(StyleEngineTest, RejectSlottedSelector) {
   EXPECT_EQ(1u, stats->rules_fast_rejected);
 }
 
+TEST_F(StyleEngineTest, FastRejectForNesting) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      .notfound {
+        & span {
+          color: pink;
+        }
+      }
+    </style>
+    <div>
+      <span id="child">not pink</span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // Even if the Stats() were already enabled, the following resets it to 0.
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+
+  Element* span = GetDocument().getElementById("child");
+  ASSERT_TRUE(span);
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // Should fast reject "& span"
+  EXPECT_EQ(1u, stats->rules_fast_rejected);
+}
+
+TEST_F(StyleEngineTest, FastRejectForComplexSingleIs) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      :is(#parent .notfound) > span {
+        color: pink;
+      }
+    </style>
+    <div id="parent">
+      <span id="child">not pink</span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // Even if the Stats() were already enabled, the following resets it to 0.
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+
+  Element* span = GetDocument().getElementById("child");
+  ASSERT_TRUE(span);
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // Should fast reject ":is(#parent .notfound) > span", even though it is not
+  // the same as "#parent .notfound > span".
+  EXPECT_EQ(1u, stats->rules_fast_rejected);
+}
+
+TEST_F(StyleEngineTest, NoFastRejectForMultipleIs) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      :is(#foo, #bar) span {
+        color: pink;
+      }
+    </style>
+    <div id="parent">
+      <span id="child">not pink</span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // Even if the Stats() were already enabled, the following resets it to 0.
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+
+  Element* span = GetDocument().getElementById("child");
+  ASSERT_TRUE(span);
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // Should not try to fast reject due to the (multiple-element) selector list.
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+}
+
 TEST_F(StyleEngineTest, AudioUAStyleNameSpace) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <audio id="html-audio"></audio>
@@ -6128,6 +6231,44 @@ TEST_F(StyleEngineTest, BorderWidthsAreRecalculatedWhenZoomChanges) {
   // zoom and device scale factor is reset.
   reset();
   checkBorderWidth(1.0f);
+}
+
+TEST_F(StyleEngineTest, SubsequentSiblingRecalcFlatTree) {
+  GetDocument()
+      .documentElement()
+      ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id="host">
+      <template shadowroot=open>
+        <slot name=a></slot>
+      </template>
+      <div slot=a id=target></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div slot=a></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div slot=a></div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  unsigned before_count = GetStyleEngine().StyleForElementCount();
+
+  Element* target = GetElementById("target");
+  ASSERT_TRUE(target);
+
+  target->SetInlineStyleProperty(CSSPropertyID::kScrollTimelineName, "foo");
+  UpdateAllLifecyclePhasesForTest();
+
+  unsigned after_count = GetStyleEngine().StyleForElementCount();
+
+  // Only the slotted elements should get style recalc.
+  EXPECT_EQ(3u, after_count - before_count);
 }
 
 }  // namespace blink

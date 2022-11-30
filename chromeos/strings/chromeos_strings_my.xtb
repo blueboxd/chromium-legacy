@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">ပြဿနာရှာဖွေဖြေရှင်းခြင်း အဆင့်များ စမ်းကြည့်ရန်</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">စကရင်နားချိန်ပုံကို ကြည့်ရန် ကွန်ရက်ချိတ်ဆက်ပြီး စာမျက်နှာကို ပြန်လည် စတင်ပါ။</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">ဆက်တင်များ ပိုမိုပြရန်</translation>
 <translation id="2085089206770112532">ဖန်သားပြင်တောက်ပမှု လျှော့ရန်</translation>
 <translation id="2105810540595158374">ကိရိယာသည် ဂိမ်းခလုတ်ဖြစ်သည်။</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">ပရင့်ထုတ်ရန်ဖိုင် မထုတ်တော့ပါ</translation>
 <translation id="2163937499206714165">အမှောင်မုဒ် ဖွင့်ရန်</translation>
 <translation id="2180197493692062006">တစ်ခုခုမှားသွားသည်။ အက်ပ်ကို ပြန်ဖွင့်ကြည့်ပါ။</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">ကွန်ရက်ဒေတာ ရေတွက်စနစ်များ ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="2212733584906323460">ပုံရိပ်ပြတ်သားကိန်းကို အမည်ပေးရန်</translation>
 <translation id="2217935453350629363">လက်ရှိ မြန်နှုန်း</translation>
@@ -268,7 +270,6 @@
 <translation id="360565022852130722">WiFi ကွန်ရက်ကို အားနည်းသောပရိုတိုကော WEP 802.1x ဖြင့် လုံခြုံအောင်ထားသည်</translation>
 <translation id="3606583719724308068">HTTPS ဝဘ်ဆိုက်များသို့ တုံ့ပြန်ချိန်မြင့်သည်</translation>
 <translation id="361575905210396100">သင့်အကြံပြုချက်အတွက် ကျေးဇူးတင်ပါသည်</translation>
-<translation id="3621202678540785336">ထည့်သွင်းမှု</translation>
 <translation id="3632579075709132555">အချက်အလက်ကာကွယ်ရေး ဖန်သားပြင်ပြောင်းရန်</translation>
 <translation id="3651050199673793219">အပူချိန်ယူနစ်ရွေးရန်</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> စစ်ဆေးမှု</translation>
@@ -385,6 +386,7 @@
 <translation id="4793756956024303490">ချုံ့ခြင်း လုပ်နည်းစနစ်</translation>
 <translation id="4794140124556169553">CPU စစ်ဆေးမှု လုပ်ဆောင်ခြင်းက သင့်စနစ်၏ စွမ်းဆောင်ရည်အပေါ် သက်ရောက်မှုရှိနိုင်သည်</translation>
 <translation id="4800589996161293643">Chromebook ကွန်မြူနတီ</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> ပရင့်ထုတ်ခြင်းကို ပယ်ဖျက်လိုက်သည်။</translation>
 <translation id="4809927044794281115">လင်းသည့် အပြင်အဆင်</translation>
 <translation id="4813136279048157860">ကျွန်ုပ်၏ ပုံများ</translation>
@@ -396,6 +398,7 @@
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> ကို ရွေးချယ်ထားသည်၊ <ph name="TOPIC_SOURCE" /> အယ်လ်ဘမ်များကိုရွေးရန် Enter နှိပ်ပါ</translation>
 <translation id="484790837831576105">(Android) DNS ဖြေရှင်းချက်</translation>
 <translation id="4848429997038228357">လုပ်ဆောင်နေသည်</translation>
+<translation id="4854586501323951986">အသင့်ပါတို့ထိမျက်နှာပြင်</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} ကြိမ် ကြိုးပမ်းနိုင်သည်}other{<ph name="ERROR_MESSAGE" /> {0} ကြိမ် ကြိုးပမ်းနိုင်သည်}}</translation>
 <translation id="4873827928179867585">အထောက်အထားစိစစ်ခြင်း လုပ်နည်းစနစ်</translation>
 <translation id="4880328057631981605">ချိတ်ဆက်မှတ်၏ အမည်</translation>
@@ -404,6 +407,7 @@
 <translation id="4891842000192098784">ဖိအား</translation>
 <translation id="4897058166682006107">ဘယ်နားကြပ်တွင် ဘက်ထရီ <ph name="BATTERY_PERCENTAGE" />% ရှိသည်။</translation>
 <translation id="4905998861748258752">စကရင်နားချိန်ပုံ ရွေးရန် ဝန်ဆောင်မှု ဖွင့်ပါ</translation>
+<translation id="4910858703033903787">APN အမျိုးအစားများ</translation>
 <translation id="4917385247580444890">အားကောင်းသည်</translation>
 <translation id="4917889632206600977">ရပ်သွားသည် - စာရွက်ကုန်နေသည်</translation>
 <translation id="491791267030419270">တုံ့ပြန်ချက်ရေးနည်း အကြံပြုချက်</translation>
@@ -458,6 +462,7 @@
 <translation id="5358174242040570474">တစ်ခုခုမှားသွားသည်။ နောက်ခံကို ထပ်မံရွေးချယ်ကြည့်ပါ သို့မဟုတ် အက်ပ်ကို ပြန်ဖွင့်ပါ။</translation>
 <translation id="5372659122375744710">WiFi ကွန်ရက်က မလုံခြုံပါ</translation>
 <translation id="5376354385557966694">အလိုအလျောက် အလင်းမုဒ်</translation>
+<translation id="5378184552853359930">IP အမျိုးအစား</translation>
 <translation id="5389159777326897627">နောက်ခံနှင့် စတိုင်</translation>
 <translation id="5389224261615877010">သက်သန့်</translation>
 <translation id="5400907029458559844">ကိရိယာ ချိတ်ဆက်နေသည်။</translation>
@@ -507,6 +512,7 @@
 <translation id="5895138241574237353">ပြန်စတင်မည</translation>
 <translation id="5901630391730855834">အၐါရောင်</translation>
 <translation id="5903200662178656908">စက်ပစ္စည်းက ကီးဘုတ်နှင့်မောက်စ်အတွဲ ဖြစ်သည်။</translation>
+<translation id="5904994456462260490">APN အသစ် ထည့်ရန်</translation>
 <translation id="5907649332524363701">ကီးအရောင်</translation>
 <translation id="5916084858004523819">တားမြစ်ထားသည်</translation>
 <translation id="5916664084637901428">ဖွင့်ရန်</translation>
@@ -567,6 +573,7 @@
 <translation id="6394634179843537518">ဖိုင်ထည့်ရန်</translation>
 <translation id="6410257289063177456">ပုံ ဖိုင်များ</translation>
 <translation id="641081527798843608">တိုက်ဆိုင်သည့် အကြောင်းအရာ</translation>
+<translation id="6412715219990689313">အသင့်ပါကီးဘုတ်</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">အားမကောင်းပါ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">အကောင့်ဆက်တင်များသို့ သွားရန်</translation>
@@ -665,6 +672,7 @@
 <translation id="7359657277149375382">ဖိုင်အမျိုးအစား</translation>
 <translation id="73631062356239394">အမှားရှာဖွေမှုဒေတာ မျှဝေရန်</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">အသင့်ပါတာ့ချ်ပက်</translation>
 <translation id="7397270852490618635">လင်းသည့် အပြင်အဆင် ပိတ်ရန်</translation>
 <translation id="741244894080940828">ပြောင်းလဲခြင်း</translation>
 <translation id="7415801143053185905">HTTP တုံ့ပြန်ချိန် အလွန်ကြာနေသည်</translation>
@@ -713,7 +721,6 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">ထောက်ပံ့သူအမျိုးစား</translation>
 <translation id="7882501334836096755">အများသုံးကီး</translation>
-<translation id="7890841768028788197">အတွင်းပိုင်း တို့ထိမျက်နှာပြင်</translation>
 <translation id="7915220255123750251">ကွန်ရက် APN ဆက်တင်များကို စီမံနိုင်သည်။ APN များက ဆယ်လူလာ ကွန်ရက်နှင့် အင်တာနက်အကြား ချိတ်ဆက်ပေးသည်။</translation>
 <translation id="7936303884198020182">အမည်ဆာဗာတစ်ခုမျှ ရှာမတွေ့ပါ</translation>
 <translation id="7942349550061667556">အနီရောင်</translation>
@@ -739,6 +746,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> ကို ရွေးပါ</translation>
 <translation id="8179976553408161302">အင်တာ</translation>
+<translation id="8183974620058026102">ပူးတွဲရန်</translation>
 <translation id="8206859287963243715">ဆဲလ်လူလာ</translation>
 <translation id="8208861521865154048">ခံစားခွင့်များ</translation>
 <translation id="8226628635270268143">သင့်အကြိုက်ဆုံး ဓာတ်ပုံနှင့် အယ်လ်ဘမ်များ ရွေးချယ်ရန်</translation>
@@ -761,7 +769,6 @@
 <translation id="8398927464629426868">စက်ပစ္စည်း၏ လက်ရှိအားသွင်းနှုန်း (သို့) အားလျော့နှုန်း</translation>
 <translation id="8420955526972171689">ဟာ့ဒ်ဝဲပြဿနာအတွက် စစ်ဆေးမှုများနှင့် ပြဿနာရှာဖွေဖြေရှင်းခြင်းကို လုပ်ဆောင်နိုင်သည်</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">အတွင်းပိုင်း ကီးဘုတ်</translation>
 <translation id="8431300646573772016">ChromeOS ၏ အသစ်ပါဝင်မှု</translation>
 <translation id="843568408673868420">အင်တာနက် ချိတ်ဆက်မှု</translation>
 <translation id="844521431886043384">DNS စနစ်ထည့်သွင်းမထားပါ</translation>
@@ -818,7 +825,6 @@
 <translation id="8930521118335213258">အမျိုးအစားတူ</translation>
 <translation id="8930622219860340959">ကြိုးမဲ့</translation>
 <translation id="8936793075252196307">ကလိုင်းယင့် အိုင်ပီ (IP) လိပ်စာ</translation>
-<translation id="8945750210906526975">အတွင်းပိုင်း တာ့ချ်ပက်</translation>
 <translation id="894617464444543719">ကိရိယာသည် ဖုန်းဖြစ်သည်။</translation>
 <translation id="8968751544471797276">အားသွင်းနှုန်း</translation>
 <translation id="8970109610781093811">ထပ်လုပ်ဆောင်ရန်</translation>
@@ -829,6 +835,7 @@
 <translation id="9025198690966128418">ပုဂ္ဂိုလ်ရေးသီးသန့်စက်အဖြစ် သုံးစွဲရန်</translation>
 <translation id="9028832514430399253">စကရင်နားချိန်ပုံ ရွေးရန် ခလုတ်ဖွင့်ပါ</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS ဖြေရှင်းမှုသည် တုံ့ပြန်ချိန်မြင့်သည်</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">ဘလူးတုသ်</translation>
@@ -836,6 +843,7 @@
 <translation id="9087578468327036362">ဤမေးမြန်းချက်ကို အကြောင်းကြားရန်</translation>
 <translation id="9088306295921699330">လက်ရှိ အသုံးပြုမှု</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="9100765901046053179">အဆင့်မြင့် ဆက်တင်များ</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> အတွက် လက်မှတ်ကို ပြန်လည်စတင်ပါ</translation>
 <translation id="9106415115617144481">စာမျက်နှာ <ph name="PAGE_NUMBER" /> ကို စကင်ဖတ်နေသည်</translation>
 <translation id="9111102763498581341">သော့ဖွင့်ရန်</translation>

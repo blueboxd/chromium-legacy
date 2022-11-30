@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/games/game_provider.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/files/file_path.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -23,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace app_list {
+namespace app_list::test {
 namespace {
 
 using ::testing::ElementsAre;
@@ -157,14 +155,12 @@ TEST_P(GameProviderTest, Policy) {
   SetUpTestingIndex();
 
   // Results should exist if Suggested Content is enabled.
-  profile_->GetPrefs()->SetBoolean(chromeos::prefs::kSuggestedContentEnabled,
-                                   true);
+  profile_->GetPrefs()->SetBoolean(ash::prefs::kSuggestedContentEnabled, true);
   StartSearch(u"first");
   EXPECT_THAT(LastResults(), ElementsAre(Title(u"First Title")));
 
   // If Suggested Content is disabled, only show results if the override is on.
-  profile_->GetPrefs()->SetBoolean(chromeos::prefs::kSuggestedContentEnabled,
-                                   false);
+  profile_->GetPrefs()->SetBoolean(ash::prefs::kSuggestedContentEnabled, false);
   StartSearch(u"first");
   bool enabled_override = GetParam();
   if (enabled_override) {
@@ -243,4 +239,4 @@ TEST_P(GameProviderTest, ProblematicCasesExcluded) {
   ASSERT_EQ(LastResults().size(), 0u);
 }
 
-}  // namespace app_list
+}  // namespace app_list::test

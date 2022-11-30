@@ -387,7 +387,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2023-03-19">
+    enum="ServiceWorkerStatusCode" expires_after="2023-05-27">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -411,7 +411,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.Subresource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2023-03-19">
+    enum="ServiceWorkerStatusCode" expires_after="2023-05-27">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1234,6 +1234,32 @@ chromium-metrics-reviews@google.com.
     The number of queued tasks that are waiting to be re-posted after recovering
     from a Storage Service crash. Logged at the same time as
     ServiceWorker.Storage.RetryCountForRecovery.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.Subresource.Fallbacked.Type" enum="ResourceType"
+    expires_after="2023-06-30">
+  <owner>yyanagisawa@google.com</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    Type of subresources that is controlled with a service worker, but did not
+    handled by a service worker (i.e. did not get replied via respondWith). This
+    metric is taken every time a subresource load finishes.
+
+    See ServiceWorker.Subresource.Handled.Type for handled cases.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.Subresource.Handled.Type" enum="ResourceType"
+    expires_after="2023-06-30">
+  <owner>yyanagisawa@google.com</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    Type of subresources that is controlled with a service worker, and handled
+    by a service worker (i.e. get replied via respondWith). This metric is taken
+    every time a subresource load finishes.
+
+    See ServiceWorker.Subresource.Fallbacked.Type for fallbacked cases.
   </summary>
 </histogram>
 

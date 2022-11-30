@@ -52,6 +52,7 @@
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store қолданбасы</translation>
 <translation id="1225748608451425081">Белгілі мәселеге байланысты Chromebook құлыпталды. Келесі уақыттан кейін аккаунтқа кіре аласыз: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Таңдауды тоқтату</translation>
+<translation id="1235458158152011030">Сақталған желілер</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> қосылды.</translation>
 <translation id="1240638468526743569">Қолданба</translation>
 <translation id="1246890715821376239">Қолдау көрсетілмейтін қолданбалар</translation>
@@ -386,7 +387,6 @@
 <translation id="3120421559657122717">Құрылғы өшірілсін бе?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Жаңарту үшін қайта іске қосу</translation>
-<translation id="3139382871451988441">Камера пайдалану рұқсатын өшіру.</translation>
 <translation id="3139942575505304791">1-ші жұмыс үстелі</translation>
 <translation id="315116470104423982">Мобильді деректер</translation>
 <translation id="3151786313568798007">Бағдары</translation>
@@ -519,7 +519,6 @@
 <translation id="385051799172605136">Артқа</translation>
 <translation id="385300504083504382">Басына өту</translation>
 <translation id="3861651314799684201">Толық экранды жазу үшін "Enter" пернесін басыңыз</translation>
-<translation id="3885531177412808398">Микрофон рұқсаты бар барлық қолданба мен веб-сайт үшін микрофонды пайдалануға мүмкіндік береді</translation>
 <translation id="3886872229787704059">Бүгін ашылды.</translation>
 <translation id="3891340733213178823">Шығу үшін Ctrl+Shift+Q тіркесімін екі рет басыңыз.</translation>
 <translation id="3893630138897523026">ChromeVox (дауыстық көмек)</translation>
@@ -555,6 +554,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Өшірулі}other{# үшін өшірулі}}</translation>
 <translation id="4066027111132117168">Қосулы, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Орташа сигнал</translation>
+<translation id="4086921558679520050">Құрылғыңыздағы физикалық микрофон қосқышын қосу</translation>
 <translation id="4112140312785995938">Артқа</translation>
 <translation id="4114315158543974537">Телефон хабын қосу</translation>
 <translation id="4115378294792113321">Күлгін</translation>
@@ -607,6 +607,7 @@
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, сигнал күші <ph name="SIGNAL_STRENGTH" /> пайыз.</translation>
 <translation id="4378551569595875038">Қосылуда…</translation>
 <translation id="4379531060876907730">Стилус құралдары</translation>
+<translation id="4381031910344220229">Бұл — микрофон рұқсаты бар барлық қолданба мен веб-сайт және <ph name="APP_NAME" /> қолданбасы үшін микрофонды пайдалануға мүмкіндік береді</translation>
 <translation id="4389184120735010762">Бекітілген ұлғайтқышқа арналған пернелер тіркесімін бастыңыз. Оны қосқыңыз келе ме?</translation>
 <translation id="439598569299422042">Кідіртілді, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Cкринкастты сақтау мүмкін емес.</translation>
@@ -648,11 +649,8 @@
 <translation id="4573176682887762361">"[Cөз немесе фраза] теру"</translation>
 <translation id="4577274620589681794">Уақыт бітті · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Алдын ала көріністерді көрсету</translation>
-<translation id="4578196883126898996">Микрофон өшірулі. Құрылғыңыздың микрофон түймесін басыңыз.</translation>
 <translation id="4578906031062871102">Параметрлер мәзірі ашық.</translation>
-<translation id="4581047786858252841">Микрофон қосулы.</translation>
 <translation id="4585337515783392668">Белгісіз қабылдағышқа трансляциялауды тоқтату</translation>
-<translation id="4587299710837179226">Микрофон өшірулі.</translation>
 <translation id="4596144739579517758">Қараңғы режим өшірулі.</translation>
 <translation id="4611292653554630842">Жүйеге кіру</translation>
 <translation id="4623167406982293031">Аккаунтты растау</translation>
@@ -732,6 +730,7 @@
 <translation id="4987738733603015246">16-жұмыс үстелі</translation>
 <translation id="5003993274120026347">Келесі сөйлем</translation>
 <translation id="5016558321564993266">Ауыстырғыш белгілегіші. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Құрылғы микрофонын пайдалану рұқсаты қосулы</translation>
 <translation id="5030687792513154421">Уақыт бітті</translation>
 <translation id="5033299697334913360">Толық экранды түсіру үшін кез келген жерді басыңыз.</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> жаңа телефонға жалғанды</translation>
@@ -963,9 +962,11 @@
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – <ph name="MANAGER" /> басқаратын сеанс.</translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> қосылды</translation>
 <translation id="6351032674660237738">ҚОЛДАНБА ҰСЫНЫСТАРЫ</translation>
+<translation id="6352082849089527770">Белгісіз желілер</translation>
 <translation id="6359587239691116345">Соңғы шыққан функцияларды және қауіпсіздікті жақсарту мүмкіндіктерін пайдаланыңыз. Бұл жаңартуды қабылдамасаңыз, құрылғыңыз дұрыс жұмыс істемей, қауіпсіздік пен өнімділікке қатысты ақаулар туындауы мүмкін.</translation>
 <translation id="6376931439017688372">Bluetooth қосулы</translation>
 <translation id="6381109794406942707">Құрылғының құлпын ашу үшін PIN кодын енгізіңіз.</translation>
+<translation id="638716340450135524">Камераны пайдалану рұқсатын қосу</translation>
 <translation id="639644700271529076">CAPS LOCK өшірулі</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -973,6 +974,7 @@
 <translation id="642644398083277086">Барлық хабарларды өшіріңіз</translation>
 <translation id="643147933154517414">Дайын</translation>
 <translation id="6431865393913628856">Экранды жазу</translation>
+<translation id="6442259747294754014">Құрылғы микрофонын пайдалану рұқсаты өшірулі</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> қабылдағышындағы <ph name="ROUTE_TITLE" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> іс-шара</translation>
 <translation id="6449483711453944360">Linux қолданбалары мен инкогнито терезелеріне қазір қолдау көрсетілмейді.</translation>
@@ -1136,6 +1138,7 @@
 <translation id="7360036564632145207">Перифериялық құрылғылар үшін деректердің пайдаланылуын қорғау параметрін өзгертіп, өнімділікті арттыра аласыз.</translation>
 <translation id="736045644501761622">Тұсқағаз бен стильді реттеу</translation>
 <translation id="7371404428569700291">Терезені жазу</translation>
+<translation id="737315737514430195">Бұл — микрофон рұқсаты бар барлық қолданба мен веб-сайт үшін микрофонды пайдалануға мүмкіндік береді</translation>
 <translation id="7377169924702866686">Caps Lock қосулы.</translation>
 <translation id="7377481913241237033">Код арқылы қосылу</translation>
 <translation id="7378203170292176219">Жазуға керек аймақты таңдау үшін сүйреңіз.</translation>
@@ -1204,12 +1207,14 @@
 <translation id="7671610481353807627">Қолданбалар түсі бойынша сұрыпталған.</translation>
 <translation id="7672095158465655885"><ph name="NAME" /> құрылғысына жалғанған, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Камера кірісі <ph name="CAMERA_NAME" /> деп өзгертілді.</translation>
+<translation id="7689817529363080918">Бұл — микрофон рұқсаты бар барлық қолданба мен веб-сайт және <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> қолданбалары үшін микрофонды пайдалануға мүмкіндік береді</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Жаңа ұялы желі қосу</translation>
 <translation id="7720400844887872976"><ph name="TIME" /> дейін қосулы</translation>
 <translation id="7720410380936703141">ҚАЙТАЛАП КӨРУ</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 хабарландыру}other{# хабарландыру}}</translation>
 <translation id="7724603315864178912">Қиып алу</translation>
+<translation id="7742327441377685481">Хабарландырулар жоқ</translation>
 <translation id="7745560842763881396">Сөредегі қолданбаларды көрсету</translation>
 <translation id="7749443890790263709">Жұмыс үстелдерінің максималды санына жетті.</translation>
 <translation id="776344839111254542">Жаңарту мәліметтерін қарау үшін басыңыз</translation>
@@ -1366,6 +1371,7 @@
 <translation id="8598235756057743477">Қолданбаларды атауы немесе түсі бойынша сұрыптау</translation>
 <translation id="8614517853887502247"><ph name="APP_1_TITLE" /> және <ph name="APP_2_TITLE" /> хабарландырулары жасырылған, себебі қауіпсіз қарау режимі қосулы тұр.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> құрылғысына жалғанған</translation>
+<translation id="8630991711272431708">Камераны пайдалану рұқсатын өшіру</translation>
 <translation id="8631727435199967028">Арнайы мүмкіндіктер параметрлері</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />, әкімші басқарады</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> қалды</translation>
@@ -1381,7 +1387,6 @@
 <translation id="8666856788528804727">Құрылғыны орнату үшін <ph name="NAME" /> қолданбасын ашыңыз</translation>
 <translation id="8676770494376880701">Төмен қуат зарядтағышы қосылды</translation>
 <translation id="8683506306463609433">Жұмыс өнімділігін қадағалау функциясы іске қосылды</translation>
-<translation id="8684405646663021166">Микрофон рұқсаты бар барлық қолданба мен веб-сайт және <ph name="APP_NAME" /> қолданбасы үшін микрофонды пайдалануға мүмкіндік береді</translation>
 <translation id="8685326675965865247">Құрылғыдан, қолданбалардан, параметрлерден және интернеттен іздеңіз. Қолданбадан қолданбаға өту үшін көрсеткі пернелерін пайдаланыңыз.</translation>
 <translation id="8703634754197148428">Жазуды бастаңыз. Бейне жазу басталған кезде, Alt + Shift + L пернелер тіркесімін басып, сөреге өтіңіз, онда жазуды тоқтатуға арналған түймені таба аласыз</translation>
 <translation id="8721053961083920564">Дыбыс деңгейін ауыстыру. <ph name="STATE_TEXT" /></translation>
@@ -1406,7 +1411,6 @@
 <translation id="8819728065740986820">Бейімдеп зарядтау функциясы қосулы</translation>
 <translation id="8825863694328519386">Артқа оралу үшін солдан оңға қарай сырғытыңыз.</translation>
 <translation id="8834539327799336565">Қазір жалғанғандар</translation>
-<translation id="8834657930627018205">Камера рұқсатын қосыңыз.</translation>
 <translation id="8841375032071747811">"Артқа" түймесі</translation>
 <translation id="8843682306134542540">Бұру құлпын ашу/жабу. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

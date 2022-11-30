@@ -145,6 +145,11 @@ extern const char kAppleCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Apple "
     "Calendar event handling.";
 
+extern const char kPhoneNumberName[] = "Phone number enable";
+extern const char kPhoneNumberDescription[] =
+    "When enabled, long pressing on a phone number will trigger the phone "
+    "number experience.";
+
 extern const char kEnableExpKitCalendarTextClassifierName[] =
     "Text Classifier in Experience Kit Calendar";
 extern const char kEnableExpKitCalendarTextClassifierDescription[] =
@@ -156,6 +161,11 @@ extern const char kEnableExpKitTextClassifierName[] =
 extern const char kEnableExpKitTextClassifierDescription[] =
     "When enabled, Experience Kit will use Text Classifier library in "
     "entity detection where possible.";
+
+const char kEnablePopoutOmniboxIpadName[] = "Popout omnibox (iPad)";
+const char kEnablePopoutOmniboxIpadDescription[] =
+    "Make omnibox popup appear in a detached rounded rectangle below the "
+    "omnibox.";
 
 extern const char kMapsExperienceKitName[] = "Experience Kit Maps";
 extern const char kMapsExperienceKitDescription[] =
@@ -184,6 +194,11 @@ const char kCredentialProviderExtensionPromoName[] =
 const char kCredentialProviderExtensionPromoDescription[] =
     "When enabled, Credential Provider Extension promo will be "
     "presented to eligible users.";
+
+const char kDefaultBrowserBlueDotPromoName[] = "Default Browser Blue Dot Promo";
+const char kDefaultBrowserBlueDotPromoDescription[] =
+    "When enabled, a blue dot default browser promo will be shown to eligible "
+    "users.";
 
 const char kDefaultBrowserFullscreenPromoExperimentName[] =
     "Default Browser Fullscreen modal experiment";
@@ -317,15 +332,6 @@ const char kEnableWebChannelsDescription[] =
     "Enable folowing content from web and display Following feed on NTP based "
     "on sites that users followed.";
 
-const char kEnhancedProtectionName[] = "Enable Enhanced Safe Browsing";
-const char kEnhancedProtectionDescription[] =
-    "Allows users to opt-in to Enhanced Safe Browsing";
-
-const char kEnhancedProtectionPhase2Name[] =
-    "Enable Enhanced Safe Browsing Phase 2";
-const char kEnhancedProtectionPhase2Description[] =
-    "Enable additional improvements related to Enhanced Safe Browsing";
-
 const char kTailoredSecurityIntegrationName[] =
     "Enable Tailored Security Integration";
 const char kTailoredSecurityIntegrationDescription[] =
@@ -357,6 +363,10 @@ const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
+
+const char kIdentityStatusConsistencyName[] = "Identity Status Consistency";
+const char kIdentityStatusConsistencyDescription[] =
+    "If enabled, always show identity status - even for signed-out users";
 
 const char kFullscreenPromosManagerName[] = "Fullscreen Promos Manager";
 const char kFullscreenPromosManagerDescription[] =
@@ -770,6 +780,11 @@ const char kToolbarContainerDescription[] =
 extern const char kTrendingQueriesModuleName[] = "Show Trending Queries module";
 extern const char kTrendingQueriesModuleDescription[] =
     "When enabled, the trending queries module will be shown in the NTP";
+
+extern const char kTruncateTableViewCellTitleName[] =
+    "Truncate title of table view cell";
+extern const char kTruncateTableViewCellTitleDescription[] =
+    "When enabled, title of table view cell is truncated and not wrapped";
 
 const char kUpdateHistoryEntryPointsInIncognitoName[] =
     "Update history entry points in Incognito.";

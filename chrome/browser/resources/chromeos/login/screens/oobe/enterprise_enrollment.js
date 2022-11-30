@@ -13,8 +13,8 @@ import '../../components/gaia_dialog.js';
 import '../../components/oobe_icons.m.js';
 import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
-import '../../components/dialogs/oobe_loading_dialog.m.js';
-import '../../components/dialogs/oobe_modal_dialog.m.js';
+import '../../components/dialogs/oobe_loading_dialog.js';
+import '../../components/dialogs/oobe_modal_dialog.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, Polymer, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -27,11 +27,11 @@ import {OobeBackButton} from '../../components/buttons/oobe_back_button.js';
 import {OobeNextButton} from '../../components/buttons/oobe_next_button.js';
 import {OobeTextButton} from '../../components/buttons/oobe_text_button.js';
 import {OobeAdaptiveDialog} from '../../components/dialogs/oobe_adaptive_dialog.js';
-import {OOBE_UI_STATE, SCREEN_GAIA_SIGNIN} from '../../components/display_manager_types.m.js';
+import {OOBE_UI_STATE, SCREEN_GAIA_SIGNIN} from '../../components/display_manager_types.js';
 import {KEYBOARD_UTILS_FOR_INJECTION} from '../../components/keyboard_utils_for_injection.m.js';
-import {OobeTypes} from '../../components/oobe_types.m.js';
-import {Oobe} from '../../cr_ui.m.js';
-import {DisplayManager, invokePolymerMethod} from '../../display_manager.m.js';
+import {OobeTypes} from '../../components/oobe_types.js';
+import {Oobe} from '../../cr_ui.js';
+import {DisplayManager, invokePolymerMethod} from '../../display_manager.js';
 import {keyboard} from '../../keyboard_utils.m.js';
 import {ActiveDirectoryErrorState, ADLoginStep, JoinConfigType} from '../common/offline_ad_login.js';
 

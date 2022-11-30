@@ -11,6 +11,7 @@ import {constants} from '../../../common/constants.js';
 import {Cursor, CURSOR_NODE_INDEX} from '../../../common/cursors/cursor.js';
 import {CursorRange} from '../../../common/cursors/range.js';
 import {AutomationTreeWalker} from '../../../common/tree_walker.js';
+import {Earcon} from '../../common/abstract_earcons.js';
 import {NavBraille} from '../../common/braille/nav_braille.js';
 import {EventSourceType} from '../../common/event_source_type.js';
 import {LocaleOutputHelper} from '../../common/locale_output_helper.js';
@@ -670,25 +671,6 @@ export class Output {
   }
 
   /** @override */
-  formatJoinedDescendants_(data, token, options) {
-    const buff = data.outputBuffer;
-    const node = data.node;
-    const formatLog = data.outputFormatLogger;
-
-    const unjoined = [];
-    formatLog.write('joinedDescendants {');
-    this.format_({
-      node,
-      outputFormat: '$descendants',
-      outputBuffer: unjoined,
-      outputFormatLogger: formatLog,
-    });
-    this.append_(buff, unjoined.join(' '), options);
-    formatLog.write(
-        '}: ' + (unjoined.length ? unjoined.join(' ') : 'EMPTY') + '\n');
-  }
-
-  /** @override */
   formatRole_(data, token, options) {
     const buff = data.outputBuffer;
     const node = data.node;
@@ -903,9 +885,9 @@ export class Output {
     if (!resolvedInfo) {
       return;
     }
-    if (this.formatOptions_.speech && resolvedInfo.earconId) {
+    if (this.formatOptions_.speech && resolvedInfo.earcon) {
       options.annotation.push(
-          new outputTypes.OutputEarconAction(resolvedInfo.earconId),
+          new outputTypes.OutputEarconAction(resolvedInfo.earcon),
           node.location || undefined);
     }
     const msgId = this.formatOptions_.braille ? resolvedInfo.msgId + '_brl' :
@@ -1015,7 +997,7 @@ export class Output {
       }
 
       options.annotation.push(new outputTypes.OutputEarconAction(
-          tree.firstChild.value, node.location || undefined));
+          Earcon[tree.firstChild.value], node.location || undefined));
       this.append_(buff, '', options);
       formatLog.writeTokenWithValue(token, tree.firstChild.value);
     }
@@ -1379,13 +1361,14 @@ export class Output {
 
       if (eventBlock[rule.role][formatName]) {
         rule.navigation = formatName;
-        rule.output =
-            eventBlock[rule.role][formatName].speak ? 'speak' : undefined;
+        rule.output = eventBlock[rule.role][formatName].speak ?
+            outputTypes.OutputFormatType.SPEAK :
+            undefined;
         if (this.formatOptions_.braille) {
           buff = [];
           formatLog.bufferClear();
           if (eventBlock[rule.role][formatName].braille) {
-            rule.output = 'braille';
+            rule.output = outputTypes.OutputFormatType.BRAILLE;
           }
         }
 
@@ -1445,15 +1428,15 @@ export class Output {
     } else {
       rule.role = CustomRole.DEFAULT;
     }
-    rule.output = 'speak';
+    rule.output = outputTypes.OutputFormatType.SPEAK;
     if (this.formatOptions_.braille) {
       // Overwrite rule by braille rule if exists.
       if (node.role && (eventBlock[node.role] || {}).braille !== undefined) {
         rule.role = node.role;
-        rule.output = 'braille';
+        rule.output = outputTypes.OutputFormatType.BRAILLE;
       } else if ((eventBlock[parentRole] || {}).braille !== undefined) {
         rule.role = parentRole;
-        rule.output = 'braille';
+        rule.output = outputTypes.OutputFormatType.BRAILLE;
       }
     }
     formatLog.writeRule(rule.specifier);
@@ -1958,9 +1941,9 @@ export class Output {
 
       while (earconFinder = ancestors.pop()) {
         const info = OutputRoleInfo[earconFinder.role];
-        if (info && info.earconId) {
+        if (info && info.earcon) {
           return new outputTypes.OutputEarconAction(
-              info.earconId, node.location || undefined);
+              info.earcon, node.location || undefined);
           break;
         }
         earconFinder = earconFinder.parent;

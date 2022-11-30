@@ -19,6 +19,7 @@
 #include "ui/base/menu_source_utils.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -144,7 +145,12 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
 
-  SetBackgroundColorId(ui::kColorTextfieldBackground);
+  if (features::IsChromeRefresh2023()) {
+    // TODO(crbug.com/1392549): Replace placeholder color id.
+    SetBackgroundColorId(ui::kColorAlertHighSeverity);
+  } else {
+    SetBackgroundColorId(ui::kColorTextfieldBackground);
+  }
   UpdateBorder();
 
   arrow_button_ =
@@ -265,7 +271,14 @@ void Combobox::SetBorderColorId(ui::ColorId color_id) {
 
 void Combobox::SetBackgroundColorId(ui::ColorId color_id) {
   SetBackground(CreateThemedRoundedRectBackground(
-      color_id, FocusableBorder::kCornerRadiusDp));
+      color_id, features::IsChromeRefresh2023()
+                    ? FocusableBorder::kChromeRefresh2023CornerRadiusDp
+                    : FocusableBorder::kCornerRadiusDp));
+}
+
+void Combobox::SetForegroundColorId(ui::ColorId color_id) {
+  foreground_color_id_ = color_id;
+  SchedulePaint();
 }
 
 void Combobox::SetEventHighlighting(bool should_highlight) {
@@ -563,7 +576,10 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   }
 
   // Draw the text.
-  SkColor text_color = GetTextColorForEnableState(*this, GetEnabled());
+  SkColor text_color =
+      foreground_color_id_.has_value()
+          ? GetColorProvider()->GetColor(foreground_color_id_.value())
+          : GetTextColorForEnableState(*this, GetEnabled());
   std::u16string text = GetModel()->GetItemAt(selected_index_.value());
   const gfx::FontList& font_list = GetFontList();
 

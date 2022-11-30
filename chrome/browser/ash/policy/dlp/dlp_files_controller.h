@@ -19,7 +19,7 @@
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "third_party/blink/public/mojom/choosers/file_chooser.mojom-forward.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -60,11 +60,14 @@ class DlpFilesController {
   // or not and the source URL, if it exists.
   struct DlpFileMetadata {
     DlpFileMetadata() = delete;
-    DlpFileMetadata(const std::string& source_url, bool is_dlp_restricted);
+    DlpFileMetadata(const std::string& source_url,
+                    bool is_dlp_restricted,
+                    bool is_restricted_for_destination);
 
     friend bool operator==(const DlpFileMetadata& a, const DlpFileMetadata& b) {
       return a.is_dlp_restricted == b.is_dlp_restricted &&
-             a.source_url == b.source_url;
+             a.source_url == b.source_url &&
+             a.is_restricted_for_destination == b.is_restricted_for_destination;
     }
     friend bool operator!=(const DlpFileMetadata& a, const DlpFileMetadata& b) {
       return !(a == b);
@@ -74,6 +77,8 @@ class DlpFilesController {
     std::string source_url;
     // Whether the file is under any DLP rule or not.
     bool is_dlp_restricted;
+    // Whether the file is restricted by DLP for a specific destination.
+    bool is_restricted_for_destination;
   };
 
   // DlpFileRestrictionDetails keeps aggregated information about DLP rules
@@ -151,8 +156,8 @@ class DlpFilesController {
   using GetDisallowedTransfersCallback =
       base::OnceCallback<void(std::vector<storage::FileSystemURL>)>;
   using GetFilesRestrictedByAnyRuleCallback = GetDisallowedTransfersCallback;
-  using FilterDisallowedUploadsCallback = base::OnceCallback<void(
-      std::vector<blink::mojom::FileChooserFileInfoPtr>)>;
+  using FilterDisallowedUploadsCallback =
+      base::OnceCallback<void(std::vector<ui::SelectedFileInfo>)>;
   using CheckIfDownloadAllowedCallback = base::OnceCallback<void(bool)>;
   using CheckIfLaunchAllowedCallback = base::OnceCallback<void(bool)>;
   using GetDlpMetadataCallback =
@@ -176,14 +181,16 @@ class DlpFilesController {
       GetDisallowedTransfersCallback result_callback);
 
   // Retrieves metadata for each entry in |files| and returns it as a list in
-  // |result_callback|.
+  // |result_callback|. If |destination| is passed, marks the files that are not
+  // allowed to be uploaded to that particular destination.
   void GetDlpMetadata(const std::vector<storage::FileSystemURL>& files,
+                      absl::optional<DlpFileDestination> destination,
                       GetDlpMetadataCallback result_callback);
 
   // Filters files disallowed to be uploaded to `destination`.
-  void FilterDisallowedUploads(
-      std::vector<blink::mojom::FileChooserFileInfoPtr> uploaded_files,
-      const GURL& destination,
+  virtual void FilterDisallowedUploads(
+      std::vector<ui::SelectedFileInfo> uploaded_files,
+      const DlpFileDestination& destination,
       FilterDisallowedUploadsCallback result_callback);
 
   // Checks whether the file download from `download_src` to `file_path` is
@@ -192,6 +199,12 @@ class DlpFilesController {
       const DlpFileDestination& download_src,
       const base::FilePath& file_path,
       CheckIfDownloadAllowedCallback result_callback);
+
+  // Returns whether downloads from `download_src` to `file_path` might be
+  // blocked by DLP, and so a picker should be shown.
+  virtual bool ShouldPromptBeforeDownload(
+      const DlpFileDestination& download_src,
+      const base::FilePath& file_path);
 
   // Checks whether launching `app_update` with `intent` is allowed.
   void CheckIfLaunchAllowed(const apps::AppUpdate& app_update,
@@ -251,12 +264,12 @@ class DlpFilesController {
       GetDisallowedTransfersCallback result_callback,
       dlp::CheckFilesTransferResponse response);
 
-  void ReturnAllowedUploads(
-      std::vector<blink::mojom::FileChooserFileInfoPtr> uploaded_files,
-      FilterDisallowedUploadsCallback result_callback,
-      dlp::CheckFilesTransferResponse response);
+  void ReturnAllowedUploads(std::vector<ui::SelectedFileInfo> uploaded_files,
+                            FilterDisallowedUploadsCallback result_callback,
+                            dlp::CheckFilesTransferResponse response);
 
   void ReturnDlpMetadata(std::vector<absl::optional<ino64_t>> inodes,
+                         absl::optional<DlpFileDestination> destination,
                          GetDlpMetadataCallback result_callback,
                          const ::dlp::GetFilesSourcesResponse response);
 

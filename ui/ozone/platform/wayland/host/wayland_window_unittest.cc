@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 
 #include <cstddef>
 #include <memory>
@@ -909,9 +910,9 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
     EXPECT_CALL(*xdg_surface->xdg_toplevel(), SetFullscreen());
   });
   EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
-  window_->ToggleFullscreen();
+  window_->SetFullscreen(true, display::kInvalidDisplayId);
   // Make sure than WaylandWindow manually handles fullscreen states. Check the
-  // comment in the WaylandWindow::ToggleFullscreen.
+  // comment in the WaylandWindow::SetFullscreen.
   EXPECT_EQ(window_->GetPlatformWindowState(),
             PlatformWindowState::kFullScreen);
   SendConfigureEvent(surface_id_, {0, 0}, states);
@@ -959,7 +960,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
     EXPECT_FALSE(mock_surface->xdg_surface());
   });
   EXPECT_CALL(delegate, OnWindowStateChanged(_, _)).Times(0);
-  window->ToggleFullscreen();
+  window->SetFullscreen(true, display::kInvalidDisplayId);
   // The state of the window must already be fullscreen one.
   EXPECT_EQ(window->GetPlatformWindowState(), PlatformWindowState::kFullScreen);
 
@@ -1220,7 +1221,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   });
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
   EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
-  window_->ToggleFullscreen();
+  window_->SetFullscreen(true, display::kInvalidDisplayId);
   // State changes are synchronous.
   EXPECT_EQ(PlatformWindowState::kFullScreen,
             window_->GetPlatformWindowState());
@@ -1300,7 +1301,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
 
   constexpr gfx::Rect kFullscreenBounds(1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kDefaultBoundsChange)));
-  window_->ToggleFullscreen();
+  window_->SetFullscreen(true, display::kInvalidDisplayId);
   states.AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN);
   SendConfigureEvent(surface_id_, kFullscreenBounds.size(), states);
   restored_bounds = window_->GetRestoredBoundsInDIP();
@@ -1347,7 +1348,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
 
   constexpr gfx::Rect kFullscreenBounds(1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kDefaultBoundsChange)));
-  window_->ToggleFullscreen();
+  window_->SetFullscreen(true, display::kInvalidDisplayId);
   states.AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN);
   SendConfigureEvent(surface_id_, kFullscreenBounds.size(), states);
   gfx::Rect fullscreen_restore_bounds = window_->GetRestoredBoundsInDIP();
@@ -2405,7 +2406,7 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
       output_manager->GetAllOutputs().rbegin()->second.get();
 
   struct {
-    const WaylandOutput* output;
+    raw_ptr<const WaylandOutput> output;
     const char* label;
   } screen[] = {{main_output, "main output"},
                 {secondary_output, "secondary output"}};
@@ -3173,7 +3174,12 @@ TEST_P(WaylandWindowTest, DestroysCreatesPopupsOnHideShow) {
   });
 }
 
-TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_ReattachesBackgroundOnShow DISABLED_ReattachesBackgroundOnShow
+#else
+#define MAYBE_ReattachesBackgroundOnShow ReattachesBackgroundOnShow
+#endif
+TEST_P(WaylandWindowTest, MAYBE_ReattachesBackgroundOnShow) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();

@@ -20,11 +20,15 @@
 #include "base/functional/overloaded.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "base/task/updateable_sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
@@ -154,18 +158,12 @@ struct AttributionReportJsonConverter {
     value.Set("report", std::move(report_body));
     value.Set("report_url", report.ReportURL(is_debug_report).spec());
 
-    const char* time_key = replaced_by ? "replacement_time" : "report_time";
+    value.Set("intended_report_time",
+              FormatTime(is_debug_report ? report.attribution_info().time
+                                         : report.report_time()));
 
-    base::TimeDelta time_delta = base::Time::Now() - time_origin;
-    switch (report_time_format) {
-      case AttributionReportTimeFormat::kMillisecondsSinceUnixEpoch:
-        value.Set(time_key, base::NumberToString(time_delta.InMilliseconds()));
-        break;
-      case AttributionReportTimeFormat::kISO8601:
-        value.Set(time_key,
-                  base::TimeToISO8601(base::Time::UnixEpoch() + time_delta));
-        break;
-    }
+    value.Set(replaced_by ? "replacement_time" : "report_time",
+              FormatTime(base::Time::Now()));
 
     base::Value::Dict test_info;
     if (absl::holds_alternative<AttributionReport::EventLevelData>(
@@ -195,6 +193,17 @@ struct AttributionReportJsonConverter {
     }
 
     return value;
+  }
+
+  std::string FormatTime(base::Time time) const {
+    base::TimeDelta time_delta = time - time_origin;
+
+    switch (report_time_format) {
+      case AttributionReportTimeFormat::kMillisecondsSinceUnixEpoch:
+        return base::NumberToString(time_delta.InMilliseconds());
+      case AttributionReportTimeFormat::kISO8601:
+        return base::TimeToISO8601(base::Time::UnixEpoch() + time_delta);
+    }
   }
 
   const bool remove_report_ids;
@@ -558,7 +567,11 @@ base::Value RunAttributionSimulation(
           options.noise_mode, options.delay_mode, options.config,
           std::move(rng)),
       std::move(cookie_checker), std::make_unique<FakeReportSender>(),
-      storage_partition);
+      storage_partition,
+      base::ThreadPool::CreateUpdateableSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+           base::ThreadPolicy::MUST_USE_FOREGROUND}));
 
   AttributionEventHandler handler(
       manager.get(), storage_partition,
@@ -569,7 +582,7 @@ base::Value RunAttributionSimulation(
   static_cast<AggregationServiceImpl*>(
       storage_partition->GetAggregationService())
       ->SetPublicKeysForTesting(
-          GURL(kPrivacySandboxAggregationServiceTrustedServerUrlParam.Get()),
+          GURL(kPrivacySandboxAggregationServiceTrustedServerUrlAwsParam.Get()),
           PublicKeyset({aggregation_service::GenerateKey().public_key},
                        /*fetch_time=*/base::Time::Now(),
                        /*expiry_time=*/base::Time::Max()));

@@ -1273,7 +1273,8 @@ extern const char kOriginAgentClusterDefaultEnabled[];
 
 extern const char kForceMajorVersionToMinorPositionInUserAgent[];
 
-extern const char kIdleProfileCloseTimeout[];
+extern const char kIdleTimeout[];
+extern const char kIdleTimeoutActions[];
 
 extern const char kSCTAuditingHashdanceReportCount[];
 
@@ -1298,6 +1299,8 @@ extern const char kVirtualKeyboardResizesLayoutByDefault[];
 extern const char kAccessControlAllowMethodsInCORSPreflightSpecConformant[];
 
 extern const char kDIPSTimerLastUpdate[];
+
+extern const char kThrottleNonVisibleCrossOriginIframesAllowed[];
 
 }  // namespace prefs
 

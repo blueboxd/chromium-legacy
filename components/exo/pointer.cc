@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
-#include "build/chromeos_buildflags.h"
 #include "components/exo/input_trace.h"
 #include "components/exo/pointer_constraint_delegate.h"
 #include "components/exo/pointer_delegate.h"
@@ -754,9 +753,7 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
   capture_scale_ = info.device_scale_factor();
 
   auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
-  // TODO(crbug.com/631103): CursorClient does not exist in mash yet.
-  if (!cursor_client)
-    return;
+  DCHECK(cursor_client);
   if (cursor_ == ui::mojom::CursorType::kCustom &&
       cursor_ == cursor_client->GetCursor()) {
     // If the current cursor is still the one created by us,
@@ -913,9 +910,7 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
 void Pointer::UpdateCursor() {
   WMHelper* helper = WMHelper::GetInstance();
   aura::client::CursorClient* cursor_client = helper->GetCursorClient();
-  // TODO(crbug.com/631103): CursorClient does not exist in mash yet.
-  if (!cursor_client)
-    return;
+  DCHECK(cursor_client);
 
   if (cursor_ == ui::mojom::CursorType::kCustom) {
     SkBitmap bitmap = cursor_bitmap_;

@@ -445,7 +445,6 @@ static_library("test_support") {
   configs += [
     "//build/config:precompiled_headers",
     "//v8:external_startup_data",
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
   ]
 
   public_deps = [
@@ -479,6 +478,7 @@ static_library("test_support") {
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//cc:test_support",
+    "//components/aggregation_service:mojom",
     "//components/attribution_reporting:mojom",
     "//components/breadcrumbs/core",
     "//components/browsing_topics/common:common",
@@ -547,6 +547,7 @@ static_library("test_support") {
     "//third_party/blink/public/strings:accessibility_strings",
     "//third_party/blink/public/strings:strings_grit",
     "//third_party/webrtc_overrides:webrtc_component",
+    "//tools/v8_context_snapshot:buildflags",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base:test_support",
@@ -1157,6 +1158,7 @@ test("content_browsertests") {
   }
 
   sources = [
+    "../app/content_main_runner_impl_browsertest.cc",
     "../app/mojo/mojo_browsertest.cc",
     "../app_shim_remote_cocoa/window_occlusion_browsertest_mac.mm",
     "../browser/accessibility/accessibility_action_browsertest.cc",
@@ -1258,6 +1260,7 @@ test("content_browsertests") {
     "../browser/isolated_origin_browsertest.cc",
     "../browser/keyboard_lock_browsertest.cc",
     "../browser/keyboard_lock_browsertest.h",
+    "../browser/largest_contentful_paint_browsertests.cc",
     "../browser/loader/cors_file_origin_browsertest.cc",
     "../browser/loader/cors_origin_pattern_setter_browsertest.cc",
     "../browser/loader/cors_preflight_cache_browsertest.cc",
@@ -1317,6 +1320,7 @@ test("content_browsertests") {
     "../browser/payments/payment_app_browsertest.cc",
     "../browser/performance_memory_browsertest.cc",
     "../browser/performance_timeline_back_forward_cache_restoration_browsertest.cc",
+    "../browser/performance_timeline_lcp_start_time_precision_browsertest.cc",
     "../browser/performance_timeline_navigation_id_browsertest.cc",
     "../browser/performance_timeline_prefetch_transfer_size_browsertest.cc",
     "../browser/picture_in_picture/video_picture_in_picture_content_browsertest.cc",
@@ -1527,6 +1531,7 @@ test("content_browsertests") {
     "//base/test:test_support",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
+    "//components/aggregation_service:mojom",
     "//components/attribution_reporting:mojom",
     "//components/discardable_memory/client",
     "//components/discardable_memory/common",
@@ -2304,6 +2309,7 @@ test("content_unittests") {
     "../browser/preloading/prefetch/prefetch_url_loader_interceptor_unittest.cc",
     "../browser/preloading/prefetch/proxy_lookup_client_impl_unittest.cc",
     "../browser/preloading/prefetcher_unittest.cc",
+    "../browser/preloading/preloading_decider_unittest.cc",
     "../browser/preloading/prerender/prerender_host_registry_unittest.cc",
     "../browser/preloading/prerender/prerender_host_unittest.cc",
     "../browser/preloading/prerender/prerender_metrics_unittest.cc",
@@ -2646,6 +2652,7 @@ test("content_unittests") {
     "//cc",
     "//cc:test_support",
     "//cc/mojom",
+    "//components/aggregation_service:mojom",
     "//components/attribution_reporting:mojom",
     "//components/cbor",
     "//components/network_session_configurator/browser",

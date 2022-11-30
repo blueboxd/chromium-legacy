@@ -35,14 +35,15 @@ export let EmojiGroupData;
 export let StoredItem;
 
 /**
- * @typedef {{name: string, icon: string, groupId: string, active: boolean,
- *          disabled: boolean, pagination: ?number}} SubcategoryData
+ * @typedef {{name: string, icon: ?string, groupId: string, active: boolean,
+ *          disabled: boolean, pagination: ?number, category: string}}
+ * SubcategoryData
  */
 export let SubcategoryData;
 
 /**
  * @typedef {{name: string, category: string, emoji: Array<EmojiVariants>,
- *            groupId: string, activate: boolean, disabled: boolean,
+ *            groupId: string, active: boolean, disabled: boolean,
  *            pagination: ?number, preferences: Object<string,string>,
  *            isHistory: boolean}} EmojiGroupElement
  */

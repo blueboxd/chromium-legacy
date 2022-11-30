@@ -50,6 +50,7 @@ AppStreamLauncherItem::AppStreamLauncherItem(
 
   label_ = AddChildView(
       std::make_unique<views::Label>(app_metadata.visible_app_name));
+  label_->SetTooltipText(app_metadata.visible_app_name);
   ConfigureLabel(label_, kEcheAppNameLabelLineHeight,
                  kEcheAppNameLabelFontSize);
 }
@@ -66,6 +67,13 @@ void AppStreamLauncherItem::RequestFocus() {
 
 const char* AppStreamLauncherItem::GetClassName() const {
   return "AppStreamLauncherItem";
+}
+
+views::Label* AppStreamLauncherItem::GetLabelForTest() {
+  return label_;
+}
+PhoneHubRecentAppButton* AppStreamLauncherItem::GetIconForTest() {
+  return recent_app_button_;
 }
 
 }  // namespace ash

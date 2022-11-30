@@ -3,8 +3,9 @@
 **Kombucha** is a group of powerful test mix-ins that let you easily and
 concisely write interactive tests.
 
-The current API version is 1.51. All future 1.x versions are guaranteed to be
-backwards-compatible with existing tests.
+The current API version is 1.55. All future 1.x versions are guaranteed to
+either be backwards-compatible with existing tests, or the authors will update
+the API calls for you.
 
 [TOC]
 
@@ -87,9 +88,6 @@ Verbs fall into a number of different categories:
     - `WaitForHide()`
     - `WaitForActivated()`
     - `WaitForEvent()`
-    - `WaitForWebContentsReady()` [Browser]
-    - `WaitForWebContentsNavigation()` [Browser]
-    - `WaitForStateChange()` [Browser]
 - **After** verbs allow you to take some action (specified as a callback) when a
   given event takes place or condition becomes true. The callback can be a full
   `InteractionSequence::StepStartCallback` or it can omit any number of leading
@@ -113,9 +111,10 @@ Verbs fall into a number of different categories:
     - `SelectTab()`
     - `SelectDropdownItem()`
     - `EnterText()`
+    - `ActivateSurface()`
+    - `SendAccelerator()`
     - `Confirm()`
     - `DoDefaultAction()`
-    - `NavigateWebContents()` [Browser]
 - **Mouse** verbs simulate mouse input to the entire application, and are
   therefore only reliable in test fixtures that run as exclusive processes (e.g.
   interactive_browser_tests). Examples include:
@@ -130,6 +129,17 @@ Verbs fall into a number of different categories:
     - `NameChildView()` [Views]
     - `NameDescendantView()` [Views]
     - `NameViewRelative()` [Views]
+- **WebContents** verbs either dynamically
+  [instrument WebContents](#webcontents-instrumentation), navigate them, or wait
+  for them to navigate or change state.
+    - `InstrumentTab()` [Browser]
+    - `InstrumentNextTab()` [Browser]
+    - `AddInstrumentedTab()` [Browser]
+    - `InstrumentNonTabWebView()` [Browser]
+    - `NavigateWebContents()` [Browser]
+    - `WaitForWebContentsReady()` [Browser]
+    - `WaitForWebContentsNavigation()` [Browser]
+    - `WaitForStateChange()` [Browser]
 - **Javascript** verbs execute javascript in an
   [instrumented WebContents](#webcontents-instrumentation), or verify a result
   from calling a javascript function. The `*At()` methods take a
@@ -171,13 +181,17 @@ RunTestSequence(
 
 ### Modifiers
 
-A modifier wraps around a step and changes its behavior. Currently there is only one modifier:
-- **InAnyContext** allows the modified verb to find an element by its identifier
-  outside the test's default `ElementContext`. It has no effect on some versions of
-  `EnsureNotPresent()`, and is not compatible with named elements or with some
-  specific verbs. Use sparingly.
+A modifier wraps around a step or steps and change their behavior.
 
-Example:
+- **InAnyContext** allows the modified verb to find an element outside the test's default
+  `ElementContext`. Unlike the other modifiers, there are a number of limitations on its use:
+  - It should not be used with `FlushEvents`, `EnsureNotPresent`, or any `Activate`,
+    `Event`, or `Mouse` verbs.
+    - This is a shortcoming in the underlying framework that will be fixed in the future.
+  - It should not be used with named elements, which can already be found in any context.
+  - For unsupported verbs, it is best to either use `InSameContext()` or `InContext()` instead.
+  - Example:
+
 ```cpp
 RunTestSequence(
     // This button might be in a different window!
@@ -185,22 +199,48 @@ RunTestSequence(
     InAnyContext(CheckView(kMyButton, ensure_pressed)));
 ```
 
+- **InSameContext** allows the modified verb (or verbs) to find an element in the same context
+  as the previous step.
+  - Has no effect on `EnsureNotPresent()` when the `in_any_context` parameter is set to true.
+  - Example:
+```cpp
+RunTestSequence(
+    InAnyContext(WaitForShow(kMyButton)),
+    InSameContext(PressButton(kMyButton)));
+```
+
+- **InContext** allows the modified verb (or verbs) to execute in the specified context instead of
+  the default context for the sequence.
+  - Has no effect on `EnsureNotPresent()` when the `in_any_context` parameter is set to true.
+  - Example:
+
+```cpp
+Browser* const incognito = CreateIncognitoBrowser();
+RunTestSequence(
+  /* Do stuff in primary browser context here */
+  /* ... */
+  InContext(incognito->window()->GetElementContext(), Steps(
+    PressButton(kAppMenuButton),
+    WaitForShow(kDownloadsMenuItemElementId))));
+```
+
 ### WebContents Instrumentation
 
 A feature of `InteractiveBrowserTestApi` that it borrows from
 [WebContentsInteractoinTestUtil](/chrome/test/interaction/webcontents_interaction_test_util.h)
 is the ability to *instrument* a `WebContents`. This does the following:
-- Assigns the entire `WebContents` an `ElementIdentifier`.
+- Assigns the entire `WebContents` a unique `ElementIdentifier`.
 - Enables a number of page navigation verbs, such as `NavigateWebContents()`
   and `WaitForWebContentsReady()`.
 - Allows the execution of arbitrary JS in the WebContents.
 - Allows waiting for a specific condition in the DOM of the `WebContents` via
   `WaitForStateChange()`.
 
-You may call **Instrument** methods before or during a test sequence.
+You may call **Instrument** verbs during a test sequence.
 - `InstrumentTab()` instruments an existing tab.
 - `InstrumentNextTab()` instruments the next tab to be added to or opened in the
   specified browser.
+- `AddInstrumentedTab()` adds a new tab to a browser and instruments it.
 - `InstrumentNonTabWebContents()` instruments a piece of primary or secondary UI
   that uses a `WebView` and is not a tab (e.g. the tablet tabstrip or Tab Search
   dialog).

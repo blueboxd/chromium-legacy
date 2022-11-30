@@ -33,10 +33,24 @@ REMOTE_BROWSER_TYPES = [
     'cast-streaming-shell',
 ]
 
-TAG_REPLACEMENTS = {
+TAG_SUBSTRING_REPLACEMENTS = {
     # nvidia on desktop, nvidia-coproration on Android.
     'nvidia-corporation': 'nvidia',
 }
+
+ENTIRE_TAG_REPLACEMENTS = {
+    # Includes a Vulkan and LLVM version.
+    re.compile('google-vulkan.*swiftshader-device.*', re.IGNORECASE):
+    'google-vulkan',
+}
+
+VENDOR_AMD = 0x1002
+VENDOR_INTEL = 0x8086
+VENDOR_NVIDIA = 0x10DE
+
+INTEL_DEVICE_ID_MASK = 0xFF00
+INTEL_GEN_9 = {0x1900, 0x3100, 0x3E00, 0x5900, 0x5A00, 0x9B00}
+INTEL_GEN_12 = {0x4C00, 0x9A00, 0x4900, 0x4600, 0x4F00, 0x5600, 0xA700}
 
 
 def _ParseANGLEGpuVendorString(device_string: str) -> Optional[str]:
@@ -71,11 +85,11 @@ def GetGpuVendorString(gpu_info: tgi.GPUInfo, index: int) -> str:
       angle_vendor_string = _ParseANGLEGpuVendorString(
           primary_gpu.device_string)
       vendor_id = primary_gpu.vendor_id
-      if vendor_id == 0x10DE:
+      if vendor_id == VENDOR_NVIDIA:
         return 'nvidia'
-      if vendor_id == 0x1002:
+      if vendor_id == VENDOR_AMD:
         return 'amd'
-      if vendor_id == 0x8086:
+      if vendor_id == VENDOR_INTEL:
         return 'intel'
       if angle_vendor_string:
         return angle_vendor_string.lower()
@@ -92,6 +106,19 @@ def GetGpuDeviceId(gpu_info: tgi.GPUInfo, index: int) -> Union[int, str]:
               or _GetANGLEGpuDeviceId(primary_gpu.device_string)
               or primary_gpu.device_string)
   return 0
+
+
+def IsIntel(vendor_id: int) -> bool:
+  return vendor_id == VENDOR_INTEL
+
+
+# Intel GPU architectures
+def IsIntelGen9(gpu_device_id: int) -> bool:
+  return gpu_device_id & INTEL_DEVICE_ID_MASK in INTEL_GEN_9
+
+
+def IsIntelGen12(gpu_device_id: int) -> bool:
+  return gpu_device_id & INTEL_DEVICE_ID_MASK in INTEL_GEN_12
 
 
 def GetGpuDriverVendor(gpu_info: tgi.GPUInfo) -> Optional[str]:
@@ -214,12 +241,28 @@ def ReplaceTags(tags: List[str]) -> List[str]:
     tags: A list of strings containing expectation tags.
 
   Returns:
-    |tags| but potentially with some substrings replaced.
+    |tags| but potentially with some elements replaced.
   """
   replaced_tags = []
   for t in tags:
-    for original, replacement in TAG_REPLACEMENTS.items():
-      replaced_tags.append(t.replace(original, replacement))
+    continue_to_next_tag = False
+    for regex, replacement in ENTIRE_TAG_REPLACEMENTS.items():
+      if regex.match(t):
+        replaced_tags.append(replacement)
+        continue_to_next_tag = True
+        break
+    if continue_to_next_tag:
+      continue
+
+    for original, replacement in TAG_SUBSTRING_REPLACEMENTS.items():
+      if original in t:
+        replaced_tags.append(t.replace(original, replacement))
+        continue_to_next_tag = True
+        break
+    if continue_to_next_tag:
+      continue
+
+    replaced_tags.append(t)
   return replaced_tags
 
 

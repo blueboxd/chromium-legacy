@@ -1495,8 +1495,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
     ASSERT_TRUE(PathExists(test_data_file));
     test_pdf_url = GURL("file://" + test_data_file.MaybeAsASCII());
   }
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
+  MimeHandlerViewGuest* guest_view = LoadPdfGetMimeHandlerView(test_pdf_url);
+  ASSERT_TRUE(guest_view);
 
   EXPECT_EQ(1, CountPDFProcesses());
 }
@@ -1513,17 +1513,17 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ExtensionlessPDFLocalFileLoads) {
     ASSERT_TRUE(PathExists(test_data_file));
     test_pdf_url = GURL("file://" + test_data_file.MaybeAsASCII());
   }
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
+  MimeHandlerViewGuest* guest_view = LoadPdfGetMimeHandlerView(test_pdf_url);
+  ASSERT_TRUE(guest_view);
 
   EXPECT_EQ(1, CountPDFProcesses());
 }
 
 // This test ensures that link permissions are enforced properly in PDFs.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
-  WebContents* guest_contents =
-      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  ASSERT_TRUE(guest_contents);
+  MimeHandlerViewGuest* guest_view = LoadPdfGetMimeHandlerView(
+      embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ASSERT_TRUE(guest_view);
 
   // chrome://favicon links should be allowed for PDFs, while chrome://settings
   // links should not.
@@ -1533,7 +1533,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
 
   GURL unfiltered_valid_link_url(valid_link_url);
   content::RenderProcessHost* rph =
-      guest_contents->GetPrimaryMainFrame()->GetProcess();
+      guest_view->GetGuestMainFrame()->GetProcess();
   rph->FilterURL(true, &valid_link_url);
   rph->FilterURL(true, &invalid_link_url);
 

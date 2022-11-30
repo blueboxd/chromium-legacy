@@ -123,6 +123,11 @@ extern const char kCalendarExperienceKitDescription[];
 extern const char kAppleCalendarExperienceKitName[];
 extern const char kAppleCalendarExperienceKitDescription[];
 
+// Title and description for the flag to enable phone numbers detection and
+// processing.
+extern const char kPhoneNumberName[];
+extern const char kPhoneNumberDescription[];
+
 // Title and description for the flag to enable text classifier entity detection
 // in experience kit calendar.
 extern const char kEnableExpKitCalendarTextClassifierName[];
@@ -132,6 +137,10 @@ extern const char kEnableExpKitCalendarTextClassifierDescription[];
 // in experience kit for different entity types.
 extern const char kEnableExpKitTextClassifierName[];
 extern const char kEnableExpKitTextClassifierDescription[];
+
+// Title and description for popout omnibox on iPad feature.
+extern const char kEnablePopoutOmniboxIpadName[];
+extern const char kEnablePopoutOmniboxIpadDescription[];
 
 // Title and description for the flag to enable long press surrounding text.
 extern const char kLongPressSurroundingTextName[];
@@ -156,6 +165,11 @@ extern const char kCrashpadIOSDescription[];
 // Provider Extension promo.
 extern const char kCredentialProviderExtensionPromoName[];
 extern const char kCredentialProviderExtensionPromoDescription[];
+
+// Title and description for the flag to enable the default browser blue dot
+// promo.
+extern const char kDefaultBrowserBlueDotPromoName[];
+extern const char kDefaultBrowserBlueDotPromoDescription[];
 
 // Title and description for the flag to show a modified fullscreen modal promo
 // with a button that would send the users in the Settings.app to update the
@@ -196,16 +210,6 @@ extern const char kDmTokenDeletionDescription[];
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
-
-// Title and description for the flag to enable kEnhancedProtection flag on
-// iOS.
-extern const char kEnhancedProtectionName[];
-extern const char kEnhancedProtectionDescription[];
-
-// Title and description for the flag to enable kEnhancedProtectionPhase2
-// flag on iOS.
-extern const char kEnhancedProtectionPhase2Name[];
-extern const char kEnhancedProtectionPhase2Description[];
 
 // Title and description for the flag to enable kTailoredSecurityIntegration
 // flag on iOS.
@@ -307,6 +311,10 @@ extern const char kFollowingFeedDefaultSortTypeDescription[];
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
+
+// Title and description for the flag to show signed-out avatar on NTP.
+extern const char kIdentityStatusConsistencyName[];
+extern const char kIdentityStatusConsistencyDescription[];
 
 // Title and description for the flag to enable sign-in with a Unicorn account.
 extern const char kEnableUnicornAccountSupportName[];
@@ -682,6 +690,10 @@ extern const char kToolbarContainerDescription[];
 // Title and Description for the flag to enable the trending queries module.
 extern const char kTrendingQueriesModuleName[];
 extern const char kTrendingQueriesModuleDescription[];
+
+// Title and description for the flag to truncate title of table view cell.
+extern const char kTruncateTableViewCellTitleName[];
+extern const char kTruncateTableViewCellTitleDescription[];
 
 // Title and description for the flag to enable removing any entry points to the
 // history UI from Incognito mode.

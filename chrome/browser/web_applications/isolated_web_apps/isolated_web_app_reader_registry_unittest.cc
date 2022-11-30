@@ -115,8 +115,8 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
     web_package::mojom::BundleIntegrityBlockSignatureStackEntryPtr
         signature_stack_entry =
             web_package::mojom::BundleIntegrityBlockSignatureStackEntry::New();
-    signature_stack_entry->public_key =
-        std::vector(std::begin(kEd25519PublicKey), std::end(kEd25519PublicKey));
+    signature_stack_entry->public_key = web_package::Ed25519PublicKey::Create(
+        base::make_span(kEd25519PublicKey));
     signature_stack_entry->signature =
         std::vector(std::begin(kEd25519Signature), std::end(kEd25519Signature));
 
@@ -230,7 +230,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
 TEST_F(IsolatedWebAppReaderRegistryTest,
        TestSingleRequestWithQueryAndFragment) {
   network::ResourceRequest resource_request;
-  resource_request.url = GURL(kUrl.spec() + "?bar=baz#foo");
+  resource_request.url = kUrl.Resolve("/?bar=baz#foo");
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,

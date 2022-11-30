@@ -77,12 +77,16 @@ constexpr char kHatsSurveyTriggerTrustSafetyTransactions[] = "ts-transactions";
 constexpr char kHatsSurveyTriggerWhatsNew[] = "whats-new";
 constexpr char kHatsSurveyTriggerTrustSafetyV2BrowsingData[] =
     "ts-v2-browsing-data";
+constexpr char kHatsSurveyTriggerTrustSafetyV2ControlGroup[] =
+    "ts-v2-control-group";
 constexpr char kHatsSurveyTriggerTrustSafetyV2PasswordCheck[] =
     "ts-v2-password-check";
 constexpr char kHatsSurveyTriggerTrustSafetyV2SafetyCheck[] =
     "ts-v2-safety-check";
 constexpr char kHatsSurveyTriggerTrustSafetyV2TrustedSurface[] =
     "ts-v2-trusted-surface";
+constexpr char kHatsSurveyTriggerTrustSafetyV2PrivacyGuide[] =
+    "ts-v2-privacy-guide";
 
 constexpr char kHatsNextSurveyTriggerIDTesting[] =
     "HLpeYy5Av0ugnJ3q1cK0XzzA8UHv";
@@ -265,6 +269,10 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
                                "Deleted autofill form data"});
   survey_configs.emplace_back(
       &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2ControlGroup,
+      features::kTrustSafetySentimentSurveyV2ControlGroupTriggerId.Get());
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
       kHatsSurveyTriggerTrustSafetyV2PasswordCheck,
       features::kTrustSafetySentimentSurveyV2PasswordCheckTriggerId.Get());
   survey_configs.emplace_back(
@@ -276,6 +284,10 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
       kHatsSurveyTriggerTrustSafetyV2TrustedSurface,
       features::kTrustSafetySentimentSurveyV2TrustedSurfaceTriggerId.Get(),
       std::vector<std::string>{"Interacted with Page Info"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2PrivacyGuide,
+      features::kTrustSafetySentimentSurveyV2PrivacyGuideTriggerId.Get());
 
   // Accuracy tips survey.
   survey_configs.emplace_back(

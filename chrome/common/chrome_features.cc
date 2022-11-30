@@ -75,12 +75,6 @@ BASE_FEATURE(kAppPreloadService,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kAppProvisioningStatic,
-             "AppProvisioningStatic",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 #if BUILDFLAG(IS_MAC)
 // Can be used to disable RemoteCocoa (hosting NSWindows for apps in the app
 // process). For debugging purposes only.
@@ -261,6 +255,22 @@ BASE_FEATURE(kPreinstalledWebAppInstallation,
 BASE_FEATURE(kPreinstalledWebAppDuplicationFixer,
              "PreinstalledWebAppDuplicationFixer",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables OS Integration sub managers to execute the
+// registration/unregistration functionality and write the new OS states to the
+// DB.
+BASE_FEATURE(kOsIntegrationSubManagers,
+             "OsIntegrationSubManagers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<OsIntegrationSubManagersStage>::Option
+    sub_manager_stages[] = {
+        {OsIntegrationSubManagersStage::kWriteConfig, "write_config"},
+        {OsIntegrationSubManagersStage::kExecuteAndWriteConfig,
+         "execute_and_write_config"}};
+const base::FeatureParam<OsIntegrationSubManagersStage>
+    kOsIntegrationSubManagersStageParam{
+        &kOsIntegrationSubManagers, "stage",
+        OsIntegrationSubManagersStage::kWriteConfig, &sub_manager_stages};
 #endif
 
 // Generates customised default offline page that is shown when web app is
@@ -1236,12 +1246,20 @@ const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMinRange{
     &kTrustSafetySentimentSurveyV2, "ntp-visits-min-range", 2};
 const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMaxRange{
     &kTrustSafetySentimentSurveyV2, "ntp-visits-max-range", 4};
+// The minimum time that has to pass in the current session before a user can be
+// eligible to be considered for the baseline control group.
+const base::FeatureParam<base::TimeDelta>
+    kTrustSafetySentimentSurveyV2MinSessionTime{
+        &kTrustSafetySentimentSurveyV2, "min-session-time", base::Seconds(30)};
 // The feature area probabilities for each feature area considered as part of
 // the Trust & Safety sentiment survey.
 // TODO(crbug.com/1382134): Calculate initial probabilities and remove 0.0
 const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2BrowsingDataProbability{
         &kTrustSafetySentimentSurveyV2, "browsing-data-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2ControlGroupProbability{
+        &kTrustSafetySentimentSurveyV2, "control-group-probability", 0.0};
 const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2PasswordCheckProbability{
         &kTrustSafetySentimentSurveyV2, "password-check-probability", 0.0};
@@ -1251,11 +1269,17 @@ const base::FeatureParam<double>
 const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2TrustedSurfaceProbability{
         &kTrustSafetySentimentSurveyV2, "trusted-surface-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PrivacyGuideProbability{
+        &kTrustSafetySentimentSurveyV2, "privacy-guide-probability", 0.0};
 // The HaTS trigger IDs, which determine which survey is delivered from the HaTS
 // backend.
 const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2BrowsingDataTriggerId{
         &kTrustSafetySentimentSurveyV2, "browsing-data-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2ControlGroupTriggerId{
+        &kTrustSafetySentimentSurveyV2, "control-group-trigger-id", ""};
 const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2PasswordCheckTriggerId{
         &kTrustSafetySentimentSurveyV2, "password-check-trigger-id", ""};
@@ -1265,6 +1289,9 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2TrustedSurfaceTriggerId{
         &kTrustSafetySentimentSurveyV2, "trusted-surface-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PrivacyGuideTriggerId{
+        &kTrustSafetySentimentSurveyV2, "privacy-guide-trigger-id", ""};
 // The time the user must have the Trusted Surface bubble open to be considered.
 // Alternatively the user can interact with the bubble, in which case this time
 // is irrelevant.

@@ -10,7 +10,6 @@ import '//resources/polymer/v3_0/paper-styles/color.js';
 import '../../components/oobe_icons.m.js';
 import '../../components/common_styles/common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
-import '../../components/dialogs/oobe_modal_dialog.m.js';
 import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_text_button.js';
 
@@ -22,8 +21,9 @@ import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../component
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
 import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
 import {OobeAdaptiveDialog} from '../../components/dialogs/oobe_adaptive_dialog.js';
-import {WebViewHelper} from '../../components/web_view_helper.m.js';
-import {Oobe} from '../../cr_ui.m.js';
+import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
+import {ContentType, WebViewHelper} from '../../components/web_view_helper.js';
+import {Oobe} from '../../cr_ui.js';
 
 
 // Enum that describes the current state of the Terms Of Service screen
@@ -287,7 +287,7 @@ const EulaScreenBase = mixinBehaviors(
  * @typedef {{
  *   additionalChromeToSFrame: WebView,
  *   additionalTerms: HTMLElement,
- *   additionalToS: OobeModalDialogElement,
+ *   additionalToS: OobeModalDialog,
  *   closeAdditionalTos: PolymerElement,
  *   crosEulaFrame: WebView,
  *   eulaDialog:  OobeAdaptiveDialog,
@@ -454,7 +454,7 @@ class EulaScreen extends EulaScreenBase {
 
     var loadBundledEula = function() {
       WebViewHelper.loadUrlContentToWebView(
-          webview, EULA_TERMS_URL, WebViewHelper.ContentType.HTML);
+          webview, EULA_TERMS_URL, ContentType.HTML);
     };
 
     // Load online Eula with a timeout to fallback to the offline version.

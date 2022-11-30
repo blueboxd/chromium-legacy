@@ -892,6 +892,9 @@
   <message name="IDS_SETTINGS_PASSWORDS_IMPORT_LONG_PASSWORD" desc="An error message for a row that wasn't imported, because the provided password exceeds the length limit. It is shown on the dialog for importing passwords if some passwords weren't imported.">
     Password is more than 1000 characters
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_IMPORT_LONG_NOTE" desc="An error message for a row that wasn't imported, because the provided note exceeds the length limit. It is shown on the dialog for importing passwords if some passwords weren't imported.">
+    Note is more than 1000 characters
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICT_ACCOUNT" desc="An error message for a row that wasn't imported, because the provided credential is already stored in their Google Password Manager. It is shown on the dialog for importing passwords if some passwords weren't imported.">
     A password for this account is already saved to your Google Password Manager (<ph name="USER_EMAIL"><ex>elisa.g.becket@gmail.com</ex>$1</ph>)
   </message>
@@ -1768,6 +1771,61 @@
   </message>
   <message name="IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_3" desc="The third of 3 paragraphs on the spam &amp; fraud card.">
     Private state tokens improve privacy on the web and can't be used to find out who you are.
+  </message>
+
+  <!-- Privacy Sandbox Settings 4 - Privacy & Security Page -->
+  <message name="IDS_SETTINGS_AD_PRIVACY_LINK_ROW_LABEL" translateable="false" desc="Label for row linking to the Ad Privacy preferences page in the Privacy &amp; Security Page.">
+    Donec semper
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_LINK_ROW_SUB_LABEL" translateable="false" desc="Sub label for row linking to the Ad Privacy preferences page in the Privacy &amp; Security Page.">
+    Fusce purus nibh, dictum sit amet mi in, fringilla ullamcorper tortor
+  </message>
+
+  <!-- Privacy Sandbox Settings 4 - Ad Privacy Page -->
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_TITLE" translateable="false" desc="Title for the Ad Privacy preferences page.">
+    Donec semper
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_LABEL" translateable="false" desc="Label for row linking to Topics page.">
+    Mauris interdum lectus vitae lacinia
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_ENABLED" translateable="false" desc="Sub label for row linking to Topics page when Topics is enabled.">
+    Enabled Nulla eros tortor, placerat blandit dictum a, interdum id metus
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_DISABLED" translateable="false" desc="Sub label for row linking to Topics page when Topics is disabled.">
+    Disabled Nulla eros tortor, placerat blandit dictum a, interdum id metus
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_LABEL" translateable="false" desc="Label for row linking to FLEDGE page.">
+    Aenean erat leo
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_ENABLED" translateable="false" desc="Sub label for row linking to FLEDGE page when FLEDGE is enabled.">
+    Enabled Duis scelerisque a mi eget ultricies
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_DISABLED" translateable="false" desc="Sub label for row linking to FLEDGE page when FLEDGE is disabled.">
+    Disabled Duis scelerisque a mi eget ultricies
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_LABEL" translateable="false" desc="Label for row linking to Ad Measurement page.">
+    Vestibulum augue erat
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_ENABLED" translateable="false" desc="Sub label for row linking to Ad Measurement page when Ad Measurement is enabled.">
+    Enabled Vivamus id lacus et lacus porttitor vulputate. Sed semper egestas orci vel maximus.
+  </message>
+  <message name="IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_DISABLED" translateable="false" desc="Sub label for row linking to Ad Measurement page when Ad Measurement is disabled.">
+    Disabled Vivamus id lacus et lacus porttitor vulputate. Sed semper egestas orci vel maximus.
+  </message>
+
+  <!-- Privacy Sandbox Settings 4 - Topics Page -->
+  <message name="IDS_SETTINGS_TOPICS_PAGE_TITLE" translateable="false" desc="Title for the Topics preferences page.">
+    Mauris interdum lectus vitae lacinia
+  </message>
+
+  <!-- Privacy Sandbox Settings 4 - Fledge Page -->
+  <message name="IDS_SETTINGS_FLEDGE_PAGE_TITLE" translateable="false" desc="Title for the Fledge preferences page.">
+    Aenean erat leo
+  </message>
+
+  <!-- Privacy Sandbox Settings 4 - Ad Measurement Page -->
+  <message name="IDS_SETTINGS_AD_MEASUREMENT_PAGE_TITLE" translateable="false" desc="Title for the Ad Measurement preferences page.">
+    Vestibulum augue
   </message>
 
   <!-- Privacy Guide -->

@@ -38,6 +38,7 @@
 <translation id="10614374240317010">Jamais enregistrés</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Favoris sur l'ordinateur</translation>
+<translation id="1067561478268651872">La règle <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> n'est utilisée que si la règle <ph name="SECURE_DNS_SALT" /> est définie.</translation>
 <translation id="1068672505746868501">Ne jamais traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Véhicules hybrides et alternatifs</translation>
 <translation id="1070901266639972381">Nuit</translation>
@@ -1231,6 +1232,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4132448310531350254">Gestionnaires en double pour l'extension de fichier "<ph name="FILE_EXTENSION" />" référencée par les applis "<ph name="POLICY_IDS_LIST" />".</translation>
 <translation id="4134123981501319574">Créer un document</translation>
 <translation id="413544239732274901">En savoir plus</translation>
+<translation id="4140905530744469899">ID du profil</translation>
 <translation id="4142935452406587478">Bac 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4150099059797363385">Enveloppe chinoise n°4</translation>
@@ -1354,6 +1356,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4407755609041463909">Feu</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4411435778612100394">Électronique grand public</translation>
+<translation id="4412074349188076601">Cette configuration est marquée comme installable, mais aucune image n'est fournie pour cette architecture. Vous ne pouvez donc pas l'installer.</translation>
 <translation id="4414515549596849729">cookies et infos liées aux sites</translation>
 <translation id="4415426530740016218">Adresse d'enlèvement</translation>
 <translation id="4424024547088906515">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chrome. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
@@ -2097,6 +2100,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6328786501058569169">Ce site est trompeur</translation>
 <translation id="6337133576188860026">Libère moins de <ph name="SIZE" />. Le chargement de certains sites risque d'être plus lent lors de votre prochaine visite.</translation>
 <translation id="6337534724793800597">Filtrer les règles par nom</translation>
+<translation id="633770708279464947">La valeur <ph name="SECURE_DNS_SALT" /> n'est pas valide et ne sera pas utilisée.</translation>
 <translation id="6340739886198108203">Une règle de l'administrateur déconseille de capturer ou d'enregistrer l'écran quand du contenu confidentiel est visible :</translation>
 <translation id="6341434961864773665">{0,plural, =1{Une règle de l'administrateur déconseille d'importer ce fichier vers <ph name="DESTINATION_NAME" />}one{Une règle de l'administrateur déconseille d'importer ce fichier vers <ph name="DESTINATION_NAME" />}other{Une règle de l'administrateur déconseille d'importer ces fichiers vers <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="6348220984832452017">Variantes actives</translation>
@@ -2993,6 +2997,7 @@ Informations supplémentaires :
 <translation id="8654126188050905496">55 x 91 mm</translation>
 <translation id="8663226718884576429">Récapitulatif de la commande, <ph name="TOTAL_LABEL" />, détails supplémentaires</translation>
 <translation id="8666678546361132282">Anglais</translation>
+<translation id="8671519637524426245">La valeur <ph name="SECURE_DNS_SALT" /> ne répond pas aux exigences de taille.</translation>
 <translation id="867224526087042813">Signature</translation>
 <translation id="8672264262457010862">Entreprise et industrie</translation>
 <translation id="8676424191133491403">Sans délai</translation>
@@ -3092,6 +3097,7 @@ Informations supplémentaires :
 <translation id="8913778647360618320">Bouton "Gérer les modes de paiement" : appuyer sur Entrée pour gérer vos paiements et les informations sur vos cartes de crédit dans les paramètres Chrome</translation>
 <translation id="8922013791253848639">Toujours autoriser les annonces sur ce site</translation>
 <translation id="892588693504540538">Perforation en haut à droite</translation>
+<translation id="8930098617363288380">La valeur <ph name="SECURE_DNS_SALT" /> n'est pas valide et ne sera pas utilisée, sauf si la règle <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> est définie.</translation>
 <translation id="8930330541574156305">Immobilier</translation>
 <translation id="8931333241327730545">Voulez-vous enregistrer cette carte dans votre compte Google ?</translation>
 <translation id="8932102934695377596">Votre horloge est en retard</translation>
@@ -3204,6 +3210,7 @@ Informations supplémentaires :
 <translation id="9179907736442194268">Recevez des alertes par e-mail si le prix baisse sur un site</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utilise un protocole incompatible.</translation>
+<translation id="918454845714257218">Vérifiez le code sur le <ph name="SIDE_OF_CARD" />, puis réessayez</translation>
 <translation id="9187461866967718678">Sports extrêmes</translation>
 <translation id="9191834167571392248">Perforation en bas à gauche</translation>
 <translation id="9199905725844810519">Impression bloquée</translation>

@@ -31,7 +31,6 @@
 <translation id="1149401351239820326">Utløpsmåned</translation>
 <translation id="1150263420752757504"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette samtykker du i <ph name="BEGIN_LINK1" />Googles vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />tilleggsvilkårene for bruk av Google Chrome og ChromeOS<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">Siden er ikke tilgjengelig uten nett: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">Se populære nettsteder ved å trykke på «Populært»-knappen</translation>
 <translation id="1173894706177603556">Gi nytt navn</translation>
 <translation id="1177863135347784049">Tilpasset</translation>
 <translation id="1181037720776840403">Fjern</translation>
@@ -261,7 +260,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2472163211318554013">Logg på for å få mest mulig ut av Chrome</translation>
 <translation id="247737702124049222">Bildebeskrivelser er på</translation>
 <translation id="2482878487686419369">Varsler</translation>
-<translation id="2485422356828889247">Avinstaller</translation>
 <translation id="2494974097748878569">Google-assistenten i Chrome</translation>
 <translation id="2496180316473517155">Nettleserlogg</translation>
 <translation id="2497852260688568942">Administratoren din har slått av synkronisering</translation>
@@ -319,7 +317,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2781151931089541271">1 sekund igjen</translation>
 <translation id="2788468313014644040">Gruppenummer</translation>
 <translation id="2800066122460699237">Fanen <ph name="TAB_TITLE" /> blir lukket</translation>
-<translation id="2805756323405976993">Apper</translation>
 <translation id="2806840421670364300">FLoC (samlet læring i kohorter)</translation>
 <translation id="281504910091592009">Se og administrer lagrede passord i <ph name="BEGIN_LINK" />Google-kontoen<ph name="END_LINK" /> din</translation>
 <translation id="2818669890320396765">For å få bokmerkene dine på alle enhetene dine, logg på og slå på synkronisering</translation>
@@ -574,7 +571,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="414128724510021958">Nettsteder for datamaskiner blir forespurt som standard</translation>
 <translation id="4141536112466364990">Lær deg Chrome</translation>
 <translation id="4162867837470729563">Listen over delingsalternativer er åpnet i full høyde.</translation>
-<translation id="4165986682804962316">Nettstedsinnstillinger</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="4177222230309051052">Få alle bokmerkene dine</translation>
 <translation id="4181841719683918333">Språk</translation>
@@ -1370,7 +1366,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8352996530981010042">Kan ikke laste ned reaksjoner. Prøv på nytt.</translation>
 <translation id="8354977102499939946">Søk raskt med stemmen din. For å redigere denne snarveien, gå til Innstillinger.</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> nedlastinger er gjenopprettet</translation>
-<translation id="8364299278605033898">Se populære nettsteder</translation>
 <translation id="8368001212524806591">Spor prisen</translation>
 <translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Slik bruker vi disse dataene:<ph name="END_BOLD" /> Chrome kan anslå interessene dine. Senere kan nettsteder du besøker, spørre Chrome om interessene dine for å kunne sette personlig preg på annonsene du ser.</translation>
 <translation id="8387617938027387193">Bekreft at det er deg</translation>

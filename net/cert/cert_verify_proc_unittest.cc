@@ -262,7 +262,10 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
 // via TestRootCerts.
 const std::vector<CertVerifyProcType> kAllCertVerifiers = {
 #if BUILDFLAG(IS_ANDROID)
-    CERT_VERIFY_PROC_ANDROID
+    CERT_VERIFY_PROC_ANDROID,
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+    CERT_VERIFY_PROC_BUILTIN_CHROME_ROOTS
+#endif
 #elif BUILDFLAG(IS_IOS)
     CERT_VERIFY_PROC_IOS
 #elif BUILDFLAG(IS_MAC)
@@ -484,10 +487,12 @@ class CertVerifyProcInternalTest
   }
 
   bool SupportsEV() const {
-    // TODO(crbug.com/117478): Android and iOS do not support EV.
-    return verify_proc_type() == CERT_VERIFY_PROC_WIN ||
-           verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-           VerifyProcTypeIsBuiltin();
+    // Android and iOS do not support EV.  See https://crbug.com/117478#7
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
+    return true;
+#else
+    return false;
+#endif
   }
 
   bool SupportsSoftFailRevChecking() const {
@@ -4296,6 +4301,16 @@ TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsNotCaIntermediate) {
   chain_[2]->SetBasicConstraints(/*is_ca=*/false, /*path_len=*/-1);
 
   EXPECT_THAT(Verify(), IsError(ExpectedIntermediateConstraintError()));
+}
+
+TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsIsCaLeaf) {
+  chain_[0]->SetBasicConstraints(/*is_ca=*/true, /*path_len=*/-1);
+
+  if (VerifyProcTypeIsBuiltin()) {
+    EXPECT_THAT(Verify(), IsError(ERR_CERT_INVALID));
+  } else {
+    EXPECT_THAT(Verify(), IsOk());
+  }
 }
 
 TEST_P(CertVerifyProcConstraintsTest, BasicConstraintsPathlen0Root) {

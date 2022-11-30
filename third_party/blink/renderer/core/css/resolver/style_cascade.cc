@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_expansion-inl.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_expansion.h"
@@ -588,14 +589,15 @@ void StyleCascade::ApplyInterpolation(
     CascadeResolver& resolver) {
   DCHECK(!property.IsSurrogate());
 
+  CSSInterpolationTypesMap map(state_.GetDocument().GetPropertyRegistry(),
+                               state_.GetDocument());
+  CSSInterpolationEnvironment environment(map, state_, this, &resolver);
+
   const Interpolation& interpolation = *interpolations.front();
   if (IsA<InvalidatableInterpolation>(interpolation)) {
-    CSSInterpolationTypesMap map(state_.GetDocument().GetPropertyRegistry(),
-                                 state_.GetDocument());
-    CSSInterpolationEnvironment environment(map, state_, this, &resolver);
     InvalidatableInterpolation::ApplyStack(interpolations, environment);
   } else {
-    To<TransitionInterpolation>(interpolation).Apply(state_);
+    To<TransitionInterpolation>(interpolation).Apply(environment);
   }
 
   // Applying a color property interpolation will also unconditionally apply

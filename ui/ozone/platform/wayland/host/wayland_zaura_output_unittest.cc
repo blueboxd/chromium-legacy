@@ -7,6 +7,7 @@
 #include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/wayland/wayland_display_util.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
@@ -17,8 +18,26 @@
 using ::testing::Values;
 
 namespace ui {
+namespace {
 
-class WaylandZAuraOutputTest : public WaylandTest {
+// A Test Screen that uses Display info in WaylandOutputManager.  It has bare
+// minimum impl to support the test case for {Set|Get|DisplayForNewWindows().
+class WaylandTestScreen : public display::test::TestScreen {
+ public:
+  explicit WaylandTestScreen(WaylandScreen* wayland_screen)
+      : display::test::TestScreen(/*create_display=*/false,
+                                  /*register_screen=*/true),
+        wayland_screen_(wayland_screen) {}
+
+  const std::vector<display::Display>& GetAllDisplays() const override {
+    return wayland_screen_->GetAllDisplays();
+  }
+
+ private:
+  raw_ptr<WaylandScreen> wayland_screen_;
+};
+
+class WaylandZAuraOutputTest : public WaylandTestSimpleWithAuraShell {
  public:
   WaylandZAuraOutputTest() = default;
   WaylandZAuraOutputTest(const WaylandZAuraOutputTest&) = delete;
@@ -26,7 +45,7 @@ class WaylandZAuraOutputTest : public WaylandTest {
   ~WaylandZAuraOutputTest() override = default;
 
   void SetUp() override {
-    WaylandTest::SetUp();
+    WaylandTestSimpleWithAuraShell::SetUp();
 
     // Set default values for the output.
     PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -51,7 +70,9 @@ class WaylandZAuraOutputTest : public WaylandTest {
   std::unique_ptr<WaylandScreen> platform_screen_;
 };
 
-TEST_P(WaylandZAuraOutputTest, HandleInsets) {
+}  // namespace
+
+TEST_F(WaylandZAuraOutputTest, HandleInsets) {
   WaylandOutput* wayland_output = output_manager_->GetPrimaryOutput();
   ASSERT_TRUE(wayland_output);
   EXPECT_TRUE(wayland_output->IsReady());
@@ -78,7 +99,7 @@ TEST_P(WaylandZAuraOutputTest, HandleInsets) {
   EXPECT_EQ(wayland_output->insets(), insets);
 }
 
-TEST_P(WaylandZAuraOutputTest, HandleLogicalTransform) {
+TEST_F(WaylandZAuraOutputTest, HandleLogicalTransform) {
   WaylandOutput* wayland_output = output_manager_->GetPrimaryOutput();
   ASSERT_TRUE(wayland_output);
   EXPECT_TRUE(wayland_output->IsReady());
@@ -97,7 +118,7 @@ TEST_P(WaylandZAuraOutputTest, HandleLogicalTransform) {
 }
 
 // Test edge case display ids are converted correctly.
-TEST_P(WaylandZAuraOutputTest, DisplayIdConversions) {
+TEST_F(WaylandZAuraOutputTest, DisplayIdConversions) {
   const int64_t kTestIds[] = {
       std::numeric_limits<int64_t>::min(),
       std::numeric_limits<int64_t>::min() + 1,
@@ -122,10 +143,42 @@ TEST_P(WaylandZAuraOutputTest, DisplayIdConversions) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    XdgVersionStableTest,
-    WaylandZAuraOutputTest,
-    Values(wl::ServerConfig{
-        .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled}));
+TEST_F(WaylandZAuraOutputTest, ActiveDisplay) {
+  WaylandTestScreen test_screen(output_manager_->wayland_screen());
+
+  wl::TestOutput *primary = nullptr, *secondary = nullptr;
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    primary = server->output();
+    secondary = server->CreateAndInitializeOutput();
+  });
+
+  int64_t primary_id = display::kInvalidDisplayId,
+          secondary_id = display::kInvalidDisplayId;
+  // Wait so that the client creates xdg/aura outputs.
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    secondary->SetRect(gfx::Rect(100, 100));
+    secondary->Flush();
+    primary_id = primary->GetAuraOutput()->display_id();
+    secondary_id = secondary->GetAuraOutput()->display_id();
+  });
+
+  auto* platform_screen = output_manager_->wayland_screen();
+  DCHECK(platform_screen);
+  ASSERT_EQ(2u, platform_screen->GetAllDisplays().size());
+
+  EXPECT_EQ(primary_id, platform_screen->GetAllDisplays()[0].id());
+  EXPECT_EQ(secondary_id, platform_screen->GetAllDisplays()[1].id());
+
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    secondary->GetAuraOutput()->SendActivated();
+  });
+  EXPECT_EQ(secondary_id,
+            display::Screen::GetScreen()->GetDisplayForNewWindows().id());
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    primary->GetAuraOutput()->SendActivated();
+  });
+  EXPECT_EQ(primary_id,
+            display::Screen::GetScreen()->GetDisplayForNewWindows().id());
+}
 
 }  // namespace ui

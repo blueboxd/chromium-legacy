@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/sync/history_sync_metadata_database.h"
 #include "components/history/core/browser/sync/test_history_backend_for_sync.h"
 #include "components/sync/base/page_transition_conversion.h"
@@ -512,8 +513,7 @@ TEST_F(HistorySyncBridgeTest, ClearsDataWhenSyncStopped) {
   ASSERT_EQ(backend()->GetVisits().size(), 1u);
 }
 
-TEST_F(HistorySyncBridgeTest,
-       DeletesForeignVisitsOnlyWhenSyncStoppedPermanently) {
+TEST_F(HistorySyncBridgeTest, DeletesForeignVisitsWhenTypeStoppedPermanently) {
   sync_pb::HistorySpecifics remote_entity =
       CreateSpecifics(base::Time::Now() - base::Minutes(1), "remote_cache_guid",
                       GURL("https://remote.com"));
@@ -522,17 +522,73 @@ TEST_F(HistorySyncBridgeTest,
   ApplyInitialSyncChanges({remote_entity});
   ASSERT_EQ(backend()->GetVisits().size(), 1u);
 
-  // Stop Sync temporarily, i.e. without deleting metadata.
+  // Stop the data type temporarily, i.e. without deleting metadata, and without
+  // changing the transport state.
   bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
 
   // This should *not* have cleared foreign visits from the DB.
   EXPECT_EQ(backend()->delete_all_foreign_visits_call_count(), 0);
 
-  // Resume Sync, then stop it permanently.
+  // Resume syncing, then stop the data type permanently.
   bridge()->OnSyncStarting(syncer::DataTypeActivationRequest());
   ApplyStopSyncChangesIncludingDeletingMetadata();
 
   // Now foreign visits should've been cleared.
+  EXPECT_EQ(backend()->delete_all_foreign_visits_call_count(), 1);
+}
+
+TEST_F(HistorySyncBridgeTest, DeletesForeignVisitsWhenSyncStoppedPermanently) {
+  sync_pb::HistorySpecifics remote_entity =
+      CreateSpecifics(base::Time::Now() - base::Minutes(1), "remote_cache_guid",
+                      GURL("https://remote.com"));
+
+  // Start Sync, so the remote data gets written to the local DB.
+  ApplyInitialSyncChanges({remote_entity});
+  ASSERT_EQ(backend()->GetVisits().size(), 1u);
+
+  // Enter the Sync-paused state.
+  bridge()->SetSyncTransportState(syncer::SyncService::TransportState::PAUSED);
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
+
+  // This should *not* have cleared foreign visits from the DB.
+  EXPECT_EQ(backend()->delete_all_foreign_visits_call_count(), 0);
+
+  // Resume syncing.
+  bridge()->OnSyncStarting(syncer::DataTypeActivationRequest());
+  bridge()->SetSyncTransportState(syncer::SyncService::TransportState::ACTIVE);
+
+  // Stop Sync permanently.
+  ApplyStopSyncChangesIncludingDeletingMetadata();
+  bridge()->SetSyncTransportState(
+      syncer::SyncService::TransportState::DISABLED);
+
+  // Now foreign visits should've been cleared. Note that due to a workaround
+  // for crbug.com/1383912, there are actually two calls, even though one would
+  // suffice.
+  EXPECT_EQ(backend()->delete_all_foreign_visits_call_count(), 2);
+}
+
+TEST_F(
+    HistorySyncBridgeTest,
+    DeletesForeignVisitsWhenSyncStoppedPermanentlyEvenWithoutClearingMetadata) {
+  sync_pb::HistorySpecifics remote_entity =
+      CreateSpecifics(base::Time::Now() - base::Minutes(1), "remote_cache_guid",
+                      GURL("https://remote.com"));
+
+  // Start Sync, so the remote data gets written to the local DB.
+  ApplyInitialSyncChanges({remote_entity});
+  ASSERT_EQ(backend()->GetVisits().size(), 1u);
+
+  ASSERT_EQ(backend()->delete_all_foreign_visits_call_count(), 0);
+
+  // Stop Sync permanently, but without clearing metadata. This "shouldn't"
+  // happen (metadata should get cleared in that case), but due to
+  // crbug.com/1383912 it can actually happen.
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
+  bridge()->SetSyncTransportState(
+      syncer::SyncService::TransportState::DISABLED);
+
+  // Foreign visits should've been cleared.
   EXPECT_EQ(backend()->delete_all_foreign_visits_call_count(), 1);
 }
 
@@ -797,6 +853,39 @@ TEST_F(HistorySyncBridgeTest, UploadsUpdatedLocalVisit) {
       visit_duration);
 }
 
+TEST_F(HistorySyncBridgeTest, UploadsUpdatedUrlTitle) {
+  // Start syncing (with no data yet).
+  ApplyInitialSyncChanges({});
+
+  // Visit a URL.
+  auto [url_row, visit_row] = AddVisitToBackendAndAdvanceClock(
+      GURL("https://www.url.com"), ui::PAGE_TRANSITION_TYPED);
+
+  // Notify the bridge about the visit - it should be sent to the processor.
+  bridge()->OnURLVisited(
+      /*history_backend=*/nullptr, url_row, visit_row);
+
+  const std::string storage_key =
+      HistorySyncMetadataDatabase::StorageKeyFromVisitTime(
+          visit_row.visit_time);
+  ASSERT_EQ(processor()->GetEntities().size(), 1u);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key), 1u);
+
+  // Update the URL's title.
+  const std::string new_title("New title!");
+  url_row.set_title(base::ASCIIToUTF16(new_title));
+  ASSERT_TRUE(backend()->UpdateURL(url_row));
+  bridge()->OnURLsModified(/*history_backend=*/nullptr, {url_row},
+                           /*is_from_expiration=*/false);
+
+  // The updated data should have been sent to the processor.
+  EXPECT_EQ(processor()->GetEntities().size(), 1u);
+  ASSERT_EQ(processor()->GetEntities().count(storage_key), 1u);
+  const syncer::EntityData& entity = processor()->GetEntities().at(storage_key);
+  ASSERT_EQ(entity.specifics.history().redirect_entries().size(), 1);
+  EXPECT_EQ(entity.specifics.history().redirect_entries(0).title(), new_title);
+}
+
 TEST_F(HistorySyncBridgeTest, UploadsLocalVisitWithRedirects) {
   // Start syncing (with no data yet).
   ApplyInitialSyncChanges({});
@@ -985,6 +1074,34 @@ TEST_F(HistorySyncBridgeTest, SplitsRedirectChainWithDifferentTimestamps) {
   EXPECT_EQ(history2.originator_referring_visit_id(), visit_row2.visit_id);
   EXPECT_TRUE(history2.redirect_chain_start_incomplete());
   EXPECT_FALSE(history2.redirect_chain_end_incomplete());
+}
+
+TEST_F(HistorySyncBridgeTest, DownloadsUpdatedEntity) {
+  // Start syncing (with no data yet).
+  ApplyInitialSyncChanges({});
+
+  // A remote visit comes in.
+  sync_pb::HistorySpecifics remote_specifics =
+      CreateSpecifics(base::Time::Now() - base::Seconds(5), "remote_cache_guid",
+                      GURL("https://remote.com"));
+  ApplySyncChanges({remote_specifics});
+
+  // Make sure it has neither a URL title nor a visit duration.
+  ASSERT_EQ(backend()->GetURLs().size(), 1u);
+  ASSERT_TRUE(backend()->GetURLs()[0].title().empty());
+  ASSERT_EQ(backend()->GetVisits().size(), 1u);
+  ASSERT_EQ(backend()->GetVisits()[0].visit_duration, base::TimeDelta());
+
+  // The remote visit gets updated with a URL title and visit duration.
+  remote_specifics.mutable_redirect_entries(0)->set_title("Title");
+  remote_specifics.set_visit_duration_micros(1234);
+  ApplySyncChanges({remote_specifics});
+
+  // Make sure these changes arrived in the backend.
+  ASSERT_EQ(backend()->GetURLs().size(), 1u);
+  EXPECT_EQ(backend()->GetURLs()[0].title(), u"Title");
+  ASSERT_EQ(backend()->GetVisits().size(), 1u);
+  EXPECT_EQ(backend()->GetVisits()[0].visit_duration, base::Microseconds(1234));
 }
 
 TEST_F(HistorySyncBridgeTest, UntracksEntitiesAfterCommit) {

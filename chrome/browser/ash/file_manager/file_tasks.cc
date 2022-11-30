@@ -442,8 +442,9 @@ void OpenHostedOfficeFile(Profile* profile,
     UMA_HISTOGRAM_ENUMERATION(kDriveTaskResultMetricName,
                               OfficeTaskResult::OPENED);
   } else {
-    GetUserFallbackChoice(profile, task, file_urls,
-                          ash::office_fallback::FallbackReason::kOffline);
+    GetUserFallbackChoice(
+        profile, task, file_urls,
+        ash::office_fallback::FallbackReason::kInvalidGoogleDocsURL);
   }
 }
 
@@ -1007,7 +1008,7 @@ bool GetUserFallbackChoice(
   } else if (parsed_action_id == kActionIdWebDriveOfficePowerPoint) {
     task_title_id = IDS_FILE_BROWSER_TASK_OPEN_GSLIDES;
   } else if (parsed_action_id == kActionIdOpenInOffice) {
-    task_title_id = IDS_FILE_BROWSER_TASK_OPEN_OFFICE;
+    task_title_id = IDS_FILE_BROWSER_TASK_OPEN_MICROSOFT_365;
   } else {
     LOG(ERROR) << "Could not find a task with the given action_id";
     return false;

@@ -133,6 +133,7 @@
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1981118202195772574">Mobile</translation>
 <translation id="1989112275319619282">Mag-browse</translation>
+<translation id="1990820278544963435">Maghanap</translation>
 <translation id="199425419756152024">Tingnan ang Password</translation>
 <translation id="2010008505735295285">I-reload</translation>
 <translation id="2015722694326466240">Upang makita ang mga password, dapat ka munang magtakda ng passcode sa iyong device.</translation>
@@ -283,6 +284,7 @@ Tingnan ang mga tagubilin ng iyong search engine para sa pag-delete sa history n
 <translation id="3153862085237805241">I-save ang Card</translation>
 <translation id="3157387275655328056">Idagdag sa Listahan ng Babasahin</translation>
 <translation id="3157684681743766797">Markahan Lahat...</translation>
+<translation id="315778507796115851">History</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174662312949010067">Puwede mo ring gamitin ang mga naka-save na password sa iba mo pang device.</translation>
 <translation id="3175081911749765310">Web Services</translation>
@@ -874,6 +876,7 @@ Habang nasa Incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="7531345132340165516">Kasalukuyang Site</translation>
 <translation id="7537586195939242955">Paumahin, hindi ma-install ngayon ang Pass mo sa Passbook.</translation>
 <translation id="7553234618121028547">Para ma-off, buksan ang <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" /> at pumunta sa Mga Opsyon sa Password.</translation>
+<translation id="7554645225856321710">Isara Lahat</translation>
 <translation id="7554791636758816595">Bagong Tab</translation>
 <translation id="7561196759112975576">Palagi</translation>
 <translation id="7583004045319035904">Gamitin ang <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> para i-unlock ang iyong mga tab na Incognito.</translation>
@@ -927,7 +930,6 @@ Habang nasa Incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="7966516440812255683">Puwedeng gumamit ng cookies ang mga site para pahusayin ang iyong karanasan sa pag-browse, halimbawa, para mapanatili kang naka-sign in o para maalala ang mga item sa shopping cart mo.
 
 Puwedeng gumamit ng cookies ang mga site para makita ang iyong aktibidad sa pag-browse sa iba't ibang site, halimbawa, para mag-personalize ng mga ad.</translation>
-<translation id="7966904497916178308">Naka-on ang standard na proteksyon.</translation>
 <translation id="7971521879845308059">I-block ang Mga Pop-up</translation>
 <translation id="797413074872316787">Para mag-sync at mag-personalize sa mga device, i-on ang pag-sync.</translation>
 <translation id="7978018860671536736">3. I-tap ang I-autofill ang Mga Password</translation>
@@ -1088,6 +1090,7 @@ Puwedeng gumamit ng cookies ang mga site para makita ang iyong aktibidad sa pag-
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> (na) araw na ang nakalipas</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Maghanap sa Mga Tab…</translation>
 <translation id="9223358826628549784">Nagpadala ng ulat sa pag-crash.</translation>
 <translation id="941747855997058526">Pumili ng Password...</translation>
 <translation id="952704832371081537">Kanselahin</translation>

@@ -301,6 +301,7 @@
 #include "third_party/blink/renderer/core/script/detect_javascript_frameworks.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_script_element.h"
 #include "third_party/blink/renderer/core/svg/svg_title_element.h"
@@ -4340,6 +4341,10 @@ void Document::UpdateBaseURL() {
          Traversal<HTMLAnchorElement>::StartsAfter(*this))
       anchor.InvalidateCachedVisitedLinkHash();
   }
+
+  if (auto* document_rules = DocumentSpeculationRules::FromIfExists(*this)) {
+    document_rules->DocumentBaseURLChanged();
+  }
 }
 
 // [spec] https://html.spec.whatwg.org/C/#fallback-base-url
@@ -5868,23 +5873,6 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
-  const String permissions_policy_error =
-      "Setting `document.domain` is disabled by permissions policy.";
-  if (!dom_window_->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kDocumentDomain,
-          ReportOptions::kReportOnFailure, permissions_policy_error)) {
-    exception_state.ThrowSecurityError(permissions_policy_error);
-    return;
-  }
-
-  const String document_policy_error =
-      "Setting `document.domain` is disabled by document policy.";
-  if (!dom_window_->IsFeatureEnabled(
-          mojom::blink::DocumentPolicyFeature::kDocumentDomain,
-          ReportOptions::kReportOnFailure, document_policy_error)) {
-    return;
-  }
-
   if (SchemeRegistry::IsDomainRelaxationForbiddenForURLScheme(
           dom_window_->GetSecurityOrigin()->Protocol())) {
     exception_state.ThrowSecurityError(
@@ -6417,12 +6405,18 @@ FragmentDirective& Document::fragmentDirective() const {
 ScriptPromise Document::hasTrustToken(ScriptState* script_state,
                                       const String& issuer,
                                       ExceptionState& exception_state) {
+  return hasPrivateStateToken(script_state, issuer, exception_state);
+}
+
+ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
+                                             const String& issuer,
+                                             ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   ScriptPromise promise = resolver->Promise();
 
-  // Trust Tokens state is keyed by issuer and top-frame origins that
+  // Private State Tokens state is keyed by issuer and top-frame origins that
   // are both (1) HTTP or HTTPS and (2) potentially trustworthy. Consequently,
   // we can return early if either the issuer or the top-frame origin fails to
   // satisfy either of these requirements.
@@ -6431,7 +6425,8 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
   if (!issuer_url.ProtocolIsInHTTPFamily() ||
       !issuer_origin->IsPotentiallyTrustworthy()) {
     exception_state.ThrowTypeError(
-        "hasTrustToken: Trust token issuer origins must be both HTTP(S) and "
+        "hasPrivateStateToken: Trust token issuer origins must be both HTTP(S) "
+        "and "
         "secure (\"potentially trustworthy\").");
     resolver->Reject(exception_state);
     return promise;
@@ -6445,7 +6440,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
     // case there are other situations in which the top frame origin might be
     // absent.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "hasTrustToken: Cannot execute in "
+                                      "hasPrivateStateToken: Cannot execute in "
                                       "documents lacking top-frame origins.");
     resolver->Reject(exception_state);
     return promise;
@@ -6456,7 +6451,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
       top_frame_origin->Protocol() != url::kHttpScheme) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
-        "hasTrustToken: Cannot execute in "
+        "hasPrivateStateToken: Cannot execute in "
         "documents without secure, HTTP(S), top-frame origins.");
     resolver->Reject(exception_state);
     return promise;
@@ -6495,7 +6490,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
               ScriptState::Scope scope(state);
               resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
                   state->GetIsolate(), DOMExceptionCode::kOperationError,
-                  "Failed to retrieve hasTrustToken response. (Would "
+                  "Failed to retrieve hasPrivateStateToken response. (Would "
                   "associating the given issuer with this top-level origin "
                   "have exceeded its number-of-issuers limit?)"));
             }
@@ -6516,7 +6511,7 @@ ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
 
   ScriptPromise promise = resolver->Promise();
 
-  // Trust Tokens state is keyed by issuer and top-frame origins that
+  // Private State Tokens state is keyed by issuer and top-frame origins that
   // are both (1) HTTP or HTTPS and (2) potentially trustworthy. Consequently,
   // we can return early if either the issuer or the top-frame origin fails to
   // satisfy either of these requirements.

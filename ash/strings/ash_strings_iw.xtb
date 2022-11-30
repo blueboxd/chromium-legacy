@@ -52,6 +52,7 @@
 <translation id="1218444235442067213">‏<ph name="APP_NAME" />, אפליקציה מחנות Play</translation>
 <translation id="1225748608451425081">‏ה-Chromebook שלך נעול עקב בעיה ידועה. ניתן יהיה להיכנס בעוד: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">סיום הבחירה</translation>
+<translation id="1235458158152011030">רשתות מוכרות</translation>
 <translation id="1239161794459865856">התכונה <ph name="FEATURE_NAME" /> מחוברת.</translation>
 <translation id="1240638468526743569">אפליקציה כלשהי</translation>
 <translation id="1246890715821376239">אפליקציות שאינן נתמכות</translation>
@@ -386,7 +387,6 @@
 <translation id="3120421559657122717">לכבות את המכשיר?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">הפעלה מחדש כדי לעדכן</translation>
-<translation id="3139382871451988441">השבתת הגישה למצלמה.</translation>
 <translation id="3139942575505304791">שולחן עבודה 1</translation>
 <translation id="315116470104423982">נתוני נייד</translation>
 <translation id="3151786313568798007">כיוון</translation>
@@ -519,7 +519,6 @@
 <translation id="385051799172605136">חזרה</translation>
 <translation id="385300504083504382">התחלה</translation>
 <translation id="3861651314799684201">‏כדי להקליט את המסך המלא, מקישים על Enter</translation>
-<translation id="3885531177412808398">מתן גישה למיקרופון לכל האפליקציות והאתרים עם הרשאת הגישה למיקרופון</translation>
 <translation id="3886872229787704059">נפתח היום</translation>
 <translation id="3891340733213178823">‏יש להקיש פעמיים על Ctrl+Shift+Q כדי לצאת.</translation>
 <translation id="3893630138897523026">‏ChromeVox (משוב קולי)</translation>
@@ -648,11 +647,8 @@
 <translation id="4573176682887762361">‏"Type [word / phrase]" (הקלדת [מילה / ביטוי])</translation>
 <translation id="4577274620589681794">הזמן נגמר · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">צפייה בתצוגות מקדימות</translation>
-<translation id="4578196883126898996">המיקרופון כבוי. יש להפעיל את לחצן המיקרופון במכשיר.</translation>
 <translation id="4578906031062871102">תפריט ההגדרות נפתח</translation>
-<translation id="4581047786858252841">המיקרופון פועל</translation>
 <translation id="4585337515783392668">הפסקת העברה במכשיר לא מוכר</translation>
-<translation id="4587299710837179226">המיקרופון כבוי</translation>
 <translation id="4596144739579517758">עיצוב כהה כבוי.</translation>
 <translation id="4611292653554630842">התחבר</translation>
 <translation id="4623167406982293031">יש לאמת את החשבון</translation>
@@ -732,6 +728,7 @@
 <translation id="4987738733603015246">שולחן עבודה וירטואלי מספר 16</translation>
 <translation id="5003993274120026347">המשפט הבא</translation>
 <translation id="5016558321564993266">החלפת המצב של כלי הסימון. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">הגישה למיקרופון המכשיר מופעלת</translation>
 <translation id="5030687792513154421">נגמר הזמן</translation>
 <translation id="5033299697334913360">כדי לצלם את המסך המלא, יש ללחוץ במקום כלשהו</translation>
 <translation id="5035236842988137213">מכשיר <ph name="DEVICE_NAME" /> התחבר לטלפון חדש</translation>
@@ -966,6 +963,7 @@
 <translation id="6359587239691116345">קבלה של התכונות ושיפורי האבטחה האחרונים. ללא הסכמתך לעדכון הזה, המכשיר שלך עשוי להפסיק לפעול כמו שצריך ויכול להיות שיהיו בעיות באבטחה ובביצועים.</translation>
 <translation id="6376931439017688372">‏Bluetooth פועל</translation>
 <translation id="6381109794406942707">כדי לבטל את הנעילה של המכשיר, יש להזין את קוד האימות.</translation>
+<translation id="638716340450135524">הפעלת הגישה למצלמה</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -973,6 +971,7 @@
 <translation id="642644398083277086">ניקוי כל ההודעות</translation>
 <translation id="643147933154517414">הפעולה הושלמה</translation>
 <translation id="6431865393913628856">הקלטת המסך</translation>
+<translation id="6442259747294754014">הגישה למיקרופון המכשיר מושבתת</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> במכשיר <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, אירוע (<ph name="NUMBER" />)</translation>
 <translation id="6449483711453944360">‏בשלב הזה, אין תמיכה באפליקציות Linux ובחלונות פרטיים</translation>
@@ -1212,6 +1211,7 @@
 <translation id="7720410380936703141">ניסיון חוזר</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{הודעה אחת}two{2 הודעות}many{# הודעות}other{# הודעות}}</translation>
 <translation id="7724603315864178912">חיתוך</translation>
+<translation id="7742327441377685481">אין התראות</translation>
 <translation id="7745560842763881396">הצגת האפליקציות במדף</translation>
 <translation id="7749443890790263709">הגעת למספר המקסימלי של שולחנות עבודה.</translation>
 <translation id="776344839111254542">יש ללחוץ כדי להציג את פרטי העדכון</translation>
@@ -1368,6 +1368,7 @@
 <translation id="8598235756057743477">מיון אפליקציות לפי שם או לפי צבע</translation>
 <translation id="8614517853887502247">ההתראות מהאפליקציות <ph name="APP_1_TITLE" /> וכן <ph name="APP_2_TITLE" /> מוסתרות כי מופעלת הגנה על תצוגה</translation>
 <translation id="8627191004499078455">יש חיבור אל <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">השבתת הגישה למצלמה</translation>
 <translation id="8631727435199967028">הגדרות נגישות</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, עוצמת האות: <ph name="SIGNAL_STRENGTH" />, הרשת מנוהלת על ידי מנהל המערכת</translation>
 <translation id="8639760480004882931">שיעור טעינה נותר - <ph name="PERCENTAGE" /></translation>
@@ -1383,7 +1384,6 @@
 <translation id="8666856788528804727">צריך לפתוח את <ph name="NAME" /> כדי להגדיר את המכשיר</translation>
 <translation id="8676770494376880701">חובר מטען בעל מתח נמוך</translation>
 <translation id="8683506306463609433">מעקב הביצועים פעיל</translation>
-<translation id="8684405646663021166">מתן גישה למיקרופון לאפליקציה <ph name="APP_NAME" /> ולכל האפליקציות והאתרים עם הרשאת הגישה למיקרופון</translation>
 <translation id="8685326675965865247">אפשר לחפש במכשיר, באפליקציות, בהגדרות ובאינטרנט. בעזרת מקשי החיצים ניתן לעבור בין האפליקציות.</translation>
 <translation id="8703634754197148428">‏יש להתחיל בהקלטה. לאחר התחלת ההקלטה, יש להקיש על Alt ‏+ Shift ‏+ L כדי לעבור למדף ולמצוא את הלחצן להפסקת ההקלטה</translation>
 <translation id="8721053961083920564">השמעה או השתקה של צלילים. <ph name="STATE_TEXT" /></translation>
@@ -1408,7 +1408,6 @@
 <translation id="8819728065740986820">הטעינה הדינמית מופעלת</translation>
 <translation id="8825863694328519386">יש להחליק מצד ימין כדי לחזור אחורה</translation>
 <translation id="8834539327799336565">מחובר עכשיו</translation>
-<translation id="8834657930627018205">צריך להעניק גישה למצלמה.</translation>
 <translation id="8841375032071747811">לחצן 'הקודם'</translation>
 <translation id="8843682306134542540">הפעלה או השבתה של נעילת הסיבוב. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

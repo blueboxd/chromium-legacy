@@ -31,7 +31,6 @@
 <translation id="1149401351239820326">Aegumiskuu</translation>
 <translation id="1150263420752757504"><ph name="APP_NAME" /> avaneb Chrome'is. Jätkates nõustute <ph name="BEGIN_LINK1" />Google'i teenusetingimustega<ph name="END_LINK1" /> ning <ph name="BEGIN_LINK2" />Google Chrome'i ja Chrome OS-i lisateenusetingimustega<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">Leht pole võrguühenduseta saadaval: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">Vaadake populaarseid veebisaite, puudutades nuppu „Popid saidid”</translation>
 <translation id="1173894706177603556">Muuda nime</translation>
 <translation id="1177863135347784049">Kohandatud</translation>
 <translation id="1181037720776840403">Eemalda</translation>
@@ -261,7 +260,6 @@ Kui kustutate oma sirvimisajaloo – kogu ajaloo või konkreetse saidi ajaloo �
 <translation id="2472163211318554013">Chrome'i parimal moel kasutamiseks logige sisse</translation>
 <translation id="247737702124049222">Pildikirjeldused on sisse lülitatud</translation>
 <translation id="2482878487686419369">Märguanded</translation>
-<translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2494974097748878569">Google'i assistent Chrome'is</translation>
 <translation id="2496180316473517155">Sirvimise ajalugu</translation>
 <translation id="2497852260688568942">Administraator on sünkroonimise keelanud</translation>
@@ -284,6 +282,11 @@ Kui kustutate oma sirvimisajaloo – kogu ajaloo või konkreetse saidi ajaloo �
 <translation id="2569733278091928697">Saate hõlpsasti hallata meedia juhtnuppe, inkognito seansse, allalaadimisi ja muudki</translation>
 <translation id="2571711316400087311">Paku muudes keeltes olevate lehtede saatmist teenusele Google'i tõlge</translation>
 <translation id="2573452357057307036">Vaadake, kuidas Chrome vaikevalikuks määrata</translation>
+<translation id="2580436639406015883">Rämpssisu ja pettuste vähendamisel toetutakse privaatse oleku märkidele, et aidata saitidel võidelda pettuste vastu ja eristada roboteid inimestest.
+
+Teie interaktsioonide põhjal saidiga (nt kontole regulaarselt sisse logimine) saab see sait teie brauserile väljastada privaatse oleku märgi. Hiljem, kui teised külastatavad saidid kontrollivad kehtivat privaatse oleku märki ja leiavad selle, kohtlevad nad teid suurema tõenäosusega inimesena, mitte robotina.
+
+Privaatse oleku märgid täiustavad veebis privaatsust ja neid ei saa kasutada teie isiku tuvastamiseks.</translation>
 <translation id="2581165646603367611">See tühjendab vahemälu, kustutab küpsised ja muud andmed, mis pärinevad Chrome'i arvates ebatähtsatelt saitidelt.</translation>
 <translation id="2587052924345400782">Saadaval on uuem versioon</translation>
 <translation id="2593272815202181319">Püsisammkiri</translation>
@@ -319,7 +322,6 @@ Kui kustutate oma sirvimisajaloo – kogu ajaloo või konkreetse saidi ajaloo �
 <translation id="2781151931089541271">Jäänud on 1 sekund</translation>
 <translation id="2788468313014644040">Grupi number</translation>
 <translation id="2800066122460699237">Vaheleht <ph name="TAB_TITLE" /> suletakse</translation>
-<translation id="2805756323405976993">Rakendused</translation>
 <translation id="2806840421670364300">FLoC</translation>
 <translation id="281504910091592009">Vaadake ja hallake salvestatud paroole oma <ph name="BEGIN_LINK" />Google'i kontol<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Järjehoidjate kõikidesse seadmetesse hankimiseks logige sisse ja lülitage sünkroonimine sisse</translation>
@@ -573,8 +575,12 @@ Kui kustutate oma sirvimisajaloo – kogu ajaloo või konkreetse saidi ajaloo �
 <translation id="4137746084635924146">Seadme praegune keel</translation>
 <translation id="414128724510021958">Vaikimisi taotletakse arvutisaite</translation>
 <translation id="4141536112466364990">Õppige Chrome'i kasutama</translation>
+<translation id="4147131678541801076">Kui katsed on sisse lülitatud, toetutakse rämpssisu ning pettuste vähendamisel privaatse oleku märkidele, et aidata saitidel võidelda pettuste vastu ja eristada roboteid inimestest.
+
+Teie interaktsioonide põhjal saidiga (nt kontole regulaarselt sisse logimine) saab see sait teie brauserile väljastada privaatse oleku märgi. Hiljem, kui teised külastatavad saidid kontrollivad kehtivat privaatse oleku märki ja leiavad selle, kohtlevad nad teid suurema tõenäosusega inimesena, mitte robotina.
+
+Privaatse oleku märgid täiustavad veebis privaatsust ja neid ei saa kasutada teie isiku tuvastamiseks.</translation>
 <translation id="4162867837470729563">Jagamisvalikute loend on avatud täiskõrgusele.</translation>
-<translation id="4165986682804962316">Saidi seaded</translation>
 <translation id="4170011742729630528">Teenus pole saadaval, proovige hiljem uuesti.</translation>
 <translation id="4177222230309051052">Hankige kõik oma järjehoidjad</translation>
 <translation id="4181841719683918333">Keeled</translation>
@@ -682,6 +688,7 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4766313118839197559">Paroolid salvestatakse rakendusse Paroolihaldur selles seadmes</translation>
 <translation id="4766678251456904326">Konto lisamine seadmesse</translation>
 <translation id="4769095993849849966">Uus failinimi</translation>
+<translation id="4778653490315793244">Siin ei ole veel midagi</translation>
 <translation id="4787736314074622408">Kas soovite faili <ph name="ITEM_TITLE" /> kustutada?</translation>
 <translation id="4791358705705538979">Aitab teil kõikjal veebis toiminguid (nt maksmine) lõpule viia</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
@@ -1298,6 +1305,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7971136598759319605">Aktiivne 1 päev tagasi</translation>
 <translation id="7975379999046275268">Lehe eelvaade <ph name="BEGIN_NEW" />Uus<ph name="END_NEW" /></translation>
 <translation id="7986497153528221272">Paroolide vaatamiseks määrake esmalt oma seadmes ekraanilukk</translation>
+<translation id="7995059495660416932">Näete sisu, kui see on saadaval</translation>
 <translation id="799576009106109668">Saate kiiremini sirvida, kuna sisu laaditakse ennetavalt teie praeguse veebilehekülastuse põhjal</translation>
 <translation id="7998918019931843664">Suletud vahelehe uuesti avamine</translation>
 <translation id="8004582292198964060">Brauser</translation>
@@ -1370,7 +1378,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8352996530981010042">Ei saa reaktsioone alla laadida. Proovige uuesti.</translation>
 <translation id="8354977102499939946">Otsige kiirelt oma hääle abil. Selle otsetee muutmiseks avage menüü Seaded.</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> allalaadimist taastati</translation>
-<translation id="8364299278605033898">Vaadake populaarseid veebisaite</translation>
 <translation id="8368001212524806591">Jälgi hinda</translation>
 <translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Kuidas neid andmeid kasutame?<ph name="END_BOLD" /> Chrome saab teie huvisid prognoosida. Hiljem saab teie külastatav sait küsida Chrome'ilt teie huvisid, et isikupärastada teile kuvatavaid reklaame.</translation>
 <translation id="8387617938027387193">Kinnitage oma isik</translation>
@@ -1506,6 +1513,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8998729206196772491">Logite sisse kontoga, mida haldab <ph name="MANAGED_DOMAIN" />, ja annate selle administraatorile üle Chrome'i andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chrome'ist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="9022774213089566801">Sageli külastatud</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videot}}</translation>
+<translation id="9042827002460091668">Kontrollige internetiühendust ja proovige uuesti</translation>
 <translation id="9042893549633094279">Privaatsus ja turvalisus</translation>
 <translation id="9050666287014529139">Parool</translation>
 <translation id="9063523880881406963">Valiku Taotle arvutisaiti väljalülitamine</translation>

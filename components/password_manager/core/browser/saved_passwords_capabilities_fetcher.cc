@@ -116,8 +116,7 @@ void SavedPasswordsCapabilitiesFetcher::OnEdited(const PasswordForm& form) {
   NOTREACHED();
 }
 
-void SavedPasswordsCapabilitiesFetcher::OnSavedPasswordsChanged(
-    SavedPasswordsPresenter::SavedPasswordsView passwords) {
+void SavedPasswordsCapabilitiesFetcher::OnSavedPasswordsChanged() {
   // If there is still a pending update from the `SavedPasswordsPresenter`,
   // return early and perform the updates once that is in.
   if (saved_passwords_presenter_->IsWaitingForPasswordStore())
@@ -248,13 +247,14 @@ void SavedPasswordsCapabilitiesFetcher::FetchCapababilitiesForSingleOriginDone(
 std::vector<url::Origin>
 SavedPasswordsCapabilitiesFetcher::GetOriginsOfStoredPasswords() const {
   std::vector<url::Origin> origins;
-  for (const auto& form : saved_passwords_presenter_->GetSavedPasswords()) {
-    if (form.url.SchemeIs(url::kHttpScheme)) {
+  for (const auto& credential :
+       saved_passwords_presenter_->GetSavedPasswords()) {
+    if (credential.GetURL().SchemeIs(url::kHttpScheme)) {
       // Http schemes are not supported.
       continue;
     }
 
-    url::Origin origin = url::Origin::Create(form.url);
+    url::Origin origin = url::Origin::Create(credential.GetURL());
     if (!origin.opaque()) {
       origins.push_back(origin);
     }

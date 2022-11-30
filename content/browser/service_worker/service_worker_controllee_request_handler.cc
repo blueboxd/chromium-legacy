@@ -494,6 +494,8 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
           "FetchHandlerType",
           FetchHandlerTypeToString(
               active_version->EffectiveFetchHandlerType()));
+      registration->active_version()->CountFeature(
+          blink::mojom::WebFeature::kServiceWorkerSkippedForEmptyFetchHandler);
       CompleteWithoutLoader();
       return;
     }
@@ -512,6 +514,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
   // If the feature is enabled, the main resource request bypasses ServiceWorker
   // and starts the worker in parallel for subsequent subresources.
   if (ShouldBypassFetchHandlerForMainResource(stripped_url_)) {
+    registration->active_version()->CountFeature(
+        blink::mojom::WebFeature::
+            kServiceWorkerBypassFetchHandlerForMainResource);
     CompleteWithoutLoader();
     if (registration->active_version()->running_status() ==
             EmbeddedWorkerStatus::STARTING ||

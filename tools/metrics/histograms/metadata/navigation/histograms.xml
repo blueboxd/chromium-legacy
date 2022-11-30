@@ -681,12 +681,14 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.HTTP" units="ms"
-    expires_after="2022-01-09">
+    expires_after="2023-11-28">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
     The amount of time that an HTTP page was in the foreground. Recorded on
-    every page close/transition.
+    every page close/transition. This metric is exposed publicly on the HTTPS
+    Transparency Report at
+    https://transparencyreport.google.com/https/overview?hl=en.
   </summary>
 </histogram>
 
@@ -696,7 +698,9 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <owner>security-enamel@chromium.org</owner>
   <summary>
     The amount of time that an HTTPS page was in the foreground. Recorded on
-    every page close/transition.
+    every page close/transition. This metric is exposed publicly on the HTTPS
+    Transparency Report at
+    https://transparencyreport.google.com/https/overview?hl=en.
   </summary>
 </histogram>
 
@@ -1109,31 +1113,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     OriginAgentCluster-by-default is enabled, then the second (disjoint) set of
     six enum values tracks this state, plus the two additional cases where
     OriginAgentCluster was explicitly not requested, and was or wasn't granted.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.PolicyBlocklistNavigationThrottle.PolicyLoadDelay"
-    units="ms" expires_after="2023-01-02">
-  <owner>ydago@chromium.org</owner>
-  <owner>pastarmovj@chromium.org</owner>
-  <summary>
-    The time spent waiting for policies to load before checking a navigation
-    against url blocking policies. Gathered when policies have finished loading
-    after a navigation requests has been already issued.
-  </summary>
-</histogram>
-
-<histogram
-    name="Navigation.PolicyBlocklistNavigationThrottle.PolicyLoadTimeout"
-    enum="Boolean" expires_after="2023-01-02">
-  <owner>ydago@chromium.org</owner>
-  <owner>pastarmovj@chromium.org</owner>
-  <summary>
-    Records if the policy load delay before PolicyBlocklistNavigationThrottle
-    checks a navigation against url blocking policies timed out. In case of a
-    timeout, the navigation resumes ignoring potential policy restrictions.
-    Gathered when policies have not finished loading in time for a navigation
-    request to be checked against the blocklist policy.
   </summary>
 </histogram>
 
@@ -1666,7 +1645,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.CanceledForInactivePageRestriction.DisallowActivationReason{PrerenderTriggerType}"
-    enum="InactiveFrameDisallowActivationReason" expires_after="2022-11-30">
+    enum="InactiveFrameDisallowActivationReason" expires_after="2023-03-01">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@chromium.org</owner>
   <summary>
@@ -1773,7 +1752,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
-    enum="Boolean" expires_after="2022-07-27">
+    enum="Boolean" expires_after="2023-02-01">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>

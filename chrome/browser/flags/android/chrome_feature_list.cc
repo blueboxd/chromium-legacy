@@ -242,7 +242,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDuetTabStripIntegrationAndroid,
     &kExperimentsForAgsa,
     &kExploreSites,
-    &kFixedUmaSessionResumeOrder,
     &kFocusOmniboxInIncognitoTabIntents,
     &kFoldableJankFix,
     &kGridTabSwitcherForTablets,
@@ -387,7 +386,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordDomainCapabilitiesFetching,
     &password_manager::features::kPasswordChange,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
-    &password_manager::features::kTouchToFillPasswordSubmission,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kUnifiedPasswordManagerAndroidBranding,
@@ -782,7 +780,7 @@ BASE_FEATURE(kHandleMediaIntents,
 
 BASE_FEATURE(kHideNonDisplayableAccountEmail,
              "HideNonDisplayableAccountEmail",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kImmersiveUiMode,
              "ImmersiveUiMode",

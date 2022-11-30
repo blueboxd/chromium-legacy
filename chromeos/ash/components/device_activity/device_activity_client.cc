@@ -448,8 +448,9 @@ void DeviceActivityClient::OnGetLastPingDatesStatusFetched(
   } else {
     RecordPreservedFileState(
         DeviceActivityClient::PreservedFileState::kReadFail);
-    LOG(ERROR)
-        << "Preserved File read failed. State of local states is not checked.";
+    LOG(ERROR) << "Preserved File read has failed. State of local states is "
+                  "not checked. "
+               << "Error from DBus: " << response.error_message();
   }
 
   // Always trigger step to check for network status changing after reading the
@@ -1038,7 +1039,7 @@ void DeviceActivityClient::TransitionToCheckIn(
   }
 
   // Generate Fresnel PSM import request body.
-  device_activity::ImportDataRequest import_request =
+  FresnelImportDataRequest import_request =
       current_use_case->GenerateImportRequestBody();
 
   std::string request_body;

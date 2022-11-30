@@ -5,14 +5,14 @@
 // clang-format off
 import {assert} from 'chrome://resources/js/assert.js';
 import {$} from 'chrome://resources/js/util.js';
-import {Oobe} from './cr_ui.m.js';
+import {Oobe} from './cr_ui.js';
 import * as OobeDebugger from './debug/debug.m.js';
-import {invokePolymerMethod} from './display_manager.m.js';
+import {invokePolymerMethod} from './display_manager.js';
 import {loadTimeData} from './i18n_setup.js';
 import 'chrome://oobe/components/test_util.m.js';
 import 'chrome://oobe/test_api/test_api.m.js';
 import {commonScreensList, loginScreensList, oobeScreensList} from 'chrome://oobe/screens.js';
-import {MultiTapDetector} from './multi_tap_detector.m.js';
+import {MultiTapDetector} from './multi_tap_detector.js';
 import './components/common_styles/oobe_flex_layout_styles.m.js';
 // clang-format on
 

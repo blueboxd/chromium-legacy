@@ -525,28 +525,26 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         PrefService prefService = UserPrefs.get(browserContextHandle);
         if (BINARY_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
+            boolean toggleValue = (boolean) newValue;
 
-            for (@SiteSettingsCategory.Type int type = 0;
-                    type < SiteSettingsCategory.Type.NUM_ENTRIES; type++) {
-                if (mCategory.getType() != type) {
-                    continue;
-                }
-
-                WebsitePreferenceBridge.setCategoryEnabled(browserContextHandle,
-                        SiteSettingsCategory.contentSettingsType(type), (boolean) newValue);
-
-                if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
-                    updateNotificationsSecondaryControls();
-                } else if (type == SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT) {
-                    AutoDarkMetrics.recordAutoDarkSettingsChangeSource(
-                            AutoDarkSettingsChangeSource.SITE_SETTINGS_GLOBAL, (boolean) newValue);
-                } else if (type == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
-                    recordSiteLayoutChanged((boolean) newValue);
-                    updateDesktopSiteSecondaryControls();
-                }
-                break;
+            @SiteSettingsCategory.Type
+            int type = mCategory.getType();
+            if (type == SiteSettingsCategory.Type.SITE_DATA && !toggleValue) {
+                showDisableSiteDataConfirmationDialog();
+                return false;
             }
+            WebsitePreferenceBridge.setCategoryEnabled(browserContextHandle,
+                    SiteSettingsCategory.contentSettingsType(type), toggleValue);
 
+            if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
+                updateNotificationsSecondaryControls();
+            } else if (type == SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT) {
+                AutoDarkMetrics.recordAutoDarkSettingsChangeSource(
+                        AutoDarkSettingsChangeSource.SITE_SETTINGS_GLOBAL, toggleValue);
+            } else if (type == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
+                recordSiteLayoutChanged(toggleValue);
+                updateDesktopSiteSecondaryControls();
+            }
             getInfoForOrigins();
         } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
             @ContentSettingValues
@@ -575,6 +573,29 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             prefService.setBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED, (boolean) newValue);
         }
         return true;
+    }
+
+    private void showDisableSiteDataConfirmationDialog() {
+        assert mCategory.getType() == SiteSettingsCategory.Type.SITE_DATA;
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsDelegate().getBrowserContextHandle();
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_BrowserUI_AlertDialog);
+        builder.setTitle(R.string.website_settings_site_data_page_block_confirm_dialog_title)
+                .setMessage(
+                        R.string.website_settings_site_data_page_block_confirm_dialog_description)
+                .setNegativeButton(
+                        R.string.website_settings_site_data_page_block_confirm_dialog_cancel_button,
+                        null)
+                .setPositiveButton(
+                        R.string.website_settings_site_data_page_block_confirm_dialog_confirm_button,
+                        (dialog, which) -> {
+                            WebsitePreferenceBridge.setCategoryEnabled(browserContextHandle,
+                                    mCategory.getContentSettingsType(), false);
+                            getInfoForOrigins();
+                            dialog.dismiss();
+                        });
+        builder.show();
     }
 
     private void setCookieSettingsPreference(CookieSettingsState state) {
@@ -669,8 +690,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             case SiteSettingsCategory.Type.SITE_DATA:
                 resource = WebsitePreferenceBridge.isCategoryEnabled(
                                    browserContextHandle, ContentSettingsType.COOKIES)
-                        ? R.string.website_settings_add_site_description_site_data_block
-                        : R.string.website_settings_add_site_description_site_data_allow;
+                        ? R.string.website_settings_site_data_page_add_block_exception_description
+                        : R.string.website_settings_site_data_page_add_allow_exception_description;
                 break;
             case SiteSettingsCategory.Type.THIRD_PARTY_COOKIES:
                 resource = getCookieControlsMode() == CookieControlsMode.BLOCK_THIRD_PARTY
@@ -1061,6 +1082,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         Preference infoText = screen.findPreference(INFO_TEXT_KEY);
         if (mCategory.getType() == SiteSettingsCategory.Type.COOKIES) {
             infoText.setSummary(R.string.website_settings_cookie_info);
+        } else if (mCategory.getType() == SiteSettingsCategory.Type.SITE_DATA) {
+            infoText.setSummary(R.string.website_settings_site_data_page_description);
         } else if (mCategory.getType() == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
             infoText.setSummary(R.string.website_settings_third_party_cookies_page_description);
         } else {
@@ -1424,10 +1447,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 WebsitePreference websitePref = (WebsitePreference) preference;
                 ContentSettingException exception = websitePref.site().getContentSettingException(
                         mCategory.getContentSettingsType());
-                return websitePref.site()
-                        .getContentSettingException(mCategory.getContentSettingsType())
-                        .getSource()
-                        .equals(POLICY);
+                if (exception != null && exception.getSource() != null) {
+                    return exception.getSource().equals(POLICY);
+                }
+                return false;
             }
 
             /*

@@ -31,7 +31,6 @@
 <translation id="1149401351239820326">חודש פקיעת התוקף</translation>
 <translation id="1150263420752757504">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך הפעולה מבטא הסכמה <ph name="BEGIN_LINK1" />לתנאים ולהגבלות של Google<ph name="END_LINK1" /> ו<ph name="BEGIN_LINK2" />לתנאים ולהגבלות הנוספים של Google Chrome ו-ChromeOS<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">הדף הזה לא זמין ללא חיבור לאינטרנט: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">הקשה על הלחצן "אתרים נבחרים" תציג אתרים פופולריים</translation>
 <translation id="1173894706177603556">שינוי שם</translation>
 <translation id="1177863135347784049">מותאם אישית</translation>
 <translation id="1181037720776840403">הסרה</translation>
@@ -261,7 +260,6 @@
 <translation id="2472163211318554013">‏כדי להפיק את המרב מ-Chrome, עליך להיכנס לחשבון</translation>
 <translation id="247737702124049222">התכונה 'תיאורי תמונות' מופעלת</translation>
 <translation id="2482878487686419369">התראות</translation>
-<translation id="2485422356828889247">הסרת התקנה</translation>
 <translation id="2494974097748878569">‏Google Assistant ב-Chrome</translation>
 <translation id="2496180316473517155">היסטוריית גלישה</translation>
 <translation id="2497852260688568942">מנהל המערכת שלך השבית את הסנכרון</translation>
@@ -319,7 +317,6 @@
 <translation id="2781151931089541271">נותרה שנייה אחת</translation>
 <translation id="2788468313014644040">מספר הקבוצה</translation>
 <translation id="2800066122460699237">הכרטיסייה <ph name="TAB_TITLE" /> תיסגר</translation>
-<translation id="2805756323405976993">אפליקציות</translation>
 <translation id="2806840421670364300">FLoC</translation>
 <translation id="281504910091592009">‏הצגה וניהול של סיסמאות שמורות ב<ph name="BEGIN_LINK" />חשבון Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">כדי לקבל גישה אל הסימניות שלך בכל המכשירים, יש להיכנס לחשבון ולהפעיל את הסנכרון</translation>
@@ -574,7 +571,6 @@
 <translation id="414128724510021958">כברירת מחדל, מתבקשים אתרים שמותאמים למחשב</translation>
 <translation id="4141536112466364990">‏הדרכות לשימוש ב-Chrome</translation>
 <translation id="4162867837470729563">רשימת אפשרויות השיתוף נפתחה בגובה מלא.</translation>
-<translation id="4165986682804962316">הגדרות לאתרים</translation>
 <translation id="4170011742729630528">השירות אינו זמין. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="4177222230309051052">הוספת כל הסימניות</translation>
 <translation id="4181841719683918333">שפות</translation>
@@ -1370,7 +1366,6 @@
 <translation id="8352996530981010042">לא ניתן להוריד תגובות. אפשר לנסות שוב.</translation>
 <translation id="8354977102499939946">חיפוש מהיר באמצעות הקול. ניתן לערוך את קיצור הדרך הזה ב'הגדרות'.</translation>
 <translation id="835847953965672673">שוחזרו <ph name="NUMBER_OF_DOWNLOADS" /> הורדות</translation>
-<translation id="8364299278605033898">הצגת אתרים פופולריים</translation>
 <translation id="8368001212524806591">מעקב אחר המחיר</translation>
 <translation id="8383226135083126309">‏<ph name="BEGIN_BOLD" />איך אנחנו משתמשים בנתונים האלה:<ph name="END_BOLD" /> Chrome יכול להעריך מהם תחומי העניין שלך. לאחר מכן, אתר שבו ביקרת יכול לשלוח בקשה ל-Chrome כדי לגלות מהם תחומי העניין שלך ולהתאים אישית את המודעות שמוצגות לך.</translation>
 <translation id="8387617938027387193">אימות הזהות שלך</translation>

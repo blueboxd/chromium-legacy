@@ -12,6 +12,7 @@
 <translation id="1062628064301375934">مساعدتنا في تصميم تجربة تصفُّح أكثر خصوصية</translation>
 <translation id="107147699690128016">في حال تغيير امتداد الملف، قد يفتح الملف في تطبيق مختلف ومن المحتمل أن يشكّل خطورة على جهازك.</translation>
 <translation id="1089606299949659462">اكتملت المراجعة</translation>
+<translation id="1091604859693995976">إعادة التحميل لعرض محتوى الخلاصة</translation>
 <translation id="1095761715416917775">ضمان إمكانية الوصول إلى بيانات المزامنة دائمًا</translation>
 <translation id="1100066534610197918">فتح في علامة تبويب جديدة في مجموعة</translation>
 <translation id="1103142993930332957">‏هل تريد المساهمة في تحسين أداء Chrome؟</translation>
@@ -30,7 +31,6 @@
 <translation id="1149401351239820326">شهر انتهاء الصلاحية</translation>
 <translation id="1150263420752757504">‏سيتم فتح تطبيق "<ph name="APP_NAME" />" في Chrome. تعني المتابعة موافقتك على <ph name="BEGIN_LINK1" />بنود خدمة Google<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />بنود الخدمة الإضافية لكل من متصفّح Google Chrome ونظام التشغيل Chrome<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">لا تتوفّر الصفحة بلا اتصال بالإنترنت: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">عرض المواقع الإلكترونية الشائعة من خلال النقر على الزر "أهم المواقع"</translation>
 <translation id="1173894706177603556">إعادة تسمية</translation>
 <translation id="1177863135347784049">مخصص</translation>
 <translation id="1181037720776840403">إزالة</translation>
@@ -260,7 +260,6 @@
 <translation id="2472163211318554013">‏تسجيل الدخول للاستفادة إلى أقصى حدّ من Chrome</translation>
 <translation id="247737702124049222">ميزة أوصاف الصور مفعَّلة.</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
-<translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2494974097748878569">‏"مساعد Google" على Chrome</translation>
 <translation id="2496180316473517155">سجلّ التصفّح</translation>
 <translation id="2497852260688568942">تم إيقاف المزامنة من قِبل المشرف</translation>
@@ -319,7 +318,6 @@
 <translation id="2781151931089541271">يتبقى ثانية واحدة</translation>
 <translation id="2788468313014644040">رقم المجموعة</translation>
 <translation id="2800066122460699237">سيتم إغلاق علامة التبويب <ph name="TAB_TITLE" />.</translation>
-<translation id="2805756323405976993">التطبيقات</translation>
 <translation id="2806840421670364300">‏التعلُّم الموحّد للمجموعات النموذجية (FLoC)</translation>
 <translation id="281504910091592009">‏بإمكانك عرض كلمات المرور المحفوظة وإدارتها في <ph name="BEGIN_LINK" />حسابك على Google<ph name="END_LINK" />.</translation>
 <translation id="2818669890320396765">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
@@ -574,7 +572,6 @@
 <translation id="414128724510021958">المواقع الإلكترونية المتوافقة مع أجهزة الكمبيوتر المكتبي يتم طلبها تلقائيًا</translation>
 <translation id="4141536112466364990">‏التعرُّف على Chrome</translation>
 <translation id="4162867837470729563">قائمة خيارات المشاركة مفتوحة بطول الشاشة.</translation>
-<translation id="4165986682804962316">إعدادات المواقع الإلكترونية</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4177222230309051052">الحصول على جميع الإشارات المرجعية</translation>
 <translation id="4181841719683918333">اللغات</translation>
@@ -1370,7 +1367,6 @@
 <translation id="8352996530981010042">يتعذّر تنزيل التفاعلات. يُرجى إعادة المحاولة.</translation>
 <translation id="8354977102499939946">يتيح لك هذا الزر إجراء بحث صوتي بسرعة. ولتعديل هذا الاختصار، انتقِل إلى "الإعدادات".</translation>
 <translation id="835847953965672673">تمّت استعادة <ph name="NUMBER_OF_DOWNLOADS" /> عملية تنزيل.</translation>
-<translation id="8364299278605033898">عرض المواقع الإلكترونية الشائعة</translation>
 <translation id="8368001212524806591">تتبُّع السعر</translation>
 <translation id="8383226135083126309">‏<ph name="BEGIN_BOLD" />كيف نستخدم البيانات:<ph name="END_BOLD" /> بإمكان متصفّح Chrome تقدير اهتماماتك. بعد ذلك، يمكن للموقع الإلكتروني الذي تنتقل إليه أن يطلب من Chrome معرفة اهتماماتك من أجل تخصيص الإعلانات التي تظهر لك.</translation>
 <translation id="8387617938027387193">إثبات هويتك</translation>

@@ -262,11 +262,13 @@ chromium-metrics-reviews@google.com.
 
 <variants name="TutorialID">
   <variant name="" summary="any tutorial"/>
+  <variant name=".SidePanelReadingList"
+      summary="the tutorial for the side panel reading list"/>
   <variant name=".TabGroup" summary="the tutorial for tab groups"/>
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the

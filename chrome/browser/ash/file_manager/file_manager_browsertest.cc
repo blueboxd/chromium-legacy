@@ -978,7 +978,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkDeleteDisabledInRecents"),
         TestCase("checkGoToFileLocationEnabledInRecents"),
         TestCase("checkGoToFileLocationDisabledInMultipleSelection"),
-        TestCase("checkDefaultTask")));
+        TestCase("checkDefaultTask"),
+        TestCase("checkPolicyAssignedDefaultHasManagedIcon")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */
@@ -1200,9 +1201,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveLinkOpenFileThroughTransitiveLink"),
         TestCase("driveWelcomeBanner"),
         TestCase("driveOfflineInfoBanner").EnableDriveDssPin(),
-        TestCase("driveOfflineInfoBannerWithoutFlag"),
-        TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
-        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
+        TestCase("driveOfflineInfoBannerWithoutFlag")
+        // TODO(b/258987225): Enable
+        // TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
+        // TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1278,12 +1280,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DLP, /* dlp.js */
     DlpFilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("transferShowDlpToast").EnableDlp(),
-        TestCase("dlpShowManagedIcon").EnableDlp(),
-        TestCase("dlpContextMenuRestrictionDetails").EnableDlp(),
-        TestCase("saveAsDlpRestrictedDirectory").EnableDlp(),
-        TestCase("saveAsDlpRestrictedRedirectsToMyFiles").EnableDlp()));
+    ::testing::Values(TestCase("transferShowDlpToast").EnableDlp(),
+                      TestCase("dlpShowManagedIcon").EnableDlp(),
+                      TestCase("dlpContextMenuRestrictionDetails").EnableDlp(),
+                      TestCase("saveAsDlpRestrictedDirectory").EnableDlp(),
+                      TestCase("openDlpRestrictedFile").EnableDlp()));
+// TODO(crbug.com/1394305): Re-enable this test
+// TestCase("saveAsDlpRestrictedRedirectsToMyFiles").EnableDlp()));
 
 #define FILE_TRANSFER_TEST_CASE(name) \
   TestCase(name).EnableFileTransferConnector()

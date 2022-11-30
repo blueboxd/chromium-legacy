@@ -9,13 +9,16 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "components/reading_list/core/reading_list_model_storage.h"
+#include "components/reading_list/core/reading_list_model_storage_impl.h"
 #include "components/reading_list/core/reading_list_sync_bridge_delegate.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace syncer {
 class ModelTypeChangeProcessor;
@@ -25,8 +28,9 @@ class MutableDataBatch;
 class ReadingListModel;
 
 // A ReadingListModelStorage storing and syncing data in protobufs.
-class ReadingListSyncBridge : public ReadingListModelStorage,
-                              public syncer::ModelTypeSyncBridge {
+// TODO(crbug.com/1386158): Avoid inheritance from ReadingListModelStorageImpl.
+class ReadingListSyncBridge : public syncer::ModelTypeSyncBridge,
+                              public ReadingListModelStorageImpl {
  public:
   ReadingListSyncBridge(
       syncer::OnceModelTypeStoreFactory create_store_callback,
@@ -37,16 +41,20 @@ class ReadingListSyncBridge : public ReadingListModelStorage,
 
   ~ReadingListSyncBridge() override;
 
-  std::unique_ptr<ScopedBatchUpdate> EnsureBatchCreated() override;
-
-  // ReadingListModelStorage implementation
   void SetReadingListModel(ReadingListModel* model,
                            ReadingListSyncBridgeDelegate* delegate,
-                           base::Clock* clock) override;
+                           base::Clock* clock);
+  void ModelReadyToSync(
+      std::unique_ptr<syncer::MetadataBatch> sync_metadata_batch);
+  void ReportError(const syncer::ModelError& error);
 
-  void SaveEntry(const ReadingListEntry& entry) override;
-  void RemoveEntry(const ReadingListEntry& entry) override;
-  syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
+  // TODO(crbug.com/1386158): Remove the functions below and instead register
+  // the bridge as model observer.
+  void DidAddOrUpdateEntry(const ReadingListEntry& entry);
+  void DidRemoveEntry(const ReadingListEntry& entry);
+
+  // ReadingListModelStorage implementation.
+  ReadingListSyncBridge* GetSyncBridge() override;
 
   // Creates an object used to communicate changes in the sync metadata to the
   // model type store.
@@ -135,50 +143,15 @@ class ReadingListSyncBridge : public ReadingListModelStorage,
   // should be.
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
-  // Methods used as callbacks given to DataTypeStore.
-  void OnStoreCreated(const absl::optional<syncer::ModelError>& error,
-                      std::unique_ptr<syncer::ModelTypeStore> store);
-
-  class ScopedBatchUpdate : public ReadingListModelStorage::ScopedBatchUpdate {
-   public:
-    explicit ScopedBatchUpdate(ReadingListSyncBridge* store);
-
-    ScopedBatchUpdate(const ScopedBatchUpdate&) = delete;
-    ScopedBatchUpdate& operator=(const ScopedBatchUpdate&) = delete;
-
-    ~ScopedBatchUpdate() override;
-
-   private:
-    raw_ptr<ReadingListSyncBridge> store_;
-  };
-
  private:
-  void BeginTransaction();
-  void CommitTransaction();
-  // Callbacks needed for the database handling.
-  void OnDatabaseLoad(
-      const absl::optional<syncer::ModelError>& error,
-      std::unique_ptr<syncer::ModelTypeStore::RecordList> entries);
-  void OnDatabaseSave(const absl::optional<syncer::ModelError>& error);
-  void OnReadAllMetadata(const absl::optional<syncer::ModelError>& error,
-                         std::unique_ptr<syncer::MetadataBatch> metadata_batch);
-
   void AddEntryToBatch(syncer::MutableDataBatch* batch,
                        const ReadingListEntry& entry);
 
-  std::unique_ptr<syncer::ModelTypeStore> store_;
   raw_ptr<ReadingListModel> model_;
   raw_ptr<ReadingListSyncBridgeDelegate> delegate_;
-  syncer::OnceModelTypeStoreFactory create_store_callback_;
-
-  int pending_transaction_count_;
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch_;
-
   raw_ptr<base::Clock> clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  base::WeakPtrFactory<ReadingListSyncBridge> weak_ptr_factory_{this};
 };
 
 #endif  // COMPONENTS_READING_LIST_CORE_READING_LIST_SYNC_BRIDGE_H_

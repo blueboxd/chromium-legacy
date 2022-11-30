@@ -52,6 +52,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, aplikacija iz Play prodavnice</translation>
 <translation id="1225748608451425081">Chromebook je zaključan zbog poznatog problema. Moći ćete da se prijavite za: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Izađi iz režima biranja</translation>
+<translation id="1235458158152011030">Poznate mreže</translation>
 <translation id="1239161794459865856">Funkcija <ph name="FEATURE_NAME" /> je povezana.</translation>
 <translation id="1240638468526743569">Aplikacija</translation>
 <translation id="1246890715821376239">Nepodržane aplikacije</translation>
@@ -386,7 +387,6 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="3120421559657122717">Želite da isključite uređaj?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Pokrenite ponovo da biste ažurirali</translation>
-<translation id="3139382871451988441">Isključi pristup kameri.</translation>
 <translation id="3139942575505304791">Radna površina 1</translation>
 <translation id="315116470104423982">Mobilni podaci</translation>
 <translation id="3151786313568798007">Položaj</translation>
@@ -519,7 +519,6 @@ Priključite uređaj na napajanje.</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="385300504083504382">Početak</translation>
 <translation id="3861651314799684201">Pritisnite Enter da biste snimili ceo ekran</translation>
-<translation id="3885531177412808398">Dozvoljava pristup mikrofonu za sve aplikacije i veb-sajtove sa dozvolom za mikrofon</translation>
 <translation id="3886872229787704059">Otvarano danas</translation>
 <translation id="3891340733213178823">Dvaput pritisnite Ctrl+Shift+Q da biste se odjavili.</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
@@ -555,6 +554,7 @@ Priključite uređaj na napajanje.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Isk. za apl.}one{Isk. za # apl.}few{Isk. za # apl.}other{Isk. za # apl.}}</translation>
 <translation id="4066027111132117168">Uključeno, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Signal srednje jačine</translation>
+<translation id="4086921558679520050">Uključite fizički prekidač za mikrofon na uređaju</translation>
 <translation id="4112140312785995938">Premotaj unazad</translation>
 <translation id="4114315158543974537">Uključite Phone Hub</translation>
 <translation id="4115378294792113321">Ciklama</translation>
@@ -608,6 +608,7 @@ Probajte ponovo u režimu laptopa.</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, jačina signala <ph name="SIGNAL_STRENGTH" /> posto</translation>
 <translation id="4378551569595875038">Povezuje se...</translation>
 <translation id="4379531060876907730">Ovo su alatke za pisaljku</translation>
+<translation id="4381031910344220229">Ovo dozvoljava pristup mikrofonu za aplikaciju <ph name="APP_NAME" /> i sve aplikacije i veb-sajtove sa dozvolom za mikrofon</translation>
 <translation id="4389184120735010762">Pritisnuli ste tastersku prečicu za montiranu lupu ekrana. Želite li da je uključite?</translation>
 <translation id="439598569299422042">Pauzirano, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Čuvanje video snimka ekrana nije uspelo</translation>
@@ -649,11 +650,8 @@ Probajte ponovo u režimu laptopa.</translation>
 <translation id="4573176682887762361">„Unesi [reč ili fraza]“</translation>
 <translation id="4577274620589681794">Vreme je isteklo · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Prikaži preglede</translation>
-<translation id="4578196883126898996">Mikrofon je isključen. Uključite dugme za mikrofon na uređaju.</translation>
 <translation id="4578906031062871102">Meni Podešavanja je otvoren</translation>
-<translation id="4581047786858252841">Mikrofon je uključen</translation>
 <translation id="4585337515783392668">Zaustavi prebacivanje na nepoznati prijemnik</translation>
-<translation id="4587299710837179226">Mikrofon je isključen</translation>
 <translation id="4596144739579517758">Tamna tema je isključena</translation>
 <translation id="4611292653554630842">Prijavi me</translation>
 <translation id="4623167406982293031">Verifikujte nalog</translation>
@@ -733,6 +731,7 @@ Probajte ponovo u režimu laptopa.</translation>
 <translation id="4987738733603015246">Radna površina 16</translation>
 <translation id="5003993274120026347">Sledeća rečenica</translation>
 <translation id="5016558321564993266">Uključite/isključite marker. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Pristup mikrofonu uređaja je uključen</translation>
 <translation id="5030687792513154421">Vreme je isteklo</translation>
 <translation id="5033299697334913360">Kliknite bilo gde da biste snimili ceo ekran</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> se povezao sa novim telefonom</translation>
@@ -964,9 +963,11 @@ Probajte ponovo u režimu laptopa.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> je sesija kojom upravlja <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> – povezano</translation>
 <translation id="6351032674660237738">PREDLOZI APLIKACIJA</translation>
+<translation id="6352082849089527770">Nepoznate mreže</translation>
 <translation id="6359587239691116345">Dobijajte najnovije funkcije i bezbednosna poboljšanja. Ako odbijete ovo ažuriranje, uređaj možda više neće raditi kako treba, a vi možete da imate problema sa bezbednošću i performansama.</translation>
 <translation id="6376931439017688372">Bluetooth je uključen</translation>
 <translation id="6381109794406942707">Da biste otključali uređaj, unesite PIN.</translation>
+<translation id="638716340450135524">Uključi pristup kameri</translation>
 <translation id="639644700271529076">CAPS LOCK je isključen</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google pomoćnik</translation>
@@ -974,6 +975,7 @@ Probajte ponovo u režimu laptopa.</translation>
 <translation id="642644398083277086">Obrišite sva obaveštenja</translation>
 <translation id="643147933154517414">Gotovo</translation>
 <translation id="6431865393913628856">Snimak ekrana</translation>
+<translation id="6442259747294754014">Pristup mikrofonu uređaja je isključen</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> na uređaju <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> događaj</translation>
 <translation id="6449483711453944360">Linux aplikacije i prozori bez arhiviranja trenutno nisu podržani</translation>
@@ -1025,6 +1027,7 @@ Novo instaliranje</translation>
 <translation id="6670153871843998651">Radna površina 3</translation>
 <translation id="6671495933530132209">Kopiraj sliku</translation>
 <translation id="6671661918848783005">Otključavanje Chromebook-a nije uspelo</translation>
+<translation id="6683022854667115063">Slušalice</translation>
 <translation id="6696025732084565524">Treba da instalirate važno ažuriranje za odvojivu tastaturu</translation>
 <translation id="6700713906295497288">Dugme IME menija</translation>
 <translation id="6707693040195709527">Rok za promenu verzije uređaja u prethodnu verziju je istekao</translation>
@@ -1137,6 +1140,7 @@ Novo instaliranje</translation>
 <translation id="7360036564632145207">Ako promenite podešavanje zaštite pristupa podacima za periferne uređaje, možete da optimizujete učinak</translation>
 <translation id="736045644501761622">Podesi pozadinu i stil</translation>
 <translation id="7371404428569700291">Snimi prozor</translation>
+<translation id="737315737514430195">Ovo dozvoljava pristup mikrofonu za sve aplikacije i veb-sajtove sa dozvolom za mikrofon</translation>
 <translation id="7377169924702866686">Caps Lock je uključen.</translation>
 <translation id="7377481913241237033">Povežite se pomoću koda</translation>
 <translation id="7378203170292176219">Prevucite da biste izabrali oblast za snimanje</translation>
@@ -1205,12 +1209,14 @@ Novo instaliranje</translation>
 <translation id="7671610481353807627">Aplikacije su sortirane prema boji</translation>
 <translation id="7672095158465655885">Uspostavljena je veza sa: <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Unos pomoću kamere je podešen na <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">Ovo dozvoljava pristup mikrofonu za aplikacije <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> i sve aplikacije i veb-sajtove sa dozvolom za mikrofon</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Dodajte novu mobilnu mrežu</translation>
 <translation id="7720400844887872976">Uključeno do <ph name="TIME" /></translation>
 <translation id="7720410380936703141">PROBAJ PONOVO</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 obaveštenje}one{# obaveštenje}few{# obaveštenja}other{# obaveštenja}}</translation>
 <translation id="7724603315864178912">Iseci</translation>
+<translation id="7742327441377685481">Nema obaveštenja</translation>
 <translation id="7745560842763881396">Prikaži aplikacije na polici</translation>
 <translation id="7749443890790263709">Dostigli ste maksimalan broj radnih površina.</translation>
 <translation id="776344839111254542">Kliknite za prikaz detalja ažuriranja</translation>
@@ -1367,6 +1373,7 @@ Novo instaliranje</translation>
 <translation id="8598235756057743477">Sortirajte aplikacije prema nazivu ili boji</translation>
 <translation id="8614517853887502247">Obaveštenja aplikacija <ph name="APP_1_TITLE" /> i <ph name="APP_2_TITLE" /> su skrivena jer je zaštita od pregleda uključena</translation>
 <translation id="8627191004499078455">Povezani ste sa uređajem <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Isključi pristup kameri</translation>
 <translation id="8631727435199967028">Podešavanja pristupačnosti</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />, upravlja administrator</translation>
 <translation id="8639760480004882931">Preostalo je <ph name="PERCENTAGE" /></translation>
@@ -1382,7 +1389,6 @@ Novo instaliranje</translation>
 <translation id="8666856788528804727">Otvorite <ph name="NAME" /> da biste podesili uređaj</translation>
 <translation id="8676770494376880701">Povezan je punjač male snage</translation>
 <translation id="8683506306463609433">Praćenje učinka je aktivno</translation>
-<translation id="8684405646663021166">Dozvoljava pristup mikrofonu za <ph name="APP_NAME" /> i sve aplikacije i veb-sajtove sa dozvolom za mikrofon</translation>
 <translation id="8685326675965865247">Pretražujte uređaj, aplikacije, podešavanja i veb. Koristite tastere sa strelicama da biste se kretali kroz aplikacije.</translation>
 <translation id="8703634754197148428">Započnite snimanje. Kada snimanje počne, koristite Alt + Shift + L da biste se kretali do police i pronašli dugme za zaustavljanje snimanja</translation>
 <translation id="8721053961083920564">Uključite/isključite zvuk. <ph name="STATE_TEXT" /></translation>
@@ -1407,7 +1413,6 @@ Novo instaliranje</translation>
 <translation id="8819728065740986820">Adaptivno punjenje je uključeno</translation>
 <translation id="8825863694328519386">Prevucite sa leve strane da biste se vratili</translation>
 <translation id="8834539327799336565">Trenutno povezani</translation>
-<translation id="8834657930627018205">Uključi pristup kameri.</translation>
 <translation id="8841375032071747811">Dugme Nazad</translation>
 <translation id="8843682306134542540">Uključite/isključite zaključavanje rotacije. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>

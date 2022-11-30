@@ -33,6 +33,7 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -232,7 +233,7 @@ class IsolatedWebAppURLLoaderFactoryTest : public WebAppTest {
   const std::string kDevWebBundleId =
       "aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaac";
   const GURL kDevAppOriginUrl = GURL("isolated-app://" + kDevWebBundleId);
-  const GURL kDevAppStartUrl = GURL(kDevAppOriginUrl.spec() + "/ix.html");
+  const GURL kDevAppStartUrl = kDevAppOriginUrl.Resolve("/ix.html");
   const url::Origin kProxyOrigin =
       url::Origin::Create(GURL("https://proxy.example.com"));
 
@@ -522,6 +523,45 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlRemovesOriginalRequestData) {
   EXPECT_THAT(url_handler().request()->request_initiator, Eq(absl::nullopt));
 }
 
+TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestCopiesAcceptHeader) {
+  RegisterWebApp(CreateIsolatedWebApp(
+      kDevAppStartUrl,
+      IsolationData{IsolationData::DevModeProxy{
+          .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
+
+  CreateFactory();
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = GURL("isolated-app://" + kDevWebBundleId + "/foo/bar.html");
+  request->headers.SetHeader(net::HttpRequestHeaders::kAccept, "text/html");
+  CreateLoaderAndRun(std::move(request));
+
+  std::string accept_header_value;
+  ASSERT_THAT(url_handler().request()->headers.GetHeader(
+                  net::HttpRequestHeaders::kAccept, &accept_header_value),
+              IsTrue());
+  EXPECT_THAT(accept_header_value, Eq("text/html"));
+}
+
+TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDefaultsToAcceptingAll) {
+  RegisterWebApp(CreateIsolatedWebApp(
+      kDevAppStartUrl,
+      IsolationData{IsolationData::DevModeProxy{
+          .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
+
+  CreateFactory();
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = GURL("isolated-app://" + kDevWebBundleId + "/foo/bar.html");
+  CreateLoaderAndRun(std::move(request));
+
+  std::string accept_header_value;
+  ASSERT_THAT(url_handler().request()->headers.GetHeader(
+                  net::HttpRequestHeaders::kAccept, &accept_header_value),
+              IsTrue());
+  EXPECT_THAT(accept_header_value, Eq("*/*"));
+}
+
 TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        DoNotReturnGeneratedPageWhenNotInstallingApplication) {
   RegisterWebApp(CreateIsolatedWebApp(
@@ -664,10 +704,10 @@ class IsolatedWebAppURLLoaderFactorySignedWebBundleTest
 
   base::FilePath CreateSignedBundleAndWriteToDisk() {
     web_package::WebBundleBuilder builder;
-    builder.AddExchange(kEd25519AppOriginUrl.spec(),
+    builder.AddExchange(kEd25519AppOriginUrl,
                         {{":status", "200"}, {"content-type", "text/html"}},
                         "Hello World");
-    builder.AddExchange(kEd25519AppOriginUrl.spec() + "/invalid-status-code",
+    builder.AddExchange(kEd25519AppOriginUrl.Resolve("/invalid-status-code"),
                         {{":status", "201"}, {"content-type", "text/html"}},
                         "Hello World");
 
@@ -685,13 +725,12 @@ class IsolatedWebAppURLLoaderFactorySignedWebBundleTest
         web_package::WebBundleSigner::SignBundle(unsigned_bundle, {key_pair});
 
     base::FilePath web_bundle_path;
-    EXPECT_THAT(CreateTemporaryFileInDir(temp_dir_.GetPath(), &web_bundle_path),
-                IsTrue());
-    EXPECT_THAT(
-        static_cast<size_t>(base::WriteFile(
-            web_bundle_path, reinterpret_cast<char*>(signed_bundle.data()),
-            signed_bundle.size())),
-        Eq(signed_bundle.size()));
+    CHECK(CreateTemporaryFileInDir(temp_dir_.GetPath(), &web_bundle_path));
+
+    CHECK_EQ(static_cast<size_t>(base::WriteFile(
+                 web_bundle_path, reinterpret_cast<char*>(signed_bundle.data()),
+                 signed_bundle.size())),
+             signed_bundle.size());
 
     return web_bundle_path;
   }
@@ -719,7 +758,7 @@ TEST_P(IsolatedWebAppURLLoaderFactorySignedWebBundleTest,
   CreateFactory();
 
   auto request = std::make_unique<network::ResourceRequest>();
-  request->url = GURL(kEd25519AppOriginUrl.spec() + "/invalid-status-code");
+  request->url = kEd25519AppOriginUrl.Resolve("/invalid-status-code");
   EXPECT_THAT(CreateLoaderAndRun(std::move(request)),
               Eq(net::ERR_INVALID_WEB_BUNDLE));
   EXPECT_THAT(ResponseInfo(), IsNull());
@@ -730,7 +769,7 @@ TEST_P(IsolatedWebAppURLLoaderFactorySignedWebBundleTest,
   CreateFactory();
 
   auto request = std::make_unique<network::ResourceRequest>();
-  request->url = GURL(kEd25519AppOriginUrl.spec() + "/non-existing");
+  request->url = kEd25519AppOriginUrl.Resolve("/non-existing");
   EXPECT_EQ(CreateLoaderAndRun(std::move(request)), net::OK);
   ASSERT_THAT(ResponseInfo(), NotNull());
   EXPECT_THAT(ResponseInfo()->headers->response_code(),
@@ -762,7 +801,7 @@ TEST_P(IsolatedWebAppURLLoaderFactorySignedWebBundleTest,
   CreateFactory();
 
   auto request = std::make_unique<network::ResourceRequest>();
-  request->url = GURL(kEd25519AppOriginUrl.spec() + "/non-existing");
+  request->url = kEd25519AppOriginUrl.Resolve("/non-existing");
   EXPECT_THAT(CreateLoaderAndRun(std::move(request)), Eq(net::OK));
   ASSERT_THAT(ResponseInfo(), NotNull());
   EXPECT_THAT(ResponseInfo()->headers->response_code(),

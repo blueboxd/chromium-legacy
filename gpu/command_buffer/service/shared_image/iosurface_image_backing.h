@@ -11,7 +11,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_fence.h"
-#include "ui/gl/gl_image_memory.h"
 
 namespace gl {
 class ScopedEGLSurfaceIOSurface;
@@ -155,7 +154,7 @@ class OverlayIOSurfaceRepresentation : public OverlayImageRepresentation {
   OverlayIOSurfaceRepresentation(SharedImageManager* manager,
                                  SharedImageBacking* backing,
                                  MemoryTypeTracker* tracker,
-                                 scoped_refptr<gl::GLImage> gl_image);
+                                 gfx::ScopedIOSurface io_surface);
   ~OverlayIOSurfaceRepresentation() override;
 
  private:
@@ -164,22 +163,7 @@ class OverlayIOSurfaceRepresentation : public OverlayImageRepresentation {
   gfx::ScopedIOSurface GetIOSurface() const override;
   bool IsInUseByWindowServer() const override;
 
-  scoped_refptr<gl::GLImage> gl_image_;
-};
-
-class MemoryIOSurfaceRepresentation : public MemoryImageRepresentation {
- public:
-  MemoryIOSurfaceRepresentation(SharedImageManager* manager,
-                                SharedImageBacking* backing,
-                                MemoryTypeTracker* tracker,
-                                scoped_refptr<gl::GLImageMemory> image_memory);
-  ~MemoryIOSurfaceRepresentation() override;
-
- protected:
-  SkPixmap BeginReadAccess() override;
-
- private:
-  scoped_refptr<gl::GLImageMemory> image_memory_;
+  gfx::ScopedIOSurface io_surface_;
 };
 
 // This class is only put into unique_ptrs and is never copied or assigned.
@@ -203,15 +187,15 @@ class SharedEventAndSignalValue {
   uint64_t signaled_value_;
 };
 
-// Implementation of SharedImageBacking that creates a GL Texture that is backed
-// by a GLImage and stores it as a gles2::Texture. Can be used with the legacy
-// mailbox implementation.
 class GPU_GLES2_EXPORT IOSurfaceImageBacking
     : public SharedImageBacking,
       public IOSurfaceBackingEGLState::Client {
  public:
   IOSurfaceImageBacking(
-      scoped_refptr<gl::GLImage> image,
+      gfx::ScopedIOSurface io_surface,
+      uint32_t io_surface_plane,
+      gfx::BufferFormat io_surface_format,
+      gfx::GenericSharedMemoryId io_surface_id,
       const Mailbox& mailbox,
       viz::SharedImageFormat format,
       const gfx::Size& size,
@@ -259,9 +243,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
-  std::unique_ptr<MemoryImageRepresentation> ProduceMemory(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
+  void SetPurgeable(bool purgeable) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
 
   // IOSurfaceBackingEGLState::Client:
@@ -277,7 +259,10 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
 
   bool IsPassthrough() const { return true; }
 
-  scoped_refptr<gl::GLImage> image_;
+  gfx::ScopedIOSurface io_surface_;
+  const uint32_t io_surface_plane_;
+  const gfx::BufferFormat io_surface_format_;
+  const gfx::GenericSharedMemoryId io_surface_id_;
 
   // Used to determine whether to release the texture in EndAccess() in use
   // cases that need to ensure IOSurface synchronization.
@@ -294,6 +279,9 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   // This is the cleared rect used by ClearedRect and SetClearedRect when
   // |texture_| is nullptr.
   gfx::Rect cleared_rect_;
+
+  // Whether or not the surface is currently purgeable.
+  bool purgeable_ = false;
 
   // This map tracks all IOSurfaceBackingEGLState instances that exist.
   std::map<EGLDisplay, IOSurfaceBackingEGLState*> egl_state_map_;
